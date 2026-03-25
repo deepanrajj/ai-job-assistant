@@ -67,15 +67,6 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/test', async (req, res) => {
-  const response = await client.responses.create({
-    model: 'gpt-5.4',
-    input: 'Say hello'
-  });
-
-  res.json({ output: response.output_text });
-});
-
 app.post('/api/ai/analyze-job', async (req, res) => {
   try {
     const { description } = req.body ?? {};
