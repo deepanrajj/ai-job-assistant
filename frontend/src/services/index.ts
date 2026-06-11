@@ -1,1 +1,2 @@
-export * from './aiService/aiService';
+export * from './ai';
+export * from './api';

@@ -1,25 +1,25 @@
-import type { FC } from 'react';
+import { memo, type FC } from 'react';
 
-import type { JobAiAnalysis } from '../../types';
+import { Badge } from '../ui';
+import type { TJobSeniority } from '../../types';
+import { seniorityBadgeClasses } from './seniorityBadge.constants';
 
+/**
+ * Props used by the seniority badge.
+ */
 interface ISeniorityBadgeProps {
-  seniority: JobAiAnalysis['seniority'];
+  seniority: TJobSeniority;
 }
 
-export const SeniorityBadge: FC<ISeniorityBadgeProps> = ({ seniority }) => {
-  const styles: Record<JobAiAnalysis['seniority'], string> = {
-    Junior: 'bg-app-surface2 text-app-textSoft',
-    Mid: 'bg-app-surface2 text-app-textSoft',
-    Senior: 'bg-primary-900 text-primary-300',
-    Lead: 'bg-primary-900 text-primary-300',
-    Unknown: 'bg-app-surface2 text-app-textMuted'
-  };
+/**
+ * Renders a badge for the seniority level returned by job analysis.
+ *
+ * @param {ISeniorityBadgeProps} props Component props.
+ * @param {TJobSeniority} props.seniority Seniority level to display.
+ * @returns {JSX.Element} Styled seniority badge.
+ */
+const SeniorityBadgeComponent: FC<ISeniorityBadgeProps> = ({ seniority }) => (
+  <Badge className={`px-3 py-1 text-sm ${seniorityBadgeClasses[seniority]}`}>{seniority}</Badge>
+);
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${styles[seniority]}`}
-    >
-      {seniority}
-    </span>
-  );
-};
+export const SeniorityBadge = memo(SeniorityBadgeComponent);

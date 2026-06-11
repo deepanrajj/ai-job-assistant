@@ -1,29 +1,52 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-primary-400: #a78bfa;
-  --color-primary-500: #8b5cf6;
-  --color-primary-600: #7c3aed;
-  --color-primary-700: #6d28d9;
-  --color-primary-900: #4c1d95;
+  /* Brand colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
 
-  --color-app-bg: #070b17;
-  --color-app-surface: #11182b;
-  --color-app-surface2: #18213a;
-  --color-app-border: #26314f;
-  --color-app-borderSoft: #202944;
-  --color-app-text: #f8fafc;
-  --color-app-textSoft: #d6def5;
-  --color-app-textMuted: #94a3b8;
+  /* Feedback colors */
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-500: #10b981;
+  --color-success-700: #047857;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-800: #92400e;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-700: #b91c1c;
+
+  /* Application surface colors */
+  --color-app-bg: #f8fafc;
+  --color-app-surface: #ffffff;
+  --color-app-surface2: #f1f5f9;
+  --color-app-border: #e2e8f0;
+  --color-app-borderSoft: #edf2f7;
+  --color-app-text: #0f172a;
+  --color-app-textSoft: #334155;
+  --color-app-textMuted: #64748b;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
 
-body {
-  margin: 0;
-  background: #0f172a;
+  body {
+    margin: 0;
+    background: var(--color-app-bg);
+    color: var(--color-app-text);
+  }
 }

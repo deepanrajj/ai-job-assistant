@@ -1,0 +1,130 @@
+{
+  "app": {
+    "name": "Smart Job Tracker",
+    "stage": "Frontend MVP",
+    "localMockData": "Local mock data",
+    "language": {
+      "label": "Language",
+      "en": "English",
+      "de": "German"
+    },
+    "loading": "Loading..."
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "jobsTableCaption": "Saved jobs with company, role, status, location, salary, and last updated date.",
+    "openPostingFor": "Open posting for {{company}}",
+    "jobDescriptionInput": "Job description input",
+    "askQuestionInput": "Question for AI assistant"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "jobs": "Jobs",
+    "aiAssistant": "AI Assistant",
+    "main": "Main navigation",
+    "mobile": "Mobile navigation"
+  },
+  "route": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Track applications, interviews, and next actions at a glance."
+    },
+    "jobs": {
+      "title": "Jobs",
+      "subtitle": "Review your saved opportunities and keep the pipeline moving."
+    },
+    "aiAssistant": {
+      "title": "AI Assistant",
+      "subtitle": "Analyze a pasted job description before it becomes a saved job."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "subtitle": "The requested page does not exist.",
+      "message": "We could not find that page",
+      "description": "Check the address or return to the dashboard.",
+      "goToDashboard": "Go to dashboard"
+    },
+    "error": {
+      "title": "Something went wrong",
+      "description": "The page could not be loaded. Try again or return to the dashboard.",
+      "goToDashboard": "Go to dashboard",
+      "retry": "Try again"
+    }
+  },
+  "dashboard": {
+    "totalJobs": "Total jobs",
+    "activePipeline": "Active pipeline",
+    "interviews": "Interviews",
+    "offers": "Offers",
+    "statusOverview": "Status overview",
+    "recentActivity": "Recent activity",
+    "updated": "Updated {{date}}"
+  },
+  "jobs": {
+    "savedJobs": "Saved jobs",
+    "countSummary": "{{shown}} of {{total}} opportunities shown",
+    "addJob": "Add Job",
+    "addJobComingNext": "Add job form comes next",
+    "search": "Search",
+    "searchPlaceholder": "Search company, role, location, or skill",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "company": "Company",
+    "role": "Role",
+    "location": "Location",
+    "salary": "Salary",
+    "updated": "Updated",
+    "openPosting": "Open posting",
+    "nextStep": "Next: {{nextStep}}",
+    "notSet": "Not set",
+    "noJobsFound": "No jobs found",
+    "noJobsFoundDescription": "Adjust the search or status filter to see more opportunities."
+  },
+  "dataTable": {
+    "rowsPerPage": "Rows per page",
+    "rowsSummary": "{{from}}-{{to}} of {{total}} rows",
+    "pageSummary": "Page {{page}} of {{totalPages}}",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "clearSort": "Clear {{column}} sorting",
+    "sortAscending": "Sort {{column}} ascending",
+    "sortDescending": "Sort {{column}} descending",
+    "sortDirection": {
+      "asc": "Asc",
+      "desc": "Desc"
+    }
+  },
+  "status": {
+    "wishlist": "Wishlist",
+    "applied": "Applied",
+    "interview": "Interview",
+    "offer": "Offer",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn"
+  },
+  "ai": {
+    "inputTitle": "Job Description Input",
+    "inputPlaceholder": "Paste the full job description here...",
+    "emptyDescriptionError": "Please paste a job description first.",
+    "fallbackError": {
+      "analyzeJob": "Failed to analyze job description",
+      "askJob": "Failed to analyze job question"
+    },
+    "analyzing": "Analyzing...",
+    "loadingAnalysis": "Analyzing job description",
+    "analyzeButton": "Analyze with AI",
+    "analysisTitle": "AI Analysis",
+    "emptyAnalysis": "Paste a job description and click \"Analyze with AI\" to see the results here.",
+    "summary": "Summary",
+    "requiredSkills": "Required Skills",
+    "niceToHaveSkills": "Nice to Have Skills",
+    "seniority": "Seniority",
+    "preparationTasks": "Preparation Tasks",
+    "askTitle": "Ask AI",
+    "askPlaceholder": "What should I prepare for this role?",
+    "enterQuestionError": "Please enter a question.",
+    "asking": "Asking...",
+    "askButton": "Ask",
+    "answer": "AI Answer"
+  }
+}

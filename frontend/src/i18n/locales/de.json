@@ -1,0 +1,130 @@
+{
+  "app": {
+    "name": "Smart Job Tracker",
+    "stage": "Frontend-MVP",
+    "localMockData": "Lokale Beispieldaten",
+    "language": {
+      "label": "Sprache",
+      "en": "Englisch",
+      "de": "Deutsch"
+    },
+    "loading": "Wird geladen..."
+  },
+  "a11y": {
+    "skipToContent": "Zum Hauptinhalt springen",
+    "jobsTableCaption": "Gespeicherte Jobs mit Firma, Rolle, Status, Standort, Gehalt und letztem Aktualisierungsdatum.",
+    "openPostingFor": "Anzeige für {{company}} öffnen",
+    "jobDescriptionInput": "Eingabe für Stellenbeschreibung",
+    "askQuestionInput": "Frage an den KI-Assistenten"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "jobs": "Jobs",
+    "aiAssistant": "KI-Assistent",
+    "main": "Hauptnavigation",
+    "mobile": "Mobile Navigation"
+  },
+  "route": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Verfolge Bewerbungen, Interviews und nächste Schritte auf einen Blick."
+    },
+    "jobs": {
+      "title": "Jobs",
+      "subtitle": "Prüfe deine gespeicherten Chancen und halte deine Pipeline in Bewegung."
+    },
+    "aiAssistant": {
+      "title": "KI-Assistent",
+      "subtitle": "Analysiere eine eingefügte Stellenbeschreibung, bevor sie als Job gespeichert wird."
+    },
+    "notFound": {
+      "title": "Seite nicht gefunden",
+      "subtitle": "Die angeforderte Seite existiert nicht.",
+      "message": "Wir konnten diese Seite nicht finden",
+      "description": "Prüfe die Adresse oder kehre zum Dashboard zurück.",
+      "goToDashboard": "Zum Dashboard"
+    },
+    "error": {
+      "title": "Etwas ist schiefgelaufen",
+      "description": "Die Seite konnte nicht geladen werden. Versuche es erneut oder kehre zum Dashboard zurück.",
+      "goToDashboard": "Zum Dashboard",
+      "retry": "Erneut versuchen"
+    }
+  },
+  "dashboard": {
+    "totalJobs": "Jobs insgesamt",
+    "activePipeline": "Aktive Pipeline",
+    "interviews": "Interviews",
+    "offers": "Angebote",
+    "statusOverview": "Statusübersicht",
+    "recentActivity": "Letzte Aktivität",
+    "updated": "Aktualisiert {{date}}"
+  },
+  "jobs": {
+    "savedJobs": "Gespeicherte Jobs",
+    "countSummary": "{{shown}} von {{total}} Chancen angezeigt",
+    "addJob": "Job hinzufügen",
+    "addJobComingNext": "Das Formular zum Hinzufügen kommt als Nächstes",
+    "search": "Suche",
+    "searchPlaceholder": "Firma, Rolle, Standort oder Skill suchen",
+    "status": "Status",
+    "allStatuses": "Alle Status",
+    "company": "Firma",
+    "role": "Rolle",
+    "location": "Standort",
+    "salary": "Gehalt",
+    "updated": "Aktualisiert",
+    "openPosting": "Anzeige öffnen",
+    "nextStep": "Nächster Schritt: {{nextStep}}",
+    "notSet": "Nicht angegeben",
+    "noJobsFound": "Keine Jobs gefunden",
+    "noJobsFoundDescription": "Passe Suche oder Statusfilter an, um mehr Chancen zu sehen."
+  },
+  "dataTable": {
+    "rowsPerPage": "Zeilen pro Seite",
+    "rowsSummary": "{{from}}-{{to}} von {{total}} Zeilen",
+    "pageSummary": "Seite {{page}} von {{totalPages}}",
+    "previousPage": "Zurueck",
+    "nextPage": "Weiter",
+    "clearSort": "Sortierung fuer {{column}} entfernen",
+    "sortAscending": "{{column}} aufsteigend sortieren",
+    "sortDescending": "{{column}} absteigend sortieren",
+    "sortDirection": {
+      "asc": "Auf",
+      "desc": "Ab"
+    }
+  },
+  "status": {
+    "wishlist": "Wunschliste",
+    "applied": "Beworben",
+    "interview": "Interview",
+    "offer": "Angebot",
+    "rejected": "Abgelehnt",
+    "withdrawn": "Zurückgezogen"
+  },
+  "ai": {
+    "inputTitle": "Stellenbeschreibung",
+    "inputPlaceholder": "Füge die vollständige Stellenbeschreibung hier ein...",
+    "emptyDescriptionError": "Bitte füge zuerst eine Stellenbeschreibung ein.",
+    "fallbackError": {
+      "analyzeJob": "Analyse der Stellenbeschreibung fehlgeschlagen",
+      "askJob": "Analyse der Frage fehlgeschlagen"
+    },
+    "analyzing": "Analysiere...",
+    "loadingAnalysis": "Stellenbeschreibung wird analysiert",
+    "analyzeButton": "Mit KI analysieren",
+    "analysisTitle": "KI-Analyse",
+    "emptyAnalysis": "Füge eine Stellenbeschreibung ein und klicke auf \"Mit KI analysieren\", um hier die Ergebnisse zu sehen.",
+    "summary": "Zusammenfassung",
+    "requiredSkills": "Erforderliche Skills",
+    "niceToHaveSkills": "Optionale Skills",
+    "seniority": "Seniorität",
+    "preparationTasks": "Vorbereitungsaufgaben",
+    "askTitle": "KI fragen",
+    "askPlaceholder": "Worauf sollte ich mich für diese Rolle vorbereiten?",
+    "enterQuestionError": "Bitte gib eine Frage ein.",
+    "asking": "Frage...",
+    "askButton": "Fragen",
+    "answer": "KI-Antwort"
+  }
+}

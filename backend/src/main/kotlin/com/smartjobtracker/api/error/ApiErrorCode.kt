@@ -1,0 +1,11 @@
+package com.smartjobtracker.api.error
+
+enum class ApiErrorCode(
+    val value: String,
+) {
+    AI_REQUEST_FAILED("AI_REQUEST_FAILED"),
+    AI_RESPONSE_INVALID("AI_RESPONSE_INVALID"),
+    INTERNAL_ERROR("INTERNAL_ERROR"),
+    MALFORMED_REQUEST("MALFORMED_REQUEST"),
+    VALIDATION_FAILED("VALIDATION_FAILED"),
+}

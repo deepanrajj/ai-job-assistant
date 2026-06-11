@@ -1,15 +1,25 @@
 import type { FC, ReactNode } from 'react';
 
+import { Card } from '../ui/Card';
+
+/**
+ * Props used by the titled section card.
+ */
 interface ISectionCardProps {
   title: string;
   children: ReactNode;
 }
 
+/**
+ * Renders a titled section container around arbitrary child content.
+ *
+ * @param {ISectionCardProps} props Component props.
+ * @param {string} props.title Section heading shown in the card header.
+ * @param {ReactNode} props.children Content rendered inside the section body.
+ * @returns {JSX.Element} Framed section card.
+ */
 export const SectionCard: FC<ISectionCardProps> = ({ title, children }) => (
-  <div className='overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm'>
-    <div className='border-b border-app-borderSoft bg-app-surface2 px-5 py-4'>
-      <h3 className='text-lg font-semibold text-app-text'>{title}</h3>
-    </div>
-    <div className='px-5 py-4'>{children}</div>
-  </div>
+  <Card title={title} bodyClassName="px-5 py-4" padding="none">
+    {children}
+  </Card>
 );
