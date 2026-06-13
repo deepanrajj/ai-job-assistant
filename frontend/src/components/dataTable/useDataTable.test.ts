@@ -1,9 +1,9 @@
+import { describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { ChangeEvent } from 'react';
-import { describe, expect, it } from 'vitest';
 
-import type { IDataTableColumn } from './dataTable.types';
 import { useDataTable } from './useDataTable';
+import type { IDataTableColumn } from './dataTable.types';
 
 type TRow = {
   id: string;

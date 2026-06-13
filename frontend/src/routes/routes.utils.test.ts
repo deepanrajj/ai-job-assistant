@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { UIMatch } from 'react-router-dom';
 
-import { appRouteHandles } from './routes.constants';
 import { getActiveRouteHandle, isAppRouteHandle } from './routes.utils';
+import { appRouteHandles } from './routes.constants';
 
 describe('routes.utils', () => {
   it('identifies app route handles', () => {

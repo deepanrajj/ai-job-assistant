@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { LANGUAGE_STORAGE_KEY } from './constants';
 import { TranslationProvider } from './TranslationProvider';
 import { useTranslation } from './useTranslation';
+import { LANGUAGE_STORAGE_KEY } from './constants';
 
 const TranslationProbe = () => {
   const { language, setLanguage, t } = useTranslation();

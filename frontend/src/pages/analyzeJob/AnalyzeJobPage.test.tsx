@@ -3,9 +3,9 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 
+import { AnalyzeJobPage } from './AnalyzeJobPage';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { server } from '../../test/server';
-import { AnalyzeJobPage } from './AnalyzeJobPage';
 
 describe('AnalyzeJobPage', () => {
   it('validates an empty description before requesting analysis', async () => {

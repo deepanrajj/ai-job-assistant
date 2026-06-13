@@ -3,9 +3,9 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useForm } from 'react-hook-form';
 
-import { renderWithProviders } from '../../../test/renderWithProviders';
 import { Form } from '../Form';
 import { FormSelect } from './FormSelect';
+import { renderWithProviders } from '../../../test/renderWithProviders';
 
 type TFormSelectValues = {
   status: string;

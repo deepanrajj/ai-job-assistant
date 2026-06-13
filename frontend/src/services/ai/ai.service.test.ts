@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { APP_ERROR_CODES } from '../../types';
-import { postJson } from '../api';
 import { analyzeJobDescription, askJobQuestion } from './ai.service';
+import { postJson } from '../api';
+import { APP_ERROR_CODES } from '../../types';
 
 vi.mock('../api', () => ({
   postJson: vi.fn(),

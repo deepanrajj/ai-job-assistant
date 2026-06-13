@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { AnalysisPanel } from './AnalysisPanel';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import type { TJobAiAnalysis } from '../../types';
 
 const analysis: TJobAiAnalysis = {

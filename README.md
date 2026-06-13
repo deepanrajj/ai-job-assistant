@@ -47,13 +47,34 @@ Install frontend dependencies:
 npm install --prefix frontend
 ```
 
-Start the frontend and backend locally:
+Create the local Kubernetes secret once:
+
+```bash
+npm run k8s:namespace
+kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
+```
+
+Start the production-like local Kubernetes runtime:
 
 ```bash
 npm run dev
 ```
 
-The frontend runs through Vite, and the backend runs through Spring Boot on port `4000`.
+This builds the Docker images, loads them into Docker Desktop Kubernetes, applies the manifests, and keeps port forwarding open.
+
+Open:
+
+```text
+http://localhost:30080
+```
+
+For direct local processes without Kubernetes, use:
+
+```bash
+npm run dev:local
+```
+
+That starts the Vite frontend and Spring Boot backend together with `concurrently`. You can also use `npm run dev:frontend` and `npm run dev:backend` in separate terminals.
 
 ## Quality Checks
 
@@ -67,15 +88,12 @@ That command runs frontend linting, formatting, coverage, build, backend ktlint,
 
 ## Local Kubernetes
 
-The app can also run in Docker Desktop Kubernetes:
+The default dev command runs the app in Docker Desktop Kubernetes:
 
 ```bash
-kubectl apply -f infra/k8s/local/namespace.yaml
+npm run k8s:namespace
 kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
-npm run docker:build
-npm run k8s:load-images
-npm run k8s:apply
-npm run k8s:forward
+npm run dev
 ```
 
 Open:

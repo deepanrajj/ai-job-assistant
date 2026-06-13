@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { LANGUAGE_STORAGE_KEY } from '../constants';
 import {
   getInitialLanguage,
   getNestedMessage,
@@ -8,6 +7,7 @@ import {
   isLanguage,
   translate,
 } from './translation';
+import { LANGUAGE_STORAGE_KEY } from '../constants';
 
 describe('translation utils', () => {
   afterEach(() => {

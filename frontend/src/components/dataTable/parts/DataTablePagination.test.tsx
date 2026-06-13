@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { renderWithProviders } from '../../../test/renderWithProviders';
 import { DataTablePagination } from './DataTablePagination';
+import { renderWithProviders } from '../../../test/renderWithProviders';
 
 describe('DataTablePagination', () => {
   it('renders nothing when there are no rows', () => {

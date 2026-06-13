@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { renderWithProviders } from '../../../test/renderWithProviders';
 import { AppShellSidebar } from './AppShellSidebar';
+import { renderWithProviders } from '../../../test/renderWithProviders';
 
 describe('AppShellSidebar', () => {
   it('renders brand content and main navigation', () => {

@@ -19,10 +19,10 @@ Goal: turn the AI Job Assistant into a routed Smart Job Tracker frontend.
 - [x] Add reusable select component.
 - [x] Add reusable textarea component.
 - [x] Add reusable empty state component.
-- [ ] Add shared route constants.
-- [ ] Add shared navigation config.
-- [ ] Add standard loading state component.
-- [ ] Add standard error state component.
+- [x] Add shared route constants.
+- [x] Add shared navigation config.
+- [x] Add standard loading state component.
+- [x] Add standard error state component.
 
 ## Acceptance Criteria
 

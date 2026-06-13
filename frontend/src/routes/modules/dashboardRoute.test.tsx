@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { Component as DashboardRoute } from './dashboardRoute';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 describe('dashboardRoute', () => {
   it('renders dashboard route content with mock jobs', () => {

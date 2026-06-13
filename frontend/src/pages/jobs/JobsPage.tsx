@@ -11,8 +11,8 @@ import {
   createJobsColumns,
   createJobsFilters,
   createJobsSearchConfig,
-} from '../../components/jobs/jobs.config';
-import type { TStatusFilter } from '../../components/jobs/jobs.types';
+} from '../../features/jobs/jobs.config';
+import type { TStatusFilter } from '../../features/jobs/jobs.types';
 import type { TJob } from '../../types';
 
 /**

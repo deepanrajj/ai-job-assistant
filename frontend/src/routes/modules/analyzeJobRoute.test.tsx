@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { Component as AnalyzeJobRoute } from './analyzeJobRoute';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 describe('analyzeJobRoute', () => {
   it('renders AI assistant route content', () => {

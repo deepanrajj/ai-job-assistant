@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { SectionCard } from './SectionCard';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 describe('SectionCard', () => {
   it('renders a titled card section around children', () => {

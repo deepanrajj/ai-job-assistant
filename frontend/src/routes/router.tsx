@@ -28,6 +28,11 @@ export const appRouter = createBrowserRouter([
         lazy: () => import('./modules/jobsRoute'),
       },
       {
+        handle: appRouteHandles.JOB_DETAIL,
+        path: APP_PATHS.JOB_DETAIL,
+        lazy: () => import('./modules/jobDetailRoute'),
+      },
+      {
         handle: appRouteHandles.AI_ASSISTANT,
         path: APP_PATHS.AI_ASSISTANT,
         lazy: () => import('./modules/analyzeJobRoute'),

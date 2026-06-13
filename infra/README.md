@@ -15,7 +15,7 @@ For the full project setup, architecture, and API docs, see:
 Create the namespace:
 
 ```bash
-kubectl apply -f infra/k8s/local/namespace.yaml
+npm run k8s:namespace
 ```
 
 Create the local secret:
@@ -26,34 +26,31 @@ kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tr
 
 Do not commit a real API key. The file `infra/k8s/local/smart-job-tracker-secrets.example.yaml` is only a template and is not included in the kustomization.
 
-Build the local images:
+Start the cluster runtime:
 
 ```bash
-npm run docker:build
+npm run dev
 ```
 
-Load the images into the Docker Desktop Kubernetes node:
-
-```bash
-npm run k8s:load-images
-```
-
-Deploy the app:
-
-```bash
-npm run k8s:apply
-```
-
-Expose the frontend to your browser:
-
-```bash
-npm run k8s:forward
-```
+The dev command builds the images, loads them into the Docker Desktop Kubernetes node, applies the manifests, and forwards the frontend service to your browser.
 
 Open the app:
 
 ```txt
 http://localhost:30080
+```
+
+Keep the terminal open while using the app. Stop it with `Ctrl+C`.
+
+## Manual Runtime Commands
+
+The `npm run dev` command is made from these smaller commands:
+
+```bash
+npm run docker:build
+npm run k8s:load-images
+npm run k8s:apply
+npm run k8s:forward
 ```
 
 ## Update After Code Changes

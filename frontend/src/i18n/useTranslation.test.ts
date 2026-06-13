@@ -1,9 +1,9 @@
-import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { renderHook } from '@testing-library/react';
 
+import { useTranslation } from './useTranslation';
 import { AppError } from '../errors';
 import { APP_ERROR_CODES } from '../types';
-import { useTranslation } from './useTranslation';
 
 describe('useTranslation', () => {
   it('throws AppError when used outside TranslationProvider', () => {

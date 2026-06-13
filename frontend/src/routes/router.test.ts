@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { APP_PATHS } from './paths';
 import { appRouter } from './router';
+import { APP_PATHS } from './paths';
 
 describe('appRouter', () => {
   it('defines lazy route modules for app paths', async () => {
@@ -13,6 +13,7 @@ describe('appRouter', () => {
       'index',
       APP_PATHS.DASHBOARD,
       APP_PATHS.JOBS,
+      APP_PATHS.JOB_DETAIL,
       APP_PATHS.AI_ASSISTANT,
       '*',
     ]);

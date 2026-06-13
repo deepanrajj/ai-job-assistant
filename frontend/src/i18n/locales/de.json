@@ -14,6 +14,7 @@
     "skipToContent": "Zum Hauptinhalt springen",
     "jobsTableCaption": "Gespeicherte Jobs mit Firma, Rolle, Status, Standort, Gehalt und letztem Aktualisierungsdatum.",
     "openPostingFor": "Anzeige für {{company}} öffnen",
+    "viewJobDetailsFor": "Details für {{company}} anzeigen",
     "jobDescriptionInput": "Eingabe für Stellenbeschreibung",
     "askQuestionInput": "Frage an den KI-Assistenten"
   },
@@ -32,6 +33,10 @@
     "jobs": {
       "title": "Jobs",
       "subtitle": "Prüfe deine gespeicherten Chancen und halte deine Pipeline in Bewegung."
+    },
+    "jobDetail": {
+      "title": "Job-Details",
+      "subtitle": "Prüfe Chance, Vorbereitung, Notizen, Verlauf und KI-Erkenntnisse."
     },
     "aiAssistant": {
       "title": "KI-Assistent",
@@ -74,11 +79,48 @@
     "location": "Standort",
     "salary": "Gehalt",
     "updated": "Aktualisiert",
+    "actions": "Aktionen",
     "openPosting": "Anzeige öffnen",
     "nextStep": "Nächster Schritt: {{nextStep}}",
     "notSet": "Nicht angegeben",
     "noJobsFound": "Keine Jobs gefunden",
     "noJobsFoundDescription": "Passe Suche oder Statusfilter an, um mehr Chancen zu sehen."
+  },
+  "jobDetail": {
+    "backToJobs": "Zurück zu Jobs",
+    "openPosting": "Anzeige öffnen",
+    "nextStep": "Nächster Schritt",
+    "notFoundTitle": "Job nicht gefunden",
+    "notFoundDescription": "Der ausgewählte Job existiert nicht in den aktuellen Beispieldaten.",
+    "tabs": {
+      "label": "Job-Detailbereiche",
+      "overview": "Übersicht",
+      "tasks": "Aufgaben",
+      "notes": "Notizen",
+      "timeline": "Verlauf",
+      "ai": "KI"
+    },
+    "overview": {
+      "descriptionTitle": "Beschreibung",
+      "focusTitle": "Vorbereitungsfokus",
+      "skills": "Skills"
+    },
+    "tasks": {
+      "title": "Vorbereitungsaufgaben",
+      "summary": "{{completed}} von {{total}} erledigt",
+      "due": "Fällig {{date}}"
+    },
+    "notes": {
+      "title": "Notizen"
+    },
+    "timeline": {
+      "title": "Verlauf"
+    },
+    "ai": {
+      "summary": "KI-Zusammenfassung",
+      "strengths": "Stärken",
+      "gaps": "Vorbereitungslücken"
+    }
   },
   "dataTable": {
     "rowsPerPage": "Zeilen pro Seite",

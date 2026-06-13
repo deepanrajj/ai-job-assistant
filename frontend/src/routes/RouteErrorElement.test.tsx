@@ -1,10 +1,10 @@
-import { RouterProvider, createMemoryRouter } from 'react-router-dom';
-import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
-import { renderWithProviders } from '../test/renderWithProviders';
 import { RouteErrorElement } from './RouteErrorElement';
+import { renderWithProviders } from '../test/renderWithProviders';
 
 describe('RouteErrorElement', () => {
   it('renders translated route errors with the response status', async () => {

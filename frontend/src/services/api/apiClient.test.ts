@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { deleteJson, getJson, postJson, putJson } from './apiClient';
 import { AppError } from '../../errors';
 import { APP_ERROR_CODES } from '../../types';
-import { deleteJson, getJson, postJson, putJson } from './apiClient';
 
 const fallbackErrorMessage = 'Request failed';
 

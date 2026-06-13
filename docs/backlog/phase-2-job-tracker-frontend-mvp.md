@@ -4,13 +4,13 @@ Goal: make the tracker usable with mock/local data before backend integration.
 
 ## Tasks
 
-- [ ] Create `/jobs/:jobId` job detail route.
-- [ ] Create job detail page shell.
-- [ ] Add job detail overview tab.
-- [ ] Add job detail tasks tab.
-- [ ] Add job detail notes tab.
-- [ ] Add job detail timeline tab.
-- [ ] Add job detail AI tab.
+- [x] Create `/jobs/:jobId` job detail route.
+- [x] Create job detail page shell.
+- [x] Add job detail overview tab.
+- [x] Add job detail tasks tab.
+- [x] Add job detail notes tab.
+- [x] Add job detail timeline tab.
+- [x] Add job detail AI tab.
 - [ ] Create `/jobs/new` add job route.
 - [ ] Create `/jobs/:jobId/edit` edit job route.
 - [ ] Add job form component.

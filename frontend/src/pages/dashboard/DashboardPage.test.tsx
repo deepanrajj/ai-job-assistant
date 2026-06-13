@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 
+import { DashboardPage } from './DashboardPage';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { createMockJobs } from '../../test/mockJobs';
-import { DashboardPage } from './DashboardPage';
 
 const getMetricValue = (label: string): Element => {
   const valueElement = screen.getByText(label).nextElementSibling;

@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { DataTableDesktop } from './DataTableDesktop';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import type { IDataTableColumn } from '../dataTable.types';
-import { DataTableDesktop } from './DataTableDesktop';
 
 type TRow = {
   id: string;

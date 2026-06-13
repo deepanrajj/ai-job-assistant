@@ -14,6 +14,7 @@
     "skipToContent": "Skip to main content",
     "jobsTableCaption": "Saved jobs with company, role, status, location, salary, and last updated date.",
     "openPostingFor": "Open posting for {{company}}",
+    "viewJobDetailsFor": "View details for {{company}}",
     "jobDescriptionInput": "Job description input",
     "askQuestionInput": "Question for AI assistant"
   },
@@ -32,6 +33,10 @@
     "jobs": {
       "title": "Jobs",
       "subtitle": "Review your saved opportunities and keep the pipeline moving."
+    },
+    "jobDetail": {
+      "title": "Job detail",
+      "subtitle": "Review the opportunity, preparation work, notes, timeline, and AI insights."
     },
     "aiAssistant": {
       "title": "AI Assistant",
@@ -74,11 +79,48 @@
     "location": "Location",
     "salary": "Salary",
     "updated": "Updated",
+    "actions": "Actions",
     "openPosting": "Open posting",
     "nextStep": "Next: {{nextStep}}",
     "notSet": "Not set",
     "noJobsFound": "No jobs found",
     "noJobsFoundDescription": "Adjust the search or status filter to see more opportunities."
+  },
+  "jobDetail": {
+    "backToJobs": "Back to jobs",
+    "openPosting": "Open posting",
+    "nextStep": "Next step",
+    "notFoundTitle": "Job not found",
+    "notFoundDescription": "The selected job does not exist in the current mock data.",
+    "tabs": {
+      "label": "Job detail sections",
+      "overview": "Overview",
+      "tasks": "Tasks",
+      "notes": "Notes",
+      "timeline": "Timeline",
+      "ai": "AI"
+    },
+    "overview": {
+      "descriptionTitle": "Description",
+      "focusTitle": "Preparation focus",
+      "skills": "Skills"
+    },
+    "tasks": {
+      "title": "Preparation tasks",
+      "summary": "{{completed}} of {{total}} completed",
+      "due": "Due {{date}}"
+    },
+    "notes": {
+      "title": "Notes"
+    },
+    "timeline": {
+      "title": "Timeline"
+    },
+    "ai": {
+      "summary": "AI summary",
+      "strengths": "Strengths",
+      "gaps": "Gaps to prepare"
+    }
   },
   "dataTable": {
     "rowsPerPage": "Rows per page",

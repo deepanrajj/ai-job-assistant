@@ -3,9 +3,9 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
 
+import { AskJob } from './AskJob';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { server } from '../../test/server';
-import { AskJob } from './AskJob';
 
 describe('AskJob', () => {
   it('keeps the ask button disabled until a question is entered', async () => {

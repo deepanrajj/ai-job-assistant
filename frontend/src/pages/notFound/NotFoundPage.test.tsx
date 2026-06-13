@@ -1,10 +1,10 @@
-import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { NotFoundPage } from './NotFoundPage';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 describe('NotFoundPage', () => {
   it('renders a helpful message and navigates back to the dashboard', async () => {

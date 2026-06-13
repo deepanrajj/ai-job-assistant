@@ -29,18 +29,70 @@ npm install --prefix frontend
 
 The backend uses the Gradle wrapper from `backend/`, so no separate Gradle install is required.
 
-## Run Without Kubernetes
+## Run With Local Kubernetes
 
-Start frontend and backend together:
+This is the default dev path for the project.
+
+Create the namespace:
+
+```bash
+npm run k8s:namespace
+```
+
+Create the local secret:
+
+```bash
+kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
+```
+
+Then start the cluster runtime:
 
 ```bash
 npm run dev
 ```
 
-Or start them separately:
+The dev command:
+
+- checks that the namespace exists
+- checks that the local secret exists
+- builds the frontend and backend Docker images
+- loads the images into the Docker Desktop Kubernetes node
+- applies the Kubernetes manifests
+- forwards the frontend service to `http://localhost:30080`
+
+Keep the terminal open while using the app. Stop it with `Ctrl+C`.
+
+Open:
+
+```text
+http://localhost:30080
+```
+
+Backend health through the frontend proxy:
+
+```text
+http://localhost:30080/api/ai/health
+```
+
+## Run Without Kubernetes
+
+Use these commands when you specifically want direct local processes instead of the cluster runtime.
+
+Start frontend and backend together with `concurrently`:
+
+```bash
+npm run dev:local
+```
+
+Start the frontend:
 
 ```bash
 npm run dev:frontend
+```
+
+Start the backend in another terminal:
+
+```bash
 npm run dev:backend
 ```
 
@@ -84,56 +136,6 @@ OPENAI_MODEL
 ```
 
 Defaults are defined in `backend/src/main/resources/application.properties`.
-
-## Run With Local Kubernetes
-
-Create the namespace:
-
-```bash
-kubectl apply -f infra/k8s/local/namespace.yaml
-```
-
-Create the local secret:
-
-```bash
-kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
-```
-
-Build the local Docker images:
-
-```bash
-npm run docker:build
-```
-
-Load the images into the Docker Desktop Kubernetes node:
-
-```bash
-npm run k8s:load-images
-```
-
-Apply the Kubernetes manifests:
-
-```bash
-npm run k8s:apply
-```
-
-Forward the frontend service to localhost:
-
-```bash
-npm run k8s:forward
-```
-
-Open:
-
-```text
-http://localhost:30080
-```
-
-Backend health through the frontend proxy:
-
-```text
-http://localhost:30080/api/ai/health
-```
 
 ## Useful Kubernetes Commands
 

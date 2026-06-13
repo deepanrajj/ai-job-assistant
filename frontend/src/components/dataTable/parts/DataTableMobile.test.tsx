@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 
+import { DataTableMobile } from './DataTableMobile';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import type { IDataTableColumn } from '../dataTable.types';
-import { DataTableMobile } from './DataTableMobile';
 
 type TRow = {
   id: string;

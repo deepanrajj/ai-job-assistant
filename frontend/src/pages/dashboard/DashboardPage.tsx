@@ -1,9 +1,9 @@
 import { useMemo, type FC } from 'react';
 
-import { DashboardMetrics } from '../../components/dashboard/sections/DashboardMetrics';
-import { DashboardRecentActivity } from '../../components/dashboard/sections/DashboardRecentActivity';
-import { DashboardStatusOverview } from '../../components/dashboard/sections/DashboardStatusOverview';
-import { getDashboardData } from '../../components/dashboard/dashboard.utils';
+import { DashboardMetrics } from '../../features/dashboard/components/DashboardMetrics';
+import { DashboardRecentActivity } from '../../features/dashboard/components/DashboardRecentActivity';
+import { DashboardStatusOverview } from '../../features/dashboard/components/DashboardStatusOverview';
+import { getDashboardData } from '../../features/dashboard/dashboard.utils';
 import type { TJob } from '../../types';
 
 /**

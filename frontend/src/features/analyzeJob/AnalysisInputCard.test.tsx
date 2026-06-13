@@ -3,8 +3,8 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { AnalysisInputCard } from './AnalysisInputCard';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import type { TAnalyzeJobFormValues } from './analyzeJobFormSchema';
 
 /**

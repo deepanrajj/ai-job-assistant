@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { LanguageSelect } from './LanguageSelect';
+import { renderWithProviders } from '../../test/renderWithProviders';
 
 describe('LanguageSelect', () => {
   it('renders supported languages and updates the active language', async () => {

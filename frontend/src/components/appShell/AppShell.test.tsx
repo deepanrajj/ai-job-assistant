@@ -1,11 +1,11 @@
-import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
+import { AppShell } from './AppShell';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { appRouteHandles } from '../../routes/routes.constants';
-import { AppShell } from './AppShell';
 
 const createAppShellRouter = (initialPath = '/jobs') =>
   createMemoryRouter(

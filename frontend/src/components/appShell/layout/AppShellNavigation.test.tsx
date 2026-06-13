@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { renderWithProviders } from '../../../test/renderWithProviders';
 import { AppShellNavigation } from './AppShellNavigation';
+import { renderWithProviders } from '../../../test/renderWithProviders';
 
 describe('AppShellNavigation', () => {
   it('renders localized navigation links with active link classes', () => {

@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { DataTable } from './DataTable';
+import { renderWithProviders } from '../../test/renderWithProviders';
 import type { IDataTableColumn } from './dataTable.types';
 
 type TExampleRow = {

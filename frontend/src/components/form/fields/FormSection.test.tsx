@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { useForm } from 'react-hook-form';
 
-import { renderWithProviders } from '../../../test/renderWithProviders';
 import { Form } from '../Form';
-import type { TFormFieldConfig } from '../form.types';
 import { FormSection } from './FormSection';
+import { renderWithProviders } from '../../../test/renderWithProviders';
+import type { TFormFieldConfig } from '../form.types';
 
 type TFormSectionValues = {
   company: string;

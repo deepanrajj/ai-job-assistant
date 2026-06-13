@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { renderWithProviders } from '../../test/renderWithProviders';
-import { createMockJobs } from '../../test/mockJobs';
 import { JobsPage } from './JobsPage';
+import { renderWithRouter } from '../../test/renderWithRouter';
+import { createMockJobs } from '../../test/mockJobs';
 
 describe('JobsPage', () => {
   it('searches saved jobs by company name', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<JobsPage jobs={createMockJobs()} />);
+    renderWithRouter(<JobsPage jobs={createMockJobs()} />);
 
     expect(screen.getByRole('heading', { name: 'Saved jobs' })).toBeInTheDocument();
 
@@ -21,7 +21,7 @@ describe('JobsPage', () => {
 
   it('filters saved jobs by status', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<JobsPage jobs={createMockJobs()} />);
+    renderWithRouter(<JobsPage jobs={createMockJobs()} />);
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'INTERVIEW');
 
