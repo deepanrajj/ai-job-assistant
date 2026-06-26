@@ -1,6 +1,6 @@
 import { useMemo, type FC } from 'react';
-import { useForm, useWatch, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch, type SubmitHandler } from 'react-hook-form';
 
 import {
   AnalysisInputCard,

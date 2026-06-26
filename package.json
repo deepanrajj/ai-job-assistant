@@ -12,6 +12,7 @@
     "dev:backend": "cd backend && .\\gradlew.bat bootRun",
     "dev:backend:debug": "cd backend && .\\gradlew.bat bootRun --debug-jvm",
     "frontend:lint": "npm run lint --prefix frontend",
+    "frontend:lint:fix": "npm run lint --prefix frontend -- --fix",
     "frontend:format": "npm run format --prefix frontend",
     "frontend:format:check": "npm run format:check --prefix frontend",
     "frontend:test:coverage": "npm run test:coverage --prefix frontend",

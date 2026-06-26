@@ -2,16 +2,16 @@ import { useMemo, type FC } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch, type SubmitHandler } from 'react-hook-form';
 
+import { Form, FormFields, type TFormFieldConfig } from '../../components/form';
+import { Alert, Button } from '../../components/ui';
 import { AskJobAnswer } from './AskJobAnswer';
 import { AskJobAnswerSkeleton } from './AskJobAnswerSkeleton';
-import { Alert, Button } from '../../components/ui';
-import { Form, FormFields, type TFormFieldConfig } from '../../components/form';
 import { askJobQuestion } from '../../services';
 import { useAsyncMutation } from '../../hooks';
 import { useTranslation } from '../../i18n';
-import { createAskJobFormSchema, type TAskJobFormValues } from './askJobFormSchema';
 import { AppError } from '../../errors';
 import { APP_ERROR_CODES } from '../../types';
+import { createAskJobFormSchema, type TAskJobFormValues } from './askJobFormSchema';
 
 /**
  * Props used by the AI follow-up question feature.

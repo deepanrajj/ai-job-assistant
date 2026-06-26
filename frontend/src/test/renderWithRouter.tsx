@@ -1,6 +1,6 @@
+import type { RenderOptions } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom';
-import type { RenderOptions } from '@testing-library/react';
 
 import { renderWithProviders } from './renderWithProviders';
 

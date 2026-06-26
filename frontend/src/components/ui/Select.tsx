@@ -30,7 +30,7 @@ export const Select = forwardRef<HTMLSelectElement, ISelectProps>(
           aria-describedby={hasDescription ? descriptionId : undefined}
           aria-invalid={Boolean(error)}
           className={classNames(
-            'h-11 w-full rounded-lg border bg-app-bg px-3 text-sm text-app-text outline-none transition',
+            'h-11 w-full cursor-pointer rounded-lg border bg-app-bg px-3 text-sm text-app-text outline-none transition',
             'focus:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg',
             error ? 'border-danger-100' : 'border-app-border',
             className,

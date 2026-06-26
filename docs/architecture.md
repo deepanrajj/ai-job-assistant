@@ -84,22 +84,24 @@ flowchart TD
 frontend/src
   components
     appShell
-    dashboard
     dataTable
     form
     header
     icons
-    jobs
     languageSelect
     sectionCard
     seniorityBadge
     ui
   data
     mockJobs.ts
+    mockJobDetails.ts
   errors
   features
     analyzeJob
     askJob
+    dashboard
+    jobDetail
+    jobs
   hooks
     useAsyncMutation
     useMediaQuery
@@ -107,6 +109,7 @@ frontend/src
   pages
     analyzeJob
     dashboard
+    jobDetail
     jobs
     notFound
   routes

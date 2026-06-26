@@ -2,7 +2,7 @@
   "app": {
     "name": "Smart Job Tracker",
     "stage": "Frontend MVP",
-    "localMockData": "Local mock data",
+    "localMockData": "Local tracker data",
     "language": {
       "label": "Language",
       "en": "English",
@@ -37,6 +37,14 @@
     "jobDetail": {
       "title": "Job detail",
       "subtitle": "Review the opportunity, preparation work, notes, timeline, and AI insights."
+    },
+    "jobNew": {
+      "title": "Add job",
+      "subtitle": "Capture a new opportunity and keep the tracker up to date."
+    },
+    "jobEdit": {
+      "title": "Edit job",
+      "subtitle": "Update the saved opportunity details and next action."
     },
     "aiAssistant": {
       "title": "AI Assistant",
@@ -88,10 +96,13 @@
   },
   "jobDetail": {
     "backToJobs": "Back to jobs",
+    "editJob": "Edit job",
+    "deleteJob": "Delete job",
     "openPosting": "Open posting",
     "nextStep": "Next step",
+    "statusLabel": "Job status",
     "notFoundTitle": "Job not found",
-    "notFoundDescription": "The selected job does not exist in the current mock data.",
+    "notFoundDescription": "The selected job does not exist in the saved local tracker data.",
     "tabs": {
       "label": "Job detail sections",
       "overview": "Overview",
@@ -108,18 +119,81 @@
     "tasks": {
       "title": "Preparation tasks",
       "summary": "{{completed}} of {{total}} completed",
-      "due": "Due {{date}}"
+      "due": "Due {{date}}",
+      "newTaskTitle": "Task title",
+      "newTaskDueDate": "Due date",
+      "newTaskPlaceholder": "Prepare interview examples",
+      "addTask": "Add task",
+      "deleteTask": "Delete",
+      "deleteTaskLabel": "Delete task {{title}}"
     },
     "notes": {
-      "title": "Notes"
+      "title": "Notes",
+      "newNote": "New note",
+      "editNote": "Edit note",
+      "editNoteLabel": "Edit note from {{date}}",
+      "notePlaceholder": "Add recruiter notes, reminders, or interview feedback.",
+      "addNote": "Add note",
+      "saveNote": "Save note",
+      "saveNoteLabel": "Save note from {{date}}",
+      "deleteNote": "Delete",
+      "deleteNoteLabel": "Delete note from {{date}}"
     },
     "timeline": {
       "title": "Timeline"
     },
     "ai": {
+      "analysisTitle": "Saved AI analysis",
+      "analysisSubtitle": "Analyze the saved description and keep the result with this job.",
+      "analyzeSavedJob": "Analyze saved job",
+      "emptyInsights": "No saved AI insights yet.",
       "summary": "AI summary",
       "strengths": "Strengths",
       "gaps": "Gaps to prepare"
+    }
+  },
+  "jobForm": {
+    "createTitle": "Add job",
+    "createSubtitle": "Save the company, role, status, and next action for a new opportunity.",
+    "editTitle": "Edit job",
+    "editSubtitle": "Keep the saved opportunity accurate as your application moves forward.",
+    "cancel": "Cancel",
+    "actions": {
+      "create": "Create job",
+      "save": "Save changes"
+    },
+    "fields": {
+      "company": "Company",
+      "roleTitle": "Role",
+      "status": "Status",
+      "location": "Location",
+      "jobUrl": "Job URL",
+      "salaryMin": "Minimum salary",
+      "salaryMax": "Maximum salary",
+      "tags": "Tags",
+      "nextStep": "Next step",
+      "description": "Description"
+    },
+    "placeholders": {
+      "company": "Company name",
+      "roleTitle": "Frontend Engineer",
+      "location": "Berlin / Hybrid",
+      "jobUrl": "https://company.com/careers/job",
+      "salaryMin": "70000",
+      "salaryMax": "90000",
+      "tags": "React, TypeScript, Accessibility",
+      "nextStep": "Follow up with recruiter",
+      "description": "Paste a short role summary or job description."
+    },
+    "helpers": {
+      "tags": "Separate tags with commas."
+    },
+    "validation": {
+      "requiredCompany": "Company is required.",
+      "requiredRole": "Role is required.",
+      "invalidUrl": "Enter a valid URL or leave this empty.",
+      "invalidSalary": "Enter a positive salary number or leave this empty.",
+      "invalidSalaryRange": "Maximum salary must be greater than or equal to minimum salary."
     }
   },
   "dataTable": {

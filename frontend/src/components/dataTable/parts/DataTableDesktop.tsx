@@ -2,12 +2,12 @@ import { useCallback } from 'react';
 
 import { DataTableSortIcon } from '../dataTable.icons';
 import { useTranslation } from '../../../i18n';
+import { classNames } from '../../../utils';
 import {
   getDataTableAriaSort,
   getDataTableSortDirection,
   getNextDataTableSortState,
 } from '../dataTable.utils';
-import { classNames } from '../../../utils';
 import type { IDataTableColumn, TDataTableSortState } from '../dataTable.types';
 
 /**

@@ -41,10 +41,12 @@ describe('jobDetail.utils', () => {
     ]);
   });
 
-  it('uses fallback salary metadata when salary is not set', () => {
-    const [locationItem, salaryItem] = createJobDetailMetadataItems(
+  it('uses fallback metadata when optional values are blank', () => {
+    const [locationItem, salaryItem, , nextStepItem] = createJobDetailMetadataItems(
       {
         ...mockJobDetails[0],
+        location: '',
+        nextStep: '',
         salaryMax: 0,
         salaryMin: 0,
       },
@@ -52,8 +54,9 @@ describe('jobDetail.utils', () => {
       t,
     );
 
-    expect(locationItem.value).toBe('Munich / Hybrid');
+    expect(locationItem.value).toBe('Not set');
     expect(salaryItem.value).toBe('Not set');
+    expect(nextStepItem.value).toBe('Not set');
   });
 
   it('builds stable tab and panel ids', () => {

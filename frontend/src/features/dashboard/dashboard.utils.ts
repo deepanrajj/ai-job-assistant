@@ -1,6 +1,6 @@
 import type { TLanguage } from '../../i18n';
-import type { TJob } from '../../types';
 import { inactiveJobStatuses, RECENT_JOBS_LIMIT } from './dashboard.constants';
+import type { TJob } from '../../types';
 import type { IDashboardData, TJobStatusCounts } from './dashboard.types';
 
 /**

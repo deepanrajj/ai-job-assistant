@@ -114,10 +114,11 @@ describe('jobs config', () => {
   });
 
   it('creates actions and filters', () => {
+    const handleAddJob = vi.fn();
     const handleStatusFilterChange = vi.fn();
     render(
       <>
-        {createJobsActions(t)}
+        {createJobsActions({ onAddJob: handleAddJob, t })}
         {createJobsFilters({
           onStatusFilterChange: handleStatusFilterChange,
           statusFilter: 'ALL',
@@ -126,7 +127,9 @@ describe('jobs config', () => {
       </>,
     );
 
-    expect(screen.getByRole('button', { name: 'Add Job' })).toBeDisabled();
+    screen.getByRole('button', { name: 'Add Job' }).click();
+
+    expect(handleAddJob).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('combobox', { name: 'Status' })).toHaveValue('ALL');
     expect(screen.getByRole('option', { name: 'All statuses' })).toBeInTheDocument();
   });

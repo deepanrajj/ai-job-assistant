@@ -4,7 +4,7 @@ Smart Job Tracker is a full-stack job search assistant that is evolving from an 
 
 ## Current Capabilities
 
-- Dashboard and jobs list with mock job data
+- Dashboard, jobs list, and job detail workflow with local tracker data
 - AI job-description analysis flow
 - AI follow-up question flow
 - English and German translations
@@ -106,8 +106,12 @@ Do not commit real API keys. The committed Kubernetes secret file is only an exa
 
 ## Documentation
 
+- [Agent Instructions](./AGENTS.md)
+- [Project Context](./docs/context.md)
 - [Setup](./docs/setup.md)
 - [Architecture](./docs/architecture.md)
 - [Infrastructure](./docs/infrastructure.md)
 - [Swagger Setup](./docs/swagger.md)
+- [GitHub Pipeline](./docs/engineering/github-pipeline.md)
 - [Backlog](./docs/backlog/README.md)
+- [Numbered Tasks](./tasks/README.md)

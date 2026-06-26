@@ -5,7 +5,7 @@ import { Component as DashboardRoute } from './dashboardRoute';
 import { renderWithProviders } from '../../test/renderWithProviders';
 
 describe('dashboardRoute', () => {
-  it('renders dashboard route content with mock jobs', () => {
+  it('renders dashboard route content with saved jobs', () => {
     renderWithProviders(<DashboardRoute />);
 
     expect(screen.getByText('Total jobs')).toBeInTheDocument();

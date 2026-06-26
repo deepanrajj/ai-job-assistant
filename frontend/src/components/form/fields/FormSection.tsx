@@ -1,7 +1,7 @@
 import type { FieldValues } from 'react-hook-form';
 
-import { FormFields } from './FormFields';
 import { Card } from '../../ui';
+import { FormFields } from './FormFields';
 import type { TFormFieldColumns, TFormFieldConfig } from '../form.types';
 
 /**

@@ -1,22 +1,26 @@
 import { useState, type FC } from 'react';
 
 import { Button } from '../../../components/ui';
+import { JobDetailActivePanel } from './JobDetailActivePanel';
 import { useTranslation } from '../../../i18n';
-import { getJobDetailPanelId, getJobDetailTabId } from '../jobDetail.utils';
 import { classNames } from '../../../utils';
+import { getJobDetailPanelId, getJobDetailTabId } from '../jobDetail.utils';
 import {
   activeJobDetailTabButtonClassName,
   inactiveJobDetailTabButtonClassName,
-  jobDetailPanelComponents,
   jobDetailTabButtonClassName,
   jobDetailTabs,
 } from '../jobDetail.constants';
 import type { TJobDetail, TJobDetailTab } from '../../../types';
+import type { IJobDetailPageActions } from '../jobDetail.types';
 
 /**
  * Props used by the job detail tabs.
  */
-interface IJobDetailTabsProps {
+interface IJobDetailTabsProps extends Omit<
+  IJobDetailPageActions,
+  'onDeleteJob' | 'onStatusChange'
+> {
   job: TJobDetail;
 }
 
@@ -26,10 +30,18 @@ interface IJobDetailTabsProps {
  * @param {IJobDetailTabsProps} props Component props.
  * @returns {JSX.Element} Job detail tab navigation and active panel.
  */
-export const JobDetailTabs: FC<IJobDetailTabsProps> = ({ job }) => {
+export const JobDetailTabs: FC<IJobDetailTabsProps> = ({
+  job,
+  onAnalyzeJob,
+  onCreateNote,
+  onCreateTask,
+  onDeleteNote,
+  onDeleteTask,
+  onUpdateNote,
+  onUpdateTask,
+}) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TJobDetailTab>('overview');
-  const ActivePanel = jobDetailPanelComponents[activeTab];
 
   return (
     <section className="space-y-4">
@@ -68,7 +80,17 @@ export const JobDetailTabs: FC<IJobDetailTabsProps> = ({ job }) => {
         role="tabpanel"
         tabIndex={0}
       >
-        <ActivePanel job={job} />
+        <JobDetailActivePanel
+          activeTab={activeTab}
+          job={job}
+          onAnalyzeJob={onAnalyzeJob}
+          onCreateNote={onCreateNote}
+          onCreateTask={onCreateTask}
+          onDeleteNote={onDeleteNote}
+          onDeleteTask={onDeleteTask}
+          onUpdateNote={onUpdateNote}
+          onUpdateTask={onUpdateTask}
+        />
       </div>
     </section>
   );

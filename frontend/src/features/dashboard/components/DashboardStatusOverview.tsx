@@ -4,8 +4,8 @@ import { Card } from '../../../components/ui';
 import { useTranslation } from '../../../i18n';
 import { getStatusMeterWidth } from '../dashboard.utils';
 import { dashboardStatusOrder } from '../dashboard.constants';
-import type { TJobStatusCounts } from '../dashboard.types';
 import { JOB_STATUS_TRANSLATION_KEYS } from '../../../types';
+import type { TJobStatusCounts } from '../dashboard.types';
 
 /**
  * Props used by the dashboard status overview.

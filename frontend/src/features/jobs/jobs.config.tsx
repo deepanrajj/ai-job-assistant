@@ -1,18 +1,18 @@
 import type { ChangeEventHandler, ReactNode } from 'react';
 
+import { Button, Select } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
 import { JobTags } from './components/JobTags';
 import { StatusPill } from './components/StatusPill';
-import { Button, Select } from '../../components/ui';
 import { PlusIcon } from '../../components/icons';
-import { formatJobDate, formatJobSalary } from './jobs.utils';
-import { statusOptions } from './jobs.constants';
-import type { TStatusFilter } from './jobs.types';
-import type { IDataTableColumn, IDataTableSearchConfig } from '../../components/dataTable';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
+import { formatJobDate, formatJobSalary } from './jobs.utils';
 import { APP_PATH_BUILDERS } from '../../routes/paths';
+import { statusOptions } from './jobs.constants';
 import { JOB_STATUS_TRANSLATION_KEYS, type TJob } from '../../types';
+import type { IDataTableColumn, IDataTableSearchConfig } from '../../components/dataTable';
+import type { TStatusFilter } from './jobs.types';
 
 /**
  * Params used to create localized jobs table columns.
@@ -28,6 +28,14 @@ interface ICreateJobsColumnsParams {
 interface ICreateJobsFiltersParams {
   onStatusFilterChange: ChangeEventHandler<HTMLSelectElement>;
   statusFilter: TStatusFilter;
+  t: TTranslationContextValue['t'];
+}
+
+/**
+ * Params used to create the jobs table action controls.
+ */
+interface ICreateJobsActionsParams {
+  onAddJob: () => void;
   t: TTranslationContextValue['t'];
 }
 
@@ -134,11 +142,11 @@ export const createJobsColumns = ({
 /**
  * Creates the jobs table action controls.
  *
- * @param {TTranslationContextValue['t']} t Translation function.
+ * @param {ICreateJobsActionsParams} params Action config params.
  * @returns {ReactNode} Jobs table actions.
  */
-export const createJobsActions = (t: TTranslationContextValue['t']): ReactNode => (
-  <Button disabled leftIcon={<PlusIcon />} title={t('jobs.addJobComingNext')}>
+export const createJobsActions = ({ onAddJob, t }: ICreateJobsActionsParams): ReactNode => (
+  <Button leftIcon={<PlusIcon />} onClick={onAddJob}>
     {t('jobs.addJob')}
   </Button>
 );

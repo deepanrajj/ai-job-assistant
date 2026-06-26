@@ -19,7 +19,7 @@ export interface IJobDetailTabConfig {
 }
 
 /**
- * Supported mock task statuses for a tracked job task.
+ * Supported task statuses for a tracked job task.
  */
 export type TJobTaskStatus = 'TODO' | 'DONE';
 

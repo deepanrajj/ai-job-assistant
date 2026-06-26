@@ -63,6 +63,6 @@ describe('AppShell', () => {
     await user.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'de');
 
     expect(document.documentElement).toHaveAttribute('lang', 'de');
-    expect(screen.getByText('Lokale Beispieldaten')).toBeInTheDocument();
+    expect(screen.getByText('Lokale Tracker-Daten')).toBeInTheDocument();
   });
 });

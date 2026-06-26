@@ -19,6 +19,9 @@ progress is visible directly in the repository.
 - Add a short note under a task if the scope changes.
 - Prefer updating this backlog in the same branch as the implementation.
 - When a task becomes too large, split it into smaller tasks.
+- Use numbered task files in `../../tasks/` as execution-ready work
+  units.
+- Use `../../templates/task-template.md` for new task files.
 
 ## Suggested GitHub Workflow
 
@@ -30,4 +33,4 @@ progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] Build the job detail page with tabs using mock data.
+- [ ] [Task 001: Add PostgreSQL docker service](../../tasks/001-add-postgresql-docker-service.md).

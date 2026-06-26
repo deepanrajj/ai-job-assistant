@@ -1,7 +1,7 @@
 import { postJson } from '../api';
 import { getAiFallbackErrorMessage } from './ai.utils';
-import type { TAnalyzeJobRequest, TAskJobRequest } from './ai.types';
 import { APP_ERROR_CODES, type TJobAiAnalysis, type TJobAiAsk } from '../../types';
+import type { TAnalyzeJobRequest, TAskJobRequest } from './ai.types';
 
 /**
  * Sends a job description to the backend.

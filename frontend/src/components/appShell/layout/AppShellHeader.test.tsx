@@ -18,7 +18,7 @@ describe('AppShellHeader', () => {
     expect(
       screen.getByText('Review your saved opportunities and keep the pipeline moving.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Local mock data')).toBeInTheDocument();
+    expect(screen.getByText('Local tracker data')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Mobile navigation' })).toBeInTheDocument();
   });
 });

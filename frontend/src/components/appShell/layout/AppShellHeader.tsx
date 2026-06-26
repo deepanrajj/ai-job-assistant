@@ -1,11 +1,14 @@
 import type { FC } from 'react';
 
-import { AppShellNavigation } from './AppShellNavigation';
 import { LanguageSelect } from '../../languageSelect/LanguageSelect';
-import { mobileNavClassName } from '../appShell.utils';
+import { AppShellNavigation } from './AppShellNavigation';
 import { useTranslation } from '../../../i18n';
+import { mobileNavClassName } from '../appShell.utils';
 import type { IAppRouteHandle } from '../../../routes/routes.types';
 
+/**
+ * Props used by the app shell header.
+ */
 interface IAppShellHeaderProps {
   page: IAppRouteHandle;
 }

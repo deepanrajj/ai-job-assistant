@@ -1,11 +1,15 @@
 import type { FC } from 'react';
 
 import { DashboardPage } from '../../pages/dashboard/DashboardPage';
-import { mockJobs } from '../../data/mockJobs';
+import { useJobs } from '../../features/jobs';
 
 /**
- * Renders the dashboard route with mock job data.
+ * Renders the dashboard route with saved local job data.
  *
  * @returns {JSX.Element} Dashboard route content.
  */
-export const Component: FC = () => <DashboardPage jobs={mockJobs} />;
+export const Component: FC = () => {
+  const { jobs } = useJobs();
+
+  return <DashboardPage jobs={jobs} />;
+};
