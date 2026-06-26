@@ -1,19 +1,21 @@
 import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   DataTable,
   type IDataTableSummaryState,
   type TDataTableSortState,
 } from '../../components/dataTable';
-import { useTranslation } from '../../i18n';
 import {
   createJobsActions,
   createJobsColumns,
   createJobsFilters,
   createJobsSearchConfig,
 } from '../../features/jobs/jobs.config';
-import type { TStatusFilter } from '../../features/jobs/jobs.types';
+import { useTranslation } from '../../i18n';
+import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
+import type { TStatusFilter } from '../../features/jobs/jobs.types';
 
 /**
  * Props used by the jobs page.
@@ -29,6 +31,7 @@ interface IJobsPageProps {
  * @returns {JSX.Element} Jobs list experience.
  */
 export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
+  const navigate = useNavigate();
   const { language, t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
 
@@ -47,6 +50,9 @@ export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
   const handleStatusFilterChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(event.target.value as TStatusFilter);
   }, []);
+  const handleAddJob = useCallback(() => {
+    navigate(APP_PATHS.JOB_NEW);
+  }, [navigate]);
   const renderJobsSummary = useCallback(
     ({ shown, total }: IDataTableSummaryState) =>
       t('jobs.countSummary', {
@@ -58,7 +64,10 @@ export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
 
   const searchConfig = useMemo(() => createJobsSearchConfig(t), [t]);
   const columns = useMemo(() => createJobsColumns({ language, t }), [language, t]);
-  const actions = useMemo(() => createJobsActions(t), [t]);
+  const actions = useMemo(
+    () => createJobsActions({ onAddJob: handleAddJob, t }),
+    [handleAddJob, t],
+  );
   const filters = useMemo(
     () =>
       createJobsFilters({

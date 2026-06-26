@@ -1,7 +1,7 @@
 import { useId } from 'react';
 
-import { DataTableDesktop, DataTableMobile, DataTablePagination, DataTableToolbar } from './parts';
 import { EmptyState } from '../ui';
+import { DataTableDesktop, DataTableMobile, DataTablePagination, DataTableToolbar } from './parts';
 import { useBreakpoint } from '../../hooks';
 import { useDataTable } from './useDataTable';
 import { DEFAULT_PAGE_SIZE_OPTIONS } from './dataTable.constants';

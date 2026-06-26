@@ -1,27 +1,14 @@
 # Task Template
 
-Use this when a backlog item becomes large enough to need its own task page.
+The canonical task template now lives at:
 
-## Summary
+```text
+../../templates/task-template.md
+```
 
-Describe the task in one or two sentences.
+Use that template when turning roadmap backlog items into numbered
+execution tasks under:
 
-## Scope
-
-- [ ] Item 1
-- [ ] Item 2
-- [ ] Item 3
-
-## Out of Scope
-
-- Item that should not be done in this task.
-
-## Acceptance Criteria
-
-- [ ] The expected behavior works.
-- [ ] TypeScript/build checks pass.
-- [ ] Relevant UI states are covered.
-
-## Notes
-
-Add implementation notes, decisions, or follow-up ideas here.
+```text
+../../tasks/
+```

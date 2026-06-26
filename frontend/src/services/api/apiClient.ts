@@ -1,11 +1,11 @@
-import { AppError } from '../../errors';
-import type { IApiErrorOptions, IApiRequestConfig } from './api.types';
 import {
   createApiError,
   createFetchOptions,
   createRequestError,
   parseJsonResponse,
 } from './api.utils';
+import { AppError } from '../../errors';
+import type { IApiErrorOptions, IApiRequestConfig } from './api.types';
 
 /**
  * Executes a JSON API request and converts failures into AppError instances.

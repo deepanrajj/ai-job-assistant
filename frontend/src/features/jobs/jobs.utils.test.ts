@@ -1,7 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { formatJobDate, formatJobSalary } from './jobs.utils';
+import { createLocalId, formatJobDate, formatJobSalary } from './jobs.utils';
 import { createMockJob } from '../../test/mockJobs';
+
+describe('createLocalId', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('creates prefixed random ids and uses unique timestamp fallback ids', () => {
+    expect(createLocalId('job', () => 'random-id')).toBe('job-random-id');
+
+    vi.spyOn(Date, 'now').mockReturnValue(123);
+    const firstFallbackId = createLocalId('job', () => undefined);
+    const secondFallbackId = createLocalId('job', () => undefined);
+
+    expect(firstFallbackId).toMatch(/^job-123-\d+$/);
+    expect(secondFallbackId).toMatch(/^job-123-\d+$/);
+    expect(firstFallbackId).not.toBe(secondFallbackId);
+  });
+});
 
 describe('formatJobDate', () => {
   it('formats job dates for English and German', () => {
@@ -41,6 +59,14 @@ describe('formatJobSalary', () => {
         createMockJob({
           salaryMax: undefined,
           salaryMin: undefined,
+        }),
+      ),
+    ).toBeNull();
+    expect(
+      formatJobSalary(
+        createMockJob({
+          salaryMax: 0,
+          salaryMin: 0,
         }),
       ),
     ).toBeNull();

@@ -1,7 +1,7 @@
-import { formatJobDate, formatJobSalary } from '../jobs/jobs.utils';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
-import type { IJobDetailMetadataItem } from './jobDetail.types';
+import { formatJobDate, formatJobSalary } from '../jobs/jobs.utils';
 import type { TJobDetail, TJobDetailTab, TJobTask } from '../../types';
+import type { IJobDetailMetadataItem } from './jobDetail.types';
 
 /**
  * Creates localized metadata items for the job detail header.
@@ -19,7 +19,7 @@ export const createJobDetailMetadataItems = (
   {
     id: 'location',
     label: t('jobs.location'),
-    value: job.location,
+    value: job.location.trim() || t('jobs.notSet'),
   },
   {
     id: 'salary',
@@ -34,7 +34,7 @@ export const createJobDetailMetadataItems = (
   {
     id: 'nextStep',
     label: t('jobDetail.nextStep'),
-    value: job.nextStep,
+    value: job.nextStep.trim() || t('jobs.notSet'),
   },
 ];
 

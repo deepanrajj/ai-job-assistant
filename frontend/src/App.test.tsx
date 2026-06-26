@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type * as ReactRouterDom from 'react-router-dom';
 
 vi.mock('react-router-dom', async (importActual) => {
-  const actual = await importActual<typeof import('react-router-dom')>();
+  const actual = (await importActual()) as typeof ReactRouterDom;
 
   return {
     ...actual,

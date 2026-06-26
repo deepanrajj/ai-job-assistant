@@ -5,7 +5,7 @@ import { Component as JobsRoute } from './jobsRoute';
 import { renderWithRouter } from '../../test/renderWithRouter';
 
 describe('jobsRoute', () => {
-  it('renders jobs route content with mock jobs', () => {
+  it('renders jobs route content with saved jobs', () => {
     renderWithRouter(<JobsRoute />);
 
     expect(screen.getByRole('heading', { name: 'Saved jobs' })).toBeInTheDocument();

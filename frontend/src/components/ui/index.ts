@@ -10,4 +10,5 @@ export * from './LoadingState';
 export * from './MetricCard';
 export * from './Select';
 export * from './Textarea';
+export * from './Tooltip';
 export * from './ui.types';

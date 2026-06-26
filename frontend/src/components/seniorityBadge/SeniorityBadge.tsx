@@ -1,8 +1,8 @@
 import { memo, type FC } from 'react';
 
 import { Badge } from '../ui';
-import type { TJobSeniority } from '../../types';
 import { seniorityBadgeClasses } from './seniorityBadge.constants';
+import type { TJobSeniority } from '../../types';
 
 /**
  * Props used by the seniority badge.

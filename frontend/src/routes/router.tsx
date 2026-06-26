@@ -28,6 +28,16 @@ export const appRouter = createBrowserRouter([
         lazy: () => import('./modules/jobsRoute'),
       },
       {
+        handle: appRouteHandles.JOB_NEW,
+        path: APP_PATHS.JOB_NEW,
+        lazy: () => import('./modules/jobNewRoute'),
+      },
+      {
+        handle: appRouteHandles.JOB_EDIT,
+        path: APP_PATHS.JOB_EDIT,
+        lazy: () => import('./modules/jobEditRoute'),
+      },
+      {
         handle: appRouteHandles.JOB_DETAIL,
         path: APP_PATHS.JOB_DETAIL,
         lazy: () => import('./modules/jobDetailRoute'),

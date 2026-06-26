@@ -20,6 +20,14 @@ export const appRouteHandles = {
     title: 'route.jobDetail.title',
     subtitle: 'route.jobDetail.subtitle',
   },
+  JOB_EDIT: {
+    title: 'route.jobEdit.title',
+    subtitle: 'route.jobEdit.subtitle',
+  },
+  JOB_NEW: {
+    title: 'route.jobNew.title',
+    subtitle: 'route.jobNew.subtitle',
+  },
   NOT_FOUND: {
     title: 'route.notFound.title',
     subtitle: 'route.notFound.subtitle',

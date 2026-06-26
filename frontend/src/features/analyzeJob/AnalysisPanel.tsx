@@ -1,13 +1,13 @@
 import type { FC } from 'react';
 
-import { AnalysisSkeleton } from './AnalysisSkeleton';
-import { AskJob } from '../askJob';
 import { SectionCard } from '../../components/sectionCard/SectionCard';
 import { SeniorityBadge } from '../../components/seniorityBadge/SeniorityBadge';
 import { BulletList } from '../../components/ui';
+import { AskJob } from '../askJob';
+import { AnalysisSkeleton } from './AnalysisSkeleton';
 import { useTranslation } from '../../i18n';
-import type { TAnalysisStatus } from './analyzeJob.types';
 import type { TJobAiAnalysis } from '../../types';
+import type { TAnalysisStatus } from './analyzeJob.types';
 
 /**
  * Props used by the AI analysis result panel.

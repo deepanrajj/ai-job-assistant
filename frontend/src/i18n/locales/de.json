@@ -2,7 +2,7 @@
   "app": {
     "name": "Smart Job Tracker",
     "stage": "Frontend-MVP",
-    "localMockData": "Lokale Beispieldaten",
+    "localMockData": "Lokale Tracker-Daten",
     "language": {
       "label": "Sprache",
       "en": "Englisch",
@@ -37,6 +37,14 @@
     "jobDetail": {
       "title": "Job-Details",
       "subtitle": "Prüfe Chance, Vorbereitung, Notizen, Verlauf und KI-Erkenntnisse."
+    },
+    "jobNew": {
+      "title": "Job hinzufügen",
+      "subtitle": "Speichere eine neue Chance und halte den Tracker aktuell."
+    },
+    "jobEdit": {
+      "title": "Job bearbeiten",
+      "subtitle": "Aktualisiere die gespeicherte Chance und den nächsten Schritt."
     },
     "aiAssistant": {
       "title": "KI-Assistent",
@@ -88,10 +96,13 @@
   },
   "jobDetail": {
     "backToJobs": "Zurück zu Jobs",
+    "editJob": "Job bearbeiten",
+    "deleteJob": "Job löschen",
     "openPosting": "Anzeige öffnen",
     "nextStep": "Nächster Schritt",
+    "statusLabel": "Jobstatus",
     "notFoundTitle": "Job nicht gefunden",
-    "notFoundDescription": "Der ausgewählte Job existiert nicht in den aktuellen Beispieldaten.",
+    "notFoundDescription": "Der ausgewählte Job existiert nicht in den lokal gespeicherten Tracker-Daten.",
     "tabs": {
       "label": "Job-Detailbereiche",
       "overview": "Übersicht",
@@ -108,18 +119,81 @@
     "tasks": {
       "title": "Vorbereitungsaufgaben",
       "summary": "{{completed}} von {{total}} erledigt",
-      "due": "Fällig {{date}}"
+      "due": "Fällig {{date}}",
+      "newTaskTitle": "Aufgabentitel",
+      "newTaskDueDate": "Fälligkeitsdatum",
+      "newTaskPlaceholder": "Interviewbeispiele vorbereiten",
+      "addTask": "Aufgabe hinzufügen",
+      "deleteTask": "Löschen",
+      "deleteTaskLabel": "Aufgabe {{title}} löschen"
     },
     "notes": {
-      "title": "Notizen"
+      "title": "Notizen",
+      "newNote": "Neue Notiz",
+      "editNote": "Notiz bearbeiten",
+      "editNoteLabel": "Notiz vom {{date}} bearbeiten",
+      "notePlaceholder": "Recruiter-Notizen, Erinnerungen oder Interviewfeedback hinzufügen.",
+      "addNote": "Notiz hinzufügen",
+      "saveNote": "Notiz speichern",
+      "saveNoteLabel": "Notiz vom {{date}} speichern",
+      "deleteNote": "Löschen",
+      "deleteNoteLabel": "Notiz vom {{date}} löschen"
     },
     "timeline": {
       "title": "Verlauf"
     },
     "ai": {
+      "analysisTitle": "Gespeicherte KI-Analyse",
+      "analysisSubtitle": "Analysiere die gespeicherte Beschreibung und speichere das Ergebnis bei diesem Job.",
+      "analyzeSavedJob": "Gespeicherten Job analysieren",
+      "emptyInsights": "Noch keine gespeicherten KI-Erkenntnisse.",
       "summary": "KI-Zusammenfassung",
       "strengths": "Stärken",
       "gaps": "Vorbereitungslücken"
+    }
+  },
+  "jobForm": {
+    "createTitle": "Job hinzufügen",
+    "createSubtitle": "Speichere Firma, Rolle, Status und nächsten Schritt für eine neue Chance.",
+    "editTitle": "Job bearbeiten",
+    "editSubtitle": "Halte die gespeicherte Chance aktuell, während deine Bewerbung weitergeht.",
+    "cancel": "Abbrechen",
+    "actions": {
+      "create": "Job erstellen",
+      "save": "Änderungen speichern"
+    },
+    "fields": {
+      "company": "Firma",
+      "roleTitle": "Rolle",
+      "status": "Status",
+      "location": "Standort",
+      "jobUrl": "Job-URL",
+      "salaryMin": "Mindestgehalt",
+      "salaryMax": "Maximalgehalt",
+      "tags": "Tags",
+      "nextStep": "Nächster Schritt",
+      "description": "Beschreibung"
+    },
+    "placeholders": {
+      "company": "Firmenname",
+      "roleTitle": "Frontend Engineer",
+      "location": "Berlin / Hybrid",
+      "jobUrl": "https://company.com/careers/job",
+      "salaryMin": "70000",
+      "salaryMax": "90000",
+      "tags": "React, TypeScript, Barrierefreiheit",
+      "nextStep": "Beim Recruiter nachfassen",
+      "description": "Füge eine kurze Rollenbeschreibung oder Stellenanzeige ein."
+    },
+    "helpers": {
+      "tags": "Trenne Tags mit Kommas."
+    },
+    "validation": {
+      "requiredCompany": "Firma ist erforderlich.",
+      "requiredRole": "Rolle ist erforderlich.",
+      "invalidUrl": "Gib eine gültige URL ein oder lasse das Feld leer.",
+      "invalidSalary": "Gib eine positive Gehaltszahl ein oder lasse das Feld leer.",
+      "invalidSalaryRange": "Das Maximalgehalt muss größer oder gleich dem Mindestgehalt sein."
     }
   },
   "dataTable": {

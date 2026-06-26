@@ -1,4 +1,4 @@
-import { RESPONSIVE_BREAKPOINTS } from './useMediaQuery.constants';
+import { type RESPONSIVE_BREAKPOINTS } from './useMediaQuery.constants';
 
 /**
  * Represents the supported responsive breakpoint names.

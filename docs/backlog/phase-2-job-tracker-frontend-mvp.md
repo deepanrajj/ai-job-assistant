@@ -11,19 +11,19 @@ Goal: make the tracker usable with mock/local data before backend integration.
 - [x] Add job detail notes tab.
 - [x] Add job detail timeline tab.
 - [x] Add job detail AI tab.
-- [ ] Create `/jobs/new` add job route.
-- [ ] Create `/jobs/:jobId/edit` edit job route.
-- [ ] Add job form component.
-- [ ] Add job form validation.
-- [ ] Add localStorage persistence.
-- [ ] Add create job behavior.
-- [ ] Add update job behavior.
-- [ ] Add delete job behavior.
-- [ ] Add status update behavior.
-- [ ] Add task create/update/delete behavior.
-- [ ] Add note create/update/delete behavior.
-- [ ] Add timeline event display.
-- [ ] Move AI analysis into saved job detail workflow.
+- [x] Create `/jobs/new` add job route.
+- [x] Create `/jobs/:jobId/edit` edit job route.
+- [x] Add job form component.
+- [x] Add job form validation.
+- [x] Add localStorage persistence.
+- [x] Add create job behavior.
+- [x] Add update job behavior.
+- [x] Add delete job behavior.
+- [x] Add status update behavior.
+- [x] Add task create/update/delete behavior.
+- [x] Add note create/update/delete behavior.
+- [x] Add timeline event display.
+- [x] Move AI analysis into saved job detail workflow.
 
 ## Acceptance Criteria
 

@@ -1,18 +1,22 @@
-import type { TStatusFilter } from './jobs.types';
 import type { TJobStatus } from '../../types';
+import type { TStatusFilter } from './jobs.types';
 
 /**
- * Status options shown in the jobs filter dropdown.
+ * Status options available when creating or editing a job.
  */
-export const statusOptions: TStatusFilter[] = [
-  'ALL',
+export const jobStatusOptions = [
   'WISHLIST',
   'APPLIED',
   'INTERVIEW',
   'OFFER',
   'REJECTED',
   'WITHDRAWN',
-];
+] as const satisfies readonly TJobStatus[];
+
+/**
+ * Status options shown in the jobs filter dropdown.
+ */
+export const statusOptions: TStatusFilter[] = ['ALL', ...jobStatusOptions];
 
 /**
  * Tailwind class map for job status pills.

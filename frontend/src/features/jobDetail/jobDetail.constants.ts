@@ -1,10 +1,4 @@
-import { JobDetailAiPanel } from './components/JobDetailAiPanel';
-import { JobDetailNotesPanel } from './components/JobDetailNotesPanel';
-import { JobDetailOverviewPanel } from './components/JobDetailOverviewPanel';
-import { JobDetailTasksPanel } from './components/JobDetailTasksPanel';
-import { JobDetailTimelinePanel } from './components/JobDetailTimelinePanel';
-import type { TJobDetailPanelComponent } from './jobDetail.types';
-import type { IJobDetailTabConfig, TJobDetailTab } from '../../types';
+import type { IJobDetailTabConfig } from '../../types';
 
 /**
  * Defines the tab order and translation keys used by the job detail page.
@@ -31,17 +25,6 @@ export const jobDetailTabs = [
     labelKey: 'jobDetail.tabs.ai',
   },
 ] satisfies IJobDetailTabConfig[];
-
-/**
- * Maps each job detail tab to the panel component rendered when that tab is active.
- */
-export const jobDetailPanelComponents: Record<TJobDetailTab, TJobDetailPanelComponent> = {
-  overview: JobDetailOverviewPanel,
-  tasks: JobDetailTasksPanel,
-  notes: JobDetailNotesPanel,
-  timeline: JobDetailTimelinePanel,
-  ai: JobDetailAiPanel,
-};
 
 /**
  * Tailwind classes shared by all job detail tab buttons.

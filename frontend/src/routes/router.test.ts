@@ -13,6 +13,8 @@ describe('appRouter', () => {
       'index',
       APP_PATHS.DASHBOARD,
       APP_PATHS.JOBS,
+      APP_PATHS.JOB_NEW,
+      APP_PATHS.JOB_EDIT,
       APP_PATHS.JOB_DETAIL,
       APP_PATHS.AI_ASSISTANT,
       '*',

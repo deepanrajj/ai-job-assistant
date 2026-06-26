@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import type { SubmitHandler, UseFormReturn } from 'react-hook-form';
 
-import { Alert, Button, Card } from '../../components/ui';
 import { Form, FormFields, type TFormFieldConfig } from '../../components/form';
+import { Alert, Button, Card } from '../../components/ui';
 import { useTranslation } from '../../i18n';
 import type { TAnalyzeJobFormValues } from './analyzeJobFormSchema';
 
