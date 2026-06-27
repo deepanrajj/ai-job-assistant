@@ -18,12 +18,34 @@ The app should help a user:
 - track application status
 - manage preparation tasks and notes
 - review activity through a timeline
+- discover and import job opportunities
+- manage contacts, reminders, application documents, and calendar events
+- maintain reusable resume profiles and skills inventory
 - use AI to analyze job descriptions and prepare better applications
 - later persist tracker data in a backend database
 
 The first product target is a portfolio-ready full-stack app with a
 clean frontend, Spring Boot Kotlin backend, AI provider integration,
 local Kubernetes runtime, tests, and clear documentation.
+
+Final product navigation:
+
+- Dashboard
+- Jobs
+- Discover
+- Applications
+- Calendar
+- Profile
+
+Product sequencing:
+
+1. Build the non-AI tracker until it is useful on its own.
+2. Add advanced non-AI workflows for discovery, reminders, contacts,
+   documents, calendar, and profile management.
+3. Integrate AI into those workflows instead of keeping AI as a
+   standalone assistant.
+4. Finish with authentication, user-owned data, deployment, and
+   portfolio polish.
 
 ## 2. Locked Tech Stack
 
@@ -54,7 +76,7 @@ Runtime and infrastructure:
 - Docker Desktop Kubernetes for local production-like development
 - Nginx frontend container for static assets and `/api` proxying
 - PostgreSQL planned for persisted tracker data
-- pgvector planned for semantic AI retrieval
+- Stripe test mode planned for paid AI checkout and subscription testing
 
 ## 3. Current State
 
@@ -118,10 +140,31 @@ TimelineEvent
   id, jobId, type, description, createdAt
 
 AiOutput
-  id, jobId, type, contentJson, createdAt
+  id, jobId, userId, type, contentJson, createdAt
 
-JobChunk
-  id, jobId, chunkText, chunkIndex, embedding, createdAt
+Contact
+  id, jobId, type, name, emailOrUrl, notes, createdAt, updatedAt
+
+Reminder
+  id, jobId, type, title, dueDate, completedAt, createdAt, updatedAt
+
+ApplicationDocument
+  id, jobId, type, title, contentJson, submittedAt, createdAt, updatedAt
+
+SavedSearch
+  id, userId, criteriaJson, createdAt, updatedAt
+
+ImportCandidate
+  id, userId, source, sourceUrl, contentJson, duplicateStatus, reviewStatus
+
+ResumeProfile
+  id, userId, name, profileJson, createdAt, updatedAt
+
+AiUsageEntitlement
+  id, userId, freeCreditsRemaining, stripeCustomerId, subscriptionStatus
+
+AiUsageEvent
+  id, userId, operation, creditConsumed, status, createdAt
 ```
 
 Frontend localStorage is temporary. It lets the UI behave like a real
@@ -143,9 +186,21 @@ Planned API areas:
 - job tasks CRUD
 - job notes CRUD
 - timeline event reads
+- job contacts
+- reminders and calendar events
+- application documents and submitted application metadata
+- saved searches and imported job candidates
+- deterministic duplicate detection
+- resume profiles, skills inventory, and job preferences
 - saved AI outputs
 - authentication and user-owned jobs
-- RAG ask endpoint over saved job content
+- billing and AI usage:
+  - `GET /api/billing/ai-usage`
+  - `POST /api/billing/checkout-session`
+  - `POST /api/billing/customer-portal`
+  - `POST /api/billing/stripe-webhook`
+- AI job discovery, resume extraction, fit ranking, CV draft generation,
+  and application material generation
 
 ## 7. Local Runtime
 
@@ -202,6 +257,7 @@ report, and coverage verification.
 - No new styling system unless explicitly requested.
 - No backend database schema without Flyway once Flyway is introduced.
 - No authentication shortcut that makes user-specific data unsafe.
+- No paid AI enforcement before authentication and user-owned data exist.
 - No secret values committed to the repository.
 - No broad refactors hidden inside feature tasks.
 
@@ -223,3 +279,48 @@ Agents must not:
 - introduce libraries without explicit approval
 - weaken tests to pass validation
 - commit secrets or generated build artifacts
+
+## 12. Final Product Direction
+
+The final app should feel like a cohesive job-search operating system,
+not a collection of disconnected tools.
+
+`AI Assistant` is not a final top-level navigation item. The current
+analyzer can remain during development, but final AI behavior should
+appear as workflow actions such as:
+
+- analyze job
+- find/import jobs
+- rank fit
+- generate CV draft
+- create cover letter
+- save as note, document, or task
+
+Duplicate detection has two product modes:
+
+- Discover/import candidates are classified before saving as new, likely
+  duplicate, or possible duplicate. Likely duplicates are excluded from
+  default bulk import.
+- Manual add/edit may show a non-blocking duplicate warning, but the user
+  can still create or update the job.
+
+First CV generation output is an editable in-app draft. PDF/DOCX export
+is a later enhancement.
+
+Paid AI rules:
+
+- Stripe test mode is the planned payment provider.
+- Each signed-in user receives 10 one-time free AI credits.
+- Each successful AI operation consumes 1 credit.
+- Validation failures and failed OpenAI/provider calls do not consume
+  credits.
+- After free credits are exhausted, unpaid users receive
+  `402 AI_PAYMENT_REQUIRED` from AI endpoints.
+- Active paid subscriptions unlock AI usage after free credits are
+  exhausted.
+
+Deferred AI ideas:
+
+- pgvector, embeddings, job chunks, and RAG answers over saved job
+  content are deferred until the workflow-integrated AI product is
+  cohesive.

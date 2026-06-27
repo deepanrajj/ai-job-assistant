@@ -34,6 +34,7 @@ flowchart LR
   Api -. future .-> NoteModule["Note Module"]
   Api -. future .-> TimelineModule["Timeline Module"]
   Api -. future .-> AuthModule["Auth Module"]
+  Api -. future .-> BillingModule["Billing Module"]
 
   AiModule --> OpenAI["OpenAI API"]
   JobModule --> Database["PostgreSQL"]
@@ -41,9 +42,8 @@ flowchart LR
   NoteModule --> Database
   TimelineModule --> Database
   AuthModule --> Database
-
-  AiModule -. future .-> VectorStore["pgvector Job Chunks"]
-  VectorStore --> Database
+  BillingModule --> Database
+  BillingModule -. "future: Stripe test mode" .-> Stripe["Stripe"]
 ```
 
 ## Request Flows
@@ -75,7 +75,7 @@ flowchart TD
 
   Backend -->|"current: AI analysis and Q&A"| Provider["OpenAI Provider"]
   Backend -. "future: jobs, tasks, notes, timeline" .-> Database["PostgreSQL"]
-  Backend -. "future: semantic search" .-> VectorStore["pgvector"]
+  Backend -. "future: paid AI entitlement" .-> Billing["Stripe + AI credits"]
 ```
 
 ## Frontend Structure
@@ -160,8 +160,11 @@ TimelineEvent
 AiOutput
   id, jobId, type, contentJson, createdAt
 
-JobChunk
-  id, jobId, chunkText, chunkIndex, embedding, createdAt
+AiUsageEntitlement
+  id, userId, freeCreditsRemaining, stripeCustomerId, subscriptionStatus
+
+AiUsageEvent
+  id, userId, operation, creditConsumed, status, createdAt
 ```
 
 ## Implementation Direction
@@ -169,5 +172,13 @@ JobChunk
 1. Finish the frontend MVP with mock data and local persistence.
 2. Add the Spring Boot Kotlin backend with PostgreSQL.
 3. Replace mock data with API services.
-4. Move AI features into saved job workflows.
-5. Add auth, tests, Docker, deployment, and README polish.
+4. Add non-AI tracker workflows such as contacts, reminders, documents,
+   calendar, profile, saved searches, and duplicate review.
+5. Add authentication, user-owned data, and paid AI foundation.
+6. Move AI features into real workflows with free credits and paid access.
+7. Add tests, Docker, deployment, and README polish.
+
+## Deferred Ideas
+
+pgvector, embeddings, job chunks, and RAG over saved job content are
+deferred until the workflow-integrated AI product is cohesive.

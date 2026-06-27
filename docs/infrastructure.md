@@ -13,6 +13,7 @@ flowchart LR
   BackendService --> BackendPod["Backend Pod: Spring Boot Kotlin"]
   BackendPod -->|"AI provider call"| OpenAI["OpenAI API"]
   BackendPod -. "future read/write" .-> Database["PostgreSQL"]
+  BackendPod -. "future billing" .-> Stripe["Stripe test mode"]
 ```
 
 ## Local Kubernetes Components
@@ -46,14 +47,17 @@ sequenceDiagram
   participant Nginx as Frontend Nginx
   participant Backend as Spring Boot API
   participant OpenAI as OpenAI API
+  participant Stripe as Stripe Future
   participant DB as PostgreSQL Future
 
   User->>Nginx: Open /dashboard or /jobs
   Nginx-->>User: React app
   User->>Nginx: POST /api/ai/analyze-job
   Nginx->>Backend: Proxy /api/ai/analyze-job
+  Backend-.->>DB: Future check AI credits or paid entitlement
   Backend->>OpenAI: Structured AI request
   OpenAI-->>Backend: Structured AI response
+  Backend-.->>Stripe: Future checkout or subscription portal
   Backend-.->>DB: Future save job analysis
   Backend-->>Nginx: JSON response
   Nginx-->>User: JSON response
@@ -71,8 +75,12 @@ flowchart TD
   Api -->|"current external provider call"| OpenAI["OpenAI API"]
   Api -. "future saved jobs" .-> JobsDb["PostgreSQL: jobs"]
   Api -. "future notes/tasks/timeline" .-> TrackerDb["PostgreSQL: tracker data"]
-  Api -. "future embeddings" .-> VectorDb["PostgreSQL + pgvector"]
+  Api -. "future AI credits and subscriptions" .-> BillingDb["PostgreSQL: billing state"]
+  Api -. "future checkout and webhooks" .-> Stripe["Stripe test mode"]
 ```
+
+pgvector, embeddings, job chunks, and RAG over saved job content are
+deferred product ideas, not part of the active local infrastructure plan.
 
 ## Docker Images
 
