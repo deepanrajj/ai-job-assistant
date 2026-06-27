@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "husky",
     "dev": "npm run dev:cluster",
-    "dev:cluster": "npm run k8s:namespace && npm run k8s:check-secret && npm run docker:build && npm run k8s:load-images && npm run k8s:apply && npm run k8s:forward",
+    "dev:cluster": "npm run k8s:namespace && npm run k8s:check-secret && npm run docker:build && npm run k8s:load-images && npm run k8s:apply && npm run k8s:wait && concurrently -k -n frontend,postgres -c cyan,magenta \"npm run k8s:forward\" \"npm run db:forward\"",
     "dev:local": "concurrently -k -n frontend,backend -c cyan,magenta \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "cd backend && .\\gradlew.bat bootRun",
@@ -32,12 +32,17 @@
     "docker:build:backend": "docker build -f infra/docker/backend.Dockerfile -t smart-job-tracker-backend:local .",
     "docker:build:frontend": "docker build -f infra/docker/frontend.Dockerfile -t smart-job-tracker-frontend:local .",
     "k8s:namespace": "kubectl apply -f infra/k8s/local/namespace.yaml",
-    "k8s:check-secret": "kubectl get secret smart-job-tracker-secrets --namespace smart-job-tracker",
+    "k8s:create-secret": "kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY=$OPENAI_API_KEY --from-literal=POSTGRES_PASSWORD=$POSTGRES_PASSWORD",
+    "k8s:check-secret": "kubectl get secret smart-job-tracker-secrets --namespace smart-job-tracker -o jsonpath=\"{.data.OPENAI_API_KEY}\" | grep -q . && kubectl get secret smart-job-tracker-secrets --namespace smart-job-tracker -o jsonpath=\"{.data.POSTGRES_PASSWORD}\" | grep -q .",
     "k8s:load-images": "node infra/scripts/load-local-k8s-images.mjs",
     "k8s:apply": "kubectl apply -k infra/k8s/local",
+    "k8s:wait": "kubectl wait deployment --all --for=condition=available --namespace smart-job-tracker --timeout=120s",
     "k8s:delete": "kubectl delete -k infra/k8s/local",
     "k8s:forward": "kubectl port-forward service/smart-job-tracker-frontend 30080:80 --namespace smart-job-tracker",
-    "k8s:restart": "kubectl rollout restart deployment/smart-job-tracker-backend --namespace smart-job-tracker && kubectl rollout restart deployment/smart-job-tracker-frontend --namespace smart-job-tracker"
+    "k8s:restart": "kubectl rollout restart deployment/smart-job-tracker-backend --namespace smart-job-tracker && kubectl rollout restart deployment/smart-job-tracker-frontend --namespace smart-job-tracker",
+    "db:logs": "kubectl logs -n smart-job-tracker -l app.kubernetes.io/name=smart-job-tracker-postgres --follow",
+    "db:psql": "kubectl run psql-test --rm -it --image=postgres:16 --restart=Never -n smart-job-tracker -- psql -h smart-job-tracker-postgres -U smartjobtracker -d smartjobtracker",
+    "db:forward": "kubectl port-forward service/smart-job-tracker-postgres 5432:5432 --namespace smart-job-tracker"
   },
   "keywords": [
     "smart-job-tracker",

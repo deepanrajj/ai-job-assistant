@@ -111,6 +111,7 @@ Local infrastructure currently has:
 - Kubernetes namespace, deployments, services, and config map
 - example Kubernetes secret manifest
 - local image loading script for Docker Desktop Kubernetes
+- PostgreSQL deployment and service (ephemeral emptyDir storage; data resets on pod recreation until schema migrations land)
 
 ## 4. AI Boundary
 
