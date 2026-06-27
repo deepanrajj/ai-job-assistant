@@ -18,3 +18,7 @@ Current source-of-truth context lives in:
 
 When a backlog item becomes large or needs product detail, create a
 focused plan in this folder and link it from the relevant numbered task.
+
+## Plans
+
+- [Final Smart Job Tracker roadmap](./final-smart-job-tracker-roadmap.md)

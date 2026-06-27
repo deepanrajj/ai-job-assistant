@@ -1,7 +1,7 @@
 # Backlog Overview
 
-This backlog is organized by project phase. GitHub renders the checkboxes, so
-progress is visible directly in the repository.
+This backlog is organized by project phase. GitHub renders the
+checkboxes, so progress is visible directly in the repository.
 
 ## Phases
 
@@ -9,8 +9,10 @@ progress is visible directly in the repository.
 - [Phase 2: Job Tracker Frontend MVP](./phase-2-job-tracker-frontend-mvp.md)
 - [Phase 3: Backend Foundation](./phase-3-backend-foundation.md)
 - [Phase 4: Frontend Backend Integration](./phase-4-frontend-backend-integration.md)
-- [Phase 5: AI Features](./phase-5-ai-features.md)
-- [Phase 6: Portfolio Polish](./phase-6-portfolio-polish.md)
+- [Phase 5: Core And Advanced Non-AI Workflows](./phase-5-non-ai-workflows.md)
+- [Phase 6: Authentication And AI Billing Foundation](./phase-6-authentication-and-ai-billing.md)
+- [Phase 7: Integrated Paid AI Workflows](./phase-7-integrated-paid-ai-workflows.md)
+- [Phase 8: Portfolio And Production Polish](./phase-8-portfolio-polish.md)
 
 ## Backlog Rules
 
