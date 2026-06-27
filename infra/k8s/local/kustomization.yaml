@@ -10,3 +10,6 @@ resources:
   - backend-service.yaml
   - frontend-deployment.yaml
   - frontend-service.yaml
+  - postgres-configmap.yaml
+  - postgres-deployment.yaml
+  - postgres-service.yaml

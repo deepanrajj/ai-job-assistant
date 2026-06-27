@@ -12,7 +12,7 @@ flowchart LR
   FrontendPod -->|"/api/* proxy"| BackendService["Backend Service"]
   BackendService --> BackendPod["Backend Pod: Spring Boot Kotlin"]
   BackendPod -->|"AI provider call"| OpenAI["OpenAI API"]
-  BackendPod -. "future read/write" .-> Database["PostgreSQL"]
+  BackendPod --> Database["PostgreSQL"]
   BackendPod -. "future billing" .-> Stripe["Stripe test mode"]
 ```
 
@@ -37,6 +37,13 @@ Backend
 Config
   ConfigMap:  smart-job-tracker-backend-config
   Secret:     smart-job-tracker-secrets
+
+PostgreSQL
+  Deployment: smart-job-tracker-postgres
+  Service:    smart-job-tracker-postgres
+  Image:      postgres:16
+  Port:       5432
+  Storage:    emptyDir (ephemeral; data resets on pod recreation)
 ```
 
 ## Request Flow
@@ -138,6 +145,28 @@ OPENAI_BASE_URL
 OPENAI_MODEL
 ```
 
+PostgreSQL runtime config comes from:
+
+```text
+infra/k8s/local/postgres-configmap.yaml
+```
+
+Current config values:
+
+```text
+POSTGRES_DB    smartjobtracker
+POSTGRES_USER  smartjobtracker
+```
+
+The password comes from the `smart-job-tracker-secrets` Secret:
+
+```text
+POSTGRES_PASSWORD
+```
+
+In-cluster hostname: `smart-job-tracker-postgres`
+Port: `5432`
+
 Sensitive values come from a Kubernetes Secret:
 
 ```text
@@ -148,9 +177,18 @@ Current secret keys:
 
 ```text
 OPENAI_API_KEY
+POSTGRES_PASSWORD
 ```
 
 The committed file `infra/k8s/local/smart-job-tracker-secrets.example.yaml` is only a template. Do not add it to `kustomization.yaml` with a real API key.
+
+Create or recreate the secret with both required keys using:
+
+```bash
+npm run k8s:create-secret
+```
+
+If you created the secret before `task-001`, it will be missing `POSTGRES_PASSWORD` and the Postgres pod will fail to start. Recreate it with the command above.
 
 ## Ports
 
@@ -160,6 +198,7 @@ Local Spring Boot backend:  4000
 Kubernetes frontend proxy:  30080 through kubectl port-forward
 Frontend container:         80
 Backend container:          4000
+PostgreSQL container:       5432
 ```
 
 ## Why Image Loading Is Needed Locally
