@@ -2,8 +2,8 @@ package com.smartjobtracker.testsupport.api
 
 import com.smartjobtracker.api.error.ApiErrorCode
 import com.smartjobtracker.api.error.ApiException
+import org.assertj.core.api.Assertions.assertThat
 import org.springframework.http.HttpStatus
-import kotlin.test.assertEquals
 
 fun assertApiException(
     exception: ApiException,
@@ -11,9 +11,9 @@ fun assertApiException(
     errorCode: ApiErrorCode,
     message: String,
 ) {
-    assertEquals(status, exception.status)
-    assertEquals(errorCode, exception.errorCode)
-    assertEquals(message, exception.message)
+    assertThat(exception.status).isEqualTo(status)
+    assertThat(exception.errorCode).isEqualTo(errorCode)
+    assertThat(exception.message).isEqualTo(message)
 }
 
 fun assertBadGatewayApiException(

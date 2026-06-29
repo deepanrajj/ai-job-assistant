@@ -32,6 +32,11 @@ spec:
                 secretKeyRef:
                   name: smart-job-tracker-secrets
                   key: OPENAI_API_KEY
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smart-job-tracker-secrets
+                  key: POSTGRES_PASSWORD
           readinessProbe:
             httpGet:
               path: /api/ai/health

@@ -3,10 +3,10 @@ package com.smartjobtracker.ai.mapper
 import com.smartjobtracker.api.error.ApiErrorCode
 import com.smartjobtracker.api.error.ApiException
 import com.smartjobtracker.testsupport.createTestObjectMapper
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowableOfType
+import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class AiResponseMapperTest {
     private val mapper = AiResponseMapper(createTestObjectMapper())
@@ -26,18 +26,18 @@ class AiResponseMapperTest {
                 """.trimIndent(),
             )
 
-        assertEquals("Good fit", response.summary)
-        assertEquals(listOf("Kotlin"), response.requiredSkills)
+        assertThat(response.summary).isEqualTo("Good fit")
+        assertThat(response.requiredSkills).isEqualTo(listOf("Kotlin"))
     }
 
     @Test
     fun `toAnalyzeJobResponse converts invalid json into api exception`() {
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 mapper.toAnalyzeJobResponse("""{"summary":"Missing required fields"}""")
             }
 
-        assertEquals(HttpStatus.BAD_GATEWAY, exception.status)
-        assertEquals(ApiErrorCode.AI_RESPONSE_INVALID, exception.errorCode)
+        assertThat(exception.status).isEqualTo(HttpStatus.BAD_GATEWAY)
+        assertThat(exception.errorCode).isEqualTo(ApiErrorCode.AI_RESPONSE_INVALID)
     }
 }

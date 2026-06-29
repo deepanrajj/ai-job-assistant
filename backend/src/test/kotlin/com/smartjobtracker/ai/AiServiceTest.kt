@@ -9,9 +9,8 @@ import com.smartjobtracker.testsupport.ai.RecordingAiStructuredResponseClient
 import com.smartjobtracker.testsupport.ai.createAnalyzeJobStructuredJson
 import com.smartjobtracker.testsupport.ai.createAskJobStructuredJson
 import com.smartjobtracker.testsupport.createTestObjectMapper
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class AiServiceTest {
     @Test
@@ -24,17 +23,16 @@ class AiServiceTest {
 
         val response = service.analyzeJob(AnalyzeJobRequest(description = "Kotlin Spring role"))
 
-        assertEquals("Backend role", response.summary)
-        assertEquals(listOf("Kotlin", "Spring"), response.requiredSkills)
-        assertEquals("gpt-test", client.lastRequest.model)
-        assertEquals("job_analysis", client.lastRequest.text.format.name)
-        assertTrue(
+        assertThat(response.summary).isEqualTo("Backend role")
+        assertThat(response.requiredSkills).isEqualTo(listOf("Kotlin", "Spring"))
+        assertThat(client.lastRequest.model).isEqualTo("gpt-test")
+        assertThat(client.lastRequest.text.format.name).isEqualTo("job_analysis")
+        assertThat(
             client.lastRequest.input[1]
                 .content
                 .first()
-                .text
-                .contains("Kotlin Spring role"),
-        )
+                .text,
+        ).contains("Kotlin Spring role")
     }
 
     @Test
@@ -53,15 +51,14 @@ class AiServiceTest {
                 ),
             )
 
-        assertEquals("Prepare Spring MVC examples.", response.answer)
-        assertEquals("job_answer", client.lastRequest.text.format.name)
-        assertTrue(
+        assertThat(response.answer).isEqualTo("Prepare Spring MVC examples.")
+        assertThat(client.lastRequest.text.format.name).isEqualTo("job_answer")
+        assertThat(
             client.lastRequest.input[1]
                 .content
                 .first()
-                .text
-                .contains("How should I prepare?"),
-        )
+                .text,
+        ).contains("How should I prepare?")
     }
 
     private fun createService(client: RecordingAiStructuredResponseClient): AiService =

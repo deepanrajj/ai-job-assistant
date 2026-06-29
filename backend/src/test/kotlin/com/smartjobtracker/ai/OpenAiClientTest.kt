@@ -8,10 +8,10 @@ import com.smartjobtracker.testsupport.ai.createOpenAiClientWithError
 import com.smartjobtracker.testsupport.ai.createOpenAiEmptyBodyClient
 import com.smartjobtracker.testsupport.ai.createOpenAiRequest
 import com.smartjobtracker.testsupport.api.assertBadGatewayApiException
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowableOfType
+import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class OpenAiClientTest {
     @Test
@@ -38,7 +38,7 @@ class OpenAiClientTest {
             )
         val response = client.createStructuredResponse(createOpenAiRequest())
 
-        assertEquals("""{"summary":"Parsed"}""", response)
+        assertThat(response).isEqualTo("""{"summary":"Parsed"}""")
     }
 
     @Test
@@ -49,7 +49,7 @@ class OpenAiClientTest {
                 body = """{"error":"provider unavailable"}""",
             )
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
 
@@ -68,7 +68,7 @@ class OpenAiClientTest {
                 body = """{"output":[]}""",
             )
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
 
@@ -87,7 +87,7 @@ class OpenAiClientTest {
                 body = "not-json",
             )
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
 
@@ -102,7 +102,7 @@ class OpenAiClientTest {
     fun `createStructuredResponse converts empty provider response into api exception`() {
         val client = createOpenAiEmptyBodyClient()
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
 
@@ -117,9 +117,10 @@ class OpenAiClientTest {
     fun `createStructuredResponse converts web client exception into api exception`() {
         val client = createOpenAiClientWithError(TestWebClientException())
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
+
         assertBadGatewayApiException(
             exception = exception,
             errorCode = ApiErrorCode.AI_REQUEST_FAILED,
@@ -131,9 +132,10 @@ class OpenAiClientTest {
     fun `createStructuredResponse converts illegal state exception into api exception`() {
         val client = createOpenAiClientWithError(IllegalStateException("Request timed out"))
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
+
         assertBadGatewayApiException(
             exception = exception,
             errorCode = ApiErrorCode.AI_REQUEST_FAILED,
@@ -163,7 +165,7 @@ class OpenAiClientTest {
                 body = providerResponse,
             )
         val exception =
-            assertFailsWith<ApiException> {
+            catchThrowableOfType(ApiException::class.java) {
                 client.createStructuredResponse(createOpenAiRequest())
             }
 
@@ -202,6 +204,6 @@ class OpenAiClientTest {
             )
         val response = client.createStructuredResponse(createOpenAiRequest())
 
-        assertEquals("""{"summary":"Parsed"}""", response)
+        assertThat(response).isEqualTo("""{"summary":"Parsed"}""")
     }
 }
