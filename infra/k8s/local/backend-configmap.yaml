@@ -5,3 +5,5 @@ metadata:
 data:
   OPENAI_BASE_URL: "https://api.openai.com"
   OPENAI_MODEL: "gpt-5.4"
+  DB_URL: "jdbc:postgresql://smart-job-tracker-postgres:5432/smartjobtracker"
+  DB_USER: "smartjobtracker"

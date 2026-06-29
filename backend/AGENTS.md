@@ -17,6 +17,7 @@ ktlint
 detekt
 JaCoCo
 JUnit 5
+AssertJ
 ```
 
 ## 1. Structure
@@ -80,6 +81,9 @@ JUnit 5
 - Prefer fakes/test factories for simple collaborators.
 - Use mocks only when they make the test clearer than a fake.
 - Keep JaCoCo exclusions deliberate and narrow.
+- Use `org.junit.jupiter.api.Test` for all test annotations.
+- Use AssertJ (`org.assertj.core.api.Assertions`) for all assertions.
+  Do not use `kotlin.test` assertions.
 
 ## 7. Verification
 

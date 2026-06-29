@@ -143,6 +143,8 @@ Current config values:
 ```text
 OPENAI_BASE_URL
 OPENAI_MODEL
+DB_URL       jdbc:postgresql://smart-job-tracker-postgres:5432/smartjobtracker
+DB_USER      smartjobtracker
 ```
 
 PostgreSQL runtime config comes from:
@@ -158,7 +160,8 @@ POSTGRES_DB    smartjobtracker
 POSTGRES_USER  smartjobtracker
 ```
 
-The password comes from the `smart-job-tracker-secrets` Secret:
+The database password for both PostgreSQL and the backend datasource
+comes from the `smart-job-tracker-secrets` Secret:
 
 ```text
 POSTGRES_PASSWORD

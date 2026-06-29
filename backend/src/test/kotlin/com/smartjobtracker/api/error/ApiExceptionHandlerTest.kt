@@ -4,6 +4,7 @@ import com.smartjobtracker.ai.AiController
 import com.smartjobtracker.ai.AiService
 import com.smartjobtracker.ai.dto.AnalyzeJobRequest
 import com.smartjobtracker.testsupport.ai.FakeAiService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.core.MethodParameter
@@ -18,7 +19,6 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.FieldError
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean
 import org.springframework.web.bind.MethodArgumentNotValidException
-import kotlin.test.assertEquals
 
 class ApiExceptionHandlerTest {
     private lateinit var aiService: FakeAiService
@@ -98,9 +98,9 @@ class ApiExceptionHandlerTest {
                 .handleValidationException(createValidationException(defaultMessage = null))
         val body = response.body
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
-        assertEquals(ApiErrorCode.VALIDATION_FAILED.value, body?.code)
-        assertEquals("Invalid value", body?.fieldErrors?.single()?.message)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(body?.code).isEqualTo(ApiErrorCode.VALIDATION_FAILED.value)
+        assertThat(body?.fieldErrors?.single()?.message).isEqualTo("Invalid value")
     }
 
     private fun createMockMvc(aiService: AiService): MockMvc {

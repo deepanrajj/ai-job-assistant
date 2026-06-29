@@ -1,6 +1,7 @@
 package com.smartjobtracker.ai
 
 import com.smartjobtracker.testsupport.ai.FakeAiService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
@@ -10,7 +11,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import kotlin.test.assertEquals
 
 class AiControllerTest {
     private lateinit var aiService: FakeAiService
@@ -44,7 +44,7 @@ class AiControllerTest {
             .andExpect(jsonPath("$.seniority").value("Senior"))
             .andExpect(jsonPath("$.prepTasks[0]").value("Review MVC"))
 
-        assertEquals("Kotlin backend role", aiService.lastAnalyzeRequest.description)
+        assertThat(aiService.lastAnalyzeRequest.description).isEqualTo("Kotlin backend role")
     }
 
     @Test
@@ -64,7 +64,7 @@ class AiControllerTest {
             ).andExpect(status().isOk)
             .andExpect(jsonPath("$.answer").value("Prepare Spring MVC examples."))
 
-        assertEquals("Kotlin backend role", aiService.lastAskRequest.description)
-        assertEquals("How should I prepare?", aiService.lastAskRequest.question)
+        assertThat(aiService.lastAskRequest.description).isEqualTo("Kotlin backend role")
+        assertThat(aiService.lastAskRequest.question).isEqualTo("How should I prepare?")
     }
 }

@@ -1,0 +1,2 @@
+-- baseline: schema origin for smart-job-tracker
+-- subsequent migrations add tables incrementally
