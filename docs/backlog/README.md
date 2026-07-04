@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 001: Add PostgreSQL docker service](../../tasks/001-add-postgresql-docker-service.md).
+- [ ] [Task 004: Create job repository](../../tasks/004-create-job-repository.md).

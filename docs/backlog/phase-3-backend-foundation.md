@@ -5,10 +5,10 @@ Goal: create the Spring Boot Kotlin backend for persisted tracker data.
 ## Tasks
 
 - [x] [Add PostgreSQL docker service](../../tasks/001-add-postgresql-docker-service.md).
-- [ ] [Add Flyway migration setup](../../tasks/002-add-flyway-migration-setup.md).
+- [x] [Add Flyway migration setup](../../tasks/002-add-flyway-migration-setup.md).
 - [x] Add global exception handling.
 - [x] Add request validation.
-- [ ] [Create job entity](../../tasks/003-create-job-entity.md).
+- [x] [Create job entity](../../tasks/003-create-job-entity.md).
 - [ ] [Create job repository](../../tasks/004-create-job-repository.md).
 - [ ] [Create job service](../../tasks/005-create-job-service.md).
 - [ ] [Create job controller](../../tasks/006-create-job-controller.md).
