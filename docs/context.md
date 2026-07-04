@@ -101,6 +101,8 @@ Backend currently has:
 - global API error model and handler
 - request validation
 - generated Swagger/OpenAPI documentation
+- PostgreSQL datasource configuration, Flyway migration setup, and a
+  saved-job JPA entity
 - backend tests and coverage gate
 
 Local infrastructure currently has:
@@ -111,7 +113,7 @@ Local infrastructure currently has:
 - Kubernetes namespace, deployments, services, and config map
 - example Kubernetes secret manifest
 - local image loading script for Docker Desktop Kubernetes
-- PostgreSQL deployment and service (ephemeral emptyDir storage; data resets on pod recreation until schema migrations land)
+- PostgreSQL deployment and service (ephemeral emptyDir storage; data resets on pod recreation)
 
 ## 4. AI Boundary
 

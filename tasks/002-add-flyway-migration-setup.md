@@ -39,9 +39,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Flyway runs on backend startup.
-- [ ] Migration files have a clear naming convention.
-- [ ] Backend verification passes.
+- [x] Flyway runs on backend startup.
+- [x] Migration files have a clear naming convention.
+- [x] Backend verification passes.
 
 ## Commit
 

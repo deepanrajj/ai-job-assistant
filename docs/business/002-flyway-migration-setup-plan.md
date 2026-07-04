@@ -1,5 +1,7 @@
 # Plan: task-002 — Add Flyway Migration Setup
 
+Status: Completed
+
 ## Context
 
 The backend is a stateless Kotlin + Spring Boot 4 API with no database integration yet. PostgreSQL infrastructure is already provisioned in Kubernetes (`smartjobtracker` DB/user), but the backend has no driver, no ORM, and no migration tooling. This task wires in Flyway so that all future schema changes go through versioned migration scripts, satisfying the project rule: *no DB schema without Flyway*.

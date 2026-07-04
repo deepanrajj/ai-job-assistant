@@ -42,7 +42,7 @@ npm run k8s:namespace
 Create the local secret:
 
 ```bash
-kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
+kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key" --from-literal=POSTGRES_PASSWORD="your-local-db-password"
 ```
 
 Then start the cluster runtime:
@@ -59,6 +59,7 @@ The dev command:
 - loads the images into the Docker Desktop Kubernetes node
 - applies the Kubernetes manifests
 - forwards the frontend service to `http://localhost:30080`
+- forwards PostgreSQL to `localhost:5432`
 
 Keep the terminal open while using the app. Stop it with `Ctrl+C`.
 
@@ -136,6 +137,39 @@ OPENAI_MODEL
 ```
 
 Defaults are defined in `backend/src/main/resources/application.properties`.
+
+## Database And Migrations
+
+The backend connects to PostgreSQL through:
+
+```text
+DB_URL
+DB_USER
+DB_PASSWORD
+```
+
+In local Kubernetes, `DB_URL` and `DB_USER` come from
+`infra/k8s/local/backend-configmap.yaml`, and `DB_PASSWORD` comes from
+the `POSTGRES_PASSWORD` key in the `smart-job-tracker-secrets` Secret.
+
+When running the backend directly with `npm run dev:backend`, make sure
+PostgreSQL is reachable from the host. The backend defaults to:
+
+```text
+jdbc:postgresql://localhost:5432/smartjobtracker
+```
+
+Flyway runs automatically on backend startup. Migration files live in:
+
+```text
+backend/src/main/resources/db/migration
+```
+
+Use this naming convention for new migrations:
+
+```text
+V<version>__<snake_case_description>.sql
+```
 
 ## Useful Kubernetes Commands
 

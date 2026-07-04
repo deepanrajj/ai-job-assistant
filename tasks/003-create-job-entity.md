@@ -40,9 +40,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job schema is represented by a Flyway migration.
-- [ ] Job entity maps the schema.
-- [ ] No API contract is introduced yet.
+- [x] Job schema is represented by a Flyway migration.
+- [x] Job entity maps the schema.
+- [x] No API contract is introduced yet.
 
 ## Commit
 
