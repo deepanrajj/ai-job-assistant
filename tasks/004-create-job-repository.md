@@ -39,9 +39,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job repository compiles.
-- [ ] Query methods match service needs.
-- [ ] No unrelated persistence code is added.
+- [x] Job repository compiles.
+- [x] Query methods match service needs.
+- [x] No unrelated persistence code is added.
 
 ## Commit
 
