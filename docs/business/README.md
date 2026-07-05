@@ -25,3 +25,4 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 001 - Add PostgreSQL Docker Service Plan](./postgresql-docker-service-plan.md)
 - [Task 002 - Add Flyway Migration Setup Plan](./002-flyway-migration-setup-plan.md)
 - [Task 003 - Create Job Entity Plan](./003-create-job-entity-plan.md)
+- [Task 004 - Create Job Repository Plan](./004-create-job-repository-plan.md)
