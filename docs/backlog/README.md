@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 005: Create job service](../../tasks/005-create-job-service.md).
+- [ ] [Task 006: Create job controller](../../tasks/006-create-job-controller.md).

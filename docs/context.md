@@ -102,7 +102,7 @@ Backend currently has:
 - request validation
 - generated Swagger/OpenAPI documentation
 - PostgreSQL datasource configuration, Flyway migration setup, and a
-  saved-job JPA entity and repository
+  saved-job JPA entity, repository, and service layer
 - backend tests and coverage gate
 
 Local infrastructure currently has:

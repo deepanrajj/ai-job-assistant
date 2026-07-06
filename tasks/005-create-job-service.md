@@ -5,6 +5,8 @@
 Read `../AGENTS.md`, `../backend/AGENTS.md`, and `../docs/context.md`
 before starting.
 
+Related plan: `../docs/business/005-create-job-service-plan.md`.
+
 ## Goal
 
 Add backend business logic for job operations.
@@ -42,9 +44,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job service owns job business logic.
-- [ ] Errors use the shared API error model.
-- [ ] Service tests cover behavior.
+- [x] Job service owns job business logic.
+- [x] Errors use the shared API error model.
+- [x] Service tests cover behavior.
 
 ## Commit
 
