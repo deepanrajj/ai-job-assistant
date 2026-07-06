@@ -107,6 +107,9 @@ numbering, and Markdown should still be checked manually.
 
 - Keep `docs/context.md` concise and authoritative.
 - Do not duplicate long context across README files.
+- After completing and verifying a numbered task, update the relevant
+  task file, backlog files, business plan, and authoritative docs in the
+  same change when the completed behavior changes documented state.
 - Update task checkboxes only when the behavior is implemented and
   verified.
 - Keep phase backlog files as roadmap summaries.
