@@ -172,7 +172,7 @@ spec:
 # Copy this file to .env and fill in the real password before running
 # npm run dev:local.
 POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
+POSTGRES_PORT=5434
 POSTGRES_DB=smartjobtracker
 POSTGRES_USER=smartjobtracker
 POSTGRES_PASSWORD=replace-me

@@ -201,6 +201,7 @@ Local Spring Boot backend:  4000
 Kubernetes frontend proxy:  30080 through kubectl port-forward
 Frontend container:         80
 Backend container:          4000
+PostgreSQL host port-forward:  5434 -> 5432
 PostgreSQL container:       5432
 ```
 

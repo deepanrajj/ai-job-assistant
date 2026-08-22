@@ -59,7 +59,7 @@ The dev command:
 - loads the images into the Docker Desktop Kubernetes node
 - applies the Kubernetes manifests
 - forwards the frontend service to `http://localhost:30080`
-- forwards PostgreSQL to `localhost:5432`
+- forwards PostgreSQL to `localhost:5434`
 
 Keep the terminal open while using the app. Stop it with `Ctrl+C`.
 
@@ -156,7 +156,7 @@ When running the backend directly with `npm run dev:backend`, make sure
 PostgreSQL is reachable from the host. The backend defaults to:
 
 ```text
-jdbc:postgresql://localhost:5432/smartjobtracker
+jdbc:postgresql://localhost:5434/smartjobtracker
 ```
 
 Flyway runs automatically on backend startup. Migration files live in:

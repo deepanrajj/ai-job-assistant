@@ -42,7 +42,7 @@
     "k8s:restart": "kubectl rollout restart deployment/smart-job-tracker-backend --namespace smart-job-tracker && kubectl rollout restart deployment/smart-job-tracker-frontend --namespace smart-job-tracker",
     "db:logs": "kubectl logs -n smart-job-tracker -l app.kubernetes.io/name=smart-job-tracker-postgres --follow",
     "db:psql": "kubectl run psql-test --rm -it --image=postgres:16 --restart=Never -n smart-job-tracker -- psql -h smart-job-tracker-postgres -U smartjobtracker -d smartjobtracker",
-    "db:forward": "kubectl port-forward service/smart-job-tracker-postgres 5432:5432 --namespace smart-job-tracker"
+    "db:forward": "kubectl port-forward service/smart-job-tracker-postgres 5434:5432 --namespace smart-job-tracker"
   },
   "keywords": [
     "smart-job-tracker",
