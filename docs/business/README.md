@@ -27,3 +27,4 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 003 - Create Job Entity Plan](./003-create-job-entity-plan.md)
 - [Task 004 - Create Job Repository Plan](./004-create-job-repository-plan.md)
 - [Task 005 - Create Job Service Plan](./005-create-job-service-plan.md)
+- [Task 006 - Create Job Controller Plan](./006-create-job-controller-plan.md)

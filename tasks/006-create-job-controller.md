@@ -5,6 +5,8 @@
 Read `../AGENTS.md`, `../backend/AGENTS.md`, and `../docs/context.md`
 before starting.
 
+Related plan: `../docs/business/006-create-job-controller-plan.md`.
+
 ## Goal
 
 Expose backend job operations through a Spring MVC controller.
