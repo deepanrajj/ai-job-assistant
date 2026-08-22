@@ -180,6 +180,11 @@ Current API:
 - `GET /api/ai/health`
 - `POST /api/ai/analyze-job`
 - `POST /api/ai/ask-job`
+- `GET /api/jobs`
+- `GET /api/jobs/{id}`
+- `POST /api/jobs`
+- `PUT /api/jobs/{id}`
+- `DELETE /api/jobs/{id}`
 - Swagger UI at `/api/swagger-ui.html`
 - OpenAPI docs at `/api/v3/api-docs`
 

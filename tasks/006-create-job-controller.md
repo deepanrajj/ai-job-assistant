@@ -5,6 +5,8 @@
 Read `../AGENTS.md`, `../backend/AGENTS.md`, and `../docs/context.md`
 before starting.
 
+Related plan: `../docs/business/006-create-job-controller-plan.md`.
+
 ## Goal
 
 Expose backend job operations through a Spring MVC controller.
@@ -40,9 +42,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job controller routes exist.
-- [ ] Requests validate correctly.
-- [ ] Controller tests cover success and validation errors.
+- [x] Job controller routes exist.
+- [x] Requests validate correctly.
+- [x] Controller tests cover success and validation errors.
 
 ## Commit
 

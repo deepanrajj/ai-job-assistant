@@ -16,6 +16,7 @@ Use it for:
 Existing engineering references:
 
 - [`github-pipeline.md`](./github-pipeline.md)
+- [`pr-review.md`](./pr-review.md)
 - [`../architecture.md`](../architecture.md)
 - [`../infrastructure.md`](../infrastructure.md)
 - [`../setup.md`](../setup.md)

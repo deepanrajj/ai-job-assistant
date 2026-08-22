@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 006: Create job controller](../../tasks/006-create-job-controller.md).
+- [ ] [Task 007: Add job CRUD endpoints](../../tasks/007-add-job-crud-endpoints.md).
