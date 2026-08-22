@@ -62,7 +62,7 @@ app `AGENTS.md` files.
 
 ## 2. Categories
 
-Assess every PR against these four categories. Each resolves to `PASS`
+Assess every PR against these five categories. Each resolves to `PASS`
 or `FAIL`. A category is `FAIL` if it has any open `P1` or `P2` finding.
 Nits never fail a category.
 
@@ -71,6 +71,7 @@ Nits never fail a category.
 | **Correctness** | Does the change do what the task and plan state; logic bugs; missing, deleted, or weakened tests; contradictions with the plan. | `AGENTS.md` §0, §2, §4 |
 | **Conventions** | Structure, naming, style, and hygiene violations in the diff. | `backend/AGENTS.md` §1–§3; `frontend/AGENTS.md` §1–§6 |
 | **Safety** | AI provider boundary, secret handling, data-loss risk in persistence changes. | `docs/context.md` §4; `backend/AGENTS.md` §4, §5 |
+| **Reliability** | Unbounded queries, N+1, missing index for a new query path, missing timeouts. | `backend/AGENTS.md` §5; this file §3.3 |
 | **Quality gates** | Coverage-gate integrity, test layering, verification evidence. | `backend/AGENTS.md` §6; `frontend/AGENTS.md` §7; `docs/context.md` §8 |
 
 ## 3. Must-Catch List
@@ -109,7 +110,26 @@ calibration rule in §5.
   standalone `MockMvc` test would do is `P2`. Mocking the very boundary
   a test exists to cross is `P2`.
 
-### 3.3 Safety — AI Boundary And Secrets
+### 3.3 Reliability
+
+Default `P2` — these push toward good defaults without blocking a merge.
+Escalate to `P1` only when the diff introduces an unbounded scan over a
+table expected to grow without limit.
+
+- **Unbounded list endpoints.** A list route returning every row with no
+  pagination or cap. Acceptable while a table is small, but it should be
+  a stated decision, not an accident.
+- **Queries in loops (N+1).** A repository call inside a loop over
+  entities, or a request per rendered row on the frontend.
+- **Missing index for a new query path.** A new derived repository
+  method, filter, sort, or search parameter with no supporting index in
+  the same PR's migrations.
+- **Missing timeouts on outbound calls** (`backend/AGENTS.md` §5), and
+  retries on operations that are not idempotent.
+- **Frontend defaults** (`frontend/AGENTS.md` §2.7 area): a request per
+  keystroke on search inputs, unbounded list rendering.
+
+### 3.4 Safety — AI Boundary And Secrets
 
 - **AI provider boundary (`docs/context.md` §4,
   `backend/AGENTS.md` §5).** Any frontend code calling OpenAI directly,
@@ -126,7 +146,7 @@ calibration rule in §5.
   logs added to the repository. Check `infra/k8s/**` secret manifests
   carry placeholders only.
 
-### 3.4 Persistence And Migrations
+### 3.5 Persistence And Migrations
 
 - **Editing an applied migration (`backend/AGENTS.md` §4,
   `docs/context.md` §10).** Schema changes made by modifying an existing
@@ -151,7 +171,7 @@ calibration rule in §5.
   no matching migration, or a column whose nullability disagrees between
   the migration and the Kotlin type.
 
-### 3.5 API And Error Handling
+### 3.6 API And Error Handling
 
 - **Untyped errors (`backend/AGENTS.md` §3).** `throw Exception(...)`,
   generic `catch (e: Exception)` outside a final boundary that converts
@@ -164,7 +184,7 @@ calibration rule in §5.
   or removed routes without the corresponding update to the Current API
   section of `docs/context.md`. `P2`.
 
-### 3.6 Conventions
+### 3.7 Conventions
 
 - **Kotlin (`backend/AGENTS.md` §2).** `!!`, `var` where `val` works,
   wildcard imports, magic numbers or repeated literals that should be
@@ -188,7 +208,7 @@ calibration rule in §5.
   locked; adding to it is a product decision, not an implementation
   detail.
 
-### 3.7 Documentation
+### 3.8 Documentation
 
 - **Premature checkboxes (`AGENTS.md` §5).** Task or backlog checkboxes
   ticked in a PR whose behaviour is not implemented and verified.
@@ -221,8 +241,8 @@ Calibration:
 
 - A `P1` needs a **concrete failure scenario** — what breaks, for whom,
   with what input — tied to a bullet in §3. A finding whose only impact
-  is style, structure, or hygiene is `P2` or below. Safety (§3.3),
-  data-loss (§3.4), and test-preservation findings keep their `P1`
+  is style, structure, or hygiene is `P2` or below. Safety (§3.4),
+  data-loss (§3.5), and test-preservation findings keep their `P1`
   default.
 - **Check the base branch first.** A defect that already exists on
   `main` and is merely repeated by the diff is `P2` or below, labelled
@@ -311,6 +331,7 @@ Hotspot: yes | no
 | Correctness   | PASS   |
 | Conventions   | FAIL   |
 | Safety        | PASS   |
+| Reliability   | PASS   |
 | Quality gates | PASS   |
 
 Findings: 0 P1 · 2 P2 · 1 nit
