@@ -120,6 +120,10 @@ numbering, and Markdown should still be checked manually.
 When asked to review code, stay in review mode unless the user
 explicitly asks for fixes.
 
+See `docs/engineering/pr-review.md` for the full review procedure:
+inputs to read, categories, the must-catch list, hotspots, severity
+calibration, and fix mode.
+
 Review findings should focus on:
 
 - correctness bugs
