@@ -169,6 +169,45 @@ class JobControllerTest {
     }
 
     @Test
+    fun `rejects a create request with a company longer than the column allows`() {
+        val overlongCompany = "A".repeat(256)
+
+        mockMvc
+            .perform(
+                post("/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"company": "$overlongCompany", "roleTitle": "Backend Engineer"}"""),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("company"))
+    }
+
+    @Test
+    fun `rejects a create request with a salary outside the column precision`() {
+        mockMvc
+            .perform(
+                post("/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """{"company": "Acme Corp", "roleTitle": "Backend Engineer", "salaryMin": 99999999999999}""",
+                    ),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("salaryMin"))
+    }
+
+    @Test
+    fun `rejects a create request with an unknown status value`() {
+        mockMvc
+            .perform(
+                post("/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"company": "Acme Corp", "roleTitle": "Backend Engineer", "status": "NOT_A_STATUS"}"""),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"))
+    }
+
+    @Test
     fun `rejects an update request without a status`() {
         mockMvc
             .perform(

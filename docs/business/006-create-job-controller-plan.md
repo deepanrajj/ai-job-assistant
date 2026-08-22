@@ -1,6 +1,6 @@
 # Task 006 - Create Job Controller Plan
 
-Status: Planned
+Status: Completed
 
 ## Purpose
 
@@ -156,3 +156,22 @@ After implementation and `npm run backend:verify` pass:
 - Update the backlog recommended next task to task 007.
 - Mark this plan `Completed` and add a short verified-state section.
 - Update `docs/context.md` Current API to include the new job routes.
+
+## Verified State
+
+Implemented and verified on the task 006 branch.
+
+- Routes live under `/api/jobs`; `POST` returns 201 and `DELETE`
+  returns 204.
+- `JobResponse` omits `userId`; request DTOs map to the task 005
+  commands.
+- Create without `status` keeps the `CreateJobCommand` `WISHLIST`
+  default; update without `status` returns `400 VALIDATION_FAILED`.
+- Request DTOs constrain length and salary precision to match the
+  `jobs` columns, so oversized input is a validation error rather than
+  a database failure.
+- `npm run backend:verify` passes: ktlint, detekt, 49 tests, and the
+  100 percent JaCoCo gate.
+- Verified manually against local PostgreSQL: Flyway applied V1 and V2,
+  and all five routes plus the validation and not-found paths returned
+  the expected status codes.

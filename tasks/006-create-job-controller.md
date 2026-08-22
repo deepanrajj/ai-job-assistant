@@ -42,9 +42,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job controller routes exist.
-- [ ] Requests validate correctly.
-- [ ] Controller tests cover success and validation errors.
+- [x] Job controller routes exist.
+- [x] Requests validate correctly.
+- [x] Controller tests cover success and validation errors.
 
 ## Commit
 
