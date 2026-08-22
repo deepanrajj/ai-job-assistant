@@ -9,8 +9,12 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.util.UUID
 
+internal val jobFixtureTimestamp: OffsetDateTime = OffsetDateTime.parse("2026-07-05T12:00:00Z")
+
+@Suppress("LongParameterList")
 fun createJobEntity(
     id: UUID = UUID.randomUUID(),
+    userId: UUID? = null,
     company: String = "Acme Corp",
     roleTitle: String = "Backend Engineer",
     location: String? = "Remote",
@@ -19,10 +23,12 @@ fun createJobEntity(
     salaryMin: BigDecimal? = BigDecimal("90000.00"),
     salaryMax: BigDecimal? = BigDecimal("120000.00"),
     description: String? = "Build and maintain backend services.",
+    createdAt: OffsetDateTime = jobFixtureTimestamp,
+    updatedAt: OffsetDateTime = jobFixtureTimestamp,
 ): Job =
     Job(
         id = id,
-        userId = null,
+        userId = userId,
         company = company,
         roleTitle = roleTitle,
         location = location,
@@ -31,8 +37,8 @@ fun createJobEntity(
         salaryMin = salaryMin,
         salaryMax = salaryMax,
         description = description,
-        createdAt = OffsetDateTime.parse("2026-07-05T12:00:00Z"),
-        updatedAt = OffsetDateTime.parse("2026-07-05T12:00:00Z"),
+        createdAt = createdAt,
+        updatedAt = updatedAt,
     )
 
 class FakeJobService : JobService {
