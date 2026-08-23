@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 007: Add job CRUD endpoints](../../tasks/007-add-job-crud-endpoints.md).
+- [ ] [Task 008: Create task entity](../../tasks/008-create-task-entity.md).

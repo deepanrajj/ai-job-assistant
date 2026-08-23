@@ -45,9 +45,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job CRUD works through HTTP.
-- [ ] Response contracts are typed and stable.
-- [ ] Backend verification passes.
+- [x] Job CRUD works through HTTP.
+- [x] Response contracts are typed and stable.
+- [x] Backend verification passes.
 
 ## Commit
 
