@@ -4,6 +4,7 @@ import com.smartjobtracker.jobs.dto.JobResponse
 import com.smartjobtracker.testsupport.jobs.createJobEntity
 import com.smartjobtracker.testsupport.jobs.jobFixtureTimestamp
 import org.assertj.core.api.Assertions.assertThat
+import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
@@ -151,7 +153,7 @@ class JobCrudIntegrationTest {
             ).andExpect(status().isOk)
             .andExpect(jsonPath("$.company").value("New Corp"))
             .andExpect(jsonPath("$.status").value("OFFER"))
-            .andExpect(jsonPath("$.location").doesNotExist())
+            .andExpect(content().string(containsString("\"location\":null")))
 
         val stored = jobRepository.findById(seededId).orElseThrow()
 
