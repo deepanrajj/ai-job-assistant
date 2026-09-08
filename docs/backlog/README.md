@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 008: Create task entity](../../tasks/008-create-task-entity.md).
+- [ ] [Task 009: Create task repository](../../tasks/009-create-task-repository.md).
