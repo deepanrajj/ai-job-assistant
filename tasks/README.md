@@ -1,29 +1,32 @@
-# Numbered Tasks
+# Tasks
 
-This folder contains execution-ready tasks generated from the roadmap in
-`docs/backlog/`.
+Execution-ready work units. There are two kinds, numbered in separate
+sequences so they never collide:
 
-Rules:
+- [`roadmap/`](./roadmap/README.md) - roadmap tasks generated from the
+  phase plan in `../docs/backlog/`, numbered `001` upward.
+- [`bugs/`](./bugs/README.md) - defects found in review, testing, or use,
+  numbered `bug-001` upward.
 
-- Do one task at a time.
+Each folder's README owns its own convention: file naming, numbering,
+template, branch name, and commit prefix.
+
+## Rules For Both
+
+- Do one at a time.
 - Read `../AGENTS.md` and `../docs/context.md` first.
 - Read `../frontend/AGENTS.md` before frontend changes.
 - Read `../backend/AGENTS.md` before backend changes.
-- Keep the task scope tight.
-- Update the matching backlog checkbox when the task is complete.
+- Keep the scope tight. The task or bug file is the execution boundary.
+- Run the verification in the file before marking it complete
+  (`../AGENTS.md` §3).
+- Update the file's checkboxes only when the behaviour is implemented
+  and verified (`../AGENTS.md` §5).
 
-## Phase Mapping
+## Choosing Between Them
 
-- `001`-`019`: Phase 3 backend foundation.
-- `020`-`035`: Phase 4 frontend/backend integration.
-- `036`-`050`: Phase 5 core and advanced non-AI workflows.
-- `051`-`058`: Phase 6 authentication, user-owned data, and AI billing foundation.
-- `059`-`067`: Phase 7 integrated paid AI workflows.
-- `068`-`076`: Phase 8 portfolio and production polish.
-
-## Deferred Ideas
-
-The previous pgvector, embedding, job chunk, and RAG tasks are deferred.
-They are not execution-ready tasks because the final product direction
-prioritizes workflow-integrated AI, duplicate detection, paid access,
-and editable application materials first.
+File roadmap work in `roadmap/`. File a defect in `bugs/` when it is
+already-shipped behaviour that is wrong, and the fix is out of scope for
+the change that found it, needs its own decision, or is larger than that
+change. A cheap, in-scope defect found during review is fixed in that
+change rather than filed.

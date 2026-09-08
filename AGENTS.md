@@ -45,8 +45,8 @@ frontend/   React + Vite frontend
 backend/    Kotlin + Spring Boot backend
 infra/      Docker, Nginx, Kubernetes, and local runtime scripts
 docs/       context, setup, architecture, backlog, and planning docs
-tasks/      numbered implementation tasks
-templates/  reusable task templates
+tasks/      roadmap tasks in tasks/roadmap/, defects in tasks/bugs/
+templates/  reusable task and bug templates
 ```
 
 Read the more specific instructions before editing inside an app:
@@ -61,7 +61,7 @@ wins for product and architecture intent.
 
 - Execute exactly one numbered task at a time when a task file is
   present.
-- Task files live in `tasks/<number>-<slug>.md`.
+- Task files live in `tasks/roadmap/<number>-<slug>.md`.
 - Do not infer extra scope from a phase checklist item. The task file
   is the execution boundary.
 - For multiple sequential tasks, complete one task before starting the
@@ -78,6 +78,17 @@ Examples:
 task-001: add postgresql docker service
 task-020: add frontend job service
 ```
+
+Defects are tracked separately from roadmap tasks. Bug files live in
+`tasks/bugs/bug-<number>-<slug>.md` with their own numbering
+sequence, use `templates/bug-template.md`, and commit as:
+
+```text
+bug-<number>: <one-line summary>
+```
+
+See `tasks/bugs/README.md` for when to file a bug rather than fix it
+in the change that found it.
 
 ## 3. Verification
 

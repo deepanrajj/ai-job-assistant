@@ -16,14 +16,14 @@ after free tries.
 
 ## Tasks
 
-- [ ] [Add authentication](../../tasks/051-add-authentication.md).
-- [ ] [Add user specific jobs](../../tasks/052-add-user-specific-jobs.md).
-- [ ] [Add AI usage entitlement model](../../tasks/053-add-ai-usage-entitlement-model.md).
-- [ ] [Add free AI credit gate](../../tasks/054-add-free-ai-credit-gate.md).
-- [ ] [Add Stripe checkout and customer portal](../../tasks/055-add-stripe-checkout-and-customer-portal.md).
-- [ ] [Add Stripe webhook entitlement sync](../../tasks/056-add-stripe-webhook-entitlement-sync.md).
-- [ ] [Add AI usage and upgrade UI](../../tasks/057-add-ai-usage-and-upgrade-ui.md).
-- [ ] [Add paid AI safe logging and rate limiting](../../tasks/058-add-paid-ai-safe-logging-and-rate-limiting.md).
+- [ ] [Add authentication](../../tasks/roadmap/051-add-authentication.md).
+- [ ] [Add user specific jobs](../../tasks/roadmap/052-add-user-specific-jobs.md).
+- [ ] [Add AI usage entitlement model](../../tasks/roadmap/053-add-ai-usage-entitlement-model.md).
+- [ ] [Add free AI credit gate](../../tasks/roadmap/054-add-free-ai-credit-gate.md).
+- [ ] [Add Stripe checkout and customer portal](../../tasks/roadmap/055-add-stripe-checkout-and-customer-portal.md).
+- [ ] [Add Stripe webhook entitlement sync](../../tasks/roadmap/056-add-stripe-webhook-entitlement-sync.md).
+- [ ] [Add AI usage and upgrade UI](../../tasks/roadmap/057-add-ai-usage-and-upgrade-ui.md).
+- [ ] [Add paid AI safe logging and rate limiting](../../tasks/roadmap/058-add-paid-ai-safe-logging-and-rate-limiting.md).
 
 ## Acceptance Criteria
 

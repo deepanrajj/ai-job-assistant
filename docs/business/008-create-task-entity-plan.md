@@ -16,7 +16,7 @@ deleted.
 - `backend/AGENTS.md`
 - `docs/context.md`
 - `docs/engineering/pr-review.md`
-- `tasks/008-create-task-entity.md`
+- `tasks/roadmap/008-create-task-entity.md`
 - `docs/business/003-create-job-entity-plan.md`
 
 ## Current State
@@ -47,7 +47,7 @@ The foreign key is declared `ON DELETE CASCADE`, so the database
 removes a job's tasks when the job is removed. A preparation task has
 no meaning without its job.
 
-This is what `tasks/008-create-task-entity.md` means by preserving job
+This is what `tasks/roadmap/008-create-task-entity.md` means by preserving job
 deletion behaviour intentionally. Without a decision here, the new
 foreign key would make `DELETE /api/jobs/{id}` fail with a constraint
 violation as soon as a job had tasks, and the existing task 007

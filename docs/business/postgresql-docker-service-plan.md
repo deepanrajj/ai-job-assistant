@@ -15,7 +15,7 @@ details so future persistence tasks can reference them.
 - `AGENTS.md`
 - `docs/context.md`
 - `docs/infrastructure.md`
-- `tasks/001-add-postgresql-docker-service.md`
+- `tasks/roadmap/001-add-postgresql-docker-service.md`
 - `backend/AGENTS.md`
 
 ## Current State Verified
