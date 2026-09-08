@@ -10,6 +10,7 @@ GitHub together with implementation changes.
 - [Architecture](./architecture.md)
 - [Infrastructure](./infrastructure.md)
 - [Swagger Setup](./swagger.md)
+- [API Requests](./api/README.md)
 - [Business Planning](./business/README.md)
 - [Engineering Notes](./engineering/README.md)
 - [Backlog Overview](./backlog/README.md)
