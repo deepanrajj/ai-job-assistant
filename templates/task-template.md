@@ -2,10 +2,11 @@
 
 ## Instructions
 
-Read these files before starting:
+Read these files before starting (paths are relative to the created
+file in `tasks/roadmap/`, not to this template):
 
-- `../AGENTS.md`
-- `../docs/context.md`
+- `../../AGENTS.md`
+- `../../docs/context.md`
 - `<app-specific AGENTS.md when editing frontend or backend>`
 
 Follow `AGENTS.md` exactly. Implement this task only. Do not expand

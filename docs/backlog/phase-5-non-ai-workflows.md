@@ -5,21 +5,21 @@ before adding paid AI workflows.
 
 ## Tasks
 
-- [ ] [Add final navigation structure](../../tasks/036-add-final-navigation-structure.md).
-- [ ] [Add Kanban pipeline view](../../tasks/037-add-kanban-pipeline-view.md).
-- [ ] [Add job source tracking](../../tasks/038-add-job-source-tracking.md).
-- [ ] [Add job contacts](../../tasks/039-add-job-contacts.md).
-- [ ] [Add reminders](../../tasks/040-add-reminders.md).
-- [ ] [Add application documents](../../tasks/041-add-application-documents.md).
-- [ ] [Add calendar view](../../tasks/042-add-calendar-view.md).
-- [ ] [Add dashboard insights](../../tasks/043-add-dashboard-insights.md).
-- [ ] [Add profile and resume library](../../tasks/044-add-profile-resume-library.md).
-- [ ] [Add skills inventory and job preferences](../../tasks/045-add-skills-inventory-and-preferences.md).
-- [ ] [Add Discover saved searches](../../tasks/046-add-discover-saved-searches.md).
-- [ ] [Add import candidate review workflow](../../tasks/047-add-import-candidate-review-workflow.md).
-- [ ] [Add import duplicate detection](../../tasks/048-add-import-duplicate-detection.md).
-- [ ] [Add bulk import selected jobs](../../tasks/049-add-bulk-import-selected-jobs.md).
-- [ ] [Add manual duplicate warning](../../tasks/050-add-manual-duplicate-warning.md).
+- [ ] [Add final navigation structure](../../tasks/roadmap/036-add-final-navigation-structure.md).
+- [ ] [Add Kanban pipeline view](../../tasks/roadmap/037-add-kanban-pipeline-view.md).
+- [ ] [Add job source tracking](../../tasks/roadmap/038-add-job-source-tracking.md).
+- [ ] [Add job contacts](../../tasks/roadmap/039-add-job-contacts.md).
+- [ ] [Add reminders](../../tasks/roadmap/040-add-reminders.md).
+- [ ] [Add application documents](../../tasks/roadmap/041-add-application-documents.md).
+- [ ] [Add calendar view](../../tasks/roadmap/042-add-calendar-view.md).
+- [ ] [Add dashboard insights](../../tasks/roadmap/043-add-dashboard-insights.md).
+- [ ] [Add profile and resume library](../../tasks/roadmap/044-add-profile-resume-library.md).
+- [ ] [Add skills inventory and job preferences](../../tasks/roadmap/045-add-skills-inventory-and-preferences.md).
+- [ ] [Add Discover saved searches](../../tasks/roadmap/046-add-discover-saved-searches.md).
+- [ ] [Add import candidate review workflow](../../tasks/roadmap/047-add-import-candidate-review-workflow.md).
+- [ ] [Add import duplicate detection](../../tasks/roadmap/048-add-import-duplicate-detection.md).
+- [ ] [Add bulk import selected jobs](../../tasks/roadmap/049-add-bulk-import-selected-jobs.md).
+- [ ] [Add manual duplicate warning](../../tasks/roadmap/050-add-manual-duplicate-warning.md).
 
 ## Acceptance Criteria
 

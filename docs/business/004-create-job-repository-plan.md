@@ -14,7 +14,7 @@ HTTP API or adding authentication-specific ownership rules.
 - `AGENTS.md`
 - `backend/AGENTS.md`
 - `docs/context.md`
-- `tasks/004-create-job-repository.md`
+- `tasks/roadmap/004-create-job-repository.md`
 - `docs/business/003-create-job-entity-plan.md`
 
 ## Completed State Verified

@@ -30,3 +30,4 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 006 - Create Job Controller Plan](./006-create-job-controller-plan.md)
 - [Task 007 - Add Job CRUD Endpoints Plan](./007-add-job-crud-endpoints-plan.md)
 - [Task 008 - Create Task Entity Plan](./008-create-task-entity-plan.md)
+- [Task 009 - Create Task Repository Plan](./009-create-task-repository-plan.md)

@@ -36,8 +36,9 @@ win.
 
 Always read:
 
-- The PR description and the linked `tasks/<number>-<slug>.md`. **The
-  task file is the scope boundary** (`AGENTS.md` §2).
+- The PR description and the linked `tasks/roadmap/<number>-<slug>.md`, or
+  `tasks/bugs/bug-<number>-<slug>.md` for a defect fix. **That file is
+  the scope boundary** (`AGENTS.md` §2).
 - Any plan the task references under `docs/business/`. Plans are
   authoritative for intent; a diff that contradicts its plan is a
   finding even when it compiles and tests pass.
@@ -336,7 +337,7 @@ Hotspot: yes | no
 
 Findings: 0 P1 · 2 P2 · 1 nit
 
-Inputs read: tasks/006-create-job-controller.md,
+Inputs read: tasks/roadmap/006-create-job-controller.md,
 docs/business/006-create-job-controller-plan.md, backend/AGENTS.md
 ```
 

@@ -16,7 +16,7 @@ fake or builds by hand.
 - `backend/AGENTS.md`
 - `docs/context.md`
 - `docs/engineering/pr-review.md`
-- `tasks/007-add-job-crud-endpoints.md`
+- `tasks/roadmap/007-add-job-crud-endpoints.md`
 - `docs/business/006-create-job-controller-plan.md`
 
 ## Current State Verified

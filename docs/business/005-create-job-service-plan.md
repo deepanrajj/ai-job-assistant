@@ -14,7 +14,7 @@ rules.
 - `AGENTS.md`
 - `backend/AGENTS.md`
 - `docs/context.md`
-- `tasks/005-create-job-service.md`
+- `tasks/roadmap/005-create-job-service.md`
 - `docs/business/004-create-job-repository-plan.md`
 
 ## Completed State Verified

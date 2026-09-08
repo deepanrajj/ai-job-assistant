@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 009: Create task repository](../../tasks/009-create-task-repository.md).
+- [ ] [Task 010: Create task service](../../tasks/roadmap/010-create-task-service.md).

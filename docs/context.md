@@ -103,6 +103,9 @@ Backend currently has:
 - generated Swagger/OpenAPI documentation
 - PostgreSQL datasource configuration, Flyway migration setup, and a
   saved-job JPA entity, repository, and service layer
+- job CRUD endpoints under `/api/jobs`
+- a job-task JPA entity and repository, with tasks cascading on job
+  deletion
 - backend tests and coverage gate
 
 Local infrastructure currently has:
@@ -255,8 +258,10 @@ report, and coverage verification.
 - `docs/infrastructure.md` - Docker and Kubernetes runtime.
 - `docs/swagger.md` - generated API docs setup.
 - `docs/backlog/` - phase roadmap.
-- `tasks/` - execution-ready numbered tasks.
+- `tasks/roadmap/` - execution-ready numbered tasks.
+- `tasks/bugs/` - defect tickets, numbered separately from tasks.
 - `templates/task-template.md` - canonical task file template.
+- `templates/bug-template.md` - canonical bug file template.
 
 ## 10. Non-Goals For Now
 

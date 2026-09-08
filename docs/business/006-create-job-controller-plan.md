@@ -14,7 +14,7 @@ task 005.
 - `AGENTS.md`
 - `backend/AGENTS.md`
 - `docs/context.md`
-- `tasks/006-create-job-controller.md`
+- `tasks/roadmap/006-create-job-controller.md`
 - `docs/business/005-create-job-service-plan.md`
 
 ## Proposed Controller

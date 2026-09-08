@@ -13,7 +13,7 @@ without exposing any HTTP API contract yet.
 - `AGENTS.md`
 - `backend/AGENTS.md`
 - `docs/context.md`
-- `tasks/003-create-job-entity.md`
+- `tasks/roadmap/003-create-job-entity.md`
 - `docs/business/002-flyway-migration-setup-plan.md`
 
 ## Completed State Verified
@@ -118,7 +118,7 @@ that Flyway-created schema supports saving/loading a job.
 
 ## Files Updated
 
-### `tasks/003-create-job-entity.md`
+### `tasks/roadmap/003-create-job-entity.md`
 
 Acceptance criteria are marked complete.
 
