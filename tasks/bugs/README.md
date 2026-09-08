@@ -1,0 +1,42 @@
+# Bug Tickets
+
+Defects found in review, testing, or use. These are execution-ready in
+the same way numbered tasks are, but they are not roadmap work: they
+belong to no phase and can be scheduled whenever. Rules shared with
+roadmap tasks live in `../README.md`.
+
+## Convention
+
+- Files live in `tasks/bugs/bug-<number>-<slug>.md`.
+- Numbering is its own sequence starting at `bug-001`, independent of
+  the roadmap numbers in `tasks/`. A defect never consumes a task
+  number, and the two sequences cannot collide.
+- Use `../../templates/bug-template.md` for new bug files.
+- Branch name: `fix/bug-<number>-<slug>`.
+- Commit message: `bug-<number>: <one-line summary>`.
+- Bugs are not listed in `../../docs/backlog/` phase files. That folder
+  tracks the roadmap; this file is the index for defects.
+
+## Rules
+
+- One bug per file. Two symptoms with one root cause are one bug; one
+  symptom with two causes is two.
+- Record the root cause as a code path, not a guess. Write "not yet
+  diagnosed" when it is unknown, and make diagnosis the first step.
+- Every fix needs a regression test that **fails before the fix**. Verify
+  that it fails; a test that passes either way proves nothing.
+- Note whether a defect is pre-existing or newly introduced. It changes
+  how urgent it is and who should decide.
+- A defect found during review that is cheap and in scope should be
+  fixed in that change instead of filed here. File a bug when the fix is
+  out of scope, needs its own decision, or is larger than the change
+  that found it.
+
+## Open
+
+- [ ] [Bug 001: assigned-id entities take the merge path on save](./bug-001-assigned-id-entities-merge-on-save.md)
+      — P2, from the task 009 branch review.
+
+## Fixed
+
+None yet.
