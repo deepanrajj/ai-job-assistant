@@ -19,7 +19,7 @@ not try.
 Start the backend, then in Postman choose **Import - Link** and paste:
 
 ```text
-http://localhost:4000/api/v3/api-docs
+http://localhost:30080/api/v3/api-docs
 ```
 
 Postman builds a request for every endpoint from the controllers and
@@ -29,8 +29,11 @@ Swagger UI is the same information in a browser, and can fire requests
 itself:
 
 ```text
-http://localhost:4000/api/swagger-ui.html
+http://localhost:30080/api/swagger-ui.html
 ```
+
+Both URLs are on port 4000 instead when the backend runs as a direct
+process rather than in the cluster; see Running it below.
 
 See [`../swagger.md`](../swagger.md) for how the generation is set up.
 
@@ -38,11 +41,14 @@ See [`../swagger.md`](../swagger.md) for how the generation is set up.
 
 ```text
 smart-job-tracker.postman_collection.json
+smart-job-tracker-cluster.postman_environment.json
 smart-job-tracker-local.postman_environment.json
 ```
 
-Import both, then select **Smart Job Tracker - Local** in the
-environment dropdown.
+Import the collection and whichever environment matches how you are
+running the backend, then select it in the environment dropdown. Both
+environments define the same `baseUrl` variable and differ only in its
+value, so switching runtime is switching environment.
 
 What it adds over the generated spec:
 
@@ -61,25 +67,34 @@ What it adds over the generated spec:
 
 ## Running it
 
-Start the backend with either runtime:
-
-```bash
-npm run dev:local
-```
+The default runtime is the local Kubernetes cluster:
 
 ```bash
 npm run dev
 ```
 
-`npm run dev:local` serves the backend on `http://localhost:4000/api`,
-which is what `baseUrl` points at. `npm run dev` runs the Kubernetes
-stack, where Nginx proxies the API on port 30080 - switch to the
-`baseUrlCluster` variable in the environment for that.
+That serves the API through the Nginx proxy on port 30080 and forwards
+PostgreSQL to 5434. Use the **Cluster** environment with it.
+
+To run the backend as a direct process instead, it still needs a
+database, so forward PostgreSQL in one terminal:
+
+```bash
+npm run db:forward
+```
+
+and start the backend in another:
+
+```bash
+npm run dev:backend
+```
+
+That serves the API on port 4000. Use the **Local** environment with it.
 
 To run the whole folder from the command line with Newman:
 
 ```bash
-npx newman run docs/api/smart-job-tracker.postman_collection.json -e docs/api/smart-job-tracker-local.postman_environment.json --folder Jobs
+npx newman run docs/api/smart-job-tracker.postman_collection.json -e docs/api/smart-job-tracker-cluster.postman_environment.json --folder Jobs
 ```
 
 Newman is not a project dependency, and these requests are not part of
