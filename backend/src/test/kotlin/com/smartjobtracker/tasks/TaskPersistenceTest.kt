@@ -1,7 +1,7 @@
 package com.smartjobtracker.tasks
 
 import com.smartjobtracker.jobs.Job
-import com.smartjobtracker.jobs.JobStatus
+import com.smartjobtracker.testsupport.jobs.createJobEntity
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.persistence.PersistenceException
@@ -18,26 +18,15 @@ import java.util.UUID
 @SpringBootTest
 @Transactional
 class TaskPersistenceTest {
+    private val taskTimestamp: OffsetDateTime = OffsetDateTime.parse("2026-07-05T12:00:00Z")
+
+    private val taskDueDate: LocalDate = LocalDate.parse("2026-08-25")
+
     @PersistenceContext
     lateinit var entityManager: EntityManager
 
     private fun persistJob(): Job {
-        val timestamp = OffsetDateTime.parse("2026-07-05T12:00:00Z")
-        val job =
-            Job(
-                id = UUID.randomUUID(),
-                userId = null,
-                company = "Acme Corp",
-                roleTitle = "Backend Engineer",
-                location = "Remote",
-                status = JobStatus.APPLIED,
-                jobUrl = "https://example.com/jobs/1",
-                salaryMin = null,
-                salaryMax = null,
-                description = null,
-                createdAt = timestamp,
-                updatedAt = timestamp,
-            )
+        val job = createJobEntity()
         entityManager.persist(job)
 
         return job
@@ -45,20 +34,17 @@ class TaskPersistenceTest {
 
     private fun newTask(
         jobId: UUID,
-        dueDate: LocalDate? = LocalDate.parse("2026-08-25"),
-    ): Task {
-        val timestamp = OffsetDateTime.parse("2026-07-05T12:00:00Z")
-
-        return Task(
+        dueDate: LocalDate? = taskDueDate,
+    ): Task =
+        Task(
             id = UUID.randomUUID(),
             jobId = jobId,
             title = "Prepare system design answers",
             status = TaskStatus.TODO,
             dueDate = dueDate,
-            createdAt = timestamp,
-            updatedAt = timestamp,
+            createdAt = taskTimestamp,
+            updatedAt = taskTimestamp,
         )
-    }
 
     @Test
     fun `persists a task and reads every column back from the tasks table`() {
@@ -75,9 +61,9 @@ class TaskPersistenceTest {
         assertThat(loaded.jobId).isEqualTo(job.id)
         assertThat(loaded.title).isEqualTo("Prepare system design answers")
         assertThat(loaded.status).isEqualTo(TaskStatus.TODO)
-        assertThat(loaded.dueDate).isEqualTo(LocalDate.parse("2026-08-25"))
-        assertThat(loaded.createdAt.toInstant()).isEqualTo(task.createdAt.toInstant())
-        assertThat(loaded.updatedAt.toInstant()).isEqualTo(task.updatedAt.toInstant())
+        assertThat(loaded.dueDate).isEqualTo(taskDueDate)
+        assertThat(loaded.createdAt.toInstant()).isEqualTo(taskTimestamp.toInstant())
+        assertThat(loaded.updatedAt.toInstant()).isEqualTo(taskTimestamp.toInstant())
     }
 
     @Test
