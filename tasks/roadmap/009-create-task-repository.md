@@ -2,7 +2,7 @@
 
 ## Instructions
 
-Read `../AGENTS.md`, `../backend/AGENTS.md`, and `../docs/context.md`
+Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`
 before starting.
 
 ## Goal
@@ -37,9 +37,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Task repository compiles.
-- [ ] Queries support the upcoming service.
-- [ ] No unrelated methods are added.
+- [x] Task repository compiles.
+- [x] Queries support the upcoming service.
+- [x] No unrelated methods are added.
 
 ## Commit
 
