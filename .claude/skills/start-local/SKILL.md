@@ -133,6 +133,21 @@ http://localhost:30080/api/ai/health
 The health endpoint returning `{"ok":true}` means the frontend proxy and
 the backend are both wired up.
 
+`ai/health` does not touch the database, so prove the persistence path
+separately with a create and a delete:
+
+```bash
+curl -s -X POST http://localhost:30080/api/jobs -H "Content-Type: application/json" -d '{"company":"Smoke Test Corp","roleTitle":"Backend Engineer"}'
+```
+
+A `201` with a generated `id` and `"status":"WISHLIST"` means the
+controller, service, repository, and Flyway-created schema all work.
+Delete it afterwards so the check leaves no rows behind:
+
+```bash
+curl -s -X DELETE http://localhost:30080/api/jobs/<id> -w "%{http_code}\n"
+```
+
 ## When it will not start
 
 | Symptom | Cause | Fix |
@@ -143,7 +158,9 @@ the backend are both wired up.
 | `ErrImageNeverPull` or `ImagePullBackOff` | images never reached the node | `npm run docker:build && npm run k8s:load-images` |
 | `k8s:load-images` fails on `docker exec` | node name is not `desktop-control-plane` | `kubectl get nodes`, then set `K8S_NODE_NAME` to the real name |
 | `k8s:wait` times out | a pod is crash-looping | `kubectl describe pod <name> -n smart-job-tracker` and `kubectl logs <name> -n smart-job-tracker` |
-| Backend pod crash-loops on start | PostgreSQL not ready, or the password does not match the secret | check the postgres pod first; Flyway runs at startup and fails loudly |
+| Backend pod shows 1-2 restarts but is now `Running` and ready | expected on a cold cluster: the backend booted before PostgreSQL accepted connections, so Flyway failed and the pod restarted until it could connect | nothing to do; there is no startup ordering, so the restart *is* the retry |
+| Backend pod crash-loops and never becomes ready | password does not match the secret, or PostgreSQL itself is failing | check the postgres pod first, then `kubectl logs deployment/smart-job-tracker-backend -n smart-job-tracker --previous` for the real cause |
+| Pods stuck in `CreateContainerConfigError` | the secret exists but is missing a key a deployment references | check both keys are present, then `kubectl rollout restart` the affected deployment |
 | `address already in use` on 30080 or 5434 | a port forward from an earlier run is still alive | see the `stop-local` skill |
 | Data from the last session is gone | expected | PostgreSQL uses `emptyDir`; recreating the pod resets it |
 
