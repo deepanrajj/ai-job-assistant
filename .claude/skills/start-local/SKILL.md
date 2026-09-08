@@ -38,6 +38,37 @@ Step 4 is not optional and not a speed-up. Both deployments set
 `imagePullPolicy: Never`, so a pod that cannot find the image locally
 fails with `ErrImageNeverPull` rather than pulling from a registry.
 
+## Preflight
+
+Check these before running anything. `npm run dev` builds Docker images
+at step 3, so a cluster problem discovered at step 5 has already cost
+several minutes.
+
+```bash
+kubectl config current-context && kubectl get nodes && docker info --format '{{.ServerVersion}}'
+```
+
+Expect a context name, one node in `Ready`, and a Docker version.
+
+`current-context is not set`, or `kubectl` retrying
+`http://localhost:8080`, means there is no cluster configured at all -
+that address is its fallback when the kubeconfig has no clusters in it.
+Confirm with `kubectl config get-contexts`; an empty table and a
+28-byte `~/.kube/config` containing only `apiVersion: v1` and
+`kind: Config` mean Kubernetes has never been enabled in Docker Desktop.
+
+Enabling it is a Docker Desktop settings change, so ask the user to do
+it rather than doing it for them: **Settings - Kubernetes - Enable
+Kubernetes - Apply & Restart**, then wait for the indicator to turn
+green. The first provision pulls control-plane images and is not quick.
+
+Note the node name that `kubectl get nodes` prints. `k8s:load-images`
+defaults to `desktop-control-plane`; a different name needs
+`K8S_NODE_NAME` set to match.
+
+A freshly enabled cluster has no namespace and no secret, so create both
+before the first `npm run dev`.
+
 ## Prerequisites
 
 - Docker Desktop running, with Kubernetes enabled and green.
@@ -106,6 +137,8 @@ the backend are both wired up.
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
+| `current-context is not set`, or kubectl retries `localhost:8080` | Kubernetes not enabled in Docker Desktop; the kubeconfig has no clusters | see Preflight - the user enables it in Docker Desktop settings |
+| Step 1 fails on `kubectl apply` but Docker itself is fine | same cause; a running Docker daemon says nothing about Kubernetes | as above |
 | Fails immediately at step 2, no useful message | secret missing, or it exists with only one of the two keys | recreate it with the `kubectl create secret` command above |
 | `ErrImageNeverPull` or `ImagePullBackOff` | images never reached the node | `npm run docker:build && npm run k8s:load-images` |
 | `k8s:load-images` fails on `docker exec` | node name is not `desktop-control-plane` | `kubectl get nodes`, then set `K8S_NODE_NAME` to the real name |
