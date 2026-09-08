@@ -1,6 +1,6 @@
 # Bug 001 - Assigned-Id Entities Take The Merge Path On Save
 
-Status: Open
+Status: Fixed
 Severity: P2
 Reported: task 009 branch review
 
@@ -113,16 +113,38 @@ npm run backend:verify
 
 ## Acceptance Criteria
 
-- [ ] Creating a `Job` or `Task` no longer issues a select before the
+- [x] Creating a `Job` or `Task` no longer issues a select before the
       insert.
-- [ ] A regression test covers it and was seen to fail before the fix.
-- [ ] `Job` and `Task` use the same mechanism.
-- [ ] Existing tests pass unchanged.
-- [ ] Backend verification passes.
-- [ ] No unrelated files are changed.
+- [x] A regression test covers it and was seen to fail before the fix.
+- [x] `Job` and `Task` use the same mechanism.
+- [x] Existing tests pass unchanged.
+- [x] Backend verification passes.
+- [x] No unrelated files are changed.
 
 ## Commit
 
 ```text
 bug-001: stop assigned-id entities merging on save
 ```
+
+## Resolution
+
+Fixed by option 2. `AssignedIdEntity`, a `@MappedSuperclass` in
+`com.smartjobtracker.persistence`, implements `Persistable<UUID>` and
+owns the assigned id plus a `@Transient` flag cleared by `@PostPersist`
+and `@PostLoad`. `Job` and `Task` extend it.
+
+The consequence this ticket did not anticipate: with `Persistable`, a
+rebuilt instance carrying an existing id reports itself as new, so
+`DefaultJobService.updateJob` could no longer construct a replacement
+`Job`. It now mutates the loaded entity and lets dirty checking write
+the update, which made `Job`'s editable columns `var`.
+
+That turned out to fix a third defect this ticket did not name. Before
+the change, saving a rebuilt entity over an existing id silently
+overwrote the stored row, because merge copies values onto whatever is
+there. It now raises `DuplicateKeyException`, so `save` can tell a
+create from an update.
+
+Reasoning and rejected alternatives:
+`../../docs/business/bug-001-assigned-id-entities-merge-on-save-plan.md`.
