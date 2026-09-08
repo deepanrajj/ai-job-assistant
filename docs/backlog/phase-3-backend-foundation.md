@@ -13,7 +13,7 @@ Goal: create the Spring Boot Kotlin backend for persisted tracker data.
 - [x] [Create job service](../../tasks/005-create-job-service.md).
 - [x] [Create job controller](../../tasks/006-create-job-controller.md).
 - [x] [Add job CRUD endpoints](../../tasks/007-add-job-crud-endpoints.md).
-- [ ] [Create task entity](../../tasks/008-create-task-entity.md).
+- [x] [Create task entity](../../tasks/008-create-task-entity.md).
 - [ ] [Create task repository](../../tasks/009-create-task-repository.md).
 - [ ] [Create task service](../../tasks/010-create-task-service.md).
 - [ ] [Create task controller](../../tasks/011-create-task-controller.md).

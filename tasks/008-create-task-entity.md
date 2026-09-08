@@ -36,9 +36,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Task schema exists.
-- [ ] Task entity maps to a job.
-- [ ] No task API is introduced yet.
+- [x] Task schema exists.
+- [x] Task entity maps to a job.
+- [x] No task API is introduced yet.
 
 ## Commit
 
