@@ -30,3 +30,6 @@ infra/k8s/local/smart-job-tracker-secrets.yaml
 
 # Local tooling not part of this project
 ble.sh/
+
+# Per-machine Claude Code permissions; shared skills in .claude/skills are tracked
+.claude/settings.local.json
