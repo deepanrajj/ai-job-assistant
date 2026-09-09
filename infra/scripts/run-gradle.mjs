@@ -17,9 +17,17 @@ const backendDirectory = 'backend';
  * would arrive as two arguments. The quoting happens here instead.
  *
  * The empty string is quoted explicitly. The pattern below cannot match
- * it, so without the first clause an empty argument contributes nothing
- * to the joined command line and silently disappears, while the POSIX
+ * it, so without that clause an empty argument contributes nothing to
+ * the joined command line and silently disappears, while the POSIX
  * branch passes it through as its own argv entry.
+ *
+ * Backslashes need doubling in two places, because the C runtime that
+ * parses `java.exe`'s command line treats a backslash as an escape only
+ * when it precedes a quote or the closing delimiter. A path ending in a
+ * separator, which is how Windows Explorer copies one, would otherwise
+ * escape its own closing quote: `C:\my builds\` becomes
+ * `"C:\my builds\"`, the argument never terminates, and it swallows
+ * whatever follows.
  *
  * One difference remains and cannot be fixed here: cmd expands `%NAME%`
  * inside arguments, including inside double quotes, so a value holding
@@ -27,10 +35,17 @@ const backendDirectory = 'backend';
  * that means avoiding cmd, which is not possible while the launcher is
  * a `.bat` file.
  */
-const quoteForCmd = (argument) =>
-  argument === '' || /[\s"&|<>^()]/.test(argument)
-    ? `"${argument.replace(/"/g, '\\"')}"`
-    : argument;
+const quoteForCmd = (argument) => {
+  if (argument !== '' && !/[\s"&|<>^()]/.test(argument)) {
+    return argument;
+  }
+
+  const escaped = argument
+    .replace(/(\\*)"/g, '$1$1\\"')
+    .replace(/(\\+)$/, '$1$1');
+
+  return `"${escaped}"`;
+};
 
 /**
  * The launcher stays relative to `cwd` rather than being resolved to an
