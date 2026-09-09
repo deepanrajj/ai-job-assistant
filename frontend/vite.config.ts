@@ -31,5 +31,14 @@ export default defineConfig({
     environment: 'jsdom',
     restoreMocks: true,
     setupFiles: './src/test/setupTests.ts',
+    // Vitest defaults to 5000ms, which suits fast unit tests. Tests here
+    // pay for Vite transforms and jsdom React rendering before any
+    // assertion runs - router.test.ts alone spends about 3s transforming
+    // lazy route modules - so under the full 107-file suite the unluckiest
+    // test would exceed the default and fail while passing in isolation.
+    // This raises the ceiling; it does not slow anything down or weaken an
+    // assertion. A test that genuinely approaches this budget is too slow
+    // and should be split, as JobDetailActivePanel.test.tsx was.
+    testTimeout: 15000,
   },
 });
