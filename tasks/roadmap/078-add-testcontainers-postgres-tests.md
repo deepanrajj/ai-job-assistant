@@ -161,8 +161,9 @@ explicitly rather than assuming it.
 - [x] `npm run backend:verify` is unchanged in behaviour and still
       needs no Docker.
 - [x] The integration source set does not distort the JaCoCo gate.
-- [ ] A CI job runs the PostgreSQL tests on every pull request. Added;
-      pending its first run on this pull request.
+- [x] A CI job runs the PostgreSQL tests on every pull request.
+      Confirmed on pull request 14: Backend Integration success on
+      ubuntu-latest.
 - [x] Any real behavioural difference found between H2 and PostgreSQL
       is filed in `../bugs/`, not fixed here.
 - [x] No unrelated files are changed.
