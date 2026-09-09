@@ -77,3 +77,44 @@ jobs:
 
       - name: Verify backend
         run: npm run backend:verify
+
+  backend-integration:
+    name: Backend Integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Install root dependencies
+        run: npm ci
+
+      # Runs separately from Backend Verify because it starts a real
+      # PostgreSQL container and so needs Docker, which ubuntu runners
+      # provide. Keeping it out of backend:verify is what lets the
+      # everyday check stay hermetic.
+      - name: Run backend integration tests
+        run: npm run backend:test:integration
+
+      - name: Upload integration test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-integration-test-report
+          path: backend/build/reports/tests/integrationTest
+          retention-days: 7
