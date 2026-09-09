@@ -223,20 +223,58 @@ Each layer only earns its place by catching something the layer below
 cannot. Browser tests that re-assert validation rules already covered by
 component tests are cost without cover.
 
-## Proposed Work Units
+## Work Units
 
-Not yet numbered; numbering and scheduling are the user's call.
-
-| # | Work | Depends on | Value |
+| # | Task | Work | Depends on |
 | --- | --- | --- | --- |
-| A | Make backend npm scripts cross-platform; move backend CI to `ubuntu-latest` | none | unblocks everything below; faster CI |
-| B | Add Testcontainers PostgreSQL and an `integrationTest` source set; move `FlywayMigrationTest` and `JobCrudIntegrationTest` onto it | A | closes the H2-versus-PostgreSQL gap, the highest real risk |
-| C | Bring task 069 (compose) forward | none | substrate for D and E |
-| D | Run the existing Postman collection with Newman against compose in CI | C | genuine API E2E from work already done |
-| E | Playwright harness, config, and one journey against compose | C, phase 4 | proves the harness with minimum surface |
-| F | Journey coverage: add job, edit, delete, tasks and notes tabs | E | the actual UI safety net |
+| A | 077 | Make backend npm scripts cross-platform; move backend CI to `ubuntu-latest` | none |
+| B | 078 | Testcontainers PostgreSQL and an `integrationTest` source set | A |
+| C | 069 | Docker Compose for the full local stack (already on the roadmap) | none |
+| D | 079 | Run the Postman collection with Newman against compose in CI | C |
+| E | 080 | Playwright harness, config, and one journey | C, 026 |
+| F | 081 | Journey coverage: edit, delete, detail, tasks, notes | E, and each journey's own task |
 
-A, B, C and D can all start now. E and F wait for tasks 023 to 035.
+## Accelerated Ordering
+
+The roadmap runs 010 to 019 before any frontend integration, which puts
+the first browser journey seventeen tasks away. It does not have to be.
+
+**The jobs API is already finished.** Tasks 004 to 007 shipped
+`GET`, `POST`, `PUT` and `DELETE /api/jobs`, and they work against the
+deployed stack. The four tasks needed for the first browser journey -
+020 `jobService`, 023 typed API response models, 024 jobs list from the
+API, and 026 the add-job form - depend on that API and nothing else.
+Tasks 010 to 019 add the task, note, and timeline domains, none of
+which the first journey touches.
+
+So the first journey is four tasks away, not seventeen, if 020, 023,
+024 and 026 are pulled ahead of 010.
+
+The argument for doing that is not really about testing. **Nothing has
+ever proven the frontend and backend can talk to each other.** Both
+suites stub the other side. Tasks 010 to 019 would build three more
+backend domains on top of an assumption nobody has checked. Connecting
+jobs end to end first means finding a contract mistake once rather than
+four times, and every domain after it inherits a proven pattern.
+
+Suggested order:
+
+| Order | Work | Why here |
+| --- | --- | --- |
+| 1 | 077 | tiny, unblocks CI work, no dependencies |
+| 2 | 069 | the stack CI needs; already on the roadmap |
+| 3 | 079 | the collection exists; nearly free end-to-end coverage |
+| 4 | 078 | closes the H2-versus-PostgreSQL gap |
+| 5 | 020, 023, 024, 026 | pulled forward; connects jobs end to end |
+| 6 | 080 | first browser journey, now meaningful |
+| 7 | 010 to 019 | the remaining backend domains, on a proven pattern |
+| 8 | 081 | journeys added as 027 to 031 land |
+
+Steps 1 to 4 can start today and deliver the pipeline without touching
+feature work. Step 5 is the sequencing decision; the rest follows.
+
+This reorders the roadmap and is therefore the user's call, not an
+implementation detail. Nothing here changes what the tasks contain.
 
 ## Journeys Worth Covering In F
 
@@ -276,7 +314,7 @@ component-test territory and are already covered there.
    whether `cross-env` is worth adding alongside them (see D4a).
 2. Confirm D2: real PostgreSQL in a separate `integrationTest` task
    rather than replacing H2 everywhere.
-3. Confirm bringing task 069 forward, and whether the new work units get
-   roadmap numbers appended at the end or inserted where they belong.
+3. Confirm the accelerated ordering, in particular pulling 020, 023,
+   024 and 026 ahead of 010 to 019.
 4. Confirm that browser E2E waits for phase 4 rather than being built
    against `localStorage` now.
