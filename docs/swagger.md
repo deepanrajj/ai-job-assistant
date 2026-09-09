@@ -80,6 +80,14 @@ backend/src/test/kotlin/com/smartjobtracker/config/OpenApiConfigTest.kt
 
 The test verifies that `/api/v3/api-docs` returns API metadata and includes the current AI health route.
 
+## Using The Spec From An API Client
+
+Postman can import `/api/v3/api-docs` directly by link, which builds a
+request for every endpoint without anything being hand-copied. See
+[`api/README.md`](./api/README.md), which also holds a small
+hand-maintained collection for ordered request flows the generated spec
+cannot express.
+
 ## Adding Better Endpoint Documentation Later
 
 Springdoc can generate useful documentation from controllers and DTOs without many annotations. Add annotations only when they make the generated docs clearer:

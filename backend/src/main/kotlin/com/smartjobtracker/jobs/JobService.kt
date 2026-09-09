@@ -59,29 +59,30 @@ class DefaultJobService(
         return jobRepository.save(job)
     }
 
+    /**
+     * Mutates the managed instance rather than rebuilding it. Hibernate's
+     * dirty checking writes the `UPDATE` when the transaction commits, so
+     * no `save` call is needed. Constructing a second `Job` with the same
+     * id would report itself as new and fail, by design; see
+     * `AssignedIdEntity`.
+     */
     @Transactional
     override fun updateJob(
         id: UUID,
         command: UpdateJobCommand,
     ): Job {
-        val existing = jobRepository.findById(id).orElseThrow { jobNotFound() }
-        val updated =
-            Job(
-                id = existing.id,
-                userId = existing.userId,
-                company = command.company,
-                roleTitle = command.roleTitle,
-                status = command.status,
-                jobUrl = command.jobUrl,
-                location = command.location,
-                description = command.description,
-                salaryMin = command.salaryMin,
-                salaryMax = command.salaryMax,
-                createdAt = existing.createdAt,
-                updatedAt = now(),
-            )
+        val job = jobRepository.findById(id).orElseThrow { jobNotFound() }
+        job.company = command.company
+        job.roleTitle = command.roleTitle
+        job.status = command.status
+        job.jobUrl = command.jobUrl
+        job.location = command.location
+        job.description = command.description
+        job.salaryMin = command.salaryMin
+        job.salaryMax = command.salaryMax
+        job.updatedAt = now()
 
-        return jobRepository.save(updated)
+        return job
     }
 
     @Transactional

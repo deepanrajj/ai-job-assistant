@@ -106,6 +106,8 @@ Backend currently has:
 - job CRUD endpoints under `/api/jobs`
 - a job-task JPA entity and repository, with tasks cascading on job
   deletion
+- a shared `AssignedIdEntity` mapped superclass that every JPA entity
+  extends, carrying the service-assigned UUID id
 - backend tests and coverage gate
 
 Local infrastructure currently has:

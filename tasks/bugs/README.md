@@ -34,9 +34,10 @@ roadmap tasks live in `../README.md`.
 
 ## Open
 
-- [ ] [Bug 001: assigned-id entities take the merge path on save](./bug-001-assigned-id-entities-merge-on-save.md)
-      — P2, from the task 009 branch review.
+None.
 
 ## Fixed
 
-None yet.
+- [x] [Bug 001: assigned-id entities take the merge path on save](./bug-001-assigned-id-entities-merge-on-save.md)
+      — P2, from the task 009 branch review. Fixed with a shared
+      `AssignedIdEntity` mapped superclass implementing `Persistable`.

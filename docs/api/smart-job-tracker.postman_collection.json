@@ -1,0 +1,457 @@
+{
+  "info": {
+    "name": "Smart Job Tracker",
+    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create job'. Every later request in the Jobs folder reads it."
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "AI health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ai/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["ai", "health"]
+            },
+            "description": "Cheapest check that the backend is up and routing under the /api context path. Does not call OpenAI."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('reports ok', function () {",
+                  "    pm.expect(pm.response.json().ok).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "description": "Run this folder in order. 'Create job' stores the new id in the jobId collection variable and everything after it reads that variable, so the folder works as one end-to-end flow rather than six isolated requests.",
+      "item": [
+        {
+          "name": "Create job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"location\": \"Remote\",\n  \"status\": \"WISHLIST\",\n  \"jobUrl\": \"https://example.com/jobs/1\",\n  \"salaryMin\": 90000.00,\n  \"salaryMax\": 120000.00,\n  \"description\": \"Build and maintain backend services.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Every field is optional except company and roleTitle. Omitting status defaults it to WISHLIST in CreateJobCommand rather than in the request DTO."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const job = pm.response.json();",
+                  "",
+                  "pm.test('returns a server-assigned id', function () {",
+                  "    pm.expect(job.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('echoes the submitted fields', function () {",
+                  "    pm.expect(job.company).to.eql('Acme Corp');",
+                  "    pm.expect(job.roleTitle).to.eql('Backend Engineer');",
+                  "    pm.expect(job.status).to.eql('WISHLIST');",
+                  "});",
+                  "",
+                  "pm.test('does not leak userId into the HTTP contract', function () {",
+                  "    pm.expect(job).to.not.have.property('userId');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('jobId', job.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Returns every job ordered by updatedAt descending, so the job just created or edited is first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const jobs = pm.response.json();",
+                  "",
+                  "pm.test('includes the job created by this run', function () {",
+                  "    const ids = jobs.map(function (job) { return job.id; });",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('jobId'));",
+                  "});",
+                  "",
+                  "pm.test('is ordered by updatedAt, newest first', function () {",
+                  "    const timestamps = jobs.map(function (job) { return Date.parse(job.updatedAt); });",
+                  "    const sorted = timestamps.slice().sort(function (a, b) { return b - a; });",
+                  "    pm.expect(timestamps).to.eql(sorted);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get job by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('returns the requested job', function () {",
+                  "    pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('jobId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update job",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"New Corp\",\n  \"roleTitle\": \"Staff Engineer\",\n  \"location\": null,\n  \"status\": \"INTERVIEW\",\n  \"jobUrl\": null,\n  \"salaryMin\": null,\n  \"salaryMax\": null,\n  \"description\": \"Updated description.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            },
+            "description": "PUT replaces every editable field, so all of them must be present. Sending null clears a field; omitting status is a 400 rather than 'leave it alone'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const job = pm.response.json();",
+                  "",
+                  "pm.test('applies the new values', function () {",
+                  "    pm.expect(job.company).to.eql('New Corp');",
+                  "    pm.expect(job.roleTitle).to.eql('Staff Engineer');",
+                  "    pm.expect(job.status).to.eql('INTERVIEW');",
+                  "});",
+                  "",
+                  "pm.test('clears the fields sent as null', function () {",
+                  "    pm.expect(job.location).to.eql(null);",
+                  "    pm.expect(job.jobUrl).to.eql(null);",
+                  "    pm.expect(job.salaryMin).to.eql(null);",
+                  "});",
+                  "",
+                  "pm.test('preserves identity and creation time', function () {",
+                  "    pm.expect(job.id).to.eql(pm.collectionVariables.get('jobId'));",
+                  "    pm.expect(Date.parse(job.updatedAt)).to.be.at.least(Date.parse(job.createdAt));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete job",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('returns an empty body', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get deleted job returns 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            },
+            "description": "Runs immediately after Delete job. Proves the delete actually removed the row and that the error body matches ApiErrorResponse."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the JOB_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('JOB_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create job with blank company returns 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"\",\n  \"roleTitle\": \"Backend Engineer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Bean Validation rejects the blank company before the service runs. The response carries per-field detail in fieldErrors."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const error = pm.response.json();",
+                  "",
+                  "pm.test('uses the VALIDATION_FAILED error code', function () {",
+                  "    pm.expect(error.code).to.eql('VALIDATION_FAILED');",
+                  "});",
+                  "",
+                  "pm.test('names the offending field', function () {",
+                  "    const fields = error.fieldErrors.map(function (fieldError) { return fieldError.field; });",
+                  "    pm.expect(fields).to.include('company');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI",
+      "description": "These call OpenAI for real and cost money. They need OPENAI_API_KEY set in the backend environment, not in Postman - the browser and Postman never hold the key. Without it the backend returns AI_REQUEST_FAILED, which is the correct behaviour, not a broken collection.",
+      "item": [
+        {
+          "name": "Analyze job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"We are hiring a backend engineer with strong Kotlin and Spring Boot experience. You will design REST APIs, own PostgreSQL schema design, and work with a small product team.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/analyze-job",
+              "host": ["{{baseUrl}}"],
+              "path": ["ai", "analyze-job"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200 or a typed AI error, never a raw stack trace', function () {",
+                  "    pm.expect([200, 502]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code !== 200) {",
+                  "    pm.test('failure is a typed API error', function () {",
+                  "        pm.expect(pm.response.json().code).to.be.oneOf(['AI_REQUEST_FAILED', 'AI_RESPONSE_INVALID']);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ask about job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"We are hiring a backend engineer with strong Kotlin and Spring Boot experience.\",\n  \"question\": \"What should I emphasise in my application?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/ask-job",
+              "host": ["{{baseUrl}}"],
+              "path": ["ai", "ask-job"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200 or a typed AI error, never a raw stack trace', function () {",
+                  "    pm.expect([200, 502]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ask with blank question returns 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"We are hiring a backend engineer.\",\n  \"question\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/ask-job",
+              "host": ["{{baseUrl}}"],
+              "path": ["ai", "ask-job"]
+            },
+            "description": "Validation runs before any provider call, so this costs nothing and never reaches OpenAI."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('uses the VALIDATION_FAILED error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('VALIDATION_FAILED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

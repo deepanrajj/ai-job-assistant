@@ -22,6 +22,7 @@ focused plan in this folder and link it from the relevant numbered task.
 ## Plans
 
 - [Final Smart Job Tracker roadmap](./final-smart-job-tracker-roadmap.md)
+- [End-to-end testing strategy](./e2e-testing-strategy-plan.md)
 - [Task 001 - Add PostgreSQL Docker Service Plan](./postgresql-docker-service-plan.md)
 - [Task 002 - Add Flyway Migration Setup Plan](./002-flyway-migration-setup-plan.md)
 - [Task 003 - Create Job Entity Plan](./003-create-job-entity-plan.md)
@@ -31,3 +32,11 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 007 - Add Job CRUD Endpoints Plan](./007-add-job-crud-endpoints-plan.md)
 - [Task 008 - Create Task Entity Plan](./008-create-task-entity-plan.md)
 - [Task 009 - Create Task Repository Plan](./009-create-task-repository-plan.md)
+
+## Bug Plans
+
+Defect fixes that needed a decision recorded before implementation.
+Bug numbering is its own sequence; see
+[`../../tasks/bugs/README.md`](../../tasks/bugs/README.md).
+
+- [Bug 001 - Assigned-Id Entities Merge On Save Plan](./bug-001-assigned-id-entities-merge-on-save-plan.md)

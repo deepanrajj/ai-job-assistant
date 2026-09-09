@@ -23,7 +23,12 @@ Execution-ready tasks generated from the phase roadmap in
 - `036`-`050`: Phase 5 core and advanced non-AI workflows.
 - `051`-`058`: Phase 6 authentication, user-owned data, and AI billing foundation.
 - `059`-`067`: Phase 7 integrated paid AI workflows.
-- `068`-`076`: Phase 8 portfolio and production polish.
+- `068`-`081`: Phase 8 portfolio and production polish.
+
+A task's number is its identity, not its priority. `077` to `081` are
+testing infrastructure grouped with `068`, but several of them are
+meant to run well before the rest of phase 8; the ordering lives in
+`../../docs/business/e2e-testing-strategy-plan.md`.
 
 ## Rules
 
