@@ -140,6 +140,55 @@ and the gate would quietly stop meaning anything. Same on the frontend,
 where Vitest coverage is scoped to `src/**` - Playwright specs must live
 outside `src/` so they are neither collected as unit tests nor counted.
 
+### D4a: Browser E2E targets an environment, resolved from one variable
+
+The suite runs against the local stack now and against other
+environments as they appear, without spec changes.
+
+Only two of the three local URLs can host browser E2E. `nginx` serves
+the built app at `/` and proxies `/api/`, and the Vite dev server does
+the same for `/api` to port 4000, so both are single-origin and need no
+CORS handling. Port 4000 alone serves the API only and cannot drive UI
+tests.
+
+| Name | URL | Use |
+| --- | --- | --- |
+| `dev` | `http://localhost:5173` | Vite dev server; fastest feedback while writing specs |
+| `cluster` | `http://localhost:30080` | local Kubernetes; production-like, the default |
+
+Resolution order, in `playwright.config.ts`:
+
+1. `E2E_BASE_URL`, if set - the escape hatch for CI, a compose stack, a
+   pull-request preview, or a future staging host.
+2. The named target in `E2E_ENV`.
+3. `cluster`, the documented default runtime.
+
+Specs navigate with relative paths only - `page.goto('/jobs')` - so
+adding an environment is a configuration line rather than a change to
+any test. A host hardcoded in a spec defeats the whole arrangement, and
+is the one thing to reject in review.
+
+Three consequences worth designing for now rather than retrofitting:
+
+- **Committed configuration holds URLs and nothing else.** When
+  authentication lands, test-user credentials come from environment
+  variables and CI secrets.
+- **Guard destructive specs by target.** The suite creates and deletes
+  data. Once a non-local URL exists, a global setup that refuses to run
+  unless `baseURL` is localhost or explicitly allow-listed costs a few
+  lines and prevents an expensive mistake.
+- **Specs stay environment-agnostic.** No `if (env === ...)` inside a
+  test. Differences belong in configuration and fixtures; a spec that
+  behaves differently per environment tests two things and proves
+  neither.
+
+Note for this machine: `E2E_ENV=dev npx playwright test` is POSIX
+syntax and does not work in `cmd.exe`, the same defect as
+`k8s:create-secret`. PowerShell needs `$env:E2E_ENV='dev'`. CI sets
+environment variables natively, so this only affects ad-hoc local
+switching. `cross-env` would remove the friction at the cost of a
+dependency.
+
 ### D5: Docker Compose is the substrate for stack-level E2E
 
 Task 069 already plans a compose stack. Standing up Kubernetes in CI to
@@ -223,7 +272,8 @@ component-test territory and are already covered there.
 
 ## Open Decisions
 
-1. Approve Testcontainers and Playwright as dependencies.
+1. Approve Testcontainers and Playwright as dependencies, and decide
+   whether `cross-env` is worth adding alongside them (see D4a).
 2. Confirm D2: real PostgreSQL in a separate `integrationTest` task
    rather than replacing H2 everywhere.
 3. Confirm bringing task 069 forward, and whether the new work units get
