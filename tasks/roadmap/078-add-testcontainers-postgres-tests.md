@@ -25,9 +25,15 @@ This task exists because:
   precision on the salary columns, foreign-key and cascade timing, and
   any PostgreSQL-only syntax a future migration reaches for.
 
-Depends on task 077. Testcontainers needs a Linux PostgreSQL image,
-which the current `windows-latest` backend CI job is not expected to
-run.
+Task 077 is done, so the prerequisite is met: the backend CI job now
+runs on `ubuntu-latest`, confirmed green on pull request 13.
+
+Testcontainers needs a Linux PostgreSQL image, which the previous
+`windows-latest` job was not expected to run. That expectation was
+never tested against a real runner and no longer needs to be - this
+task's own CI job is the first thing that will actually exercise a
+Linux container here, so treat a failure there as new information
+rather than as a broken setup.
 
 Related docs:
 
