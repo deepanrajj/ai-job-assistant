@@ -35,6 +35,7 @@ import java.math.BigDecimal
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(PostgresContainerConfiguration::class)
+@Transactional
 class JobCrudPostgresIntegrationTest {
     @Autowired
     lateinit var mockMvc: MockMvc
@@ -113,7 +114,6 @@ class JobCrudPostgresIntegrationTest {
     }
 
     @Test
-    @Transactional
     fun `saving a new job inserts without a preceding select`() {
         // Bug 001 was found and fixed against H2. Assigned-id handling
         // goes through the JDBC driver and dialect, so it is worth
@@ -128,7 +128,6 @@ class JobCrudPostgresIntegrationTest {
     }
 
     @Test
-    @Transactional
     fun `deleting a job cascades to its tasks in the database`() {
         // The cascade lives in the migration as an on delete cascade
         // foreign key, not in JPA, so only a real database proves it.
@@ -144,7 +143,6 @@ class JobCrudPostgresIntegrationTest {
     }
 
     @Test
-    @Transactional
     fun `stores salary precision without rounding`() {
         val job =
             jobRepository.save(
