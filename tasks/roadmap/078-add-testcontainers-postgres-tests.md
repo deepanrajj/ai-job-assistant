@@ -37,6 +37,7 @@ rather than as a broken setup.
 
 Related docs:
 
+- `../../docs/business/078-add-testcontainers-postgres-tests-plan.md`
 - `../../docs/business/e2e-testing-strategy-plan.md` (decision D2, work
   unit B)
 
@@ -155,16 +156,18 @@ explicitly rather than assuming it.
 
 ## Acceptance Criteria
 
-- [ ] Testcontainers runs the migrations against real PostgreSQL,
+- [x] Testcontainers runs the migrations against real PostgreSQL,
       pinned to the version the product deploys.
-- [ ] The job CRUD flow is covered against real PostgreSQL.
-- [ ] `npm run backend:verify` is unchanged in behaviour and still
+- [x] The job CRUD flow is covered against real PostgreSQL.
+- [x] `npm run backend:verify` is unchanged in behaviour and still
       needs no Docker.
-- [ ] The integration source set does not distort the JaCoCo gate.
-- [ ] A CI job runs the PostgreSQL tests on every pull request.
-- [ ] Any real behavioural difference found between H2 and PostgreSQL
+- [x] The integration source set does not distort the JaCoCo gate.
+- [x] A CI job runs the PostgreSQL tests on every pull request.
+      Confirmed on pull request 14: Backend Integration success on
+      ubuntu-latest.
+- [x] Any real behavioural difference found between H2 and PostgreSQL
       is filed in `../bugs/`, not fixed here.
-- [ ] No unrelated files are changed.
+- [x] No unrelated files are changed.
 
 ## Commit
 

@@ -14,7 +14,7 @@ Goal: make the project presentable for GitHub, interviews, and deployment.
 - [ ] [Deploy frontend](../../tasks/roadmap/075-deploy-frontend.md).
 - [ ] [Deploy backend](../../tasks/roadmap/076-deploy-backend.md).
 - [x] [Make backend scripts cross-platform](../../tasks/roadmap/077-make-backend-scripts-cross-platform.md).
-- [ ] [Add Testcontainers PostgreSQL tests](../../tasks/roadmap/078-add-testcontainers-postgres-tests.md).
+- [x] [Add Testcontainers PostgreSQL tests](../../tasks/roadmap/078-add-testcontainers-postgres-tests.md).
 - [ ] [Run the API collection in CI](../../tasks/roadmap/079-run-api-collection-in-ci.md).
 - [ ] [Add Playwright harness and first journey](../../tasks/roadmap/080-add-playwright-harness-and-first-journey.md).
 - [ ] [Expand browser journey coverage](../../tasks/roadmap/081-expand-browser-journey-coverage.md).

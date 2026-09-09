@@ -30,6 +30,7 @@ This task exists because:
 Related docs:
 
 - `../../docs/business/e2e-testing-strategy-plan.md` (work unit A)
+- `../../docs/business/077-make-backend-scripts-cross-platform-plan.md`
 
 ## Goal
 
