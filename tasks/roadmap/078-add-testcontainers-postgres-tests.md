@@ -37,6 +37,7 @@ rather than as a broken setup.
 
 Related docs:
 
+- `../../docs/business/078-add-testcontainers-postgres-tests-plan.md`
 - `../../docs/business/e2e-testing-strategy-plan.md` (decision D2, work
   unit B)
 
