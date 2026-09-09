@@ -15,9 +15,22 @@ const backendDirectory = 'backend';
  * Node's `shell: true` does no escaping at all - it concatenates, which
  * is what DeprecationWarning DEP0190 is about - so `-Pmsg=hello world`
  * would arrive as two arguments. The quoting happens here instead.
+ *
+ * The empty string is quoted explicitly. The pattern below cannot match
+ * it, so without the first clause an empty argument contributes nothing
+ * to the joined command line and silently disappears, while the POSIX
+ * branch passes it through as its own argv entry.
+ *
+ * One difference remains and cannot be fixed here: cmd expands `%NAME%`
+ * inside arguments, including inside double quotes, so a value holding
+ * `%TEMP%` arrives expanded on Windows and literal on POSIX. Avoiding
+ * that means avoiding cmd, which is not possible while the launcher is
+ * a `.bat` file.
  */
 const quoteForCmd = (argument) =>
-  /[\s"&|<>^()]/.test(argument) ? `"${argument.replace(/"/g, '\\"')}"` : argument;
+  argument === '' || /[\s"&|<>^()]/.test(argument)
+    ? `"${argument.replace(/"/g, '\\"')}"`
+    : argument;
 
 /**
  * The launcher stays relative to `cwd` rather than being resolved to an
