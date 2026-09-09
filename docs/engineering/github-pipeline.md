@@ -31,9 +31,19 @@ Jobs:
   - configures Java 21
   - runs `npm run backend:verify`
 
-The CI workflow currently uses `windows-latest` because the root backend
-npm scripts call `gradlew.bat`. A later cleanup can make the root
-scripts cross-platform and move CI to Linux runners.
+Both jobs run on `ubuntu-latest`. The backend job used `windows-latest`
+until task 077, because the root backend npm scripts called
+`gradlew.bat` directly. They now go through
+`infra/scripts/run-gradle.mjs`, which picks the Windows or POSIX Gradle
+launcher for the current platform, so the same scripts run on a
+developer's Windows machine and on a Linux runner.
+
+Two things that must stay true for this to keep working:
+
+- `backend/gradlew` keeps its executable bit in Git (`100755`). Without
+  it, a Linux runner fails with permission denied even though the file
+  is present.
+- New backend scripts call the helper rather than a launcher directly.
 
 ### Docker Build
 

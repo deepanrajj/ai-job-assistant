@@ -71,26 +71,34 @@ rewriting the moment the store changes anyway.
 
 ## Blocker: The Backend CI Job Cannot Run Linux Containers
 
-Every backend script in `package.json` hardcodes the Windows launcher:
+**Resolved by task 077.**
+
+Every backend script in `package.json` hardcoded the Windows launcher:
 
 ```json
 "backend:test": "cd backend && .\\gradlew.bat test"
 ```
 
 `gradlew.bat` does not exist on Linux, so `npm run backend:verify` only
-runs on Windows, which is why `.github/workflows/ci.yml` pins the
+ran on Windows, which is why `.github/workflows/ci.yml` pinned the
 backend job to `windows-latest`.
 
 GitHub's Windows runners provide Docker for Windows containers. The
 PostgreSQL image Testcontainers needs is a Linux container, so
-Testcontainers is expected not to work there. Confirm this against the
-runner before committing to the fix rather than taking it on trust, but
-plan for it: it makes cross-platform scripts a prerequisite for
-anything involving real PostgreSQL in CI, not a tidy-up.
+Testcontainers is expected not to work there. That expectation is still
+unconfirmed against a real runner; task 078's first CI run settles it.
+The move to `ubuntu-latest` did not depend on it either way, being
+faster and cheaper regardless.
 
-The fix is small - select the launcher by platform, or have CI invoke
-`./gradlew` directly - and it unpins the backend job so it can move to
-`ubuntu-latest`, which is also faster and cheaper.
+Task 077 routed all seven backend scripts through
+`infra/scripts/run-gradle.mjs`, which selects the launcher by platform
+in the style of the existing `run-frontend-tool.mjs`.
+
+It also found the half of the problem the plan had missed:
+`backend/gradlew` was mode `100644` in the Git index, not `100755`.
+Cross-platform scripts alone would still have failed on Linux with
+permission denied, because the shell script was present but not
+executable.
 
 ## Decisions
 
@@ -116,8 +124,7 @@ stays hermetic. The tests worth moving or duplicating there first are
 `FlywayMigrationTest` and `JobCrudIntegrationTest`, because they are the
 ones whose H2 result is least trustworthy.
 
-This adds a dependency, which `AGENTS.md` section 0 says needs explicit
-approval.
+**Approved.** Testcontainers is confirmed as a dependency for task 078.
 
 ### D3: Playwright for the browser, not Cypress
 
@@ -126,7 +133,7 @@ auto-waiting that removes most sleep-based flake, a trace viewer that
 makes CI failures diagnosable, and no account or hosted service. It also
 runs its own runner, so it will not collide with Vitest.
 
-Also a new dependency needing approval.
+**Approved.** Playwright is confirmed as a dependency for task 080.
 
 ### D4: E2E stays out of `npm run verify` and out of the coverage gates
 
@@ -310,8 +317,9 @@ component-test territory and are already covered there.
 
 ## Open Decisions
 
-1. Approve Testcontainers and Playwright as dependencies, and decide
-   whether `cross-env` is worth adding alongside them (see D4a).
+1. ~~Approve Testcontainers and Playwright as dependencies.~~ Both
+   approved. Whether `cross-env` is worth adding alongside them is
+   still open (see D4a).
 2. Confirm D2: real PostgreSQL in a separate `integrationTest` task
    rather than replacing H2 everywhere.
 3. Confirm the accelerated ordering, in particular pulling 020, 023,
