@@ -126,13 +126,14 @@ The CI run on the pull request is the other half; both must be green.
 
 ## Acceptance Criteria
 
-- [ ] Backend scripts run unchanged on Windows and Linux.
-- [ ] The backend CI job runs on `ubuntu-latest` and passes.
-- [ ] `backend/gradlew` is executable in the Git index.
-- [ ] No Gradle build logic changed.
-- [ ] No new libraries.
-- [ ] Docs naming `gradlew.bat` are updated.
-- [ ] No unrelated files are changed.
+- [x] Backend scripts run unchanged on Windows and Linux.
+- [x] The backend CI job runs on `ubuntu-latest` and passes. Confirmed
+      on pull request 13: `runner_os: ubuntu-latest`, success in 2m18s.
+- [x] `backend/gradlew` is executable in the Git index.
+- [x] No Gradle build logic changed.
+- [x] No new libraries.
+- [x] Docs naming `gradlew.bat` are updated.
+- [x] No unrelated files are changed.
 
 ## Commit
 

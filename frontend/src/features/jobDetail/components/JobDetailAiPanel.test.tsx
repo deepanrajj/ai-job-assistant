@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { delay, http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 import { JobDetailAiPanel } from './JobDetailAiPanel';
 import { renderWithProviders } from '../../../test/renderWithProviders';
@@ -27,9 +27,16 @@ describe('JobDetailAiPanel', () => {
   it('analyzes the saved description and exposes the result to the parent', async () => {
     const user = userEvent.setup();
     const handleAnalyzeJob = vi.fn();
+    // The response is held open until this test releases it, so the
+    // loading state lasts as long as the assertion needs rather than for
+    // a fixed delay the assertion has to catch mid-flight.
+    const pendingResponse: { release: () => void } = { release: () => {} };
+    const responseReleased = new Promise<void>((resolve) => {
+      pendingResponse.release = resolve;
+    });
     server.use(
       http.post('/api/ai/analyze-job', async () => {
-        await delay(100);
+        await responseReleased;
 
         return HttpResponse.json<TJobAiAnalysis>({
           niceToHaveSkills: ['Testing Library'],
@@ -46,7 +53,12 @@ describe('JobDetailAiPanel', () => {
 
     await user.click(screen.getByRole('button', { name: 'Analyze saved job' }));
 
-    expect(await screen.findByRole('button', { name: 'Analyzing...' })).toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Analyzing...' })).toBeDisabled(),
+    );
+
+    pendingResponse.release();
+
     await waitFor(() =>
       expect(handleAnalyzeJob).toHaveBeenCalledWith(
         expect.objectContaining({
