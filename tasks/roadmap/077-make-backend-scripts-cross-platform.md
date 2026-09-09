@@ -127,8 +127,8 @@ The CI run on the pull request is the other half; both must be green.
 ## Acceptance Criteria
 
 - [x] Backend scripts run unchanged on Windows and Linux.
-- [ ] The backend CI job runs on `ubuntu-latest` and passes. Pending
-      the first CI run on this pull request.
+- [x] The backend CI job runs on `ubuntu-latest` and passes. Confirmed
+      on pull request 13: `runner_os: ubuntu-latest`, success in 2m18s.
 - [x] `backend/gradlew` is executable in the Git index.
 - [x] No Gradle build logic changed.
 - [x] No new libraries.
