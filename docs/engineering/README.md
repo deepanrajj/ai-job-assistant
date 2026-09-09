@@ -15,6 +15,8 @@ Use it for:
 
 Existing engineering references:
 
+- [`frontend-test-reliability.md`](./frontend-test-reliability.md)
+- [`claude-code-skills.md`](./claude-code-skills.md)
 - [`github-pipeline.md`](./github-pipeline.md)
 - [`pr-review.md`](./pr-review.md)
 - [`../architecture.md`](../architecture.md)
