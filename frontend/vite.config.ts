@@ -29,6 +29,14 @@ export default defineConfig({
     },
     css: true,
     environment: 'jsdom',
+    // Vitest defaults to roughly one worker per core. Each fork carries its
+    // own jsdom, so on a 16-core machine that is 15 of them competing for
+    // whatever memory is left after Docker and a local cluster - enough to
+    // starve the pool into timing out while terminating its own workers.
+    // Halving it trades a little parallelism for headroom, and keeps the
+    // suite honest on CI runners, which have far fewer cores than a
+    // developer machine.
+    maxWorkers: '50%',
     restoreMocks: true,
     setupFiles: './src/test/setupTests.ts',
     // Vitest defaults to 5000ms, which suits fast unit tests. Tests here
