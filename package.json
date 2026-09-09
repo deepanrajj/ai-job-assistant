@@ -24,6 +24,7 @@
     "backend:lint": "node infra/scripts/run-gradle.mjs detekt",
     "backend:test": "node infra/scripts/run-gradle.mjs test",
     "backend:test:coverage": "node infra/scripts/run-gradle.mjs test jacocoTestReport jacocoTestCoverageVerification",
+    "backend:test:integration": "node infra/scripts/run-gradle.mjs integrationTest",
     "backend:verify": "npm run backend:format:check && npm run backend:lint && npm run backend:test:coverage",
     "lint-staged": "lint-staged",
     "verify": "npm run frontend:verify && npm run backend:verify",
