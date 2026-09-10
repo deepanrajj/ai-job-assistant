@@ -118,6 +118,11 @@ This builds both images, tags them `smart-job-tracker-backend:local` and
 background. The first build runs a full Gradle build inside Docker and
 takes several minutes.
 
+The command returns only once every service reports healthy, which on a
+warm build is around half a minute. That wait is deliberate: anything
+run straight afterwards, `npm run api:test` in particular, would
+otherwise race a backend that is still applying migrations.
+
 Open:
 
 ```text

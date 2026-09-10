@@ -52,6 +52,34 @@ jobs:
       - name: Check the compose runtime
         run: npm run compose:smoke
 
+      # The smoke check proves the stack is up and reachable. This
+      # proves the API still behaves, by running the Postman collection
+      # that already exists in docs/api/ - create, list, read, update,
+      # delete, the 404 after a delete, and a validation failure, with
+      # assertions, against the running stack.
+      #
+      # It runs after the smoke check on purpose. A Newman failure that
+      # follows a green smoke check means the API contract moved, not
+      # that the stack never came up.
+      #
+      # The script names the folders it runs. The collection's AI folder
+      # reaches OpenAI through the backend and costs money per request,
+      # so it must never run here; an allowlist keeps a folder added
+      # later from starting to run on its own.
+      - name: Run the API collection
+        run: npm run api:test
+
+      # if: always() rather than if: failure(). A green report is how
+      # the folder allowlist and the assertion count get confirmed
+      # without rerunning anything.
+      - name: Upload Newman report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-api-report
+          path: reports/newman
+          retention-days: 7
+
       - name: Compose logs
         if: failure()
         run: docker compose -f infra/docker/compose.yaml logs --no-color
