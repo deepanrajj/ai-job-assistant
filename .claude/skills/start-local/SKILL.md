@@ -172,6 +172,9 @@ curl -s -X DELETE http://localhost:30080/api/jobs/<id> -w "%{http_code}\n"
 - `npm run dev:local` is a different runtime, not a fallback for this
   one. It runs the backend as a host process and still needs PostgreSQL
   forwarded with `npm run db:forward`.
+- `npm run compose:smoke` is the focused check for the compose runtime,
+  not this one. There is no equivalent for the cluster yet; use the
+  verify section above.
 - `npm run dev:compose` is a third runtime, and the only one that
   conflicts with this one. It publishes the same 30080 and 5434, so the
   two cannot run together. It is the better choice when Kubernetes will

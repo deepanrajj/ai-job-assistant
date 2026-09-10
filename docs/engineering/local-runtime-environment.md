@@ -161,22 +161,32 @@ from this machine". It answers either way.
 This mattered because the compose file ships a default database
 password. Published on `0.0.0.0`, that combination puts a writable
 database on the local network behind a password anyone can read in the
-repository. Both mappings are therefore written with an explicit host
-address:
+repository.
+
+The goal is **loopback-only, not IPv4-only**, and those are not the same
+thing. Naming `127.0.0.1` alone silently drops the IPv6 loopback, and
+some resolvers return `::1` first for `localhost`, so each port names
+both addresses:
 
 ```yaml
 - "127.0.0.1:5434:5432"
-- "127.0.0.1:30080:80"
+- "[::1]:5434:5432"
 ```
 
-Verify a binding rather than trusting the port number, and check from
-somewhere other than loopback:
+The IPv4-only form is easy to ship and hard to notice, because the
+common clients paper over it: curl retries on IPv4 after `::1` is
+refused, and the JVM resolves `127.0.0.1` first, so JDBC against
+`localhost:5434` still connects. A client that prefers IPv6 without
+falling back does not.
 
-```bash
-docker compose -f infra/docker/compose.yaml ps --format '{{.Service}}	{{.Ports}}'
+Do not verify this by hand. `npm run compose:smoke` asserts all of it:
+
+```text
+PASS  port 5434 is not published on 0.0.0.0
+PASS  port 5434 reachable on 127.0.0.1
+PASS  port 5434 reachable on ::1
+PASS  port 5434 refused from LAN address - 192.168.178.20:5434
 ```
-
-`127.0.0.1:5434->5432/tcp` is correct. `0.0.0.0:5434->5432/tcp` is not.
 
 ### `.env` is read from the compose file's directory
 
@@ -216,6 +226,27 @@ malformed service.
 It starts nothing. Both failures that actually cost time on task 069, a
 name collision and a wrong loopback address, are invisible to it. Only a
 cold `up` finds those.
+
+`npm run compose:smoke` is the check for everything `config` cannot see.
+Run it against a stack that is already up, after any change to the
+compose file, the Dockerfiles, or `nginx.conf`:
+
+```bash
+npm run dev:compose
+npm run compose:smoke
+```
+
+It asserts that every service is healthy, that both published ports are
+bound to loopback on both IP stacks, that the same ports are refused
+from the machine's own LAN address, and that the app, the health
+endpoint, and a database-backed endpoint all answer through the proxy.
+
+Be clear about its limits. It was confirmed to fail when the `0.0.0.0`
+binding is reintroduced, but it does **not** catch the socket-versus-TCP
+healthcheck problem, because that one is a startup race that simply did
+not fire on a machine where initdb is fast. No assertion against a
+running stack can catch a race that did not happen. Read the healthcheck
+before trusting it.
 
 ## This machine only
 

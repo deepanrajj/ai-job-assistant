@@ -118,6 +118,17 @@ Backend health through the frontend proxy:
 http://localhost:30080/api/ai/health
 ```
 
+Check the stack is actually correct, not just running:
+
+```bash
+npm run compose:smoke
+```
+
+It asserts every service is healthy, both ports are bound to loopback
+and refused from your network address, and the app and API answer
+through the proxy. Run it after any change to the compose file, the
+Dockerfiles, or the Nginx config.
+
 Follow the logs:
 
 ```bash

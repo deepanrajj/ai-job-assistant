@@ -26,15 +26,20 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-smartjobtracker}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartjobtracker}
     ports:
-      # Bound to 127.0.0.1, not 0.0.0.0. A bare "5434:5432" publishes on
+      # Loopback only, on both stacks. A bare "5434:5432" publishes on
       # every interface, which would put a database holding a committed
       # default password on whatever network the machine is attached to.
       # kubectl port-forward binds loopback by default, so this is also
       # what makes the two runtimes actually equivalent.
       #
+      # Both addresses are named because binding 127.0.0.1 alone drops
+      # the IPv6 loopback, and localhost resolves to ::1 first on some
+      # resolvers. The goal is loopback-only, not IPv4-only.
+      #
       # Same port as the k8s forward in docs/setup.md, so npm run
       # dev:local can point at this database without changes.
       - "127.0.0.1:5434:5432"
+      - "[::1]:5434:5432"
     volumes:
       # The Kubernetes runtime uses an emptyDir and loses the database
       # whenever the pod is recreated. Compose keeps it, which is what
@@ -105,9 +110,10 @@ services:
       context: ../..
       dockerfile: infra/docker/frontend.Dockerfile
     ports:
-      # Loopback only, for the same reason as the database above.
-      # Matches the k8s port-forward in docs/setup.md.
+      # Loopback only on both stacks, for the same reason as the
+      # database above. Matches the k8s port-forward in docs/setup.md.
       - "127.0.0.1:30080:80"
+      - "[::1]:30080:80"
     depends_on:
       smart-job-tracker-backend:
         # Nginx resolves a literal upstream hostname once, when it loads

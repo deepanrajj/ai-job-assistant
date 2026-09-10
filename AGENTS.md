@@ -101,6 +101,31 @@ npm run backend:verify
 npm run verify
 ```
 
+### Always run the focused check for what you changed
+
+Pick the row matching the files in your diff and run it **before** the
+full verification, every time. The full run is slow and, for the
+infrastructure rows, does not exercise the changed thing at all.
+
+| Changed area | Focused check |
+| --- | --- |
+| `frontend/**` | the affected Vitest file, then `npm run frontend:verify` |
+| `backend/**` | `npm run backend:test`, then `npm run backend:verify` |
+| `backend/**` touching entities, repositories, or `db/migration` | `npm run backend:test:integration` as well; it runs against a real PostgreSQL |
+| `infra/docker/compose.yaml`, `.env.example` | `npm run compose:config`, then `npm run dev:compose` and `npm run compose:smoke` |
+| `infra/docker/*.Dockerfile`, `nginx.conf` | `npm run docker:build`, then the compose row above; both runtimes share these files |
+| `infra/k8s/**` | `kubectl kustomize infra/k8s/local`, then bring the cluster up with the `start-local` skill |
+| `infra/scripts/**`, script changes in `package.json` | run the script itself, on this platform |
+| documentation only | check links, headings, and numbering by hand |
+
+`npm run compose:smoke` asserts properties of a *running* stack that no
+static check can see: that published ports are bound to loopback on both
+IP stacks and refused from the machine's own network address, that every
+service reports healthy, and that the API answers through the proxy. It
+needs the stack already up. Two defects on the task 069 branch were
+invisible to `docker compose config` and to a `curl` from the host, and
+this is the check that would have caught them.
+
 Documentation-only changes do not require unit tests, but links,
 numbering, and Markdown should still be checked manually.
 

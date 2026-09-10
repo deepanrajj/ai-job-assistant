@@ -136,6 +136,22 @@ npm run verify
 Narrowest check while iterating, the app-level check before finishing,
 `npm run verify` when the change spans both.
 
+**Before any of those, run the focused check for the files you actually
+changed.** `AGENTS.md` section 3 carries the full map. The rows agents
+miss most often:
+
+| Changed | Run |
+| --- | --- |
+| `infra/docker/compose.yaml` or `.env.example` | `npm run compose:config`, then `npm run dev:compose` and `npm run compose:smoke` |
+| `infra/docker/*.Dockerfile` or `nginx.conf` | `npm run docker:build`, then the compose row above |
+| `infra/k8s/**` | `kubectl kustomize infra/k8s/local`, then the `start-local` skill |
+| entities, repositories, or `db/migration` | `npm run backend:test:integration` |
+| `infra/scripts/**` or a `package.json` script | run the script itself |
+
+`npm run verify` passes on an infrastructure-only change without
+exercising one line of it. Treat a green `verify` on such a change as
+evidence of nothing.
+
 Gradle on this machine needs a JVM option to start at all, and it is
 **already set globally**. Check before setting it:
 

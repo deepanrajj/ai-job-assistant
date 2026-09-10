@@ -62,9 +62,13 @@ Start, watch, and stop:
 
 ```bash
 npm run dev:compose
+npm run compose:smoke
 npm run compose:logs
 npm run compose:down
 ```
+
+`compose:smoke` is the focused check for this runtime. Run it after any
+change to `infra/docker/`, before the full verification.
 
 `npm run compose:reset` also deletes the PostgreSQL volume. Unlike the
 Kubernetes runtime, Compose keeps the database between restarts.

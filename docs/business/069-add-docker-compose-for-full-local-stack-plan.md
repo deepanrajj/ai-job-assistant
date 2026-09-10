@@ -635,10 +635,28 @@ cold start from an empty volume brought all three services to `healthy`,
 the app and API still answered on loopback, and the machine's LAN
 address refused both published ports.
 
-The lesson worth keeping: three of the four defects on this branch were
+A second review pass then caught the fix for the first one overreaching:
+naming `127.0.0.1` alone dropped the IPv6 loopback, which had been bound
+before. Both ports now name `127.0.0.1` and `[::1]`, because the goal is
+loopback-only rather than IPv4-only.
+
+The lesson worth keeping: four of the five defects on this branch were
 invisible to `docker compose config` and to any check run from the host
-itself. Two needed a cold `up`, and one needed a probe from a different
-network address.
+itself. Two needed a cold `up`, one needed a probe from a different
+network address, and one needed a probe on the other IP stack.
+
+That is why `infra/scripts/check-compose-runtime.mjs` exists, wired up
+as `npm run compose:smoke`. It asserts the properties of a running stack
+that no static check can see, and `AGENTS.md` section 3 now maps every
+changed area to the focused check that actually exercises it.
+
+Confirmed to fail on a reintroduced defect rather than only to pass:
+reverting the port mapping to `"5434:5432"` turns two checks red, the
+`0.0.0.0` assertion and the LAN-reachability one, and the script exits
+non-zero. It does **not** catch the socket-versus-TCP healthcheck
+problem, because that is a startup race that does not fire on a machine
+where initdb is fast. Worth stating plainly rather than overselling the
+check.
 
 The generalisable half of both corrections, plus the older environment
 traps found while investigating them, is written up separately in
