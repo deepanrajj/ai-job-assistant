@@ -1,0 +1,141 @@
+# Docker Compose runtime for the full local stack.
+#
+# This is an alternative to the local Kubernetes runtime, not an
+# addition to it. Both publish the same host ports, so only one can run
+# at a time. See docs/setup.md.
+#
+# Invoked through the npm scripts, which supply the -f flag:
+#
+#   npm run dev:compose
+#   npm run compose:logs
+#   npm run compose:down
+#
+# Service names match the Kubernetes Service names on purpose.
+# infra/docker/nginx.conf, baked into the frontend image both runtimes
+# use, resolves its upstream by the name smart-job-tracker-backend.
+#
+# The project name is pinned below because Compose otherwise derives it
+# from this file's parent directory, which would make it "docker".
+name: smart-job-tracker
+
+services:
+  smart-job-tracker-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartjobtracker}
+      POSTGRES_USER: ${POSTGRES_USER:-smartjobtracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartjobtracker}
+    ports:
+      # Loopback only, on both stacks. A bare "5434:5432" publishes on
+      # every interface, which would put a database holding a committed
+      # default password on whatever network the machine is attached to.
+      # kubectl port-forward binds loopback by default, so this is also
+      # what makes the two runtimes actually equivalent.
+      #
+      # Both addresses are named because binding 127.0.0.1 alone drops
+      # the IPv6 loopback, and localhost resolves to ::1 first on some
+      # resolvers. The goal is loopback-only, not IPv4-only.
+      #
+      # Same port as the k8s forward in docs/setup.md, so npm run
+      # dev:local can point at this database without changes.
+      - "127.0.0.1:5434:5432"
+      - "[::1]:5434:5432"
+    volumes:
+      # The Kubernetes runtime uses an emptyDir and loses the database
+      # whenever the pod is recreated. Compose keeps it, which is what
+      # the demo-data and screenshot tasks need. npm run compose:reset
+      # deletes it.
+      - smart-job-tracker-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # -h 127.0.0.1 forces a TCP probe. Without it pg_isready checks the
+      # unix socket, and the entrypoint runs its init-phase server with
+      # listen_addresses='' - socket-only, by its own comment. The socket
+      # answers while TCP is still closed, so the check would report
+      # healthy, release the backend, and Flyway would hit a refused
+      # connection.
+      test:
+        - CMD-SHELL
+        - pg_isready -h 127.0.0.1 -U ${POSTGRES_USER:-smartjobtracker} -d ${POSTGRES_DB:-smartjobtracker}
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  smart-job-tracker-backend:
+    image: smart-job-tracker-backend:local
+    build:
+      # Resolved relative to this file, so ../.. is the repository root.
+      # The Dockerfiles copy backend/ and frontend/ from there, which is
+      # why npm run docker:build also builds from the root.
+      context: ../..
+      dockerfile: infra/docker/backend.Dockerfile
+    environment:
+      # No default. A real credential, so Compose interpolates it to an
+      # empty string and warns. Only /api/ai/* needs it.
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4}
+      DB_URL: jdbc:postgresql://smart-job-tracker-postgres:5432/${POSTGRES_DB:-smartjobtracker}
+      DB_USER: ${POSTGRES_USER:-smartjobtracker}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-smartjobtracker}
+    depends_on:
+      smart-job-tracker-postgres:
+        # Flyway connects during startup, so "started" is not enough.
+        # Against an initialising database the backend exits on a
+        # refused connection.
+        condition: service_healthy
+    healthcheck:
+      # eclipse-temurin:21-jre-alpine ships BusyBox wget and nc, and no
+      # curl. Same path as the Kubernetes probes.
+      #
+      # 127.0.0.1 rather than localhost: inside these containers
+      # /etc/hosts maps localhost to ::1 only, so an IPv4-only listener
+      # answers "connection refused" to the name and answers fine to the
+      # literal.
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --output-document=-
+        - http://127.0.0.1:4000/api/ai/health
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      # Spring Boot plus Flyway against a cold database.
+      start_period: 60s
+
+  smart-job-tracker-frontend:
+    image: smart-job-tracker-frontend:local
+    build:
+      context: ../..
+      dockerfile: infra/docker/frontend.Dockerfile
+    ports:
+      # Loopback only on both stacks, for the same reason as the
+      # database above. Matches the k8s port-forward in docs/setup.md.
+      - "127.0.0.1:30080:80"
+      - "[::1]:30080:80"
+    depends_on:
+      smart-job-tracker-backend:
+        # Nginx resolves a literal upstream hostname once, when it loads
+        # its config, and exits if the name does not resolve. Under
+        # Kubernetes the Service object makes the name resolvable before
+        # any pod runs; Compose has no equivalent, so the backend
+        # container has to exist first. It does not have to be serving
+        # yet, which is why this is service_started.
+        condition: service_started
+    healthcheck:
+      # nginx.conf uses "listen 80", which binds 0.0.0.0 only, so the
+      # ::1 that localhost resolves to here is refused.
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --output-document=-
+        - http://127.0.0.1/healthz
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  smart-job-tracker-postgres-data:

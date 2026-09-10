@@ -119,6 +119,8 @@ Local infrastructure currently has:
 - example Kubernetes secret manifest
 - local image loading script for Docker Desktop Kubernetes
 - PostgreSQL deployment and service (ephemeral emptyDir storage; data resets on pod recreation)
+- Docker Compose runtime covering frontend, backend, and PostgreSQL,
+  with a named volume so the database survives a restart
 
 ## 4. AI Boundary
 
@@ -226,6 +228,17 @@ npm run dev
 This checks the namespace and secret, builds Docker images, loads images
 into Docker Desktop Kubernetes, applies manifests, and starts port
 forwarding.
+
+Docker Compose runs the same three parts without Kubernetes:
+
+```bash
+npm run dev:compose
+```
+
+It builds from the same Dockerfiles, reuses the same `:local` image
+tags, and publishes the same host ports, so it is an alternative to the
+cluster runtime rather than a companion to it. Only one of the two can
+run at a time.
 
 Direct local process development is available:
 

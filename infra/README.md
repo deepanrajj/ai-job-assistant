@@ -1,8 +1,10 @@
-# Local Kubernetes Runtime
+# Local Runtimes
 
-This folder contains the production-like local runtime for Smart Job Tracker.
+This folder contains the production-like local runtimes for Smart Job Tracker.
 
-The setup assumes Docker Desktop has Kubernetes enabled. It builds the frontend and backend as local Docker images, then runs both through Kubernetes Deployments and Services.
+The default runtime assumes Docker Desktop has Kubernetes enabled. It builds the frontend and backend as local Docker images, then runs both through Kubernetes Deployments and Services.
+
+A Docker Compose runtime is available as an alternative for developers who do not want to enable Kubernetes. It uses the same Dockerfiles, the same Nginx config, and the same image tags. See [Docker Compose Alternative](#docker-compose-alternative) below.
 
 For the full project setup, architecture, and API docs, see:
 
@@ -21,8 +23,10 @@ npm run k8s:namespace
 Create the local secret:
 
 ```bash
-kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
+kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key" --from-literal=POSTGRES_PASSWORD="your-local-db-password"
 ```
+
+Both keys are required. `npm run dev` runs `k8s:check-secret` before it builds anything, and that check aborts if either is missing.
 
 Do not commit a real API key. The file `infra/k8s/local/smart-job-tracker-secrets.example.yaml` is only a template and is not included in the kustomization.
 
@@ -41,6 +45,46 @@ http://localhost:30080
 ```
 
 Keep the terminal open while using the app. Stop it with `Ctrl+C`.
+
+## Docker Compose Alternative
+
+Runs the same three parts as plain containers, defined in
+`infra/docker/compose.yaml`.
+
+Optionally create the environment file. Every variable has a working
+default, so the stack starts without it:
+
+```bash
+cp infra/docker/.env.example infra/docker/.env
+```
+
+Start, watch, and stop:
+
+```bash
+npm run dev:compose
+npm run compose:smoke
+npm run compose:logs
+npm run compose:down
+```
+
+`compose:smoke` is the focused check for this runtime. Run it after any
+change to `infra/docker/`, before the full verification.
+
+`npm run compose:reset` also deletes the PostgreSQL volume. Unlike the
+Kubernetes runtime, Compose keeps the database between restarts.
+
+The app is at the same address either way:
+
+```txt
+http://localhost:30080
+```
+
+That is also the catch. Both runtimes publish `30080` and `5434`, so
+only one can run at a time. Stop one before starting the other.
+
+Do not commit `infra/docker/.env`. It is gitignored;
+`infra/docker/.env.example` is the committed template and holds
+placeholders only.
 
 ## Manual Runtime Commands
 

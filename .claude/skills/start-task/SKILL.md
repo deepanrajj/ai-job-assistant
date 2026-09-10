@@ -136,8 +136,34 @@ npm run verify
 Narrowest check while iterating, the app-level check before finishing,
 `npm run verify` when the change spans both.
 
-Gradle on this machine needs the McAfee workaround. Prefix Gradle runs
-with `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:\tmp`.
+**Before any of those, run the focused check for the files you actually
+changed.** `AGENTS.md` section 3 carries the full map. The rows agents
+miss most often:
+
+| Changed | Run |
+| --- | --- |
+| `infra/docker/compose.yaml` or `.env.example` | `npm run compose:config`, then `npm run dev:compose` and `npm run compose:smoke` |
+| `infra/docker/*.Dockerfile` or `nginx.conf` | `npm run docker:build`, then the compose row above |
+| `infra/k8s/**` | `kubectl kustomize infra/k8s/local`, then the `start-local` skill |
+| entities, repositories, or `db/migration` | `npm run backend:test:integration` |
+| `infra/scripts/**` or a `package.json` script | run the script itself |
+
+`npm run verify` passes on an infrastructure-only change without
+exercising one line of it. Treat a green `verify` on such a change as
+evidence of nothing.
+
+Gradle on this machine needs a JVM option to start at all, and it is
+**already set globally**. Check before setting it:
+
+```bash
+echo $JAVA_TOOL_OPTIONS
+```
+
+If that prints `-Djdk.net.unixdomain.tmpdir=C:\tmp`, run Gradle with no
+prefix. Prefixing it again under Bash loses the backslash, silently
+replacing the correct path with `C:tmp`. If a prefix is ever genuinely
+needed, single-quote the value. See
+`docs/engineering/local-runtime-environment.md`.
 
 Backend verification enforces 100 per cent line **and** branch coverage.
 Plan for it: any method that no test executes fails the build, including

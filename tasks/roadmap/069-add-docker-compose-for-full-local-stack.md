@@ -1,5 +1,9 @@
 # Task 069 - Add Docker Compose For Full Local Stack
 
+Status: Completed
+
+Plan: [`../../docs/business/069-add-docker-compose-for-full-local-stack-plan.md`](../../docs/business/069-add-docker-compose-for-full-local-stack-plan.md)
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../docs/context.md`, `../../docs/setup.md`, and `../../docs/infrastructure.md` before starting.
@@ -40,9 +44,9 @@ Run relevant Docker/compose validation and `npm run verify` if code changes are 
 
 ## Acceptance Criteria
 
-- [ ] Docker Compose stack is documented.
-- [ ] Local Kubernetes remains supported.
-- [ ] No secrets are committed.
+- [x] Docker Compose stack is documented.
+- [x] Local Kubernetes remains supported.
+- [x] No secrets are committed.
 
 ## Commit
 
