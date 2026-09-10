@@ -306,13 +306,13 @@ Update the local infrastructure bullet list to include PostgreSQL:
 
 ## Acceptance Criteria
 
-- [ ] PostgreSQL pod starts and stays Running in the local cluster.
-- [ ] In-cluster hostname, port, database, and user are documented in
+- [x] PostgreSQL pod starts and stays Running in the local cluster.
+- [x] In-cluster hostname, port, database, and user are documented in
   `docs/infrastructure.md`.
-- [ ] Password exists only as a `replace-me` placeholder in
+- [x] Password exists only as a `replace-me` placeholder in
   `smart-job-tracker-secrets.example.yaml`.
-- [ ] `.env.example` documents all connection details for local process
+- [x] `.env.example` documents all connection details for local process
   development.
-- [ ] No real secrets are committed.
-- [ ] `docs/infrastructure.md` and `docs/context.md` reflect the new
+- [x] No real secrets are committed.
+- [x] `docs/infrastructure.md` and `docs/context.md` reflect the new
   PostgreSQL service.

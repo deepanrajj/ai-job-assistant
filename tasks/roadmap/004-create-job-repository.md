@@ -1,5 +1,7 @@
 # Task 004 - Create Job Repository
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`

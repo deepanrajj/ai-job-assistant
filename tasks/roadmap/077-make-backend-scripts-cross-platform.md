@@ -1,5 +1,7 @@
 # Task 077 - Make Backend Scripts Cross-Platform
 
+Status: Completed
+
 ## Instructions
 
 Read these files before starting:

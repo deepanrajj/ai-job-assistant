@@ -1,5 +1,7 @@
 # Task 078 - Add Testcontainers PostgreSQL Tests
 
+Status: Completed
+
 ## Instructions
 
 Read these files before starting:

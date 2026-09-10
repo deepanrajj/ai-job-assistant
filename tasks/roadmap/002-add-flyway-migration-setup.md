@@ -1,5 +1,7 @@
 # Task 002 - Add Flyway Migration Setup
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`

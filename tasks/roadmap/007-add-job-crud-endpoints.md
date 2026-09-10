@@ -1,5 +1,7 @@
 # Task 007 - Add Job CRUD Endpoints
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`

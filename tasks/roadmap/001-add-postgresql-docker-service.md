@@ -1,5 +1,7 @@
 # Task 001 - Add PostgreSQL Docker Service
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../docs/context.md`, and
@@ -41,9 +43,9 @@ config that affects builds changed.
 
 ## Acceptance Criteria
 
-- [ ] PostgreSQL can run locally.
-- [ ] Connection details are documented.
-- [ ] No secrets are committed.
+- [x] PostgreSQL can run locally.
+- [x] Connection details are documented.
+- [x] No secrets are committed.
 
 ## Commit
 

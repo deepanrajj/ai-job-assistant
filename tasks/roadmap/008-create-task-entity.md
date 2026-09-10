@@ -1,5 +1,7 @@
 # Task 008 - Create Task Entity
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`
