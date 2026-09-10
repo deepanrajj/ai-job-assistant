@@ -138,16 +138,23 @@ job passing on the pull request.
       down even when the run fails.
 - [x] A failing assertion fails the build, demonstrated once.
 - [x] The AI folder does not run in CI.
-- [ ] The Newman report is available as an artifact.
+- [x] The Newman report is available as an artifact.
 - [x] The same run is documented and works locally.
 - [x] The collection is not duplicated into another format.
 - [x] No unrelated files are changed.
 
-The two unticked criteria are observations of a pipeline run, not of
-this working tree. The steps are in `docker-build.yml` and the teardown
-carries `if: always()`, but nothing has watched them execute yet. They
-are ticked when the pull request's `Docker Build` check is green with
-the `newman-api-report` artifact attached.
+The first criterion stays unticked, and the clause that holds it open is
+"even when the run fails". `Docker Build` on this pull request started
+the stack, ran 8 requests and 22 assertions with no `AI` request, and
+tore the stack down, and the `newman-api-report` artifact is attached.
+But the run passed, so the failure path was never taken: `Compose logs`
+reported as skipped, which is the proof that nothing exercised it.
+
+The teardown carries `if: always()` and the local runs show a failing
+assertion exits non-zero, so the pieces are there. Ticking it would
+still be inferring the behaviour rather than having watched it. It
+closes when a run fails for real, or when somebody deliberately reddens
+one and confirms the stack still comes down.
 
 ## Commit
 

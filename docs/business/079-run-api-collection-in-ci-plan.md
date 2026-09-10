@@ -508,17 +508,33 @@ Both workflow files were parsed as YAML rather than read by eye. Step
 order in `Docker Build` is: config, build, up, smoke, api:test, upload,
 logs on failure, teardown always.
 
-### What is not yet proven
+### What the pipeline run settled
 
-Two acceptance criteria are observations of a pipeline run. Nothing has
-watched the workflow execute, so they stay unticked here and in the task
-file until the pull request's `Docker Build` check is green with the
-`newman-api-report` artifact attached. Ticking them from a local run
-would be claiming evidence that does not exist.
+`Docker Build` is green on the pull request, on both commits. From the
+run log:
 
-The specific risks the first run settles: whether `npx` resolves on the
-runner without a `setup-node` step, and whether the artifact upload
-finds `reports/newman` when the Newman step itself has failed.
+| Question the run answered | Answer |
+| --- | --- |
+| Does `npx` resolve without a `setup-node` step? | yes, the job has no Node setup and the step passed |
+| Did the collection run against the stack? | 8 requests, 22 assertions, 0 failed, all against `localhost:30080` |
+| Did the `AI` folder run? | no; the log shows only `/api/ai/health` and `/api/jobs` |
+| Did the artifact arrive? | `newman-api-report`, 11067 bytes, two files |
+| Did the stack come down? | `Stop the compose stack` succeeded |
+
+That closes the artifact criterion.
+
+### What is still not proven
+
+One clause: that the stack comes down **when the run fails**. The run
+passed, so the failure path was never taken. `Compose logs` reported as
+skipped, which is exactly the evidence that nothing exercised it.
+
+The teardown carries `if: always()`, and the local runs show a failing
+assertion exits non-zero, so both halves are in place. Asserting they
+compose correctly without having watched it is inference, not
+verification, which is the distinction this plan has tried to hold
+throughout. It closes on the first genuine red run, or on a deliberate
+one.
 
 ### Review findings, and what they changed
 
