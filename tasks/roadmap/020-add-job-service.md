@@ -1,5 +1,9 @@
 # Task 020 - Add Frontend Job Service
 
+Status: Completed
+
+Plan: [`../../docs/business/020-add-job-service-plan.md`](../../docs/business/020-add-job-service-plan.md)
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -42,9 +46,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job service functions are typed.
-- [ ] Tests cover success and error paths.
-- [ ] No UI behavior changes yet.
+- [x] Job service functions are typed.
+- [x] Tests cover success and error paths.
+- [x] No UI behavior changes yet.
 
 ## Commit
 
