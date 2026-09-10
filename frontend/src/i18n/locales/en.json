@@ -92,7 +92,14 @@
     "nextStep": "Next: {{nextStep}}",
     "notSet": "Not set",
     "noJobsFound": "No jobs found",
-    "noJobsFoundDescription": "Adjust the search or status filter to see more opportunities."
+    "noJobsFoundDescription": "Adjust the search or status filter to see more opportunities.",
+    "fallbackError": {
+      "listJobs": "Failed to load jobs",
+      "getJob": "Failed to load job",
+      "createJob": "Failed to create job",
+      "updateJob": "Failed to update job",
+      "deleteJob": "Failed to delete job"
+    }
   },
   "jobDetail": {
     "backToJobs": "Back to jobs",

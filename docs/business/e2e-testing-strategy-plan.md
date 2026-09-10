@@ -324,11 +324,19 @@ component-test territory and are already covered there.
    rather than replacing H2 everywhere.~~ Settled by task 078, which
    shipped the `integrationTest` source set with H2 left in place for
    `npm run backend:verify`.
-3. Confirm the accelerated ordering, in particular pulling 020, 023,
-   024 and 026 ahead of 010 to 019. **Half-settled by what happened:**
-   steps 1 to 4 ran in the order given, as 077, 069, 078 and 079, and
-   all four are complete. Step 5 is the part that reorders feature work
-   and is still the open question.
+3. ~~Confirm the accelerated ordering, in particular pulling 020, 023,
+   024 and 026 ahead of 010 to 019.~~ **Confirmed in full.** Steps 1 to
+   4 ran as 077, 069, 078 and 079. Step 5 was then approved and task 020
+   is complete.
+
+   The argument for it held on the first task. This plan said the
+   ordering was "not really about testing" but about the fact that
+   nothing had ever proven the two halves could talk, and that building
+   three more backend domains first would mean finding a contract
+   mistake four times instead of once. Task 020 compared the two models
+   and found one immediately: the backend's `JobResponse` has no `tags`
+   and no `nextStep`, while the frontend's `TJob` requires `tags`. See
+   [the task 020 plan](./020-add-job-service-plan.md).
 4. Confirm that browser E2E waits for phase 4 rather than being built
    against `localStorage` now.
 
