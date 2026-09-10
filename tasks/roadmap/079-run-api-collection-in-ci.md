@@ -134,7 +134,7 @@ job passing on the pull request.
 
 ## Acceptance Criteria
 
-- [ ] CI starts the stack, runs the API collection, and tears the stack
+- [x] CI starts the stack, runs the API collection, and tears the stack
       down even when the run fails.
 - [x] A failing assertion fails the build, demonstrated once.
 - [x] The AI folder does not run in CI.
@@ -143,18 +143,23 @@ job passing on the pull request.
 - [x] The collection is not duplicated into another format.
 - [x] No unrelated files are changed.
 
-The first criterion stays unticked, and the clause that holds it open is
-"even when the run fails". `Docker Build` on this pull request started
-the stack, ran 8 requests and 22 assertions with no `AI` request, and
-tore the stack down, and the `newman-api-report` artifact is attached.
-But the run passed, so the failure path was never taken: `Compose logs`
-reported as skipped, which is the proof that nothing exercised it.
+Every criterion was watched rather than inferred. The failure path was
+the last one open, so it was taken deliberately: a commit asserting 200
+on the DELETE that correctly returns 204, then reverted. The red run
+reported `AssertionError responds 204 No Content`, and its step
+conclusions were exactly the shape the design predicted.
 
-The teardown carries `if: always()` and the local runs show a failing
-assertion exits non-zero, so the pieces are there. Ticking it would
-still be inferring the behaviour rather than having watched it. It
-closes when a run fails for real, or when somebody deliberately reddens
-one and confirms the stack still comes down.
+| Step | Green run | Red run |
+| --- | --- | --- |
+| Run the API collection | success | **failure** |
+| Upload Newman report | success | success |
+| Compose logs | skipped | **success** |
+| Stop the compose stack | success | success |
+
+The teardown log on the red run removes all three containers, the
+network, and the `postgres-data` volume, so a failing check leaves
+nothing behind. `Compose logs` moving from skipped to run is what proves
+the earlier green runs had never exercised this path.
 
 ## Commit
 

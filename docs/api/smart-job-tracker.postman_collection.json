@@ -245,7 +245,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('responds 204 No Content', function () {",
-                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.status(204);",
                   "});",
                   "",
                   "pm.test('returns an empty body', function () {",

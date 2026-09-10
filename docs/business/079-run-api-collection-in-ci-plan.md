@@ -1,6 +1,6 @@
 # Task 079 - Run The API Collection In CI Plan
 
-Status: Implemented, pending the pull request run
+Status: Completed
 
 ## Purpose
 
@@ -457,11 +457,11 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- [ ] CI starts the stack, runs the API collection, and tears the stack
+- [x] CI starts the stack, runs the API collection, and tears the stack
       down even when the run fails.
 - [x] A failing assertion fails the build, demonstrated once.
 - [x] The `AI` folder does not run in CI.
-- [ ] The Newman report is available as an artifact.
+- [x] The Newman report is available as an artifact.
 - [x] The same run is documented and works locally.
 - [x] The collection is not duplicated into another format.
 - [x] No unrelated files are changed.
@@ -523,18 +523,37 @@ run log:
 
 That closes the artifact criterion.
 
-### What is still not proven
+### The failure path, taken deliberately
 
-One clause: that the stack comes down **when the run fails**. The run
-passed, so the failure path was never taken. `Compose logs` reported as
-skipped, which is exactly the evidence that nothing exercised it.
+One clause remained: that the stack comes down **when the run fails**.
+Every run had passed, so `Compose logs` kept reporting as skipped, which
+was precisely the evidence that nothing had exercised it.
 
-The teardown carries `if: always()`, and the local runs show a failing
-assertion exits non-zero, so both halves are in place. Asserting they
-compose correctly without having watched it is inference, not
-verification, which is the distinction this plan has tried to hold
-throughout. It closes on the first genuine red run, or on a deliberate
-one.
+Rather than infer it from `if: always()`, the path was taken. A commit
+asserted 200 on the DELETE that correctly returns 204; the run went red;
+the commit was reverted with `git revert`, which restored the collection
+byte-identically rather than by retyping the assertion.
+
+| Step | Green run | Red run |
+| --- | --- | --- |
+| Run the API collection | success | **failure** |
+| Upload Newman report | success | success |
+| Compose logs | skipped | **success** |
+| Stop the compose stack | success | success |
+
+From the red run's log: `AssertionError responds 204 No Content`,
+`expected response to have status code 200 but got 204`. The teardown
+then removed all three containers, the network, and the
+`postgres-data` volume, so a failing check leaves nothing behind.
+
+Two things this settled that no green run could. `Compose logs` moving
+from skipped to run is direct proof the failure branch had never
+executed before. And the report still uploaded on the red run, at 13449
+bytes against the green run's 11067 - the failure detail is the
+difference, which is the case for `if: always()` made in the positive
+rather than the abstract.
+
+Every acceptance criterion is now an observation. None was inferred.
 
 ### Review findings, and what they changed
 
