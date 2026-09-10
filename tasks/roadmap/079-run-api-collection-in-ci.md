@@ -1,5 +1,7 @@
 # Task 079 - Run The API Collection In CI
 
+Status: Completed
+
 Plan: [`../../docs/business/079-run-api-collection-in-ci-plan.md`](../../docs/business/079-run-api-collection-in-ci-plan.md)
 
 ## Instructions
