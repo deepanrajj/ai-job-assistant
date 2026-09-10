@@ -235,4 +235,46 @@ class JobControllerTest {
             .andExpect(jsonPath("$.code").value("JOB_NOT_FOUND"))
             .andExpect(jsonPath("$.message").value("Job not found."))
     }
+
+    @Test
+    fun `returns bad request when the get path id is not a uuid`() {
+        mockMvc
+            .perform(get("/jobs/{id}", "not-a-uuid"))
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value(ApiErrorCode.INVALID_PATH_PARAMETER.value))
+    }
+
+    @Test
+    fun `returns bad request when the update path id is not a uuid`() {
+        mockMvc
+            .perform(
+                put("/jobs/{id}", "not-a-uuid")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "company": "New Corp",
+                          "roleTitle": "Staff Engineer",
+                          "status": "OFFER"
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value(ApiErrorCode.INVALID_PATH_PARAMETER.value))
+    }
+
+    @Test
+    fun `returns bad request when the delete path id is not a uuid`() {
+        mockMvc
+            .perform(delete("/jobs/{id}", "not-a-uuid"))
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value(ApiErrorCode.INVALID_PATH_PARAMETER.value))
+    }
+
+    @Test
+    fun `does not echo the rejected path id back to the client`() {
+        mockMvc
+            .perform(get("/jobs/{id}", "not-a-uuid"))
+            .andExpect(jsonPath("$.message").value("Path parameter is invalid."))
+    }
 }

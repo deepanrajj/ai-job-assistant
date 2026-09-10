@@ -6,6 +6,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
 class ApiExceptionHandler {
@@ -49,6 +50,29 @@ class ApiExceptionHandler {
                 ApiErrorResponse(
                     code = ApiErrorCode.MALFORMED_REQUEST.value,
                     message = "Request body is invalid.",
+                ),
+            )
+
+    /**
+     * A path variable that cannot be converted to its declared type, such as a
+     * `/jobs/{id}` segment that is not a UUID.
+     *
+     * Spring converts path variables during argument resolution, before the
+     * handler method runs, so the controller never sees these. Without this
+     * handler they reach the catch-all below and are reported as 500, which
+     * blames the server for a malformed request.
+     *
+     * The rejected value is deliberately not echoed back: it is caller-supplied
+     * text, and every other handler here answers with a fixed message.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException::class)
+    fun handlePathParameterTypeMismatch(): ResponseEntity<ApiErrorResponse> =
+        ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(
+                ApiErrorResponse(
+                    code = ApiErrorCode.INVALID_PATH_PARAMETER.value,
+                    message = "Path parameter is invalid.",
                 ),
             )
 
