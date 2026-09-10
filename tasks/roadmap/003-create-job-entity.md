@@ -1,5 +1,7 @@
 # Task 003 - Create Job Entity
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`

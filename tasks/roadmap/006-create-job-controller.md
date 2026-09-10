@@ -1,5 +1,7 @@
 # Task 006 - Create Job Controller
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`

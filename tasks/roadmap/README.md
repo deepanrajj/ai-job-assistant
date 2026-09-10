@@ -13,6 +13,13 @@ Execution-ready tasks generated from the phase roadmap in
 - Use `../../templates/task-template.md` for new task files.
 - Branch name: `feat/task-<number>-<slug>`.
 - Commit message: `task-<number>: <one-line summary>`.
+- Every task file carries a `Status:` line under its title, the same
+  way bug files do. It starts at `Not started` and becomes `Completed`
+  when the acceptance criteria are ticked. Tasks 001 to 009, 077 and
+  078 were written before the field existed and had it backfilled;
+  the template now supplies it, so no new file needs the same repair.
+- A task with a plan links it from the same header block, and the
+  plan's own `Status:` is kept in step with the task's.
 - Each task has a matching checkbox in a `../../docs/backlog/` phase
   file. Tick it only when the behaviour is implemented and verified.
 

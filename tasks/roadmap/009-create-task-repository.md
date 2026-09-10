@@ -1,5 +1,7 @@
 # Task 009 - Create Task Repository
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md`

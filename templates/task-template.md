@@ -1,5 +1,7 @@
 # Task <ID> - <Short, Explicit Title>
 
+Status: Not started
+
 ## Instructions
 
 Read these files before starting (paths are relative to the created

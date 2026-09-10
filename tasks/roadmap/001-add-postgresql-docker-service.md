@@ -1,5 +1,7 @@
 # Task 001 - Add PostgreSQL Docker Service
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../docs/context.md`, and
