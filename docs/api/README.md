@@ -50,6 +50,14 @@ running the backend, then select it in the environment dropdown. Both
 environments define the same `baseUrl` variable and differ only in its
 value, so switching runtime is switching environment.
 
+There are two environments for three runtimes, and that is deliberate.
+The Kubernetes cluster and the Docker Compose stack both publish the
+frontend on port 30080, which is why only one of them can run at a time
+(`docs/setup.md`). One `baseUrl` addresses both, so **Cluster** is the
+environment for either of them. **Local** exists for the case that
+really is different: the backend as a direct process on port 4000, with
+no proxy in front of it.
+
 What it adds over the generated spec:
 
 - **A working CRUD cycle.** `Create job` writes the new id into the
@@ -76,6 +84,18 @@ npm run dev
 That serves the API through the Nginx proxy on port 30080 and forwards
 PostgreSQL to 5434. Use the **Cluster** environment with it.
 
+The Docker Compose stack is the other way to get the whole thing
+running:
+
+```bash
+npm run dev:compose
+```
+
+It serves the API through the same proxy on the same port, so it uses
+the **Cluster** environment too. It also returns only once every service
+reports healthy, which is what makes it the stack the command-line run
+below targets.
+
 To run the backend as a direct process instead, it still needs a
 database, so forward PostgreSQL in one terminal:
 
@@ -91,18 +111,58 @@ npm run dev:backend
 
 That serves the API on port 4000. Use the **Local** environment with it.
 
-To run the whole folder from the command line with Newman:
+## Running it from the command line
+
+`npm run api:test` runs the collection with Newman against a stack that
+is already up. It is the same command CI runs, so a failure here is the
+failure the pull request will show.
+
+Start the Docker Compose stack first:
 
 ```bash
-npx newman run docs/api/smart-job-tracker.postman_collection.json -e docs/api/smart-job-tracker-cluster.postman_environment.json --folder Jobs
+npm run dev:compose
 ```
 
-Newman is not a project dependency, and these requests are not part of
-`npm run verify`. Backend behaviour is covered by
-`JobCrudIntegrationTest`, which runs against the real controller,
-service, repository, and Flyway schema without needing a running server.
-This collection is for exploring a live backend by hand, not a second
-test suite to keep green.
+```bash
+npm run api:test
+```
+
+`dev:compose` returns only once every service reports healthy, so the
+run cannot race a backend that is still starting. It works against the
+Kubernetes runtime as well, because both runtimes answer on port 30080
+and the environment file is the same one.
+
+The script names the folders it runs: `Health` and `Jobs`. That is an
+allowlist, not a filter, and the reason is the `AI` folder. Those
+requests reach OpenAI through the backend and cost money per request,
+so nothing automated may run them. A folder added to the collection
+later does not start running on its own; somebody has to add it to the
+script on purpose.
+
+`Health` is on the list despite the path `/api/ai/health`. That endpoint
+returns a fixed `{"ok": true}` and reaches no provider. It is the same
+endpoint the Kubernetes probes and the Compose healthcheck use.
+
+The run writes a JUnit and a JSON report to `reports/newman/`, which is
+gitignored. CI uploads the same two files as an artifact on every run,
+so a failed assertion can be read without reproducing it locally.
+
+Newman is not a project dependency. `npm run api:test` fetches a pinned
+version with `npx`, so no install sits in `npm ci` for a tool two
+commands use.
+
+### What this is not
+
+It is not part of `npm run verify`, and it should not become part of it.
+`verify` is the pre-push gate and stays fast and hermetic; this needs a
+running stack. Backend behaviour is separately covered by
+`JobCrudIntegrationTest`, which exercises the real controller, service,
+repository, and Flyway schema without a server at all.
+
+What this run adds over that is the wiring: Nginx proxying `/api/`,
+the backend reaching PostgreSQL over the Compose network, and the
+serialised JSON a client actually receives. No unit test sees any of
+those.
 
 ## Secrets
 

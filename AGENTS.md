@@ -116,6 +116,7 @@ infrastructure rows, does not exercise the changed thing at all.
 | `infra/docker/*.Dockerfile`, `nginx.conf` | `npm run docker:build`, then the compose row above; both runtimes share these files |
 | `infra/k8s/**` | `kubectl kustomize infra/k8s/local`, then bring the cluster up with the `start-local` skill |
 | `infra/scripts/**`, script changes in `package.json` | run the script itself, on this platform |
+| `docs/api/*.json`, or any change to the `/api/jobs` contract | `npm run api:test` against a running stack |
 | documentation only | check links, headings, and numbering by hand |
 
 `npm run compose:smoke` asserts properties of a *running* stack that no
@@ -127,6 +128,14 @@ stack already up. Two defects on the task 069 branch were invisible to
 `docker compose config` and to a `curl` from the host, and this is the
 check that catches them. CI runs it as well, so a change that skips it
 locally still gets caught.
+
+`npm run api:test` runs the Postman collection in `docs/api/` against a
+running stack with Newman. It needs the stack up, and
+`npm run dev:compose` now returns only once every service is healthy,
+so the two run back to back. It is scoped to the `Health` and `Jobs`
+folders by an allowlist; the `AI` folder reaches a paid provider and
+must never run automatically. CI runs it in the Docker Build workflow.
+See [`docs/api/README.md`](./docs/api/README.md).
 
 Documentation-only changes do not require unit tests, but links,
 numbering, and Markdown should still be checked manually.

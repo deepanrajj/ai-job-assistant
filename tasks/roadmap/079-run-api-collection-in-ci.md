@@ -1,5 +1,7 @@
 # Task 079 - Run The API Collection In CI
 
+Plan: [`../../docs/business/079-run-api-collection-in-ci-plan.md`](../../docs/business/079-run-api-collection-in-ci-plan.md)
+
 ## Instructions
 
 Read these files before starting:
@@ -134,12 +136,18 @@ job passing on the pull request.
 
 - [ ] CI starts the stack, runs the API collection, and tears the stack
       down even when the run fails.
-- [ ] A failing assertion fails the build, demonstrated once.
-- [ ] The AI folder does not run in CI.
+- [x] A failing assertion fails the build, demonstrated once.
+- [x] The AI folder does not run in CI.
 - [ ] The Newman report is available as an artifact.
-- [ ] The same run is documented and works locally.
-- [ ] The collection is not duplicated into another format.
-- [ ] No unrelated files are changed.
+- [x] The same run is documented and works locally.
+- [x] The collection is not duplicated into another format.
+- [x] No unrelated files are changed.
+
+The two unticked criteria are observations of a pipeline run, not of
+this working tree. The steps are in `docker-build.yml` and the teardown
+carries `if: always()`, but nothing has watched them execute yet. They
+are ticked when the pull request's `Docker Build` check is green with
+the `newman-api-report` artifact attached.
 
 ## Commit
 

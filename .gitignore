@@ -33,3 +33,6 @@ ble.sh/
 
 # Per-machine Claude Code permissions; shared skills in .claude/skills are tracked
 .claude/settings.local.json
+
+# Newman run output from npm run api:test
+reports/
