@@ -1,6 +1,6 @@
 # End-To-End Testing Strategy Plan
 
-Status: Proposed
+Status: Approved; work units A to D complete, E and F not started
 
 ## Purpose
 
@@ -320,9 +320,29 @@ component-test territory and are already covered there.
 1. ~~Approve Testcontainers and Playwright as dependencies.~~ Both
    approved. Whether `cross-env` is worth adding alongside them is
    still open (see D4a).
-2. Confirm D2: real PostgreSQL in a separate `integrationTest` task
-   rather than replacing H2 everywhere.
+2. ~~Confirm D2: real PostgreSQL in a separate `integrationTest` task
+   rather than replacing H2 everywhere.~~ Settled by task 078, which
+   shipped the `integrationTest` source set with H2 left in place for
+   `npm run backend:verify`.
 3. Confirm the accelerated ordering, in particular pulling 020, 023,
-   024 and 026 ahead of 010 to 019.
+   024 and 026 ahead of 010 to 019. **Half-settled by what happened:**
+   steps 1 to 4 ran in the order given, as 077, 069, 078 and 079, and
+   all four are complete. Step 5 is the part that reorders feature work
+   and is still the open question.
 4. Confirm that browser E2E waits for phase 4 rather than being built
    against `localStorage` now.
+
+## Progress
+
+| Unit | Task | State |
+| --- | --- | --- |
+| A | 077 | complete |
+| B | 078 | complete |
+| C | 069 | complete |
+| D | 079 | complete |
+| E | 080 | blocked on 026 |
+| F | 081 | blocked on E |
+
+Every backend-side unit in this plan has shipped. What is left is the
+browser work, and it waits on the sequencing question in open decision
+3 rather than on anything technical.
