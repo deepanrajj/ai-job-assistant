@@ -33,3 +33,8 @@ ble.sh/
 
 # Per-machine Claude Code permissions; shared skills in .claude/skills are tracked
 .claude/settings.local.json
+
+# Newman run output from npm run api:test. Anchored, because an
+# unanchored "reports/" would also swallow a docs/reports/ or
+# frontend/reports/ that somebody meant to commit.
+/reports/

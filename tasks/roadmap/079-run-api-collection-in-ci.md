@@ -1,5 +1,9 @@
 # Task 079 - Run The API Collection In CI
 
+Status: Completed
+
+Plan: [`../../docs/business/079-run-api-collection-in-ci-plan.md`](../../docs/business/079-run-api-collection-in-ci-plan.md)
+
 ## Instructions
 
 Read these files before starting:
@@ -132,14 +136,32 @@ job passing on the pull request.
 
 ## Acceptance Criteria
 
-- [ ] CI starts the stack, runs the API collection, and tears the stack
+- [x] CI starts the stack, runs the API collection, and tears the stack
       down even when the run fails.
-- [ ] A failing assertion fails the build, demonstrated once.
-- [ ] The AI folder does not run in CI.
-- [ ] The Newman report is available as an artifact.
-- [ ] The same run is documented and works locally.
-- [ ] The collection is not duplicated into another format.
-- [ ] No unrelated files are changed.
+- [x] A failing assertion fails the build, demonstrated once.
+- [x] The AI folder does not run in CI.
+- [x] The Newman report is available as an artifact.
+- [x] The same run is documented and works locally.
+- [x] The collection is not duplicated into another format.
+- [x] No unrelated files are changed.
+
+Every criterion was watched rather than inferred. The failure path was
+the last one open, so it was taken deliberately: a commit asserting 200
+on the DELETE that correctly returns 204, then reverted. The red run
+reported `AssertionError responds 204 No Content`, and its step
+conclusions were exactly the shape the design predicted.
+
+| Step | Green run | Red run |
+| --- | --- | --- |
+| Run the API collection | success | **failure** |
+| Upload Newman report | success | success |
+| Compose logs | skipped | **success** |
+| Stop the compose stack | success | success |
+
+The teardown log on the red run removes all three containers, the
+network, and the `postgres-data` volume, so a failing check leaves
+nothing behind. `Compose logs` moving from skipped to run is what proves
+the earlier green runs had never exercised this path.
 
 ## Commit
 
