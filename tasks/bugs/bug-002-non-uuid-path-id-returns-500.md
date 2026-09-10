@@ -104,7 +104,7 @@ also a different defect, which argues for its own bug.
    handlers work, and keeps the mapping in the one place that already
    owns it. Needs a decision on the code: reuse `MALFORMED_REQUEST`,
    which currently means an unreadable body, or add a new one such as
-   `INVALID_PATH_PARAMETER`. Reusing is fewer moving parts; adding is
+   `INVALID_REQUEST_PARAMETER`. Reusing is fewer moving parts; adding is
    more precise for a client that switches on the code.
 2. **Take the id as a `String` and parse it in the controller or
    service**, throwing an `ApiException` on failure. More explicit, but
@@ -185,10 +185,19 @@ bug-002: return 400 for a malformed path id
 
 ## Fixed State
 
-Option 1 was taken, with a new `INVALID_PATH_PARAMETER` code rather than
+Option 1 was taken, with a new `INVALID_REQUEST_PARAMETER` code rather than
 reusing `MALFORMED_REQUEST`. The two mean different things to a client:
-one says the URL is wrong, the other says the body is. A UI that switches
-on the code needs to tell them apart.
+one says something in the request line is wrong, the other says the body
+is. A UI that switches on the code needs to tell them apart.
+
+The code was first written as `INVALID_PATH_PARAMETER` and renamed in
+review. `MethodArgumentTypeMismatchException` is what Spring raises for
+`@RequestParam` conversion failures as well as `@PathVariable`, so the
+narrower name would have reported "path" for a query-string mistake the
+first time a typed request parameter was added. Nothing has one today,
+so this was latent rather than broken, but the timing is asymmetric:
+renaming before merge is free, and renaming a published error code that
+a client already switches on is a contract break.
 
 The handler takes no exception parameter and answers a fixed message. The
 rejected value is caller-supplied text and echoing it back would be the
@@ -213,8 +222,8 @@ the same way after `npm run dev:compose` rebuilt the image.
 
 | Request | Before | After |
 | --- | --- | --- |
-| `GET /api/jobs/not-a-uuid` | 500 `INTERNAL_ERROR` | 400 `INVALID_PATH_PARAMETER` |
-| `GET /api/jobs/123` | 500 `INTERNAL_ERROR` | 400 `INVALID_PATH_PARAMETER` |
+| `GET /api/jobs/not-a-uuid` | 500 `INTERNAL_ERROR` | 400 `INVALID_REQUEST_PARAMETER` |
+| `GET /api/jobs/123` | 500 `INTERNAL_ERROR` | 400 `INVALID_REQUEST_PARAMETER` |
 | `PUT /api/jobs/not-a-uuid` | 500 | 400 |
 | `DELETE /api/jobs/not-a-uuid` | 500 | 400 |
 | `GET /api/jobs/<absent uuid>` | 404 `JOB_NOT_FOUND` | 404 `JOB_NOT_FOUND` |
@@ -231,6 +240,6 @@ have meant changing the behaviour of every genuine 500 in the same commit
 that changes which responses are 500s at all, and the two want separate
 regression tests. It needs its own bug.
 
-The Postman collection was not extended with an `INVALID_PATH_PARAMETER`
+The Postman collection was not extended with an `INVALID_REQUEST_PARAMETER`
 request. That would put the new contract under the Newman CI gate and is
 worth doing, but adding requests is not in this file's scope.

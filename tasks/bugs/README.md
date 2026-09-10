@@ -42,7 +42,7 @@ None.
       — P2, from the task 020 branch review. Pre-existing since task
       006 and surfaced by the new job service. Fixed with a
       `MethodArgumentTypeMismatchException` handler returning 400 and a
-      new `INVALID_PATH_PARAMETER` code.
+      new `INVALID_REQUEST_PARAMETER` code.
 - [x] [Bug 001: assigned-id entities take the merge path on save](./bug-001-assigned-id-entities-merge-on-save.md)
       — P2, from the task 009 branch review. Fixed with a shared
       `AssignedIdEntity` mapped superclass implementing `Persistable`.

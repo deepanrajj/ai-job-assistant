@@ -54,25 +54,29 @@ class ApiExceptionHandler {
             )
 
     /**
-     * A path variable that cannot be converted to its declared type, such as a
-     * `/jobs/{id}` segment that is not a UUID.
+     * A request parameter that cannot be converted to its declared type, such
+     * as a `/jobs/{id}` segment that is not a UUID.
      *
-     * Spring converts path variables during argument resolution, before the
-     * handler method runs, so the controller never sees these. Without this
-     * handler they reach the catch-all below and are reported as 500, which
-     * blames the server for a malformed request.
+     * Spring raises this for `@RequestParam` as well as `@PathVariable`, which
+     * is why neither the code nor this method names the path specifically. No
+     * typed request parameter exists yet, but one would land here too.
+     *
+     * Conversion happens during argument resolution, before the handler method
+     * runs, so the controller never sees these. Without this handler they reach
+     * the catch-all below and are reported as 500, which blames the server for
+     * a malformed request.
      *
      * The rejected value is deliberately not echoed back: it is caller-supplied
      * text, and every other handler here answers with a fixed message.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
-    fun handlePathParameterTypeMismatch(): ResponseEntity<ApiErrorResponse> =
+    fun handleRequestParameterTypeMismatch(): ResponseEntity<ApiErrorResponse> =
         ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(
                 ApiErrorResponse(
-                    code = ApiErrorCode.INVALID_PATH_PARAMETER.value,
-                    message = "Path parameter is invalid.",
+                    code = ApiErrorCode.INVALID_REQUEST_PARAMETER.value,
+                    message = "Request parameter is invalid.",
                 ),
             )
 
