@@ -104,6 +104,14 @@ npm run verify
 Documentation-only changes do not require unit tests, but links,
 numbering, and Markdown should still be checked manually.
 
+When a local runtime or verification command fails for reasons that look
+environmental rather than code-related - container DNS, a healthcheck
+that fails while the service works, Compose variables, or a Gradle run
+that will not start - read
+`docs/engineering/local-runtime-environment.md` before debugging
+further. It also records which workarounds are specific to one machine
+and must not be copied into a Dockerfile, manifest, or workflow.
+
 ## 4. Test Preservation
 
 - If existing tests fail after a change, investigate before modifying

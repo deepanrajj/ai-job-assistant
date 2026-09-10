@@ -30,3 +30,12 @@ jobs:
 
       - name: Build Docker images
         run: npm run docker:build
+
+      # The compose file references both Dockerfile paths, the Nginx
+      # upstream hostname from infra/docker/nginx.conf, and the service
+      # name that hostname has to match. None of that is checked by the
+      # image build above, and there is no unit-test harness for a
+      # compose file, so this step parses it, interpolates every
+      # variable, and resolves the build contexts.
+      - name: Validate compose configuration
+        run: npm run compose:config

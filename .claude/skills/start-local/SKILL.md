@@ -161,7 +161,7 @@ curl -s -X DELETE http://localhost:30080/api/jobs/<id> -w "%{http_code}\n"
 | Backend pod shows 1-2 restarts but is now `Running` and ready | expected on a cold cluster: the backend booted before PostgreSQL accepted connections, so Flyway failed and the pod restarted until it could connect | nothing to do; there is no startup ordering, so the restart *is* the retry |
 | Backend pod crash-loops and never becomes ready | password does not match the secret, or PostgreSQL itself is failing | check the postgres pod first, then `kubectl logs deployment/smart-job-tracker-backend -n smart-job-tracker --previous` for the real cause |
 | Pods stuck in `CreateContainerConfigError` | the secret exists but is missing a key a deployment references | check both keys are present, then `kubectl rollout restart` the affected deployment |
-| `address already in use` on 30080 or 5434 | a port forward from an earlier run is still alive | see the `stop-local` skill |
+| `address already in use` on 30080 or 5434 | a port forward from an earlier run is still alive, **or** the Docker Compose runtime is up and holding the same two ports | `docker compose -f infra/docker/compose.yaml ps` to check for the second cause, then `npm run compose:down`; otherwise see the `stop-local` skill |
 | Data from the last session is gone | expected | PostgreSQL uses `emptyDir`; recreating the pod resets it |
 
 ## Boundaries
@@ -172,3 +172,9 @@ curl -s -X DELETE http://localhost:30080/api/jobs/<id> -w "%{http_code}\n"
 - `npm run dev:local` is a different runtime, not a fallback for this
   one. It runs the backend as a host process and still needs PostgreSQL
   forwarded with `npm run db:forward`.
+- `npm run dev:compose` is a third runtime, and the only one that
+  conflicts with this one. It publishes the same 30080 and 5434, so the
+  two cannot run together. It is the better choice when Kubernetes will
+  not come up at all, or when the database needs to survive a restart.
+  See `docs/setup.md` and
+  `docs/engineering/local-runtime-environment.md`.

@@ -46,6 +46,82 @@ PostgreSQL
   Storage:    emptyDir (ephemeral; data resets on pod recreation)
 ```
 
+## Docker Compose Runtime
+
+An alternative to the Kubernetes runtime for developers who do not want
+to enable Docker Desktop Kubernetes. Defined in one file:
+
+```text
+infra/docker/compose.yaml
+```
+
+```text
+Project
+  smart-job-tracker
+
+Frontend
+  Service:    smart-job-tracker-frontend
+  Image:      smart-job-tracker-frontend:local
+  Port:       30080 -> 80
+
+Backend
+  Service:    smart-job-tracker-backend
+  Image:      smart-job-tracker-backend:local
+  Port:       not published; reached through the frontend proxy
+
+PostgreSQL
+  Service:    smart-job-tracker-postgres
+  Image:      postgres:16
+  Port:       5434 -> 5432
+  Storage:    named volume (survives restarts)
+```
+
+### What Is Shared With Kubernetes
+
+- Both Dockerfiles, unchanged.
+- `infra/docker/nginx.conf`, unchanged.
+- The image tags `smart-job-tracker-backend:local` and
+  `smart-job-tracker-frontend:local`, so a Compose build also refreshes
+  what `npm run k8s:load-images` picks up.
+- The published host ports, `30080` and `5434`.
+- The environment variable names the backend reads.
+
+Service names match the Kubernetes Service names deliberately. Compose
+publishes service names as DNS names on the project network, and
+`nginx.conf` resolves its upstream by the literal name
+`smart-job-tracker-backend`. Matching the names is what lets one Nginx
+config serve both runtimes.
+
+### What Differs
+
+| | Kubernetes | Compose |
+| --- | --- | --- |
+| Database storage | `emptyDir`, resets on pod recreation | named volume, survives restarts |
+| Secrets | `smart-job-tracker-secrets` Secret, no defaults | `infra/docker/.env`, with local defaults |
+| Startup ordering | probes and Service objects | `depends_on` with health conditions |
+| Image delivery | `k8s:load-images` into the node | built in place by Compose |
+
+Nginx resolves a literal upstream hostname when it loads its config and
+exits if the name does not resolve. Under Kubernetes the Service exists
+independently of the backend pod, so this never happens. Compose has no
+equivalent object, so the frontend declares `depends_on` the backend.
+The backend in turn waits for PostgreSQL to report healthy, because
+Flyway connects during startup.
+
+### Running It
+
+```bash
+npm run dev:compose
+npm run compose:logs
+npm run compose:down
+npm run compose:reset
+npm run compose:config
+```
+
+Because both runtimes bind `30080` and `5434`, only one can run at a
+time. See [Project Setup](./setup.md) for the environment variables and
+the full walkthrough.
+
 ## Request Flow
 
 ```mermaid
@@ -199,11 +275,16 @@ If you created the secret before `task-001`, it will be missing `POSTGRES_PASSWO
 Local Vite frontend:        5173
 Local Spring Boot backend:  4000
 Kubernetes frontend proxy:  30080 through kubectl port-forward
+Compose frontend:           30080 published directly
 Frontend container:         80
 Backend container:          4000
 PostgreSQL host port-forward:  5434 -> 5432
+Compose PostgreSQL:         5434 published directly
 PostgreSQL container:       5432
 ```
+
+The Kubernetes and Compose runtimes claim the same two host ports,
+so they cannot run at the same time.
 
 ## Why Image Loading Is Needed Locally
 

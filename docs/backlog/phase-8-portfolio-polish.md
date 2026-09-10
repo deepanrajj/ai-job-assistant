@@ -5,7 +5,7 @@ Goal: make the project presentable for GitHub, interviews, and deployment.
 ## Tasks
 
 - [ ] [Add backend integration tests](../../tasks/roadmap/068-add-backend-integration-tests.md).
-- [ ] [Add docker-compose for full local stack](../../tasks/roadmap/069-add-docker-compose-for-full-local-stack.md).
+- [x] [Add docker-compose for full local stack](../../tasks/roadmap/069-add-docker-compose-for-full-local-stack.md).
 - [ ] [Add seed demo data](../../tasks/roadmap/070-add-seed-demo-data.md).
 - [ ] [Add screenshots to README](../../tasks/roadmap/071-add-screenshots-to-readme.md).
 - [ ] [Add architecture diagram to README](../../tasks/roadmap/072-add-architecture-diagram-to-readme.md).
