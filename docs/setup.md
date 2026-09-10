@@ -16,6 +16,9 @@ kubectl
 Git
 ```
 
+The Docker Compose runtime additionally needs IPv6 loopback enabled; see
+[Run With Docker Compose](#run-with-docker-compose).
+
 For AI requests, you also need an OpenAI API key. Keep it local and never commit it.
 
 ## Install Dependencies
@@ -84,6 +87,15 @@ the same image tags, as plain containers.
 Compose and local Kubernetes are alternatives, not complements. Both
 publish the frontend on `30080` and PostgreSQL on `5434`, so whichever
 starts second fails to bind. Stop one before starting the other.
+
+This runtime needs a working IPv6 loopback. Each port is published on
+both `127.0.0.1` and `[::1]`, so on a host where IPv6 is disabled
+entirely Docker cannot bind `[::1]` and `npm run dev:compose` fails with
+a bind error instead of starting. That is a deliberate trade: binding
+only `127.0.0.1` would start anywhere but would break clients that
+resolve `localhost` to `::1` and do not retry. If you must run without
+IPv6, drop the `[::1]` lines from `infra/docker/compose.yaml` and use
+`127.0.0.1` rather than `localhost` in every URL and connection string.
 
 Optionally create the environment file:
 

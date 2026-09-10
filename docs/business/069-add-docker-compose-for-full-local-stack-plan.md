@@ -651,12 +651,37 @@ that no static check can see, and `AGENTS.md` section 3 now maps every
 changed area to the focused check that actually exercises it.
 
 Confirmed to fail on a reintroduced defect rather than only to pass:
-reverting the port mapping to `"5434:5432"` turns two checks red, the
-`0.0.0.0` assertion and the LAN-reachability one, and the script exits
-non-zero. It does **not** catch the socket-versus-TCP healthcheck
-problem, because that is a startup race that does not fire on a machine
-where initdb is fast. Worth stating plainly rather than overselling the
-check.
+reverting the port mapping to `"5434:5432"` turns the binding assertion
+and the LAN-reachability checks red, and the script exits non-zero. It
+does **not** catch the socket-versus-TCP healthcheck problem, because
+that is a startup race that does not fire on a machine where initdb is
+fast. Worth stating plainly rather than overselling the check.
+
+A third review pass then found the check itself was weaker than it
+looked, and the fixes are the last commit on this branch:
+
+- The exposure assertion matched the literal string `0.0.0.0`, so an
+  `[::]` wildcard binding passed while the port was on every interface.
+  Verified against a probe stack before fixing. It is now an allowlist
+  requiring every bound address to be `127.0.0.1` or `::1`, so unknown
+  forms fail closed, and it is covered by a table of known-good and
+  known-bad `docker compose ps` strings.
+- The LAN assertion tested one interface. This machine has two, and
+  enumeration order is not stable. It now tests all of them, and both
+  the script and the note say it is corroboration rather than proof,
+  since a firewall produces the same refusal.
+- Nothing published a host port for the backend, but nothing checked
+  that either. Now asserted.
+- The `[::1]` mappings make an IPv6 loopback a hard prerequisite for
+  starting the stack. That trade is now written down in `docs/setup.md`,
+  with what to drop if you must run without IPv6.
+- CI brought nothing up, so the smoke check only ran when somebody
+  remembered. The Docker Build workflow now starts the stack with
+  `--wait` and runs it.
+
+The count went from 14 assertions to 17. The pattern across all three
+review passes is the same one worth remembering: each fix was sound and
+each verification was too narrow to see what it missed.
 
 The generalisable half of both corrections, plus the older environment
 traps found while investigating them, is written up separately in

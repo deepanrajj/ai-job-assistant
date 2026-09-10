@@ -35,6 +35,21 @@ const SERVICES = [
 ];
 const PUBLISHED_PORTS = [30080, 5434];
 
+/**
+ * The only host addresses a published port may be bound to. An
+ * allowlist rather than a denylist, so any address form that is not
+ * explicitly loopback fails closed - the IPv6 wildcard `[::]` included,
+ * and any spelling a future Docker prints differently.
+ */
+const ALLOWED_BIND_HOSTS = new Set(['127.0.0.1', '::1']);
+
+/**
+ * Services that must publish nothing to the host. The backend is
+ * reached through the Nginx proxy in both runtimes; a published 4000
+ * would be a compose-only entry point and the first thing to drift.
+ */
+const UNPUBLISHED_SERVICES = ['smart-job-tracker-backend'];
+
 const results = [];
 const record = (ok, name, detail) => {
   results.push({ ok, name, detail });
@@ -74,11 +89,25 @@ const httpStatus = async (url) => {
   }
 };
 
-/** The first non-internal IPv4 address, or null on a host that has none. */
-const lanAddress = () =>
+/** Every non-internal IPv4 address on this host. */
+const lanAddresses = () =>
   Object.values(networkInterfaces())
     .flat()
-    .find((iface) => iface && iface.family === 'IPv4' && !iface.internal)?.address ?? null;
+    .filter((iface) => iface && iface.family === 'IPv4' && !iface.internal)
+    .map((iface) => iface.address);
+
+/**
+ * Every published binding in a `docker compose ps` Ports cell, as
+ * {host, port}. Handles the plain form `127.0.0.1:5434->5432/tcp` and
+ * the bracketed IPv6 form `[::1]:5434->5432/tcp`. A cell such as
+ * `4000/tcp` describes a port that is exposed but not published, and
+ * yields nothing.
+ */
+const parseBindings = (ports) =>
+  [...ports.matchAll(/(\[[^\]]*\]|[\d.]+):(\d+)->/g)].map(([, host, port]) => ({
+    host: host.replace(/^\[|\]$/g, ''),
+    port: Number(port),
+  }));
 
 const main = async () => {
   let ps;
@@ -114,12 +143,35 @@ const main = async () => {
   }
 
   // 2. Published ports are bound to loopback and nothing else. This is
-  //    the check that a curl from this machine cannot make, because a
+  //    the check a curl from this machine cannot make, because a
   //    0.0.0.0 binding answers loopback too.
-  const allPorts = [...rows.values()].map((row) => row.ports).join(' ');
+  //
+  //    Every bound address must appear in ALLOWED_BIND_HOSTS. Matching
+  //    against a list of bad addresses instead would pass anything it
+  //    had not been taught about, and `[::]` is exactly that: an IPv6
+  //    wildcard reaching every interface without the string `0.0.0.0`
+  //    appearing anywhere.
+  const bindings = [...rows.values()].flatMap((row) => parseBindings(row.ports));
   for (const port of PUBLISHED_PORTS) {
-    const exposed = new RegExp(`0\\.0\\.0\\.0:${port}->`).test(allPorts);
-    record(!exposed, `port ${port} is not published on 0.0.0.0`, exposed ? allPorts : 'loopback only');
+    const hosts = bindings.filter((binding) => binding.port === port).map((binding) => binding.host);
+    const offending = hosts.filter((host) => !ALLOWED_BIND_HOSTS.has(host));
+    record(
+      hosts.length > 0 && offending.length === 0,
+      `port ${port} is bound to loopback only`,
+      hosts.length === 0 ? 'not published at all' : `bound on ${hosts.join(', ')}`,
+    );
+  }
+
+  // 2b. Services that must publish nothing still publish nothing.
+  for (const service of UNPUBLISHED_SERVICES) {
+    const published = parseBindings(rows.get(service)?.ports ?? '');
+    record(
+      published.length === 0,
+      `${service} publishes no host port`,
+      published.length
+        ? published.map((binding) => `${binding.host}:${binding.port}`).join(', ')
+        : 'reached through the proxy only',
+    );
   }
 
   // 3. Both loopback stacks answer. Binding 127.0.0.1 alone silently
@@ -132,18 +184,26 @@ const main = async () => {
     }
   }
 
-  // 4. The same ports are refused from this machine's own LAN address.
-  //    Skipped rather than failed on a host with no external interface,
-  //    since a pass would be meaningless there.
-  const lan = lanAddress();
-  if (lan) {
-    for (const port of PUBLISHED_PORTS) {
-      // eslint-disable-next-line no-await-in-loop
-      const reachable = await canConnect(lan, port);
-      record(!reachable, `port ${port} refused from LAN address`, `${lan}:${port}`);
+  // 4. The same ports are refused from every non-internal address this
+  //    host has, not just the first one enumerated. Interface order is
+  //    not stable, and a machine with a VPN or a WSL adapter has more
+  //    than one.
+  //
+  //    Corroboration only. A refusal here is also what a host firewall
+  //    produces, so this cannot tell a correct binding from a blocked
+  //    one. Check 2 is the assertion that decides; this catches the
+  //    case where the binding string is read wrongly.
+  const lan = lanAddresses();
+  if (lan.length) {
+    for (const address of lan) {
+      for (const port of PUBLISHED_PORTS) {
+        // eslint-disable-next-line no-await-in-loop
+        const reachable = await canConnect(address, port);
+        record(!reachable, `port ${port} refused from ${address}`);
+      }
     }
   } else {
-    console.log(`SKIP  LAN reachability - no external IPv4 interface found`);
+    console.log('SKIP  LAN reachability - no external IPv4 interface found');
   }
 
   // 5. The app and the API answer through the Nginx proxy. /api/jobs is

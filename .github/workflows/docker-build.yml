@@ -40,3 +40,22 @@ jobs:
 
       - name: Build Docker images
         run: npm run docker:build
+
+      # `compose config` above proves the file parses; it binds nothing
+      # and starts nothing. Every defect the smoke check exists for is a
+      # property of a running stack, so CI has to bring one up or the
+      # check only runs when somebody remembers. --wait blocks until
+      # every service reports healthy and fails the step if one does not.
+      - name: Start the compose stack
+        run: docker compose -f infra/docker/compose.yaml up -d --wait
+
+      - name: Check the compose runtime
+        run: npm run compose:smoke
+
+      - name: Compose logs
+        if: failure()
+        run: docker compose -f infra/docker/compose.yaml logs --no-color
+
+      - name: Stop the compose stack
+        if: always()
+        run: docker compose -f infra/docker/compose.yaml down -v

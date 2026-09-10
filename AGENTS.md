@@ -119,12 +119,14 @@ infrastructure rows, does not exercise the changed thing at all.
 | documentation only | check links, headings, and numbering by hand |
 
 `npm run compose:smoke` asserts properties of a *running* stack that no
-static check can see: that published ports are bound to loopback on both
-IP stacks and refused from the machine's own network address, that every
-service reports healthy, and that the API answers through the proxy. It
-needs the stack already up. Two defects on the task 069 branch were
-invisible to `docker compose config` and to a `curl` from the host, and
-this is the check that would have caught them.
+static check can see: that every service reports healthy, that published
+ports are bound to loopback on both IP stacks and refused from every
+non-internal address this host has, that the backend still publishes
+nothing, and that the app and API answer through the proxy. It needs the
+stack already up. Two defects on the task 069 branch were invisible to
+`docker compose config` and to a `curl` from the host, and this is the
+check that catches them. CI runs it as well, so a change that skips it
+locally still gets caught.
 
 Documentation-only changes do not require unit tests, but links,
 numbering, and Markdown should still be checked manually.

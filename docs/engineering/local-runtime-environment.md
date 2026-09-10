@@ -182,11 +182,21 @@ falling back does not.
 Do not verify this by hand. `npm run compose:smoke` asserts all of it:
 
 ```text
-PASS  port 5434 is not published on 0.0.0.0
+PASS  port 5434 is bound to loopback only - bound on 127.0.0.1, ::1
 PASS  port 5434 reachable on 127.0.0.1
 PASS  port 5434 reachable on ::1
-PASS  port 5434 refused from LAN address - 192.168.178.20:5434
+PASS  port 5434 refused from 192.168.178.20
 ```
+
+The binding assertion is an allowlist: every bound address has to be
+`127.0.0.1` or `::1`. Listing bad addresses instead would pass anything
+it had not been taught, and `[::]` is exactly that - an IPv6 wildcard
+that reaches every interface without the string `0.0.0.0` appearing.
+
+One more consequence of naming `[::1]`: the stack now needs a working
+IPv6 loopback to start at all. On a host with IPv6 disabled, Docker
+cannot bind it and `up` fails outright. `docs/setup.md` says so, and
+says what to drop if you must run without it.
 
 ### `.env` is read from the compose file's directory
 
@@ -241,12 +251,21 @@ bound to loopback on both IP stacks, that the same ports are refused
 from the machine's own LAN address, and that the app, the health
 endpoint, and a database-backed endpoint all answer through the proxy.
 
+CI runs it too. The Docker Build workflow brings the stack up with
+`--wait` and then runs the check, so this is no longer something that
+only happens when somebody remembers.
+
 Be clear about its limits. It was confirmed to fail when the `0.0.0.0`
-binding is reintroduced, but it does **not** catch the socket-versus-TCP
-healthcheck problem, because that one is a startup race that simply did
-not fire on a machine where initdb is fast. No assertion against a
-running stack can catch a race that did not happen. Read the healthcheck
-before trusting it.
+binding is reintroduced, and its binding assertions are covered by a
+table of known-good and known-bad `docker compose ps` strings. But it
+does **not** catch the socket-versus-TCP healthcheck problem, because
+that one is a startup race that simply did not fire on a machine where
+initdb is fast. No assertion against a running stack can catch a race
+that did not happen. Read the healthcheck before trusting it.
+
+The LAN assertions are corroboration, not proof. A host firewall
+produces the same refusal a correct binding does, so the allowlist check
+is the one that decides.
 
 ## This machine only
 
