@@ -240,6 +240,23 @@ have meant changing the behaviour of every genuine 500 in the same commit
 that changes which responses are 500s at all, and the two want separate
 regression tests. It needs its own bug.
 
-The Postman collection was not extended with an `INVALID_REQUEST_PARAMETER`
-request. That would put the new contract under the Newman CI gate and is
-worth doing, but adding requests is not in this file's scope.
+### The Postman collection now covers it
+
+Added `Get job with a malformed id returns 400` to the `Jobs` folder, so
+the new contract sits under the Newman gate task 079 built rather than
+resting on the backend unit tests alone. It asserts the status, the code,
+and that the rejected value is not echoed back.
+
+The folder is in the CI allowlist, so this runs on every pull request.
+
+It earned its place on the first run. Against a stack whose image
+predated the rename it failed with:
+
+```text
+expected 'INVALID_PATH_PARAMETER' to deeply equal 'INVALID_REQUEST_PARAMETER'
+```
+
+That is the gate doing the one thing the backend tests cannot: comparing
+the contract to what a deployed backend actually serves. After
+`npm run dev:compose` rebuilt the image, 9 requests and 25 assertions
+pass.
