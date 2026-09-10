@@ -33,6 +33,7 @@ for the equivalent note about the test suite.
 | `address already in use` on 30080 or 5434 | the other local runtime is up, or a leftover port forward is alive | Compose and Kubernetes both bind these ports and cannot run together; stop one, or see the `stop-local` skill |
 | Backend exits at startup on a refused database connection | Flyway connects during startup and the database was not ready | keep the `service_healthy` condition on the postgres dependency, and make sure the postgres healthcheck probes TCP rather than the unix socket |
 | A published port answers locally but is also reachable from the network | `ports: "5434:5432"` binds `0.0.0.0`, unlike `kubectl port-forward`, which binds loopback | give the mapping an explicit host address, `127.0.0.1:5434:5432` |
+| The pre-commit hook fails Prettier on frontend files your commit did not touch | git wrote CRLF into the working tree, and the hook checks the whole frontend rather than the staged files | `npm run frontend:format`, then `git checkout -- frontend/` after committing; see the entry under This machine only |
 
 The first, third and fifth rows were captured verbatim while building
 task 069. The Nginx row is the predicted failure for removing the
@@ -332,6 +333,65 @@ created with the literal string instead of the value.
 Use the `kubectl create secret` command in
 [`../setup.md`](../setup.md) directly. The `start-local` skill says the
 same thing.
+
+### A commit fails Prettier on frontend files it did not touch
+
+Symptom: a backend-only or docs-only commit is rejected by the
+pre-commit hook with
+
+```text
+[warn] src/services/index.ts
+[warn] Code style issues found in 4 files.
+```
+
+naming frontend files that are not in the commit and that nobody edited.
+
+Two things combine.
+
+**Git writes CRLF into the working tree here.** `.gitattributes` sets
+`* text=auto`, which normalizes to LF *in the index* and says nothing
+about the working tree. That is left to `core.autocrlf`, which is `true`
+on this machine, the git-for-Windows default. Any git operation that
+materializes a file therefore writes CRLF. Demonstrated directly:
+`git checkout -- frontend/` turns an LF file into a CRLF one.
+
+Only the files git actually rewrites are affected, which is why the set
+looks arbitrary. After a branch switch it is exactly the files that
+differ between the two branches.
+
+**The hook checks more than the commit.** `frontend:format:check` runs
+`prettier . --check` over the whole frontend, while `lint-staged` covers
+the staged files. Prettier defaults to `endOfLine: "lf"` and
+`frontend/.prettierrc` does not override it, so one stray CRLF file
+anywhere fails the commit.
+
+The workaround, from the repository root:
+
+```bash
+npm run frontend:format
+```
+
+Two traps in that workaround, both hit while writing this entry:
+
+- It is **not** a no-op in git's eyes. Afterwards `git diff` reports the
+  files identical while `git status` calls them modified, and
+  `git checkout <branch>` refuses with "local changes would be
+  overwritten". Run `git checkout -- frontend/` to put them back once
+  the commit is in.
+- Do not stage the files it rewrites. They belong to whatever change
+  last edited them, not to the commit being blocked.
+
+A durable fix would pin the working-tree ending in `.gitattributes`
+rather than relying on each machine's git config. It is not applied
+here, and it is **not** the one-liner it looks like: `* text=auto eol=lf`
+would also force LF onto `backend/gradlew.bat`, which is tracked, and
+batch files with LF endings can misbehave under `cmd.exe`. It needs a
+`*.bat text eol=crlf` exception alongside it, and that combination has
+not been tested. Narrowing the hook to staged files would also work and
+is the smaller change.
+
+Filed nowhere. It is developer friction rather than a defect: nothing
+user-facing is wrong and no bad code can ship because of it.
 
 ## Rules
 
