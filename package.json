@@ -28,6 +28,7 @@
     "backend:test:integration": "node infra/scripts/run-gradle.mjs integrationTest",
     "backend:verify": "npm run backend:format:check && npm run backend:lint && npm run backend:test:coverage",
     "api:test": "npx --yes newman@6.2.2 run docs/api/smart-job-tracker.postman_collection.json -e docs/api/smart-job-tracker-cluster.postman_environment.json --folder Health --folder Jobs -r cli,junit,json --reporter-junit-export reports/newman/newman.xml --reporter-json-export reports/newman/newman.json",
+    "api:test:local": "npx --yes newman@6.2.2 run docs/api/smart-job-tracker.postman_collection.json -e docs/api/smart-job-tracker-local.postman_environment.json --folder Health --folder Jobs -r cli,junit,json --reporter-junit-export reports/newman/newman-local.xml --reporter-json-export reports/newman/newman-local.json",
     "lint-staged": "lint-staged",
     "verify": "npm run frontend:verify && npm run backend:verify",
     "verify:pre-push": "npm run frontend:verify:pre-push && npm run backend:verify",

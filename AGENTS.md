@@ -116,7 +116,7 @@ infrastructure rows, does not exercise the changed thing at all.
 | `infra/docker/*.Dockerfile`, `nginx.conf` | `npm run docker:build`, then the compose row above; both runtimes share these files |
 | `infra/k8s/**` | `kubectl kustomize infra/k8s/local`, then bring the cluster up with the `start-local` skill |
 | `infra/scripts/**`, script changes in `package.json` | run the script itself, on this platform |
-| `docs/api/*.json`, or any change to the `/api/jobs` contract | `npm run api:test` against a running stack |
+| `docs/api/*.json`, or any change to the `/api/jobs` contract | `npm run api:test` against a stack rebuilt from the working tree, or `npm run api:test:local` against `npm run dev:backend` |
 | documentation only | check links, headings, and numbering by hand |
 
 `npm run compose:smoke` asserts properties of a *running* stack that no
@@ -135,7 +135,15 @@ running stack with Newman. It needs the stack up, and
 so the two run back to back. It is scoped to the `Health` and `Jobs`
 folders by an allowlist; the `AI` folder reaches a paid provider and
 must never run automatically. CI runs it in the Docker Build workflow.
-See [`docs/api/README.md`](./docs/api/README.md).
+
+Neither script discovers anything: each addresses a fixed port.
+`api:test` hits 30080, which Compose and Kubernetes both serve **from a
+built image**, so a backend change needs a rebuilding start
+(`dev:compose` or `dev`) before the run means anything. `api:test:local`
+hits 4000, which `npm run dev:backend` serves from the working tree
+directly. Reach for the local one while changing a controller,
+especially with a stack also up on 30080 - it will answer green from
+stale code. See [`docs/api/README.md`](./docs/api/README.md).
 
 Documentation-only changes do not require unit tests, but links,
 numbering, and Markdown should still be checked manually.

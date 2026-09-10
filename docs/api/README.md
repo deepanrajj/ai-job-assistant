@@ -113,11 +113,19 @@ That serves the API on port 4000. Use the **Local** environment with it.
 
 ## Running it from the command line
 
-`npm run api:test` runs the collection with Newman against a stack that
-is already up. It is the same command CI runs, so a failure here is the
-failure the pull request will show.
+There is one script per runtime, and the difference between them is the
+port they address. Neither discovers anything: each one talks to a fixed
+address, whatever happens to be listening there.
 
-Start the Docker Compose stack first:
+| Script | Targets | Runtime |
+| --- | --- | --- |
+| `npm run api:test` | `localhost:30080` | Docker Compose or Kubernetes |
+| `npm run api:test:local` | `localhost:4000` | the backend as a direct process |
+
+`npm run api:test` is the one CI runs, so a failure there is the failure
+the pull request will show.
+
+### Against Compose or the cluster
 
 ```bash
 npm run dev:compose
@@ -128,9 +136,32 @@ npm run api:test
 ```
 
 `dev:compose` returns only once every service reports healthy, so the
-run cannot race a backend that is still starting. It works against the
-Kubernetes runtime as well, because both runtimes answer on port 30080
-and the environment file is the same one.
+run cannot race a backend that is still starting. Substitute
+`npm run dev` for the Kubernetes runtime; the environment file is the
+same one, because both answer on port 30080.
+
+**Both of those runtimes serve a built image, not your working tree.**
+`dev:compose` and `dev` rebuild, so running one of them first is what
+makes the result mean anything. Running `api:test` against a stack you
+started before your change tests the old code and passes, which is the
+one way this command can mislead you.
+
+### Against the backend as a direct process
+
+```bash
+npm run dev:backend
+```
+
+```bash
+npm run api:test:local
+```
+
+This is the pair to use while changing a controller, because `bootRun`
+serves the code you just edited with no image in between. Use it in
+particular when a Compose or cluster stack is also up: port 30080 will
+answer happily from a stale container while you are working on port
+4000, and `api:test` would report a green run against a backend that
+has never seen your change.
 
 The script names the folders it runs: `Health` and `Jobs`. That is an
 allowlist, not a filter, and the reason is the `AI` folder. Those
@@ -143,12 +174,14 @@ script on purpose.
 returns a fixed `{"ok": true}` and reaches no provider. It is the same
 endpoint the Kubernetes probes and the Compose healthcheck use.
 
-The run writes a JUnit and a JSON report to `reports/newman/`, which is
-gitignored. CI uploads the same two files as an artifact on every run,
-so a failed assertion can be read without reproducing it locally.
+Each script writes a JUnit and a JSON report to `reports/newman/`, under
+its own filenames, so the two runtimes do not overwrite each other's
+results. That directory is gitignored. CI uploads the `api:test` pair as
+an artifact on every run, so a failed assertion can be read without
+reproducing it locally.
 
-Newman is not a project dependency. `npm run api:test` fetches a pinned
-version with `npx`, so no install sits in `npm ci` for a tool two
+Newman is not a project dependency. Both scripts fetch a pinned version
+with `npx`, so no install sits in `npm ci` for a tool only these
 commands use.
 
 ### What this is not

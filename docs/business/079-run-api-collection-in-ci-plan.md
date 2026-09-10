@@ -183,6 +183,38 @@ The consequence is a documentation change rather than a code one:
 environment. It has to say that Cluster covers both runtimes, because
 they share the port.
 
+### One script per runtime, added after review
+
+Review found that a single `api:test` pinned to port 30080 had a false
+pass in it, and that this plan had walked into it.
+
+Both stacks on 30080 serve a **built image**. The port 4000 runtime
+serves the working tree. So a developer changing a controller, running
+`npm run dev:backend`, and then running `api:test` gets a green run from
+whatever container is still up on 30080 - a backend that has never seen
+the change. The `AGENTS.md` row added by this task pointed straight at
+that, because it said "against a running stack" without saying which.
+
+Worse, the first draft deleted the ad-hoc `npx newman` line from
+`docs/api/README.md`, which had been the only command-line route to port
+4000, and replaced it with a script that cannot reach it.
+
+The fix is a second script, `api:test:local`, on the Local environment
+file that already existed, writing its reports under distinct
+filenames. Each script names one fixed port, and the documentation says
+which, and says plainly that 30080 answers from a built image.
+
+Rejected: one script taking the base URL from an environment variable.
+`k8s:create-secret` in this same file already does that with `$VAR`, and
+`docs/business/e2e-testing-strategy-plan.md` records it as a defect,
+because the POSIX syntax does not expand in `cmd.exe`. Repeating it to
+avoid a second script line would trade a visible duplicate for an
+invisible platform trap.
+
+Rejected: making `api:test` detect which runtime is up. Two ports, two
+scripts, no discovery: the developer says which backend they mean, and
+a wrong answer is a connection refusal rather than a green run.
+
 ### Newman is pinned, and invoked with `npx`
 
 The script calls `npx --yes newman@6.2.2`.
@@ -440,7 +472,7 @@ Out of scope:
 
 | File | Change |
 | --- | --- |
-| `package.json` | `api:test` added; `dev:compose` gained `--wait` |
+| `package.json` | `api:test` and `api:test:local` added; `dev:compose` gained `--wait` |
 | `.github/workflows/docker-build.yml` | two steps: run the collection, upload the report |
 | `.gitignore` | `reports/` |
 | `docs/api/README.md` | the command-line run, the environment note, why `AI` is excluded |
@@ -487,6 +519,42 @@ would be claiming evidence that does not exist.
 The specific risks the first run settles: whether `npx` resolves on the
 runner without a `setup-node` step, and whether the artifact upload
 finds `reports/newman` when the Newman step itself has failed.
+
+### Review findings, and what they changed
+
+Two defects came out of reviewing the first commit. Both were in the
+parts of the change that looked too small to review.
+
+**`api:test` could report a green run against a backend that had never
+seen the change.** Covered by the decision above. Fixed with a second
+script, `api:test:local`, and documentation in `docs/api/README.md` and
+`AGENTS.md` that names the port each one addresses and says which of
+them serves a built image.
+
+Verified after the fix, with the Compose stack up on 30080 and
+`npm run dev:backend` serving the working tree on 4000 at the same time,
+which is exactly the state the false pass needs:
+
+| Command | Requests went to | Result |
+| --- | --- | --- |
+| `npm run api:test:local` | `localhost:4000` | 22 of 22, exit 0 |
+| `npm run api:test` | `localhost:30080` | 22 of 22, exit 0 |
+
+The URLs in the Newman output are the evidence; each script reached its
+own backend with both running. Reports are written under distinct
+filenames, so the two runtimes do not overwrite each other's results.
+
+**`reports/` in `.gitignore` was unanchored.** Git matches a pattern
+with no leading slash at any depth, so it also ignored `docs/reports/`
+and `frontend/reports/`. Confirmed with `git check-ignore` before and
+after: with `reports/`, a file at `docs/reports/x.md` was ignored; with
+`/reports/` it is not, while `reports/newman/` still is. Newman only
+ever writes at the repository root, so the anchored form is what was
+meant.
+
+The pattern worth keeping from both: the first was a plan-level mistake
+that survived into the code because the plan asserted the environments
+"fit" without asking what happens when two stacks are up at once.
 
 ### One thing found and deliberately left
 
