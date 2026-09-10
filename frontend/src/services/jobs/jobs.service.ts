@@ -8,10 +8,15 @@ const JOBS_ENDPOINT = '/api/jobs';
 /**
  * Builds the endpoint URL for a single job.
  *
+ * The id is encoded because it reaches this service from a route param, and
+ * an unencoded one does not stay a path segment. `../ai/health` resolves to
+ * `/api/ai/health`, which answers 200, so the caller would receive a
+ * non-job typed as a job rather than an error.
+ *
  * @param {string} id Job identifier.
  * @returns {string} Endpoint URL for that job.
  */
-const getJobEndpoint = (id: string): string => `${JOBS_ENDPOINT}/${id}`;
+const getJobEndpoint = (id: string): string => `${JOBS_ENDPOINT}/${encodeURIComponent(id)}`;
 
 /**
  * Fetches every saved job, newest first.

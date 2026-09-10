@@ -229,8 +229,12 @@ Two cases the AI service has no equivalent of:
 - **`getJobById` and `updateJob` put the id in the path.** Asserted
   explicitly, because a wrong URL is the mistake a mocked client cannot
   otherwise reveal.
-- **`deleteJob` resolves to `undefined`.** Asserts the 204 contract
-  survives the type.
+- **The id is encoded.** Asserted for all three routes that take one.
+  See the review finding below.
+- **`deleteJob` returns the client's result unchanged.** Only that.
+  Whether a 204 really produces `undefined` is `parseJsonResponse`'s
+  behaviour and the API client's tests own it; mocking the client here
+  puts it out of reach.
 
 Error normalization is asserted by rejecting the mocked client with an
 `AppError` and checking the service lets it through untouched. The
@@ -352,6 +356,34 @@ declares, and deleted the job.
 | delete response | 204 with a zero-length body |
 
 The probe was deleted afterwards.
+
+### Review findings, and what they changed
+
+**The id was interpolated into the path unencoded.** `getJobEndpoint`
+built `` `${JOBS_ENDPOINT}/${id}` ``, which is only safe while the id is a
+UUID the server minted. Resolved the way `fetch` resolves a relative URL,
+`getJobById('../ai/health')` requests `/api/ai/health`. That endpoint
+answers 200, so the service resolves and hands back `{ok: true}` typed as
+`TJobResponse`. An id containing `?` or `#` fails the same way, becoming
+a query string or a fragment instead of a path segment.
+
+Nothing passes an untrusted id yet, which is why the tests did not catch
+it: they all used a UUID. Task 029 wires this to a route param, and
+`useParams` returns the decoded value, so `/jobs/..%2Fai%2Fhealth` would
+have reached the service as `../ai/health`.
+
+Fixed with `encodeURIComponent`. Four tests were written first and
+watched fail against the unfixed code - three cases for `getJobById`,
+one covering `updateJob` and `deleteJob` - which is the rule
+`tasks/bugs/README.md` sets for defects and is worth applying to a defect
+found in review before merge.
+
+**One test claimed more than it checked.** A case named for the 204
+contract asserted only that `deleteJob` returns what the mocked client
+returned. The real 204 handling is in `parseJsonResponse`, which the mock
+puts out of reach, and the API client's own tests cover it. Renamed to
+say what it does. The design is unchanged; only the claim was wrong, here
+and in the pull request description.
 
 ### The finding that justified the ordering
 

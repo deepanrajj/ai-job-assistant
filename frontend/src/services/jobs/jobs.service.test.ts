@@ -114,7 +114,7 @@ describe('jobs.service', () => {
     expect(job).toEqual(jobResponse);
   });
 
-  it('resolves to undefined when deleting, matching the 204 contract', async () => {
+  it('returns the delete result unchanged', async () => {
     const result = await deleteJob(JOB_ID);
 
     expect(deleteJson).toHaveBeenCalledWith(`/api/jobs/${JOB_ID}`, {
@@ -122,6 +122,39 @@ describe('jobs.service', () => {
       fallbackErrorMessage: 'Failed to delete job',
     });
     expect(result).toBeUndefined();
+  });
+
+  it.each([
+    ['../ai/health', '..%2Fai%2Fhealth'],
+    ['abc?x=1', 'abc%3Fx%3D1'],
+    ['abc#frag', 'abc%23frag'],
+  ])('encodes %s so it cannot escape the jobs path', async (rawId, encodedId) => {
+    await getJobById(rawId);
+
+    expect(getJson).toHaveBeenCalledWith(`/api/jobs/${encodedId}`, expect.anything());
+  });
+
+  it('encodes the id on every route that takes one', async () => {
+    const rawId = '../ai/health';
+
+    await updateJob(rawId, {
+      company: 'Acme Corp',
+      roleTitle: 'Backend Engineer',
+      location: null,
+      status: 'WISHLIST',
+      jobUrl: null,
+      salaryMin: null,
+      salaryMax: null,
+      description: null,
+    });
+    await deleteJob(rawId);
+
+    expect(putJson).toHaveBeenCalledWith(
+      '/api/jobs/..%2Fai%2Fhealth',
+      expect.anything(),
+      expect.anything(),
+    );
+    expect(deleteJson).toHaveBeenCalledWith('/api/jobs/..%2Fai%2Fhealth', expect.anything());
   });
 
   it('lets AppError instances from the API client through untouched', async () => {
