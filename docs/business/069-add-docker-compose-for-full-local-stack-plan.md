@@ -183,6 +183,55 @@ Publishing 5434 has a useful side effect worth documenting:
 the database it currently lacks, because the backend's default `DB_URL`
 already points at `localhost:5434`.
 
+### Both published ports name `127.0.0.1` explicitly
+
+Added after code review of this branch, which is also when the mistake
+was found.
+
+The plan above said the compose ports "match the documented Kubernetes
+forwards" and concluded the two runtimes were equivalent. They were not.
+`kubectl port-forward` binds loopback by default; a compose mapping
+written as `5434:5432` binds `0.0.0.0`. Same port number, completely
+different reach.
+
+That mattered because the same plan committed a default database
+password on the grounds that the database was "published only on
+localhost". It was not, and the verification never noticed, because it
+only checked that the port answered from this machine. It answers either
+way.
+
+Both mappings now carry an explicit host address. Confirmed after the
+change: `docker compose ps` reports `127.0.0.1:5434->5432/tcp`, and the
+machine's own LAN address refuses both 5434 and 30080 while loopback
+still serves.
+
+Rejected: keeping `0.0.0.0` and removing the password default instead.
+That would make `docker compose config` fail on a clean checkout, which
+is the thing the interpolation decision above exists to prevent, and it
+would still publish the app itself to the network for no reason.
+
+### The postgres healthcheck probes TCP, not the unix socket
+
+Also from the review, and unlike everything else in this plan it had not
+failed yet.
+
+`pg_isready` with no `-h` checks `/var/run/postgresql`, a socket
+directory. The `postgres` entrypoint runs its init-phase server with
+`listen_addresses=''` — "socket-only", in the image's own comment. So on
+a first start the socket can answer while TCP is still closed, the
+healthcheck reports healthy early, `condition: service_healthy` releases
+the backend, and Flyway meets a refused connection.
+
+The stack came up correctly every time during implementation, which is
+luck rather than correctness: initdb finished before the first check
+fired. A slower disk or a busier machine widens that window.
+
+`-h 127.0.0.1` forces the TCP path. This is worse under Compose than
+under Kubernetes, where a crash-looping pod retries and the restart is
+the recovery — `start-local` documents that as expected behaviour. The
+compose backend has no restart policy, by the decision below, so an
+early start would not be retried at all.
+
 ### The backend port is not published
 
 Rejected: publishing `4000:4000`. The Kubernetes runtime reaches the
@@ -577,6 +626,19 @@ What the verification run reported:
 - `npm run verify` exits 0. It was run for completeness rather than
   necessity: no frontend or backend source changed, so every Gradle task
   reported `UP-TO-DATE` and no test actually re-executed.
+
+Code review of this branch then found two more, neither of which had
+produced a symptom: the ports were published on every interface, and the
+postgres healthcheck could pass before the database accepted TCP
+connections. Both now have decision entries above. After fixing them, a
+cold start from an empty volume brought all three services to `healthy`,
+the app and API still answered on loopback, and the machine's LAN
+address refused both published ports.
+
+The lesson worth keeping: three of the four defects on this branch were
+invisible to `docker compose config` and to any check run from the host
+itself. Two needed a cold `up`, and one needed a probe from a different
+network address.
 
 The generalisable half of both corrections, plus the older environment
 traps found while investigating them, is written up separately in

@@ -26,9 +26,15 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-smartjobtracker}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartjobtracker}
     ports:
-      # Matches the k8s port-forward in docs/setup.md, so npm run
-      # dev:local can also point at this database without changes.
-      - "5434:5432"
+      # Bound to 127.0.0.1, not 0.0.0.0. A bare "5434:5432" publishes on
+      # every interface, which would put a database holding a committed
+      # default password on whatever network the machine is attached to.
+      # kubectl port-forward binds loopback by default, so this is also
+      # what makes the two runtimes actually equivalent.
+      #
+      # Same port as the k8s forward in docs/setup.md, so npm run
+      # dev:local can point at this database without changes.
+      - "127.0.0.1:5434:5432"
     volumes:
       # The Kubernetes runtime uses an emptyDir and loses the database
       # whenever the pod is recreated. Compose keeps it, which is what
@@ -36,9 +42,15 @@ services:
       # deletes it.
       - smart-job-tracker-postgres-data:/var/lib/postgresql/data
     healthcheck:
+      # -h 127.0.0.1 forces a TCP probe. Without it pg_isready checks the
+      # unix socket, and the entrypoint runs its init-phase server with
+      # listen_addresses='' - socket-only, by its own comment. The socket
+      # answers while TCP is still closed, so the check would report
+      # healthy, release the backend, and Flyway would hit a refused
+      # connection.
       test:
         - CMD-SHELL
-        - pg_isready -U ${POSTGRES_USER:-smartjobtracker} -d ${POSTGRES_DB:-smartjobtracker}
+        - pg_isready -h 127.0.0.1 -U ${POSTGRES_USER:-smartjobtracker} -d ${POSTGRES_DB:-smartjobtracker}
       interval: 5s
       timeout: 5s
       retries: 12
@@ -93,8 +105,9 @@ services:
       context: ../..
       dockerfile: infra/docker/frontend.Dockerfile
     ports:
+      # Loopback only, for the same reason as the database above.
       # Matches the k8s port-forward in docs/setup.md.
-      - "30080:80"
+      - "127.0.0.1:30080:80"
     depends_on:
       smart-job-tracker-backend:
         # Nginx resolves a literal upstream hostname once, when it loads

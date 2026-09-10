@@ -6,9 +6,15 @@ that are true on the current development machine and nowhere else.
 
 Written after task 069, which added the Docker Compose runtime. Two of
 its steps failed for reasons no amount of reading the code would have
-predicted, and investigating those turned up three older traps that had
-never been written down. Recording them together because the diagnosis
-is the reusable part.
+predicted, code review of that task found two more that had not failed
+yet, and investigating all four turned up older traps that had never
+been written down. Recording them together because the diagnosis is the
+reusable part.
+
+The two the review found are worth singling out, because neither
+produced a symptom at the time: a port published on every interface
+rather than loopback, and a database healthcheck that can pass before
+the database accepts connections. Both are below.
 
 Read this before debugging a local runtime failure for more than a few
 minutes. Read [`frontend-test-reliability.md`](./frontend-test-reliability.md)
@@ -25,7 +31,8 @@ for the equivalent note about the test suite.
 | Compose ignores values you put in `.env` | the file is in the wrong directory | `.env` is read from the compose file's own directory, here `infra/docker/`, not from where you ran the command |
 | `host not found in upstream "smart-job-tracker-backend"` and the frontend container exits at startup | Nginx resolves a literal upstream once, at config load, and the backend container did not exist yet | keep the `depends_on` in the compose file; this is what it is there for |
 | `address already in use` on 30080 or 5434 | the other local runtime is up, or a leftover port forward is alive | Compose and Kubernetes both bind these ports and cannot run together; stop one, or see the `stop-local` skill |
-| Backend exits at startup on a refused database connection | Flyway connects during startup and the database was not ready | keep the `service_healthy` condition on the postgres dependency |
+| Backend exits at startup on a refused database connection | Flyway connects during startup and the database was not ready | keep the `service_healthy` condition on the postgres dependency, and make sure the postgres healthcheck probes TCP rather than the unix socket |
+| A published port answers locally but is also reachable from the network | `ports: "5434:5432"` binds `0.0.0.0`, unlike `kubectl port-forward`, which binds loopback | give the mapping an explicit host address, `127.0.0.1:5434:5432` |
 
 The first, third and fifth rows were captured verbatim while building
 task 069. The Nginx row is the predicted failure for removing the
@@ -73,6 +80,30 @@ or succeed for the same reasons rather than for different ones.
 This never arises under Kubernetes, because its probes reach the
 container from outside rather than from within.
 
+### A ready database socket does not mean a ready database port
+
+`pg_isready` with no `-h` probes `/var/run/postgresql`, a unix socket
+directory, not TCP. The official `postgres` entrypoint starts its
+init-phase server with `listen_addresses=''`, described in the image's
+own source as "start socket-only postgresql server ... does not listen
+on external TCP/IP".
+
+So during first-time initialisation the socket answers while the TCP
+port is closed. A healthcheck built on the socket can report `healthy`,
+release everything waiting on `condition: service_healthy`, and hand the
+dependent service a refused connection.
+
+Force the TCP path:
+
+```yaml
+test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U <user> -d <db>"]
+```
+
+This is worse under Compose than under Kubernetes. A crash-looping pod
+retries, and `start-local` documents the resulting one or two backend
+restarts as expected. The compose backend has no restart policy, so an
+early start is not retried; it just stays down.
+
 ### The runtime images have `wget`, not `curl`
 
 `eclipse-temurin:21-jre-alpine` and `nginx:1.27-alpine` both ship
@@ -110,10 +141,42 @@ compose file is valid.
 That is why `POSTGRES_PASSWORD` carries a default and `OPENAI_API_KEY`
 does not. The password default is the same value
 `backend/src/main/resources/application.properties` already commits, so
-it adds no credential the repository did not already hold, and the
-database is published only on `localhost`. A real credential gets no
+it adds no credential the repository did not already hold, and the port
+is bound to loopback. See the next section, which is the reason that
+second half is true rather than assumed. A real credential gets no
 default and no `:?`; it interpolates blank, warns, and only the feature
 that needs it fails.
+
+### Publishing a port is not the same as forwarding one
+
+`ports: - "5434:5432"` binds `0.0.0.0`. The container is then reachable
+from every interface on the machine, including whatever network it
+happens to be attached to.
+
+`kubectl port-forward` binds `127.0.0.1` by default. So the two local
+runtimes here can name the same port number and still differ in who can
+reach it, which is easy to miss when the check is "does the port answer
+from this machine". It answers either way.
+
+This mattered because the compose file ships a default database
+password. Published on `0.0.0.0`, that combination puts a writable
+database on the local network behind a password anyone can read in the
+repository. Both mappings are therefore written with an explicit host
+address:
+
+```yaml
+- "127.0.0.1:5434:5432"
+- "127.0.0.1:30080:80"
+```
+
+Verify a binding rather than trusting the port number, and check from
+somewhere other than loopback:
+
+```bash
+docker compose -f infra/docker/compose.yaml ps --format '{{.Service}}	{{.Ports}}'
+```
+
+`127.0.0.1:5434->5432/tcp` is correct. `0.0.0.0:5434->5432/tcp` is not.
 
 ### `.env` is read from the compose file's directory
 

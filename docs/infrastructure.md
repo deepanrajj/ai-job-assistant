@@ -62,7 +62,7 @@ Project
 Frontend
   Service:    smart-job-tracker-frontend
   Image:      smart-job-tracker-frontend:local
-  Port:       30080 -> 80
+  Port:       127.0.0.1:30080 -> 80
 
 Backend
   Service:    smart-job-tracker-backend
@@ -72,7 +72,7 @@ Backend
 PostgreSQL
   Service:    smart-job-tracker-postgres
   Image:      postgres:16
-  Port:       5434 -> 5432
+  Port:       127.0.0.1:5434 -> 5432
   Storage:    named volume (survives restarts)
 ```
 
@@ -100,6 +100,12 @@ config serve both runtimes.
 | Secrets | `smart-job-tracker-secrets` Secret, no defaults | `infra/docker/.env`, with local defaults |
 | Startup ordering | probes and Service objects | `depends_on` with health conditions |
 | Image delivery | `k8s:load-images` into the node | built in place by Compose |
+
+Both mappings name `127.0.0.1` explicitly. A bare `5434:5432` binds
+every interface, where `kubectl port-forward` binds loopback, so the
+explicit address is what makes the two runtimes equivalent in reach and
+not just in port number. It matters here because the compose file ships
+a default database password.
 
 Nginx resolves a literal upstream hostname when it loads its config and
 exits if the name does not resolve. Under Kubernetes the Service exists
@@ -275,11 +281,11 @@ If you created the secret before `task-001`, it will be missing `POSTGRES_PASSWO
 Local Vite frontend:        5173
 Local Spring Boot backend:  4000
 Kubernetes frontend proxy:  30080 through kubectl port-forward
-Compose frontend:           30080 published directly
+Compose frontend:           30080 published on 127.0.0.1 only
 Frontend container:         80
 Backend container:          4000
 PostgreSQL host port-forward:  5434 -> 5432
-Compose PostgreSQL:         5434 published directly
+Compose PostgreSQL:         5434 published on 127.0.0.1 only
 PostgreSQL container:       5432
 ```
 

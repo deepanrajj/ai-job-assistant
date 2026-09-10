@@ -152,9 +152,15 @@ All of these are optional. The defaults come from
 
 The database password has a default here because it is the same value
 `backend/src/main/resources/application.properties` already commits, and
-the database is published only on `localhost`. Local Kubernetes is
-different: there the password comes from the `smart-job-tracker-secrets`
-Secret and has no default.
+because the compose file publishes both ports as `127.0.0.1:...`, so
+neither the app nor the database is reachable from outside this machine.
+
+That loopback binding is deliberate and load-bearing. A bare
+`5434:5432` would publish on every interface and put a database holding
+a password from this repository on whatever network you are attached to.
+
+Local Kubernetes is different: there the password comes from the
+`smart-job-tracker-secrets` Secret and has no default.
 
 `POSTGRES_DB` and `POSTGRES_USER` only take effect on the first start.
 The PostgreSQL image initialises the database once, so changing them

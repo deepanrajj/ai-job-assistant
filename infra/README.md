@@ -23,8 +23,10 @@ npm run k8s:namespace
 Create the local secret:
 
 ```bash
-kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key"
+kubectl create secret generic smart-job-tracker-secrets --namespace smart-job-tracker --from-literal=OPENAI_API_KEY="your-api-key" --from-literal=POSTGRES_PASSWORD="your-local-db-password"
 ```
+
+Both keys are required. `npm run dev` runs `k8s:check-secret` before it builds anything, and that check aborts if either is missing.
 
 Do not commit a real API key. The file `infra/k8s/local/smart-job-tracker-secrets.example.yaml` is only a template and is not included in the kustomization.
 
