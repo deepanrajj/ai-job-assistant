@@ -418,13 +418,14 @@ exception before concluding it has to be built.
 
 The index was already uniformly LF, so the change only affects what
 checkout writes. Files already sitting in the working tree keep their
-endings until git rewrites them once:
+endings until git rewrites them once.
+
+**Commit or stash first.** The second half of this is `reset --hard`,
+which discards staged and unstaged work without asking:
 
 ```bash
 git rm --cached -r . && git reset --hard
 ```
-
-`reset --hard` discards uncommitted work, so commit or stash first.
 
 #### The old workaround
 

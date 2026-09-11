@@ -1,5 +1,10 @@
 # Auto detect text files and perform LF normalization
 # eol=lf also pins the working tree, so a checkout on Windows stops
-# rewriting files to CRLF. backend/.gitattributes keeps gradlew.bat on
-# CRLF, which cmd.exe needs; a deeper attributes file wins.
+# rewriting files to CRLF.
 * text=auto eol=lf
+
+# cmd.exe mis-parses labels and goto in a batch file without CRLF, and
+# backend/gradlew.bat drives every backend command on Windows. The Gradle
+# wrapper's own backend/.gitattributes pins it too, but that file is
+# generated and can be regenerated away, so do not depend on it alone.
+*.bat text eol=crlf
