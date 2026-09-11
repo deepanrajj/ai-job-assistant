@@ -47,3 +47,4 @@ Bug numbering is its own sequence; see
 [`../../tasks/bugs/README.md`](../../tasks/bugs/README.md).
 
 - [Bug 001 - Assigned-Id Entities Merge On Save Plan](./bug-001-assigned-id-entities-merge-on-save-plan.md)
+- [Bug 003 - Jobs Search Placeholder Still Offers To Search By Skill Plan](./bug-003-jobs-search-placeholder-still-offers-skill-plan.md)
