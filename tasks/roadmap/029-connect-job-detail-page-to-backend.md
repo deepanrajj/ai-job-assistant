@@ -9,6 +9,15 @@ before starting.
 
 Load job detail data from the backend API.
 
+## Background
+
+Since task 024 the jobs list renders backend UUIDs while this page still
+resolves the route id against the localStorage store, so every row's
+details action lands on the not-found state. That was tracked as bug
+004 and retired into this task, which fixes it by construction: once
+the page fetches by route id, the id spaces agree. Until this task
+ships, the list's only row action is dead.
+
 ## Scope
 
 In scope:
@@ -16,6 +25,7 @@ In scope:
 - Fetch job detail by route id.
 - Render overview, metadata, status, and saved detail data from the API.
 - Handle loading, error, and not-found states.
+- The handoff from the jobs list, so a row reaches the job it shows.
 
 Out of scope:
 
@@ -36,6 +46,11 @@ Out of scope:
 - Loading state renders.
 - Missing job/error state renders.
 - Tabs remain keyboard accessible.
+- A row's details action on the jobs list opens that job's detail page
+  rather than the not-found state. Keep fixture ids UUID-shaped: wire
+  fixtures that reuse the `job-001` style ids of the localStorage seed
+  data collide with it by coincidence, which is what hid the broken
+  handoff during task 024.
 
 ## Validation
 
@@ -46,6 +61,7 @@ Run `npm run frontend:verify`.
 - [ ] Job detail uses backend data.
 - [ ] Missing jobs are handled clearly.
 - [ ] Existing tab behavior is preserved.
+- [ ] A row on the jobs list reaches the job it shows.
 
 ## Commit
 
