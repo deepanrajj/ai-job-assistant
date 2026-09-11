@@ -38,6 +38,11 @@ None.
 
 ## Fixed
 
+- [x] [Bug 002: a non-UUID path id returns 500 instead of 400](./bug-002-non-uuid-path-id-returns-500.md)
+      — P2, from the task 020 branch review. Pre-existing since task
+      006 and surfaced by the new job service. Fixed with a
+      `MethodArgumentTypeMismatchException` handler returning 400 and a
+      new `INVALID_REQUEST_PARAMETER` code.
 - [x] [Bug 001: assigned-id entities take the merge path on save](./bug-001-assigned-id-entities-merge-on-save.md)
       — P2, from the task 009 branch review. Fixed with a shared
       `AssignedIdEntity` mapped superclass implementing `Persistable`.

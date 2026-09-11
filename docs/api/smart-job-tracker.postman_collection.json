@@ -331,6 +331,42 @@
               }
             }
           ]
+        },
+        {
+          "name": "Get job with a malformed id returns 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/not-a-uuid",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "not-a-uuid"]
+            },
+            "description": "Spring converts the {id} segment to a UUID before the controller runs, so a segment that is not a UUID never reaches the service. It is a client mistake and must answer 400, not the 500 it returned before bug 002. Contrast with the 404 above, which is a well-formed id that does not exist."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const error = pm.response.json();",
+                  "",
+                  "pm.test('uses the INVALID_REQUEST_PARAMETER error code', function () {",
+                  "    pm.expect(error.code).to.eql('INVALID_REQUEST_PARAMETER');",
+                  "});",
+                  "",
+                  "pm.test('does not echo the rejected value back', function () {",
+                  "    pm.expect(error.message).to.not.include('not-a-uuid');",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
