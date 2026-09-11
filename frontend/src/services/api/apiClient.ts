@@ -25,7 +25,10 @@ export const requestJson = async <TResponse, TBody = undefined>(
       throw await createApiError(response, config);
     }
 
-    return parseJsonResponse<TResponse>(response);
+    // `await` is load-bearing: `return promise` inside `try` is not covered by
+    // the `catch`, so a JSON parse failure on a 2xx would escape as a raw
+    // SyntaxError instead of an AppError.
+    return await parseJsonResponse<TResponse>(response);
   } catch (error) {
     if (error instanceof AppError) throw error;
 

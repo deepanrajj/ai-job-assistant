@@ -5,7 +5,7 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { EditJobPage } from './EditJobPage';
 import { renderWithProviders } from '../../test/renderWithProviders';
-import { createMockJobs } from '../../test/mockJobs';
+import { MOCK_JOB_IDS, createMockJobs } from '../../test/mockJobs';
 
 describe('EditJobPage', () => {
   it('renders an edit form with existing job values', () => {
@@ -14,7 +14,7 @@ describe('EditJobPage', () => {
         router={createMemoryRouter([
           {
             path: '/',
-            element: <EditJobPage jobId="job-001" jobs={createMockJobs()} />,
+            element: <EditJobPage jobId={MOCK_JOB_IDS.celonis} jobs={createMockJobs()} />,
           },
         ])}
       />,
@@ -33,7 +33,9 @@ describe('EditJobPage', () => {
       [
         {
           path: '/jobs/:jobId/edit',
-          element: <EditJobPage jobId="job-001" jobs={createMockJobs()} onSave={handleSave} />,
+          element: (
+            <EditJobPage jobId={MOCK_JOB_IDS.celonis} jobs={createMockJobs()} onSave={handleSave} />
+          ),
         },
         {
           path: '/jobs',
@@ -41,7 +43,7 @@ describe('EditJobPage', () => {
         },
       ],
       {
-        initialEntries: ['/jobs/job-001/edit'],
+        initialEntries: [`/jobs/${MOCK_JOB_IDS.celonis}/edit`],
       },
     );
 
@@ -55,7 +57,7 @@ describe('EditJobPage', () => {
       expect(handleSave).toHaveBeenCalledWith(
         expect.objectContaining({
           company: 'Updated GmbH',
-          id: 'job-001',
+          id: MOCK_JOB_IDS.celonis,
         }),
       ),
     );

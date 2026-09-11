@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 024: Replace mock jobs on jobs list page](../../tasks/roadmap/024-replace-mock-jobs-on-jobs-list-page.md).
+- [ ] [Task 026: Connect add job form to backend](../../tasks/roadmap/026-connect-add-job-form-to-backend.md).

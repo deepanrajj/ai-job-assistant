@@ -6,6 +6,7 @@ import {
   type IDataTableSummaryState,
   type TDataTableSortState,
 } from '../../components/dataTable';
+import { Button, ErrorState, LoadingState } from '../../components/ui';
 import {
   createJobsActions,
   createJobsColumns,
@@ -13,6 +14,7 @@ import {
   createJobsSearchConfig,
 } from '../../features/jobs/jobs.config';
 import { useTranslation } from '../../i18n';
+import type { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
 import type { TStatusFilter } from '../../features/jobs/jobs.types';
@@ -21,7 +23,10 @@ import type { TStatusFilter } from '../../features/jobs/jobs.types';
  * Props used by the jobs page.
  */
 interface IJobsPageProps {
+  error: AppError | null;
+  isLoading: boolean;
   jobs: TJob[];
+  onRetry: () => void;
 }
 
 /**
@@ -30,7 +35,7 @@ interface IJobsPageProps {
  * @param {IJobsPageProps} props Component props.
  * @returns {JSX.Element} Jobs list experience.
  */
-export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
+export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }) => {
   const navigate = useNavigate();
   const { language, t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
@@ -78,16 +83,34 @@ export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
     [handleStatusFilterChange, statusFilter, t],
   );
 
+  if (isLoading) return <LoadingState label={t('jobs.loading')} />;
+
+  if (error)
+    return (
+      <ErrorState
+        action={<Button onClick={onRetry}>{t('jobs.loadErrorRetry')}</Button>}
+        description={error.message}
+        title={t('jobs.loadErrorTitle')}
+      />
+    );
+
   return (
     <DataTable<TJob>
       actions={actions}
       caption={t('a11y.jobsTableCaption')}
       columns={columns}
       data={jobs}
-      emptyState={{
-        description: t('jobs.noJobsFoundDescription'),
-        title: t('jobs.noJobsFound'),
-      }}
+      emptyState={
+        jobs.length === 0
+          ? {
+              description: t('jobs.noJobsYetDescription'),
+              title: t('jobs.noJobsYet'),
+            }
+          : {
+              description: t('jobs.noJobsFoundDescription'),
+              title: t('jobs.noJobsFound'),
+            }
+      }
       filterPredicate={filterJobsByStatus}
       filters={filters}
       getRowId={getJobRowId}

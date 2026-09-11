@@ -34,7 +34,16 @@ roadmap tasks live in `../README.md`.
 
 ## Open
 
-None.
+- [ ] [Bug 004: jobs list rows link to a job detail page that cannot
+      find them](./bug-004-jobs-list-rows-link-to-a-job-detail-page-that-cannot-find-them.md)
+      — P1, from the task 024 branch review. The list reads the API while
+      the detail page still resolves ids against localStorage, so every
+      row's details action lands on "Job not found".
+- [ ] [Bug 003: the jobs search placeholder still offers to search by
+      skill](./bug-003-jobs-search-placeholder-still-offers-skill.md)
+      — nit, found while planning task 024. Task 023 removed `tags` from
+      the search text but left both locale placeholders advertising it,
+      so the box invites a search that matches nothing.
 
 ## Fixed
 

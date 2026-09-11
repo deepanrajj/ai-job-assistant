@@ -4,6 +4,11 @@ import type { TJobAiAnalysis } from '../types';
 
 /**
  * Default API handlers shared by frontend tests.
+ *
+ * Deliberately no `GET /api/jobs`. `setupTests.ts` sets
+ * `onUnhandledRequest: 'error'`, so a test that renders a jobs-fetching
+ * component has to declare its own handler through `server.use` rather than
+ * silently inheriting fixture rows.
  */
 export const handlers = [
   http.post('/api/ai/analyze-job', () =>
