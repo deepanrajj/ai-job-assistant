@@ -1,15 +1,15 @@
 import type { FC } from 'react';
 
 import { JobsPage } from '../../pages/jobs/JobsPage';
-import { useJobs } from '../../features/jobs';
+import { useJobsList } from '../../features/jobs';
 
 /**
- * Renders the jobs route with saved local job data.
+ * Renders the jobs route with saved jobs loaded from the backend.
  *
  * @returns {JSX.Element} Jobs route content.
  */
 export const Component: FC = () => {
-  const { jobs } = useJobs();
+  const { error, isLoading, jobs } = useJobsList();
 
-  return <JobsPage jobs={jobs} />;
+  return <JobsPage error={error} isLoading={isLoading} jobs={jobs} />;
 };

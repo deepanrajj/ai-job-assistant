@@ -6,6 +6,7 @@ import {
   type IDataTableSummaryState,
   type TDataTableSortState,
 } from '../../components/dataTable';
+import { ErrorState, LoadingState } from '../../components/ui';
 import {
   createJobsActions,
   createJobsColumns,
@@ -13,6 +14,7 @@ import {
   createJobsSearchConfig,
 } from '../../features/jobs/jobs.config';
 import { useTranslation } from '../../i18n';
+import type { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
 import type { TStatusFilter } from '../../features/jobs/jobs.types';
@@ -21,6 +23,8 @@ import type { TStatusFilter } from '../../features/jobs/jobs.types';
  * Props used by the jobs page.
  */
 interface IJobsPageProps {
+  error: AppError | null;
+  isLoading: boolean;
   jobs: TJob[];
 }
 
@@ -30,7 +34,7 @@ interface IJobsPageProps {
  * @param {IJobsPageProps} props Component props.
  * @returns {JSX.Element} Jobs list experience.
  */
-export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
+export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs }) => {
   const navigate = useNavigate();
   const { language, t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
@@ -77,6 +81,10 @@ export const JobsPage: FC<IJobsPageProps> = ({ jobs }) => {
       }),
     [handleStatusFilterChange, statusFilter, t],
   );
+
+  if (isLoading) return <LoadingState label={t('jobs.loading')} />;
+
+  if (error) return <ErrorState description={error.message} title={t('jobs.loadErrorTitle')} />;
 
   return (
     <DataTable<TJob>

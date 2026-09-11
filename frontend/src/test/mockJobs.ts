@@ -1,4 +1,5 @@
 import type { TJob } from '../types';
+import type { TJobResponse } from '../services';
 
 /**
  * Creates a complete mock job while allowing each test to override relevant fields.
@@ -41,6 +42,63 @@ export const createMockJobs = (): TJob[] => [
     updatedAt: '2026-05-06T08:45:00.000Z',
   }),
   createMockJob({
+    company: 'Miro',
+    id: 'job-003',
+    roleTitle: 'Senior Product Engineer',
+    status: 'OFFER',
+    updatedAt: '2026-05-07T12:00:00.000Z',
+  }),
+];
+
+/**
+ * Creates a mock wire job, shaped exactly as `GET /api/jobs` returns one.
+ *
+ * Nulls rather than omissions, matching the backend, so a test that goes
+ * through `mapJobResponseToJob` exercises the conversion instead of
+ * skipping past it.
+ *
+ * @param {Partial<TJobResponse>} overrides Wire fields that should differ from the default.
+ * @returns {TJobResponse} Mock job response suitable for API-backed tests.
+ */
+export const createMockJobResponse = (overrides: Partial<TJobResponse> = {}): TJobResponse => ({
+  company: 'Acme GmbH',
+  createdAt: '2026-01-01T09:00:00.000Z',
+  description: null,
+  id: 'job-001',
+  jobUrl: 'https://example.com/jobs/frontend',
+  location: 'Berlin',
+  roleTitle: 'Frontend Engineer',
+  salaryMax: 90000,
+  salaryMin: 70000,
+  status: 'APPLIED',
+  updatedAt: '2026-01-02T09:00:00.000Z',
+  ...overrides,
+});
+
+/**
+ * Creates the default job list served by the MSW `GET /api/jobs` handler.
+ *
+ * Mirrors `createMockJobs` so assertions written against either read the
+ * same companies and statuses.
+ *
+ * @returns {TJobResponse[]} Mock job responses covering multiple statuses.
+ */
+export const createMockJobResponses = (): TJobResponse[] => [
+  createMockJobResponse({
+    company: 'Celonis',
+    id: 'job-001',
+    roleTitle: 'Senior Frontend Engineer',
+    status: 'INTERVIEW',
+    updatedAt: '2026-05-09T15:20:00.000Z',
+  }),
+  createMockJobResponse({
+    company: 'Personio',
+    id: 'job-002',
+    roleTitle: 'Frontend Platform Engineer',
+    status: 'APPLIED',
+    updatedAt: '2026-05-06T08:45:00.000Z',
+  }),
+  createMockJobResponse({
     company: 'Miro',
     id: 'job-003',
     roleTitle: 'Senior Product Engineer',

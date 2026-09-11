@@ -1,5 +1,7 @@
 # Task 024 - Replace Mock Jobs On Jobs List Page
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -42,9 +44,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Jobs list uses backend data.
-- [ ] Existing table behavior is preserved.
-- [ ] Tests cover user-visible states.
+- [x] Jobs list uses backend data.
+- [x] Existing table behavior is preserved.
+- [x] Tests cover user-visible states.
 
 ## Commit
 

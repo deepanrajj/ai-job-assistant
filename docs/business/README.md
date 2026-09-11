@@ -34,6 +34,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 009 - Create Task Repository Plan](./009-create-task-repository-plan.md)
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
+- [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)

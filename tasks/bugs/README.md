@@ -34,7 +34,11 @@ roadmap tasks live in `../README.md`.
 
 ## Open
 
-None.
+- [ ] [Bug 003: the jobs search placeholder still offers to search by
+      skill](./bug-003-jobs-search-placeholder-still-offers-skill.md)
+      — nit, found while planning task 024. Task 023 removed `tags` from
+      the search text but left both locale placeholders advertising it,
+      so the box invites a search that matches nothing.
 
 ## Fixed
 

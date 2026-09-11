@@ -4,14 +4,16 @@ import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { JobsPage } from './JobsPage';
+import { AppError } from '../../errors';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { renderWithRouter } from '../../test/renderWithRouter';
 import { createMockJobs } from '../../test/mockJobs';
+import { APP_ERROR_CODES } from '../../types';
 
 describe('JobsPage', () => {
   it('searches saved jobs by company name', async () => {
     const user = userEvent.setup();
-    renderWithRouter(<JobsPage jobs={createMockJobs()} />);
+    renderWithRouter(<JobsPage error={null} isLoading={false} jobs={createMockJobs()} />);
 
     expect(screen.getByRole('heading', { name: 'Saved jobs' })).toBeInTheDocument();
 
@@ -23,7 +25,7 @@ describe('JobsPage', () => {
 
   it('filters saved jobs by status', async () => {
     const user = userEvent.setup();
-    renderWithRouter(<JobsPage jobs={createMockJobs()} />);
+    renderWithRouter(<JobsPage error={null} isLoading={false} jobs={createMockJobs()} />);
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'INTERVIEW');
 
@@ -38,7 +40,7 @@ describe('JobsPage', () => {
       [
         {
           path: '/jobs',
-          element: <JobsPage jobs={createMockJobs()} />,
+          element: <JobsPage error={null} isLoading={false} jobs={createMockJobs()} />,
         },
         {
           path: '/jobs/new',
@@ -55,5 +57,39 @@ describe('JobsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Add Job' }));
 
     expect(await screen.findByText('Add job route')).toBeInTheDocument();
+  });
+
+  it('renders the loading state while jobs are being fetched', () => {
+    renderWithRouter(<JobsPage error={null} isLoading jobs={[]} />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('Loading saved jobs');
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('renders the error state with the failure message when loading fails', () => {
+    renderWithRouter(
+      <JobsPage
+        error={new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED)}
+        isLoading={false}
+        jobs={[]}
+      />,
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Saved jobs could not be loaded');
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load jobs');
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('prefers the loading state over an error from a previous attempt', () => {
+    renderWithRouter(
+      <JobsPage
+        error={new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED)}
+        isLoading
+        jobs={[]}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

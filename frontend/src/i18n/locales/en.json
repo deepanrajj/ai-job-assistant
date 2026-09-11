@@ -92,6 +92,8 @@
     "notSet": "Not set",
     "noJobsFound": "No jobs found",
     "noJobsFoundDescription": "Adjust the search or status filter to see more opportunities.",
+    "loading": "Loading saved jobs",
+    "loadErrorTitle": "Saved jobs could not be loaded",
     "fallbackError": {
       "listJobs": "Failed to load jobs",
       "getJob": "Failed to load job",

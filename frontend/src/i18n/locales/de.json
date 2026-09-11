@@ -92,6 +92,8 @@
     "notSet": "Nicht angegeben",
     "noJobsFound": "Keine Jobs gefunden",
     "noJobsFoundDescription": "Passe Suche oder Statusfilter an, um mehr Chancen zu sehen.",
+    "loading": "Gespeicherte Jobs werden geladen",
+    "loadErrorTitle": "Gespeicherte Jobs konnten nicht geladen werden",
     "fallbackError": {
       "listJobs": "Laden der Jobs fehlgeschlagen",
       "getJob": "Laden des Jobs fehlgeschlagen",
