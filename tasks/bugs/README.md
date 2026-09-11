@@ -34,11 +34,23 @@ roadmap tasks live in `../README.md`.
 
 ## Open
 
-- [ ] [Bug 004: jobs list rows link to a job detail page that cannot
-      find them](./bug-004-jobs-list-rows-link-to-a-job-detail-page-that-cannot-find-them.md)
-      — P1, from the task 024 branch review. The list reads the API while
-      the detail page still resolves ids against localStorage, so every
-      row's details action lands on "Job not found".
+None.
+
+## Retired
+
+Defects removed without a fix of their own, because scheduled work
+closes them by construction. Retiring one means moving what it knew -
+its test requirement above all - into the task that will fix it, not
+deleting the knowledge with the file.
+
+- Bug 004: jobs list rows link to a job detail page that cannot find
+  them. P1, from the task 024 branch review. The list reads the API
+  while the detail page still resolves ids against localStorage, so
+  every row's details action lands on "Job not found". Retired into
+  [task 029](../roadmap/029-connect-job-detail-page-to-backend.md),
+  whose stated scope is exactly the fix; its background, test list, and
+  acceptance criteria now carry the defect and the handoff test.
+  **Still live until task 029 ships.**
 
 ## Fixed
 
