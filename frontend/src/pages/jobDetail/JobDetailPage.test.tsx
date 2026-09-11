@@ -41,8 +41,7 @@ describe('JobDetailPage', () => {
     expect(screen.getByRole('tab', { name: 'Overview', selected: true })).toHaveClass(
       'cursor-pointer',
     );
-    expect(screen.getByText('Preparation focus')).toBeInTheDocument();
-    expect(screen.getAllByText('Prepare product analytics case study')).toHaveLength(2);
+    expect(screen.getByRole('heading', { name: 'Description' })).toBeInTheDocument();
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Job status' }), 'OFFER');
     expect(onStatusChange).toHaveBeenCalledWith('job-001', 'OFFER');

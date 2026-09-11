@@ -16,10 +16,14 @@ describe('JobDetailAiPanel', () => {
     expect(screen.getByRole('heading', { name: 'Saved AI analysis' })).toBeInTheDocument();
     expect(screen.getByText(/Celonis is a strong match/)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Strengths' })).toBeInTheDocument();
-    expect(screen.getByText('Existing experience maps well to React.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Existing experience maps well to the Senior Frontend Engineer remit.'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Gaps to prepare' })).toBeInTheDocument();
     expect(
-      screen.getByText('Collect one recent project story that proves Design System impact.'),
+      screen.getByText(
+        'Collect one recent project story that proves Senior Frontend Engineer impact.',
+      ),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Ask AI' })).toBeInTheDocument();
   });

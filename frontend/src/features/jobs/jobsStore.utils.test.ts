@@ -40,7 +40,6 @@ describe('jobs store utils', () => {
       description: undefined,
       jobUrl: undefined,
       location: undefined,
-      nextStep: undefined,
       salaryMax: undefined,
       salaryMin: undefined,
     });
@@ -91,7 +90,6 @@ describe('jobs store utils', () => {
         id: 'minimal-job',
         jobUrl: undefined,
         location: undefined,
-        nextStep: undefined,
         salaryMax: undefined,
         salaryMin: undefined,
       }),
@@ -102,7 +100,6 @@ describe('jobs store utils', () => {
         id: 'minimal-job',
         jobUrl: undefined,
         location: undefined,
-        nextStep: undefined,
         salaryMax: undefined,
         salaryMin: undefined,
       }),
@@ -113,7 +110,6 @@ describe('jobs store utils', () => {
       company: 'Minimal GmbH',
       jobUrl: '',
       location: '',
-      nextStep: '',
       salaryMax: 0,
       salaryMin: 0,
     });

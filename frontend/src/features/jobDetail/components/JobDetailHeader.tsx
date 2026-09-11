@@ -125,7 +125,7 @@ const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
         </div>
       </div>
 
-      <dl className="mt-5 grid gap-4 border-t border-app-borderSoft pt-5 sm:grid-cols-2 xl:grid-cols-4">
+      <dl className="mt-5 grid gap-4 border-t border-app-borderSoft pt-5 sm:grid-cols-2 xl:grid-cols-3">
         {metadataItems.map((item) => (
           <MemoizedJobDetailMetadataItem item={item} key={item.id} />
         ))}

@@ -1,4 +1,4 @@
-import type { TJobStatus } from '../../types';
+import type { TJob, TJobStatus } from '../../types';
 
 /**
  * Translation keys used for job service fallback errors.
@@ -17,12 +17,20 @@ export const JOB_FALLBACK_ERROR_TRANSLATION_KEYS = {
 export type TJobFallbackErrorKey = keyof typeof JOB_FALLBACK_ERROR_TRANSLATION_KEYS;
 
 /**
+ * Editable job fields a caller may send to the backend.
+ *
+ * Excludes `id`, `createdAt` and `updatedAt` because the server owns all
+ * three. A request type that accepted an `id` would invite one to be sent,
+ * and the backend ignores unknown fields rather than rejecting them.
+ */
+export type TJobFormPayload = Omit<TJob, 'id' | 'createdAt' | 'updatedAt'>;
+
+/**
  * Wire representation of a job exactly as `/api/jobs` returns it.
  *
  * This is not `TJob`. The backend sends `null` rather than omitting empty
- * fields, and it has no `tags` or `nextStep`, so the two models differ in
- * ways a mapper has to resolve. Task 023 owns that mapper; until then this
- * type only promises what the API actually sends.
+ * fields, so the two models differ in a way `mapJobResponseToJob` resolves.
+ * This type only promises what the API actually sends.
  */
 export type TJobResponse = {
   id: string;

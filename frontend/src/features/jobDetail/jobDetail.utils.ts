@@ -31,11 +31,6 @@ export const createJobDetailMetadataItems = (
     label: t('jobs.updated'),
     value: formatJobDate(job.updatedAt, language),
   },
-  {
-    id: 'nextStep',
-    label: t('jobDetail.nextStep'),
-    value: job.nextStep.trim() || t('jobs.notSet'),
-  },
 ];
 
 /**

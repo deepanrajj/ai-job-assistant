@@ -1,5 +1,7 @@
 # Task 023 - Add Typed API Response Models
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`,
@@ -57,9 +59,17 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] API response models are typed.
-- [ ] UI models remain stable.
-- [ ] Mapping behavior is tested when non-trivial.
+- [x] API response models are typed.
+- [x] UI models remain stable.
+- [x] Mapping behavior is tested when non-trivial.
+
+`TJob` did change: `tags` and `nextStep` were removed, with product
+sign-off, because the backend has neither and the locked persistence
+model in `docs/context.md` section 5 never had them. The second
+criterion is therefore read as "changes once, here, rather than drifting
+across tasks 024 to 029". See
+[the plan](../../docs/business/023-add-typed-api-response-models-plan.md)
+for the rejected alternatives.
 
 ## Commit
 

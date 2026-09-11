@@ -23,12 +23,14 @@ describe('mockJobDetails', () => {
       expect.objectContaining({
         id: 'job-001-task-2',
         status: 'TODO',
-        title: 'Prepare product analytics case study',
+        title: 'Prepare interview examples for Celonis',
       }),
     ]);
     expect(jobDetail.notes[0].body).toContain('Saved the role because Celonis');
     expect(jobDetail.timeline[0].description).toBe('Celonis was added to the tracker.');
     expect(jobDetail.aiInsights.summary).toContain('Celonis is a strong match');
-    expect(jobDetail.aiInsights.strengths).toContain('Existing experience maps well to React.');
+    expect(jobDetail.aiInsights.strengths).toContain(
+      'Existing experience maps well to the Senior Frontend Engineer remit.',
+    );
   });
 });

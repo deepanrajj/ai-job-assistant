@@ -15,12 +15,10 @@ const validJobFormValues = {
   description: 'Build frontend workflows.',
   jobUrl: 'https://example.com/job',
   location: 'Berlin',
-  nextStep: 'Follow up',
   roleTitle: 'Frontend Engineer',
   salaryMax: '90000',
   salaryMin: '70000',
   status: 'APPLIED',
-  tags: 'React, TypeScript',
 };
 
 describe('job form schema', () => {

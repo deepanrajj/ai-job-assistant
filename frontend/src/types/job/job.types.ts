@@ -16,8 +16,6 @@ export type TJob = {
   salaryMin?: number;
   salaryMax?: number;
   description?: string;
-  tags: string[];
-  nextStep?: string;
   createdAt: string;
   updatedAt: string;
 };

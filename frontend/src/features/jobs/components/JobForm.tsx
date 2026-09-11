@@ -64,6 +64,7 @@ export const JobForm: FC<IJobFormProps> = ({
       type: 'input',
     },
     {
+      containerClassName: 'md:col-span-2',
       name: 'jobUrl',
       label: t('jobForm.fields.jobUrl'),
       placeholder: t('jobForm.placeholders.jobUrl'),
@@ -81,20 +82,6 @@ export const JobForm: FC<IJobFormProps> = ({
       name: 'salaryMax',
       label: t('jobForm.fields.salaryMax'),
       placeholder: t('jobForm.placeholders.salaryMax'),
-      type: 'input',
-    },
-    {
-      name: 'tags',
-      label: t('jobForm.fields.tags'),
-      helperText: t('jobForm.helpers.tags'),
-      placeholder: t('jobForm.placeholders.tags'),
-      type: 'input',
-    },
-    {
-      containerClassName: 'md:col-span-2',
-      name: 'nextStep',
-      label: t('jobForm.fields.nextStep'),
-      placeholder: t('jobForm.placeholders.nextStep'),
       type: 'input',
     },
     {

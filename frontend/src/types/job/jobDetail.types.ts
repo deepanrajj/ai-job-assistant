@@ -66,12 +66,11 @@ export type TJobAiInsights = {
  */
 export type TJobDetail = Omit<
   TJob,
-  'description' | 'jobUrl' | 'location' | 'nextStep' | 'salaryMax' | 'salaryMin'
+  'description' | 'jobUrl' | 'location' | 'salaryMax' | 'salaryMin'
 > & {
   description: string;
   jobUrl: string;
   location: string;
-  nextStep: string;
   salaryMax: number;
   salaryMin: number;
   aiInsights: TJobAiInsights;

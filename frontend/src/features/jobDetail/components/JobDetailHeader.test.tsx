@@ -20,7 +20,6 @@ describe('JobDetailHeader', () => {
 
     expect(screen.getByRole('heading', { name: 'Senior Frontend Engineer' })).toBeInTheDocument();
     expect(screen.getByText('Not set')).toBeInTheDocument();
-    expect(screen.getByText('Prepare product analytics case study')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Open posting' })).toBeInTheDocument();
   });
 

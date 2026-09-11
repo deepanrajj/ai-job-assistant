@@ -71,12 +71,6 @@ describe('JobForm', () => {
     fireEvent.change(screen.getByLabelText('Maximum salary'), {
       target: { value: '90000' },
     });
-    fireEvent.change(screen.getByLabelText('Tags'), {
-      target: { value: 'React, TypeScript' },
-    });
-    fireEvent.change(screen.getByLabelText('Next step'), {
-      target: { value: 'Follow up' },
-    });
     fireEvent.change(screen.getByLabelText('Description'), {
       target: { value: 'Build frontend workflows.' },
     });
