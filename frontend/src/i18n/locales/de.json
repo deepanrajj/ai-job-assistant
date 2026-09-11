@@ -92,8 +92,11 @@
     "notSet": "Nicht angegeben",
     "noJobsFound": "Keine Jobs gefunden",
     "noJobsFoundDescription": "Passe Suche oder Statusfilter an, um mehr Chancen zu sehen.",
+    "noJobsYet": "Noch keine gespeicherten Jobs",
+    "noJobsYetDescription": "Füge deine erste Chance hinzu, um Bewerbungen zu verfolgen.",
     "loading": "Gespeicherte Jobs werden geladen",
     "loadErrorTitle": "Gespeicherte Jobs konnten nicht geladen werden",
+    "loadErrorRetry": "Erneut versuchen",
     "fallbackError": {
       "listJobs": "Laden der Jobs fehlgeschlagen",
       "getJob": "Laden des Jobs fehlgeschlagen",

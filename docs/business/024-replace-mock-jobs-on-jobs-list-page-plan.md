@@ -155,20 +155,38 @@ both.
 backend's or the localized `jobs.fallbackError.listJobs`. `JobsPage`
 renders `error.message`.
 
-**Rejected: a second translation key for a list-load failure.** Task 020
-added five fallback keys precisely so the service owns this text. A
-second string for the same event would drift from the first.
+**Amended after review.** The original decision here read "Rejected: a
+second translation key for a list-load failure", on the grounds that task
+020's five fallback keys already own that text. The implementation then
+shipped `jobs.loadErrorTitle` anyway, and the contradiction survived into
+the first verified-state section unnoticed.
 
-### No retry action on the error state
+Keeping the title, and correcting the decision rather than the code:
+`ErrorState` requires a `title`, so the only way to honour the original
+wording would be to pass `error.message` as the title and leave the
+description empty, which reads worse. The service's message stays the
+description, so the two strings play different roles rather than
+duplicating one. What the original decision was right about is that a
+*second message* would drift; a title is not a second message.
 
-`ErrorState` takes an optional `action` slot. It is left empty.
+### A retry action on the error state
 
-**Rejected: a retry button.** It is the obvious affordance and it needs
-`useJobsList` to expose a refetch, which needs a decision about whether
-retry resets or preserves the previous data. That is worth doing
-properly with the other API screens rather than inventing it for one.
-Recorded here so its absence reads as a decision rather than an
-oversight.
+**Reversed after review.** This section originally rejected a retry
+button and deferred it to task 034. The review showed the deferral makes
+the error branch a dead end: the early return replaces the whole page,
+including the only route to "Add job", so a single 500 leaves the user
+with no affordance at all and no recovery short of a browser reload.
+
+`useJobsList` now returns `reload`, and `JobsPage` passes it as
+`ErrorState`'s `action`. The trap worth recording is the obvious
+implementation: exposing `useAsyncMutation`'s `reset` instead would set
+status back to `idle`, and `idle` is reported as loading here, so the
+page would show a spinner forever with no request in flight. `reload`
+calls `mutate` again, which goes straight to `loading`.
+
+The open question the original decision raised, whether a retry clears
+the previous data, is answered by `useAsyncMutation` rather than by this
+hook: `mutate` sets `data: null` when it starts, so a retry always clears.
 
 ## Proposed Change
 
@@ -197,8 +215,11 @@ useJobsList(): { error: AppError | null; isLoading: boolean; jobs: TJob[] }
 `jobs` is `[]` until the request resolves, so `JobsPage` never receives
 `null` and the `DataTable` contract is unchanged.
 
-One new translation key, `jobs.loading`, for the `LoadingState` label.
-The error text comes from the service.
+Five new translation keys per locale: `jobs.loading` for the
+`LoadingState` label, `jobs.loadErrorTitle` and `jobs.loadErrorRetry` for
+the error state, and `jobs.noJobsYet` plus `jobs.noJobsYetDescription`
+for the first-run empty state. The error *message* still comes from the
+service.
 
 ## Tests
 
@@ -367,3 +388,41 @@ This is the ordering working as intended and it closes at task 026.
 locales, which task 023 invalidated when it removed tags from the search
 text. Filed as bug 003; the placeholder is visible in the screenshot
 taken during this task's manual check.
+
+## Review Fixes
+
+A max-effort review of pull request #22 raised fifteen findings. Fourteen
+were applied on the branch; one was filed.
+
+### Applied
+
+| Area | Change |
+| --- | --- |
+| `apiClient.ts` | `return await parseJsonResponse(...)`. Without the `await`, a parse failure on a 2xx escaped the `try` and reached the UI as a raw `SyntaxError` instead of an `AppError` |
+| `useJobsList` | `Array.isArray` guard, so a 2xx carrying an object no longer throws during render past this hook's own error state |
+| `useJobsList` | explicit `useAsyncMutation<void, TJobResponse[]>`, because a zero-argument `getJobs` gave `TArgs` no inference site and it fell back to `unknown` |
+| `useJobsList` | `reload`, wired to `ErrorState`'s action slot |
+| `JobsPage` | a first-run empty state, so an empty database no longer tells the user to adjust filters they never set |
+| fixtures | wire ids are UUIDs and timestamps carry an offset, matching what the backend really sends |
+| fixtures | `createMockJobs` derives from `createMockJobResponses` through the production mapper, so the two cannot drift |
+| `handlers.ts` | the jobs handler moved out of the shared defaults into the one test that needs it, keeping `onUnhandledRequest: 'error'` meaningful |
+| tests | the loading case now holds the response open and asserts the transition; it previously passed even with the fetch deleted |
+| tests | the request-count case settles before asserting; `waitFor` resolves on its first pass and could never see a later request |
+| tests | added the zero-jobs success case and a StrictMode case |
+| `docs/context.md` | records the new data source and what still reads localStorage |
+| this plan | two decisions corrected above, where the code had diverged from them |
+
+### Filed, not fixed
+
+The review found that **every row's details action leads to "Job not
+found"**, because the list renders backend UUIDs while the detail page
+still resolves ids against localStorage. This is worse than the
+divergences recorded above: it needs no user action and it breaks a
+control on the page this task ships.
+
+It is not fixed here because the honest fix is task 029's scope. The
+detail page needs a `TJobDetail`, carrying tasks, notes, timeline and AI
+insights that no endpoint returns, and its mutation callbacks all write
+locally, so a partial move would trade a visible dead link for silently
+no-op note and task creation. Filed as bug 004 with three candidate
+approaches.

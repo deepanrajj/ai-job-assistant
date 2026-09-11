@@ -87,7 +87,11 @@ Frontend currently has:
 - jobs list
 - job detail page with overview, tasks, notes, timeline, and AI tabs
 - create/edit job forms
-- localStorage-backed job persistence
+- a typed job API service, wire-to-UI mappers, and a jobs list that reads
+  `GET /api/jobs` with loading, error, and retry states
+- localStorage-backed job persistence for every other job screen, so the
+  dashboard, job detail, and the create/edit/delete forms still read and
+  write locally until tasks 025 to 029 move them
 - English and German translations
 - reusable UI, form, table, icon, and layout components
 - frontend tests and coverage gate

@@ -1,12 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 
 import { Component as JobsRoute } from './jobsRoute';
 import { renderWithRouter } from '../../test/renderWithRouter';
+import { createMockJobResponses } from '../../test/mockJobs';
 import { server } from '../../test/server';
 
 describe('jobsRoute', () => {
+  beforeEach(() => {
+    server.use(http.get('/api/jobs', () => HttpResponse.json(createMockJobResponses())));
+  });
+
   it('renders jobs route content once the saved jobs load', async () => {
     renderWithRouter(<JobsRoute />);
 

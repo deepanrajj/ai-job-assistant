@@ -9,7 +9,7 @@ import { useJobsList } from '../../features/jobs';
  * @returns {JSX.Element} Jobs route content.
  */
 export const Component: FC = () => {
-  const { error, isLoading, jobs } = useJobsList();
+  const { error, isLoading, jobs, reload } = useJobsList();
 
-  return <JobsPage error={error} isLoading={isLoading} jobs={jobs} />;
+  return <JobsPage error={error} isLoading={isLoading} jobs={jobs} onRetry={reload} />;
 };

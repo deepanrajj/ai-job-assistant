@@ -1,14 +1,16 @@
 import { http, HttpResponse } from 'msw';
 
-import { createMockJobResponses } from './mockJobs';
 import type { TJobAiAnalysis } from '../types';
-import type { TJobResponse } from '../services';
 
 /**
  * Default API handlers shared by frontend tests.
+ *
+ * Deliberately no `GET /api/jobs`. `setupTests.ts` sets
+ * `onUnhandledRequest: 'error'`, so a test that renders a jobs-fetching
+ * component has to declare its own handler through `server.use` rather than
+ * silently inheriting fixture rows.
  */
 export const handlers = [
-  http.get('/api/jobs', () => HttpResponse.json<TJobResponse[]>(createMockJobResponses())),
   http.post('/api/ai/analyze-job', () =>
     HttpResponse.json<TJobAiAnalysis>({
       niceToHaveSkills: ['Testing Library'],
