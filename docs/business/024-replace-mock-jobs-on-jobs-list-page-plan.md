@@ -426,3 +426,9 @@ insights that no endpoint returns, and its mutation callbacks all write
 locally, so a partial move would trade a visible dead link for silently
 no-op note and task creation. Filed as bug 004 with three candidate
 approaches.
+
+Bug 004 has since been retired rather than fixed on its own. Task 029
+closes it by construction, so the ticket was removed and what it knew -
+the defect, the handoff test, and the warning about UUID-shaped
+fixtures - moved into that task file. The defect itself is unchanged
+and still live until task 029 ships. See `tasks/bugs/README.md`.
