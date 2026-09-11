@@ -64,6 +64,7 @@ export const JobForm: FC<IJobFormProps> = ({
       type: 'input',
     },
     {
+      containerClassName: 'md:col-span-2',
       name: 'jobUrl',
       label: t('jobForm.fields.jobUrl'),
       placeholder: t('jobForm.placeholders.jobUrl'),

@@ -18,7 +18,7 @@ const createMockJobDetail = (job: TJob, date: string): TJobDetail => ({
   salaryMax: job.salaryMax!,
   salaryMin: job.salaryMin!,
   aiInsights: {
-    summary: `${job.company} is a strong match for ${job.roleTitle} because the role aligns with the saved skills and current preparation focus.`,
+    summary: `${job.company} is a strong match for ${job.roleTitle} because the role aligns with the saved description and current search direction.`,
     strengths: [
       `Existing experience maps well to the ${job.roleTitle} remit.`,
       `The role gives a clear story around working at ${job.company}.`,
