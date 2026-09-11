@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import type { SubmitHandler, UseFormReturn } from 'react-hook-form';
 
 import { Form, FormFields, type TFormFieldConfig } from '../../../components/form';
@@ -12,7 +12,9 @@ import type { TJobFormValues } from '../jobFormSchema';
  * Props used by the add/edit job form.
  */
 interface IJobFormProps {
+  error?: ReactNode;
   form: UseFormReturn<TJobFormValues>;
+  isSubmitting?: boolean;
   onCancel: () => void;
   onSubmit: SubmitHandler<TJobFormValues>;
   submitLabel: string;
@@ -27,7 +29,9 @@ interface IJobFormProps {
  * @returns {JSX.Element} Job form card.
  */
 export const JobForm: FC<IJobFormProps> = ({
+  error,
   form,
+  isSubmitting = false,
   onCancel,
   onSubmit,
   submitLabel,
@@ -98,13 +102,17 @@ export const JobForm: FC<IJobFormProps> = ({
   return (
     <Card subtitle={subtitle} title={title}>
       <Form className="space-y-6" form={form} onSubmit={onSubmit}>
+        {error}
+
         <FormFields<TJobFormValues> columns={2} fields={fields} />
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button onClick={onCancel} type="button" variant="secondary">
             {t('jobForm.cancel')}
           </Button>
-          <Button type="submit">{submitLabel}</Button>
+          <Button disabled={isSubmitting} type="submit">
+            {submitLabel}
+          </Button>
         </div>
       </Form>
     </Card>

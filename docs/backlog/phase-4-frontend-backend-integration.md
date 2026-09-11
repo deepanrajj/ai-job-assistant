@@ -10,7 +10,7 @@ Goal: replace mock/local data with real API data.
 - [x] [Add typed API response models](../../tasks/roadmap/023-add-typed-api-response-models.md).
 - [x] [Replace mock jobs on jobs list page](../../tasks/roadmap/024-replace-mock-jobs-on-jobs-list-page.md).
 - [ ] [Replace mock jobs on dashboard page](../../tasks/roadmap/025-replace-mock-jobs-on-dashboard-page.md).
-- [ ] [Connect add job form to backend](../../tasks/roadmap/026-connect-add-job-form-to-backend.md).
+- [x] [Connect add job form to backend](../../tasks/roadmap/026-connect-add-job-form-to-backend.md).
 - [ ] [Connect edit job form to backend](../../tasks/roadmap/027-connect-edit-job-form-to-backend.md).
 - [ ] [Connect delete job action to backend](../../tasks/roadmap/028-connect-delete-job-action-to-backend.md).
 - [ ] [Connect job detail page to backend](../../tasks/roadmap/029-connect-job-detail-page-to-backend.md).

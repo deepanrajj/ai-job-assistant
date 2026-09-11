@@ -162,6 +162,7 @@
   },
   "jobForm": {
     "createTitle": "Add job",
+    "createErrorTitle": "Job could not be created",
     "createSubtitle": "Save the company, role, status, and next action for a new opportunity.",
     "editTitle": "Edit job",
     "editSubtitle": "Keep the saved opportunity accurate as your application moves forward.",
