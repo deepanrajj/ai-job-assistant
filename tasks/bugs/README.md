@@ -39,14 +39,15 @@ roadmap tasks live in `../README.md`.
       — P1, from the task 024 branch review. The list reads the API while
       the detail page still resolves ids against localStorage, so every
       row's details action lands on "Job not found".
-- [ ] [Bug 003: the jobs search placeholder still offers to search by
-      skill](./bug-003-jobs-search-placeholder-still-offers-skill.md)
-      — nit, found while planning task 024. Task 023 removed `tags` from
-      the search text but left both locale placeholders advertising it,
-      so the box invites a search that matches nothing.
 
 ## Fixed
 
+- [x] [Bug 003: the jobs search placeholder still offers to search by
+      skill](./bug-003-jobs-search-placeholder-still-offers-skill.md)
+      — nit, found while planning task 024. Task 023 removed `tags` from
+      the search text but left both locale placeholders advertising it.
+      Fixed by dropping the field from both locale strings, with a test
+      that pins the placeholder and `getSearchText` to each other.
 - [x] [Bug 002: a non-UUID path id returns 500 instead of 400](./bug-002-non-uuid-path-id-returns-500.md)
       — P2, from the task 020 branch review. Pre-existing since task
       006 and surfaced by the new job service. Fixed with a

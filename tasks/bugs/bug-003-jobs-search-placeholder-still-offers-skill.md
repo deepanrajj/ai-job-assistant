@@ -1,6 +1,6 @@
 # Bug 003 - Jobs Search Placeholder Still Offers To Search By Skill
 
-Status: Open
+Status: Fixed
 Severity: nit
 Reported: found while reading the jobs list search config during task 024 planning
 
@@ -121,11 +121,11 @@ check before completion.
 
 ## Acceptance Criteria
 
-- [ ] The symptom no longer reproduces.
-- [ ] A regression test covers it and was seen to fail before the fix.
-- [ ] Existing tests pass unchanged.
-- [ ] Required verification passes.
-- [ ] No unrelated files are changed.
+- [x] The symptom no longer reproduces.
+- [x] A regression test covers it and was seen to fail before the fix.
+- [x] Existing tests pass unchanged.
+- [x] Required verification passes.
+- [x] No unrelated files are changed.
 
 ## Commit
 

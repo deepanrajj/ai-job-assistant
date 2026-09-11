@@ -8,10 +8,27 @@ import {
   createJobsSearchConfig,
 } from './jobs.config';
 import { renderWithRouter } from '../../test/renderWithRouter';
-import { translate, type TTranslationContextValue } from '../../i18n';
+import {
+  supportedLanguages,
+  translate,
+  type TLanguage,
+  type TTranslationContextValue,
+} from '../../i18n';
 import { createMockJob } from '../../test/mockJobs';
 
 const t: TTranslationContextValue['t'] = (key, params) => translate(key, params, 'en');
+
+/**
+ * Search placeholder copy expected for each supported language.
+ *
+ * The placeholder is the only thing telling a user which fields the search
+ * matches against, so it may name a field only while `getSearchText` reads it.
+ * Changing a sentence here means checking that function first.
+ */
+const expectedSearchPlaceholders: Record<TLanguage, string> = {
+  de: 'Firma, Rolle oder Standort suchen',
+  en: 'Search company, role, or location',
+};
 
 describe('jobs config', () => {
   it('creates search config for job text fields', () => {
@@ -27,6 +44,23 @@ describe('jobs config', () => {
         }),
       ),
     ).not.toContain('undefined');
+  });
+
+  it('describes only the job fields the search reads', () => {
+    const job = createMockJob({
+      company: 'Northwind Systems',
+      location: 'Hamburg',
+      roleTitle: 'Platform Engineer',
+    });
+
+    supportedLanguages.forEach((language) => {
+      const searchConfig = createJobsSearchConfig((key, params) =>
+        translate(key, params, language),
+      );
+
+      expect(searchConfig.getSearchText(job)).toBe('Northwind Systems Platform Engineer Hamburg');
+      expect(searchConfig.placeholder).toBe(expectedSearchPlaceholders[language]);
+    });
   });
 
   it('creates localized columns that render job cell content', () => {
