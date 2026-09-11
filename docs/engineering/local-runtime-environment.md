@@ -33,7 +33,7 @@ for the equivalent note about the test suite.
 | `address already in use` on 30080 or 5434 | the other local runtime is up, or a leftover port forward is alive | Compose and Kubernetes both bind these ports and cannot run together; stop one, or see the `stop-local` skill |
 | Backend exits at startup on a refused database connection | Flyway connects during startup and the database was not ready | keep the `service_healthy` condition on the postgres dependency, and make sure the postgres healthcheck probes TCP rather than the unix socket |
 | A published port answers locally but is also reachable from the network | `ports: "5434:5432"` binds `0.0.0.0`, unlike `kubectl port-forward`, which binds loopback | give the mapping an explicit host address, `127.0.0.1:5434:5432` |
-| The pre-commit hook fails Prettier on frontend files your commit did not touch | git wrote CRLF into the working tree, and the hook checks the whole frontend rather than the staged files | `npm run frontend:format`, then `git checkout -- frontend/` after committing; see the entry under This machine only |
+| The pre-commit hook fails Prettier on frontend files your commit did not touch | git wrote CRLF into the working tree, and the hook checks the whole frontend rather than the staged files | fixed by `* text=auto eol=lf` in the root `.gitattributes`; on a clone from before that, refresh the working tree once with `git rm --cached -r . && git reset --hard`, having committed or stashed first |
 
 The first, third and fifth rows were captured verbatim while building
 task 069. The Nginx row is the predicted failure for removing the
@@ -336,8 +336,13 @@ same thing.
 
 ### A commit fails Prettier on frontend files it did not touch
 
-Symptom: a backend-only or docs-only commit is rejected by the
-pre-commit hook with
+**Fixed. The root `.gitattributes` now pins the working-tree ending.**
+This entry is kept because the mechanism is worth understanding and
+because the reasoning that delayed the fix was wrong in a way that is
+easy to repeat.
+
+Symptom, before the fix: a backend-only or docs-only commit is rejected
+by the pre-commit hook with
 
 ```text
 [warn] src/services/index.ts
@@ -346,32 +351,86 @@ pre-commit hook with
 
 naming frontend files that are not in the commit and that nobody edited.
 
-Two things combine.
+Three things combined.
 
-**Git writes CRLF into the working tree here.** `.gitattributes` sets
+**Git wrote CRLF into the working tree here.** `.gitattributes` set
 `* text=auto`, which normalizes to LF *in the index* and says nothing
 about the working tree. That is left to `core.autocrlf`, which is `true`
 on this machine, the git-for-Windows default. Any git operation that
-materializes a file therefore writes CRLF. Demonstrated directly:
-`git checkout -- frontend/` turns an LF file into a CRLF one.
+materialized a file therefore wrote CRLF. Demonstrated directly:
+`git checkout -- frontend/` turned an LF file into a CRLF one.
 
-Only the files git actually rewrites are affected, which is why the set
-looks arbitrary. After a branch switch it is exactly the files that
+Only the files git actually rewrote were affected, which is why the set
+looked arbitrary. After a branch switch it was exactly the files that
 differ between the two branches.
 
 **The hook checks more than the commit.** `frontend:format:check` runs
 `prettier . --check` over the whole frontend, while `lint-staged` covers
 the staged files. Prettier defaults to `endOfLine: "lf"` and
-`frontend/.prettierrc` does not override it, so one stray CRLF file
-anywhere fails the commit.
+`frontend/.prettierrc.json` does not override it, so one stray CRLF file
+anywhere failed the commit.
 
-The workaround, from the repository root:
+**Nothing else objected.** CI checks out on Linux, where `core.autocrlf`
+is `false`, so the pipeline never saw it. That is why this survived as
+per-developer friction for so long.
 
-```bash
-npm run frontend:format
+#### The fix
+
+The root `.gitattributes` now reads:
+
+```text
+* text=auto eol=lf
 ```
 
-Two traps in that workaround, both hit while writing this entry:
+`eol=lf` pins the *working tree* as well as the index, so checkout stops
+converting regardless of what `core.autocrlf` says on any machine.
+
+#### Why the old reasoning was wrong
+
+This entry previously argued the fix was "**not** the one-liner it looks
+like", because `eol=lf` would force LF onto the tracked
+`backend/gradlew.bat`, and batch files with LF endings misbehave under
+`cmd.exe`. That risk is real. `infra/scripts/run-gradle.mjs` invokes
+`.\gradlew.bat` through `cmd.exe` on Windows, so a corrupted wrapper
+would break every backend command.
+
+The premise was the wrong part. `backend/.gitattributes`, shipped by the
+Gradle wrapper, already carries the needed exception:
+
+```text
+/gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary
+```
+
+A deeper attributes file wins over a parent for the paths it matches, so
+`*.bat text eol=crlf` overrides the root rule. Verified rather than
+assumed, before applying anything: with `eol=lf` set at the root,
+`git check-attr -a backend/gradlew.bat` still reported `eol: crlf`,
+while `README.md` and the frontend sources reported `eol: lf`.
+
+The lesson is narrower than "check your assumptions". The blocking
+condition named in this entry was a file that needed writing. It already
+existed, a directory away, because a tool had generated it. Look for the
+exception before concluding it has to be built.
+
+#### Applying it to an existing clone
+
+The index was already uniformly LF, so the change only affects what
+checkout writes. Files already sitting in the working tree keep their
+endings until git rewrites them once.
+
+**Commit or stash first.** The second half of this is `reset --hard`,
+which discards staged and unstaged work without asking:
+
+```bash
+git rm --cached -r . && git reset --hard
+```
+
+#### The old workaround
+
+Kept for anyone on a clone from before the fix. From the repository
+root, `npm run frontend:format`, with two traps:
 
 - It is **not** a no-op in git's eyes. Afterwards `git diff` reports the
   files identical while `git status` calls them modified, and
@@ -380,18 +439,6 @@ Two traps in that workaround, both hit while writing this entry:
   the commit is in.
 - Do not stage the files it rewrites. They belong to whatever change
   last edited them, not to the commit being blocked.
-
-A durable fix would pin the working-tree ending in `.gitattributes`
-rather than relying on each machine's git config. It is not applied
-here, and it is **not** the one-liner it looks like: `* text=auto eol=lf`
-would also force LF onto `backend/gradlew.bat`, which is tracked, and
-batch files with LF endings can misbehave under `cmd.exe`. It needs a
-`*.bat text eol=crlf` exception alongside it, and that combination has
-not been tested. Narrowing the hook to staged files would also work and
-is the smaller change.
-
-Filed nowhere. It is developer friction rather than a defect: nothing
-user-facing is wrong and no bad code can ship because of it.
 
 ## Rules
 
