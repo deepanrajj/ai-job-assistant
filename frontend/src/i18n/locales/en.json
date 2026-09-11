@@ -89,7 +89,6 @@
     "updated": "Updated",
     "actions": "Actions",
     "openPosting": "Open posting",
-    "nextStep": "Next: {{nextStep}}",
     "notSet": "Not set",
     "noJobsFound": "No jobs found",
     "noJobsFoundDescription": "Adjust the search or status filter to see more opportunities.",
@@ -106,7 +105,6 @@
     "editJob": "Edit job",
     "deleteJob": "Delete job",
     "openPosting": "Open posting",
-    "nextStep": "Next step",
     "statusLabel": "Job status",
     "notFoundTitle": "Job not found",
     "notFoundDescription": "The selected job does not exist in the saved local tracker data.",
@@ -119,9 +117,7 @@
       "ai": "AI"
     },
     "overview": {
-      "descriptionTitle": "Description",
-      "focusTitle": "Preparation focus",
-      "skills": "Skills"
+      "descriptionTitle": "Description"
     },
     "tasks": {
       "title": "Preparation tasks",
@@ -177,8 +173,6 @@
       "jobUrl": "Job URL",
       "salaryMin": "Minimum salary",
       "salaryMax": "Maximum salary",
-      "tags": "Tags",
-      "nextStep": "Next step",
       "description": "Description"
     },
     "placeholders": {
@@ -188,12 +182,7 @@
       "jobUrl": "https://company.com/careers/job",
       "salaryMin": "70000",
       "salaryMax": "90000",
-      "tags": "React, TypeScript, Accessibility",
-      "nextStep": "Follow up with recruiter",
       "description": "Paste a short role summary or job description."
-    },
-    "helpers": {
-      "tags": "Separate tags with commas."
     },
     "validation": {
       "requiredCompany": "Company is required.",

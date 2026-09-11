@@ -132,7 +132,6 @@ export const createJobDetailFromJob = (job: TJob, createdAt = job.updatedAt): TJ
   description: job.description ?? '',
   jobUrl: job.jobUrl ?? '',
   location: job.location ?? '',
-  nextStep: job.nextStep ?? '',
   salaryMax: job.salaryMax ?? 0,
   salaryMin: job.salaryMin ?? 0,
   aiInsights: {
@@ -165,12 +164,10 @@ const getBaseJob = (job: TJobDetail): TJob => ({
   id: job.id,
   jobUrl: job.jobUrl || undefined,
   location: job.location || undefined,
-  nextStep: job.nextStep || undefined,
   roleTitle: job.roleTitle,
   salaryMax: job.salaryMax > 0 ? job.salaryMax : undefined,
   salaryMin: job.salaryMin > 0 ? job.salaryMin : undefined,
   status: job.status,
-  tags: job.tags,
   updatedAt: job.updatedAt,
 });
 
@@ -612,12 +609,10 @@ const normalizeStoredJobDetail = (value: unknown): TJobDetail | null => {
     id,
     jobUrl: getOptionalString(value.jobUrl),
     location: getOptionalString(value.location),
-    nextStep: getOptionalString(value.nextStep),
     roleTitle,
     salaryMax: getOptionalNumber(value.salaryMax),
     salaryMin: getOptionalNumber(value.salaryMin),
     status,
-    tags: getStringList(value.tags),
     updatedAt,
   });
   const timeline = Array.isArray(value.timeline)

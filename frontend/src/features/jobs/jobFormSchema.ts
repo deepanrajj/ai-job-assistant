@@ -75,7 +75,6 @@ export const createJobFormSchema = ({
         message: invalidUrl,
       }),
       location: z.string().trim(),
-      nextStep: z.string().trim(),
       roleTitle: createRequiredTrimmedTextSchema(requiredRole),
       salaryMax: z.string().trim().refine(isOptionalPositiveNumber, {
         message: invalidSalary,
@@ -84,7 +83,6 @@ export const createJobFormSchema = ({
         message: invalidSalary,
       }),
       status: z.enum(jobStatusOptions),
-      tags: z.string().trim(),
     })
     .refine(
       ({ salaryMax, salaryMin }) => {

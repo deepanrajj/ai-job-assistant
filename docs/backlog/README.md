@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 010: Create task service](../../tasks/roadmap/010-create-task-service.md).
+- [ ] [Task 024: Replace mock jobs on jobs list page](../../tasks/roadmap/024-replace-mock-jobs-on-jobs-list-page.md).

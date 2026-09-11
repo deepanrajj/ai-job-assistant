@@ -9,12 +9,10 @@ const formValues: TJobFormValues = {
   description: ' Build frontend workflows. ',
   jobUrl: ' https://example.com/job ',
   location: ' Berlin ',
-  nextStep: ' Follow up ',
   roleTitle: 'Frontend Engineer',
   salaryMax: '90000',
   salaryMin: '70000',
   status: 'APPLIED',
-  tags: 'React, TypeScript, , Accessibility',
 };
 
 describe('job form utils', () => {
@@ -28,12 +26,10 @@ describe('job form utils', () => {
       description: '',
       jobUrl: '',
       location: '',
-      nextStep: '',
       roleTitle: '',
       salaryMax: '',
       salaryMin: '',
       status: 'WISHLIST',
-      tags: '',
     });
   });
 
@@ -43,12 +39,10 @@ describe('job form utils', () => {
       description: '',
       jobUrl: 'https://example.com/jobs/frontend',
       location: 'Berlin',
-      nextStep: 'Follow up',
       roleTitle: 'Frontend Engineer',
       salaryMax: '90000',
       salaryMin: '70000',
       status: 'APPLIED',
-      tags: 'React, TypeScript',
     });
   });
 
@@ -62,12 +56,10 @@ describe('job form utils', () => {
       id: expect.stringMatching(/^job-/),
       jobUrl: 'https://example.com/job',
       location: 'Berlin',
-      nextStep: 'Follow up',
       roleTitle: 'Frontend Engineer',
       salaryMax: 90000,
       salaryMin: 70000,
       status: 'APPLIED',
-      tags: ['React', 'TypeScript', 'Accessibility'],
       updatedAt: '2026-06-13T10:00:00.000Z',
     });
   });
@@ -82,10 +74,8 @@ describe('job form utils', () => {
           description: '',
           jobUrl: '',
           location: '',
-          nextStep: '',
           salaryMax: '',
           salaryMin: '',
-          tags: '',
         },
         job,
         '2026-06-13T10:00:00.000Z',
@@ -97,12 +87,10 @@ describe('job form utils', () => {
       id: job.id,
       jobUrl: undefined,
       location: undefined,
-      nextStep: undefined,
       roleTitle: 'Frontend Engineer',
       salaryMax: undefined,
       salaryMin: undefined,
       status: 'APPLIED',
-      tags: [],
       updatedAt: '2026-06-13T10:00:00.000Z',
     });
   });

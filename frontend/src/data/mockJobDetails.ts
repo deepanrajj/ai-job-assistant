@@ -15,18 +15,17 @@ const createMockJobDetail = (job: TJob, date: string): TJobDetail => ({
   description: job.description!,
   jobUrl: job.jobUrl!,
   location: job.location!,
-  nextStep: job.nextStep!,
   salaryMax: job.salaryMax!,
   salaryMin: job.salaryMin!,
   aiInsights: {
     summary: `${job.company} is a strong match for ${job.roleTitle} because the role aligns with the saved skills and current preparation focus.`,
     strengths: [
-      `Existing experience maps well to ${job.tags[0]}.`,
-      `The role gives a clear story around ${job.tags[1]}.`,
-      'The next step is specific enough to prepare with focused examples.',
+      `Existing experience maps well to the ${job.roleTitle} remit.`,
+      `The role gives a clear story around working at ${job.company}.`,
+      'The saved description is specific enough to prepare with focused examples.',
     ],
     gaps: [
-      `Collect one recent project story that proves ${job.tags[2]} impact.`,
+      `Collect one recent project story that proves ${job.roleTitle} impact.`,
       'Prepare concise salary and availability notes before the next conversation.',
     ],
   },
@@ -38,7 +37,7 @@ const createMockJobDetail = (job: TJob, date: string): TJobDetail => ({
     },
     {
       id: `${job.id}-note-2`,
-      body: `Next preparation focus: ${job.nextStep}.`,
+      body: `Preparation focus: tailor recent work to the ${job.roleTitle} remit.`,
       createdAt: job.updatedAt,
     },
   ],
@@ -51,7 +50,7 @@ const createMockJobDetail = (job: TJob, date: string): TJobDetail => ({
     },
     {
       id: `${job.id}-task-2`,
-      title: job.nextStep!,
+      title: `Prepare interview examples for ${job.company}`,
       dueDate: job.updatedAt,
       status: 'TODO',
     },

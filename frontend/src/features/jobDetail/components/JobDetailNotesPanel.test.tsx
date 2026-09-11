@@ -12,7 +12,7 @@ describe('JobDetailNotesPanel', () => {
 
     expect(screen.getByRole('heading', { name: 'Notes' })).toBeInTheDocument();
     expect(screen.getByText(/Saved the role because Celonis/)).toBeInTheDocument();
-    expect(screen.getByText(/Next preparation focus/)).toBeInTheDocument();
+    expect(screen.getByText(/Preparation focus/)).toBeInTheDocument();
     expect(screen.getByText('May 10, 2026')).toBeInTheDocument();
     expect(screen.queryByLabelText('New note')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Edit note from May 10, 2026')).toHaveAttribute('readonly');

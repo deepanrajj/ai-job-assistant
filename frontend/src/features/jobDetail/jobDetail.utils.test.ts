@@ -33,20 +33,14 @@ describe('jobDetail.utils', () => {
         label: 'Updated',
         value: 'May 9, 2026',
       },
-      {
-        id: 'nextStep',
-        label: 'Next step',
-        value: 'Prepare product analytics case study',
-      },
     ]);
   });
 
   it('uses fallback metadata when optional values are blank', () => {
-    const [locationItem, salaryItem, , nextStepItem] = createJobDetailMetadataItems(
+    const [locationItem, salaryItem] = createJobDetailMetadataItems(
       {
         ...mockJobDetails[0],
         location: '',
-        nextStep: '',
         salaryMax: 0,
         salaryMin: 0,
       },
@@ -56,7 +50,6 @@ describe('jobDetail.utils', () => {
 
     expect(locationItem.value).toBe('Not set');
     expect(salaryItem.value).toBe('Not set');
-    expect(nextStepItem.value).toBe('Not set');
   });
 
   it('builds stable tab and panel ids', () => {

@@ -16,7 +16,7 @@ describe('JobDetailTasksPanel', () => {
       screen.getByRole('checkbox', { name: 'Tailor CV bullets for Senior Frontend Engineer' }),
     ).toBeChecked();
     expect(
-      screen.getByRole('checkbox', { name: 'Prepare product analytics case study' }),
+      screen.getByRole('checkbox', { name: 'Prepare interview examples for Celonis' }),
     ).not.toBeChecked();
     expect(screen.getByText('Due May 10, 2026')).toBeInTheDocument();
     expect(screen.queryByLabelText('Task title')).not.toBeInTheDocument();
@@ -34,7 +34,7 @@ describe('JobDetailTasksPanel', () => {
       screen.getByRole('checkbox', { name: 'Tailor CV bullets for Senior Frontend Engineer' }),
     ).toBeDisabled();
     expect(
-      screen.getByRole('checkbox', { name: 'Prepare product analytics case study' }),
+      screen.getByRole('checkbox', { name: 'Prepare interview examples for Celonis' }),
     ).toBeDisabled();
   });
 
@@ -65,7 +65,7 @@ describe('JobDetailTasksPanel', () => {
       status: 'TODO',
     });
     await user.click(
-      screen.getByRole('checkbox', { name: 'Prepare product analytics case study' }),
+      screen.getByRole('checkbox', { name: 'Prepare interview examples for Celonis' }),
     );
     expect(onUpdateTask).toHaveBeenCalledWith('job-001-task-2', {
       status: 'DONE',

@@ -7,7 +7,6 @@ import {
   createJobsFilters,
   createJobsSearchConfig,
 } from './jobs.config';
-import { renderWithProviders } from '../../test/renderWithProviders';
 import { renderWithRouter } from '../../test/renderWithRouter';
 import { translate, type TTranslationContextValue } from '../../i18n';
 import { createMockJob } from '../../test/mockJobs';
@@ -20,7 +19,7 @@ describe('jobs config', () => {
 
     expect(searchConfig.label).toBe('Search');
     expect(searchConfig.getSearchText(createMockJob())).toContain('Acme GmbH');
-    expect(searchConfig.getSearchText(createMockJob())).toContain('React');
+    expect(searchConfig.getSearchText(createMockJob())).toContain('Frontend Engineer');
     expect(
       searchConfig.getSearchText(
         createMockJob({
@@ -92,25 +91,9 @@ describe('jobs config', () => {
       '/jobs/job-001',
     );
     expect(screen.getByText('Frontend Engineer')).toBeInTheDocument();
-    expect(screen.getByText('Next: Follow up')).toBeInTheDocument();
     expect(screen.getByText('Applied')).toBeInTheDocument();
     expect(container).toHaveTextContent('Not setNot set');
     expect(screen.getByText('Jan 2, 2026')).toBeInTheDocument();
-  });
-
-  it('omits optional role details when they are not set', () => {
-    const columns = createJobsColumns({
-      language: 'en',
-      t,
-    });
-    const roleColumn = columns.find((column) => column.id === 'role');
-
-    if (!roleColumn) throw new Error('Expected role column to exist');
-
-    renderWithProviders(<>{roleColumn.cell(createMockJob({ nextStep: undefined, tags: [] }))}</>);
-
-    expect(screen.getByText('Frontend Engineer')).toBeInTheDocument();
-    expect(screen.queryByText(/Next:/)).not.toBeInTheDocument();
   });
 
   it('creates actions and filters', () => {

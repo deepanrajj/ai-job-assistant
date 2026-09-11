@@ -12,8 +12,6 @@ export const mockJobs: TJob[] = [
     salaryMax: 92000,
     description:
       'Build customer-facing analytics workflows with React, TypeScript, and design system components.',
-    tags: ['React', 'TypeScript', 'Design System'],
-    nextStep: 'Prepare product analytics case study',
     createdAt: '2026-04-22T09:30:00.000Z',
     updatedAt: '2026-05-09T15:20:00.000Z',
   },
@@ -28,8 +26,6 @@ export const mockJobs: TJob[] = [
     salaryMax: 88000,
     description:
       'Improve frontend tooling, shared UI infrastructure, test strategy, and developer experience.',
-    tags: ['React', 'Testing', 'Platform'],
-    nextStep: 'Follow up with recruiter',
     createdAt: '2026-04-25T11:10:00.000Z',
     updatedAt: '2026-05-06T08:45:00.000Z',
   },
@@ -43,8 +39,6 @@ export const mockJobs: TJob[] = [
     salaryMin: 80000,
     salaryMax: 100000,
     description: 'Own product features end to end across React frontend and Kotlin services.',
-    tags: ['React', 'Kotlin', 'Spring Boot'],
-    nextStep: 'Tailor CV for full-stack ownership',
     createdAt: '2026-05-01T14:00:00.000Z',
     updatedAt: '2026-05-08T17:05:00.000Z',
   },
@@ -59,8 +53,6 @@ export const mockJobs: TJob[] = [
     salaryMax: 112000,
     description:
       'Deliver collaborative workflows with strong UX judgment, frontend craft, and pragmatic backend integration.',
-    tags: ['Product Engineering', 'Collaboration', 'UX'],
-    nextStep: 'Compare offer package and relocation terms',
     createdAt: '2026-03-28T10:15:00.000Z',
     updatedAt: '2026-05-07T12:00:00.000Z',
   },
@@ -75,8 +67,6 @@ export const mockJobs: TJob[] = [
     salaryMax: 82000,
     description:
       'Build reliable banking surfaces with React, accessibility standards, and API-driven workflows.',
-    tags: ['Accessibility', 'React', 'Fintech'],
-    nextStep: 'Save interview notes for future fintech roles',
     createdAt: '2026-03-18T16:25:00.000Z',
     updatedAt: '2026-04-30T09:10:00.000Z',
   },
@@ -91,8 +81,6 @@ export const mockJobs: TJob[] = [
     salaryMax: 96000,
     description:
       'Create AI-assisted product experiences, measure usage quality, and partner with backend and ML teams.',
-    tags: ['AI UX', 'React', 'Experimentation'],
-    nextStep: 'Prepare AI feature integration examples',
     createdAt: '2026-04-29T13:40:00.000Z',
     updatedAt: '2026-05-05T10:35:00.000Z',
   },

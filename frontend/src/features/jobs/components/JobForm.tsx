@@ -84,20 +84,6 @@ export const JobForm: FC<IJobFormProps> = ({
       type: 'input',
     },
     {
-      name: 'tags',
-      label: t('jobForm.fields.tags'),
-      helperText: t('jobForm.helpers.tags'),
-      placeholder: t('jobForm.placeholders.tags'),
-      type: 'input',
-    },
-    {
-      containerClassName: 'md:col-span-2',
-      name: 'nextStep',
-      label: t('jobForm.fields.nextStep'),
-      placeholder: t('jobForm.placeholders.nextStep'),
-      type: 'input',
-    },
-    {
       className: 'min-h-36',
       containerClassName: 'md:col-span-2',
       name: 'description',

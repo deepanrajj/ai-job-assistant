@@ -3,7 +3,6 @@ import type { ChangeEventHandler, ReactNode } from 'react';
 import { Button, Select } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
-import { JobTags } from './components/JobTags';
 import { StatusPill } from './components/StatusPill';
 import { PlusIcon } from '../../components/icons';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
@@ -48,8 +47,7 @@ interface ICreateJobsActionsParams {
 export const createJobsSearchConfig = (
   t: TTranslationContextValue['t'],
 ): IDataTableSearchConfig<TJob> => ({
-  getSearchText: (job) =>
-    [job.company, job.roleTitle, job.location, ...job.tags].filter(Boolean).join(' '),
+  getSearchText: (job) => [job.company, job.roleTitle, job.location].filter(Boolean).join(' '),
   label: t('jobs.search'),
   placeholder: t('jobs.searchPlaceholder'),
 });
@@ -74,17 +72,7 @@ export const createJobsColumns = ({
     widthClassName: 'w-[15%]',
   },
   {
-    cell: (job) => (
-      <div>
-        <div className="font-medium text-app-text">{job.roleTitle}</div>
-        <JobTags tags={job.tags} />
-        {job.nextStep && (
-          <p className="mt-2 text-sm text-app-textMuted">
-            {t('jobs.nextStep', { nextStep: job.nextStep })}
-          </p>
-        )}
-      </div>
-    ),
+    cell: (job) => <div className="font-medium text-app-text">{job.roleTitle}</div>,
     header: t('jobs.role'),
     id: 'role',
     sortLabel: t('jobs.role'),

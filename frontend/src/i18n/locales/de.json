@@ -89,7 +89,6 @@
     "updated": "Aktualisiert",
     "actions": "Aktionen",
     "openPosting": "Anzeige öffnen",
-    "nextStep": "Nächster Schritt: {{nextStep}}",
     "notSet": "Nicht angegeben",
     "noJobsFound": "Keine Jobs gefunden",
     "noJobsFoundDescription": "Passe Suche oder Statusfilter an, um mehr Chancen zu sehen.",
@@ -106,7 +105,6 @@
     "editJob": "Job bearbeiten",
     "deleteJob": "Job löschen",
     "openPosting": "Anzeige öffnen",
-    "nextStep": "Nächster Schritt",
     "statusLabel": "Jobstatus",
     "notFoundTitle": "Job nicht gefunden",
     "notFoundDescription": "Der ausgewählte Job existiert nicht in den lokal gespeicherten Tracker-Daten.",
@@ -119,9 +117,7 @@
       "ai": "KI"
     },
     "overview": {
-      "descriptionTitle": "Beschreibung",
-      "focusTitle": "Vorbereitungsfokus",
-      "skills": "Skills"
+      "descriptionTitle": "Beschreibung"
     },
     "tasks": {
       "title": "Vorbereitungsaufgaben",
@@ -177,8 +173,6 @@
       "jobUrl": "Job-URL",
       "salaryMin": "Mindestgehalt",
       "salaryMax": "Maximalgehalt",
-      "tags": "Tags",
-      "nextStep": "Nächster Schritt",
       "description": "Beschreibung"
     },
     "placeholders": {
@@ -188,12 +182,7 @@
       "jobUrl": "https://company.com/careers/job",
       "salaryMin": "70000",
       "salaryMax": "90000",
-      "tags": "React, TypeScript, Barrierefreiheit",
-      "nextStep": "Beim Recruiter nachfassen",
       "description": "Füge eine kurze Rollenbeschreibung oder Stellenanzeige ein."
-    },
-    "helpers": {
-      "tags": "Trenne Tags mit Kommas."
     },
     "validation": {
       "requiredCompany": "Firma ist erforderlich.",
