@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
-* text=auto
+# eol=lf also pins the working tree, so a checkout on Windows stops
+# rewriting files to CRLF. backend/.gitattributes keeps gradlew.bat on
+# CRLF, which cmd.exe needs; a deeper attributes file wins.
+* text=auto eol=lf
