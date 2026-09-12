@@ -89,9 +89,11 @@ Frontend currently has:
 - create/edit job forms
 - a typed job API service, wire-to-UI mappers, and a jobs list that reads
   `GET /api/jobs` with loading, error, and retry states
+- an add job form that creates through `POST /api/jobs`, keeping entered
+  values and announcing the failure when the request fails
 - localStorage-backed job persistence for every other job screen, so the
-  dashboard, job detail, and the create/edit/delete forms still read and
-  write locally until tasks 025 to 029 move them
+  dashboard, job detail, and the edit/delete forms still read and write
+  locally until tasks 025, 027, 028 and 029 move them
 - English and German translations
 - reusable UI, form, table, icon, and layout components
 - frontend tests and coverage gate
