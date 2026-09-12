@@ -206,10 +206,26 @@ user there would recreate bug 004 on a second screen and turn a working
 flow into a dead end. The list reads the API as of task 024, so the new
 job is visible there immediately. Revisit when task 029 ships.
 
-### Decision 6: the submit button is disabled while saving
+### Decision 6: an in-flight ref guards the submit, and the button disables
 
-`JobForm` gains an optional `isSubmitting` prop that disables the submit
-button, and `NewJobPage` passes `isSaving`.
+`NewJobPage` holds an `isSavingRef` that the submit handler checks and
+sets synchronously, and `JobForm` gains an optional `isSubmitting` prop
+that disables the submit button, which `NewJobPage` feeds from `isSaving`.
+
+**Amended after review.** This decision originally proposed the disabled
+button alone, and the acceptance criteria claimed it stopped a second
+click from creating a second job. That was wrong, and it was asserted
+rather than measured. `isSaving` is state, so the button only disables on
+the *next* render, and two clicks landing in the same tick both reach the
+handler before that render. A probe firing two `fireEvent.click` calls
+with no await between them recorded two POSTs, which is two jobs.
+
+The ref is what actually holds, because it is set synchronously and is
+already true when the second call arrives. The disabled button stays, as
+the visible half: it tells the user a save is running. Neither is
+redundant, and the regression case
+`creates one job when two clicks land before the button disables` fails
+without the ref.
 
 The task file does not ask for this, and it is the consequence it did not
 anticipate. Submitting was synchronous and instant before this change, so
@@ -310,7 +326,7 @@ button before the user ever pressed it.
 | `features/jobs/jobForm.utils.ts` | add `createJobFormFields`; rebuild `createJobFormPayload` on it |
 | `features/jobs/components/JobForm.tsx` | optional `error` slot and `isSubmitting` prop |
 | `features/jobs/index.ts` | export `useCreateJob` |
-| `pages/jobs/NewJobPage.tsx` | drop `onSave`, use the hook, catch, render the error |
+| `pages/jobs/NewJobPage.tsx` | drop `onSave`, use the hook, catch, render the error, guard with an in-flight ref |
 | `routes/modules/jobNewRoute.tsx` | render `<NewJobPage />`, drop `useJobs` |
 | `i18n/locales/en.json`, `de.json` | add `jobForm.createErrorTitle` |
 
@@ -340,6 +356,7 @@ task intends, not a weakened assertion.
 | validation still blocks submit | no request is made and the required-company message shows |
 | an API failure keeps the values | the alert appears, the typed company is still in the field, and the route did not change |
 | the submit button is disabled while saving | held-open handler, button disabled, then released |
+| two clicks land before that render | held-open handler, two `fireEvent.click` with no await between, exactly one POST |
 
 The validation case is the one the task file asks for and the current
 suite does not have: it must prove no request goes out, which
@@ -433,7 +450,8 @@ After `npm run frontend:verify` passes:
 - [x] Success navigates to the jobs list, where the new job appears.
 - [x] A failed create keeps every entered value and announces the error.
 - [x] Validation still blocks an invalid submit, and no request goes out.
-- [x] A second click during a slow save cannot create a second job.
+- [x] A second click during a slow save cannot create a second job,
+      including one that lands before the button disables.
 - [x] No `JobsProvider` member is removed and no unrelated file changes.
 - [x] `npm run frontend:verify` passes.
 
@@ -485,3 +503,29 @@ and the production build succeeded.
 This was also the first task after the working-tree line-ending pin
 landed. The pre-commit Prettier check needed no `frontend:format`
 workaround, which is the first direct evidence that the fix works.
+
+## Review Fixes
+
+A review of pull request #26 raised two findings, both applied on the
+branch.
+
+The duplicate-submit guard did not work. The disabled button was the only
+thing stopping a second create, and it takes effect one render after the
+click, so two clicks in the same tick both reached `saveJob`. Measured at
+two POSTs rather than argued. `NewJobPage` now checks and sets an
+`isSavingRef` synchronously, and
+`creates one job when two clicks land before the button disables` covers
+it. That case was seen to fail with the ref removed:
+
+```text
+FAIL  src/pages/jobs/NewJobPage.test.tsx > NewJobPage >
+      creates one job when two clicks land before the button disables
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+```
+
+Decision 6 and the acceptance criteria asserted the guarantee the code
+did not provide, and are corrected above rather than quietly dropped. The
+lesson is the one this repository keeps relearning: the original case
+waited for `toBeDisabled` before clicking again, so it tested that a
+disabled button cannot be clicked, which was never in doubt. A guard is
+only proven by a test that runs before the guard is visible.

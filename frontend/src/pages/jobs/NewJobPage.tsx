@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type FC } from 'react';
+import { useCallback, useMemo, useRef, type FC } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +36,12 @@ export const NewJobPage: FC = () => {
     resolver: zodResolver(schema),
   });
 
+  /**
+   * Guards the submit handler against a second call in the same tick, which
+   * the disabled button cannot: it only takes effect on the next render.
+   */
+  const isSavingRef = useRef(false);
+
   const handleCancel = useCallback(() => {
     navigate(APP_PATHS.JOBS);
   }, [navigate]);
@@ -43,6 +49,13 @@ export const NewJobPage: FC = () => {
   /**
    * Navigates only once the job exists on the server, so a failed create
    * leaves every entered value in place.
+   *
+   * The ref, not the disabled button, is what stops a duplicate job. The
+   * `isSaving` prop disables the button one render after the click, and two
+   * clicks in the same tick both reach here before that render lands, which
+   * measurably produced two POSTs. `POST /api/jobs` has no idempotency key,
+   * so that is two jobs. A ref is set synchronously and is therefore already
+   * true when the second call arrives.
    *
    * The `catch` is required rather than defensive. `saveJob` rejects after
    * the error is already recorded in request state, and `handleSubmit`
@@ -55,11 +68,17 @@ export const NewJobPage: FC = () => {
    */
   const handleSubmit: SubmitHandler<TJobFormValues> = useCallback(
     async (values) => {
+      if (isSavingRef.current) return;
+
+      isSavingRef.current = true;
+
       try {
         await saveJob(createJobFormFields(values));
         navigate(APP_PATHS.JOBS);
       } catch {
         // Error is already recorded in request state and rendered from it.
+      } finally {
+        isSavingRef.current = false;
       }
     },
     [navigate, saveJob],

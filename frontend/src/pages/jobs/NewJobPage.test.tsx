@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
@@ -133,6 +133,43 @@ describe('NewJobPage', () => {
     // A second click on a slow save would otherwise create a second job:
     // the endpoint has no idempotency key and no duplicate detection.
     await user.click(submitButton);
+
+    release();
+
+    expect(await screen.findByText('Jobs route')).toBeInTheDocument();
+    expect(createHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates one job when two clicks land before the button disables', async () => {
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const createHandler = vi.fn(async () => {
+      await released;
+
+      return HttpResponse.json(createMockJobResponse(), { status: 201 });
+    });
+
+    server.use(http.post('/api/jobs', createHandler));
+    renderNewJobPage();
+
+    fireEvent.change(screen.getByLabelText('Company'), { target: { value: 'Acme GmbH' } });
+    fireEvent.change(screen.getByLabelText('Role'), { target: { value: 'Frontend Engineer' } });
+
+    const submitButton = screen.getByRole('button', { name: 'Create job' });
+
+    // No await between the clicks, which is the case the disabled button
+    // cannot catch: it only takes effect on the next render. Waiting for
+    // `toBeDisabled` first, as the case above does, skips past this window.
+    fireEvent.click(submitButton);
+    fireEvent.click(submitButton);
+
+    await waitFor(() => expect(createHandler).toHaveBeenCalled());
+    // Let a second request be issued, if the guard does not hold, before counting.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
 
     release();
 
