@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 026: Connect add job form to backend](../../tasks/roadmap/026-connect-add-job-form-to-backend.md).
+- [ ] [Task 027: Connect edit job form to backend](../../tasks/roadmap/027-connect-edit-job-form-to-backend.md).

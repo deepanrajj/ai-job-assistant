@@ -1,5 +1,6 @@
 import { createLocalId } from './jobs.utils';
 import type { TJob } from '../../types';
+import type { TJobFormPayload } from '../../services';
 import type { TJobFormValues } from './jobFormSchema';
 
 /**
@@ -44,6 +45,27 @@ const getOptionalSalary = (value: string): number | undefined => {
 };
 
 /**
+ * Normalizes submitted form values into the editable job fields alone.
+ *
+ * Carries no `id`, `createdAt` or `updatedAt`, because the backend owns all
+ * three. Use this for a request body; use `createJobFormPayload` where a
+ * whole `TJob` is needed.
+ *
+ * @param {TJobFormValues} values Submitted form values.
+ * @returns {TJobFormPayload} Editable job fields, blanks normalized away.
+ */
+export const createJobFormFields = (values: TJobFormValues): TJobFormPayload => ({
+  company: values.company,
+  description: getOptionalText(values.description),
+  jobUrl: getOptionalText(values.jobUrl),
+  location: getOptionalText(values.location),
+  roleTitle: values.roleTitle,
+  salaryMax: getOptionalSalary(values.salaryMax),
+  salaryMin: getOptionalSalary(values.salaryMin),
+  status: values.status,
+});
+
+/**
  * Creates a frontend job payload from submitted form values.
  *
  * @param {TJobFormValues} values Submitted form values.
@@ -56,15 +78,8 @@ export const createJobFormPayload = (
   job?: TJob,
   updatedAt = new Date().toISOString(),
 ): TJob => ({
-  company: values.company,
+  ...createJobFormFields(values),
   createdAt: job?.createdAt ?? updatedAt,
-  description: getOptionalText(values.description),
   id: job?.id ?? createLocalId('job'),
-  jobUrl: getOptionalText(values.jobUrl),
-  location: getOptionalText(values.location),
-  roleTitle: values.roleTitle,
-  salaryMax: getOptionalSalary(values.salaryMax),
-  salaryMin: getOptionalSalary(values.salaryMin),
-  status: values.status,
   updatedAt,
 });

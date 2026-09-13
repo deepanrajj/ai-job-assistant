@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 
@@ -13,6 +14,8 @@ import { createJobFormSchema, type TJobFormValues } from '../jobFormSchema';
  * Props used by the job form test wrapper.
  */
 interface IJobFormTestWrapperProps {
+  error?: ReactNode;
+  isSubmitting?: boolean;
   onCancel?: () => void;
   onSubmit: SubmitHandler<TJobFormValues>;
 }
@@ -25,7 +28,12 @@ const schema = createJobFormSchema({
   requiredRole: 'Role required',
 });
 
-const JobFormTestWrapper = ({ onCancel = vi.fn(), onSubmit }: IJobFormTestWrapperProps) => {
+const JobFormTestWrapper = ({
+  error,
+  isSubmitting,
+  onCancel = vi.fn(),
+  onSubmit,
+}: IJobFormTestWrapperProps) => {
   const form = useForm<TJobFormValues>({
     defaultValues: createJobFormDefaultValues(),
     resolver: zodResolver(schema),
@@ -33,7 +41,9 @@ const JobFormTestWrapper = ({ onCancel = vi.fn(), onSubmit }: IJobFormTestWrappe
 
   return (
     <JobForm
+      error={error}
       form={form}
+      isSubmitting={isSubmitting}
       onCancel={onCancel}
       onSubmit={onSubmit}
       submitLabel="Create job"
@@ -44,6 +54,24 @@ const JobFormTestWrapper = ({ onCancel = vi.fn(), onSubmit }: IJobFormTestWrappe
 };
 
 describe('JobForm', () => {
+  it('renders the error slot above the fields', () => {
+    renderWithProviders(
+      <JobFormTestWrapper
+        error={<p role="alert">Job could not be created</p>}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Job could not be created');
+  });
+
+  it('disables the submit button while submitting', () => {
+    renderWithProviders(<JobFormTestWrapper isSubmitting onSubmit={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Create job' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
+  });
+
   it('renders the shared job fields and submits valid values', async () => {
     const onSubmit = vi.fn();
     renderWithProviders(<JobFormTestWrapper onSubmit={onSubmit} />);

@@ -1,5 +1,7 @@
 # Task 026 - Connect Add Job Form To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -41,9 +43,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] New jobs are created through the backend.
-- [ ] Form validation remains intact.
-- [ ] API errors preserve entered values.
+- [x] New jobs are created through the backend.
+- [x] Form validation remains intact.
+- [x] API errors preserve entered values.
 
 ## Commit
 
