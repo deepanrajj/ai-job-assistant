@@ -35,12 +35,12 @@ const JobProbe = ({ jobId = MOCK_JOB_IDS.celonis }: IJobProbeProps) => {
   );
 };
 
-const jobDetailEndpoint = `/api/jobs/${MOCK_JOB_IDS.celonis}`;
+const jobEndpoint = `/api/jobs/${MOCK_JOB_IDS.celonis}`;
 
 describe('useJob', () => {
   it('loads the job for the route id and maps it to the UI model', async () => {
     server.use(
-      http.get(jobDetailEndpoint, () =>
+      http.get(jobEndpoint, () =>
         HttpResponse.json(
           createMockJobResponse({
             company: 'Celonis',
@@ -62,7 +62,7 @@ describe('useJob', () => {
 
   it('reports a missing job as not found rather than an error', async () => {
     server.use(
-      http.get(jobDetailEndpoint, () =>
+      http.get(jobEndpoint, () =>
         HttpResponse.json({ code: 'JOB_NOT_FOUND', message: 'Job not found.' }, { status: 404 }),
       ),
     );
@@ -89,7 +89,7 @@ describe('useJob', () => {
   });
 
   it('reports a failed request as a retryable error', async () => {
-    server.use(http.get(jobDetailEndpoint, () => new HttpResponse(null, { status: 500 })));
+    server.use(http.get(jobEndpoint, () => new HttpResponse(null, { status: 500 })));
     render(<JobProbe />);
 
     expect(await screen.findByText(/^error:/)).toHaveTextContent('Failed to load job');
@@ -99,7 +99,7 @@ describe('useJob', () => {
     // `parseJsonResponse` resolves a 204 as undefined, so the request looks
     // successful while carrying nothing to render. Without a guard the probe
     // would show no job, no error and no loading state.
-    server.use(http.get(jobDetailEndpoint, () => new HttpResponse(null, { status: 204 })));
+    server.use(http.get(jobEndpoint, () => new HttpResponse(null, { status: 204 })));
     render(<JobProbe />);
 
     expect(await screen.findByText(/^error:/)).toHaveTextContent('Failed to load job');
@@ -107,9 +107,7 @@ describe('useJob', () => {
 
   it('loads the new job when the route id changes', async () => {
     server.use(
-      http.get(jobDetailEndpoint, () =>
-        HttpResponse.json(createMockJobResponse({ company: 'Celonis' })),
-      ),
+      http.get(jobEndpoint, () => HttpResponse.json(createMockJobResponse({ company: 'Celonis' }))),
       http.get(`/api/jobs/${MOCK_JOB_IDS.miro}`, () =>
         HttpResponse.json(createMockJobResponse({ company: 'Miro', id: MOCK_JOB_IDS.miro })),
       ),
@@ -123,12 +121,50 @@ describe('useJob', () => {
     expect(await screen.findByText(/Miro/)).toBeInTheDocument();
   });
 
+  it('ignores an abandoned request that answers with no job', async () => {
+    let releaseFirst = () => {};
+    const firstReleased = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+
+    // The first job answers 204, but only after the second has landed.
+    // `useAsyncMutation` drops the stale result from its own state and still
+    // resolves with it, so the empty-response guard has to check staleness
+    // itself or it reports a failure over the job that replaced it.
+    server.use(
+      http.get(jobEndpoint, async () => {
+        await firstReleased;
+
+        return new HttpResponse(null, { status: 204 });
+      }),
+      http.get(`/api/jobs/${MOCK_JOB_IDS.miro}`, () =>
+        HttpResponse.json(createMockJobResponse({ company: 'Miro', id: MOCK_JOB_IDS.miro })),
+      ),
+    );
+
+    const { rerender } = render(<JobProbe />);
+
+    rerender(<JobProbe jobId={MOCK_JOB_IDS.miro} />);
+
+    expect(await screen.findByText(/Miro/)).toBeInTheDocument();
+
+    releaseFirst();
+
+    // Long enough for the stale response to be handled, if it is going to be.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+
+    expect(screen.getByText(/Miro/)).toBeInTheDocument();
+    expect(screen.queryByText(/^error:/)).not.toBeInTheDocument();
+  });
+
   it('retries the same job when reload is called', async () => {
     const user = userEvent.setup();
     let attempt = 0;
 
     server.use(
-      http.get(jobDetailEndpoint, () => {
+      http.get(jobEndpoint, () => {
         attempt += 1;
 
         return attempt === 1

@@ -140,6 +140,32 @@ describe('EditJobPage', () => {
     expect(screen.queryByText(JOBS_ROUTE_TEXT)).not.toBeInTheDocument();
   });
 
+  it('says the job is gone and offers the way out when the save 404s', async () => {
+    const user = userEvent.setup();
+
+    // The job was deleted between loading this form and submitting it.
+    // Retrying cannot succeed, so the error has to say so and lead somewhere.
+    server.use(
+      http.put(jobEndpoint, () =>
+        HttpResponse.json({ message: 'Job not found.' }, { status: 404 }),
+      ),
+    );
+    renderEditJobPage();
+
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert).toHaveTextContent('Job not found');
+    expect(alert).not.toHaveTextContent('Job could not be saved');
+    // The values stay on screen; they are the user's to copy elsewhere.
+    expect(screen.getByLabelText('Company')).toHaveValue('Celonis');
+
+    await user.click(screen.getByRole('button', { name: 'Back to jobs' }));
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
   it('disables the submit button while the save is in flight', async () => {
     const user = userEvent.setup();
     let release = () => {};

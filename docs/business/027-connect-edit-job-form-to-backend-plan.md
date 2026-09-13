@@ -323,6 +323,42 @@ After `npm run frontend:verify` passes:
 - Restore the detail page's edit button, which task 029 dropped because
   this page could not open a backend job.
 
+### Review pass
+
+A review of this branch raised two findings, both applied.
+
+**The empty-response guard ran outside the request-id check.**
+`useAsyncMutation` applies its guard only to the state it sets: `mutate`
+still resolves with a stale response. So an abandoned request answering
+204 reached `useJob`'s guard and reported a failure over the request that
+replaced it. Measured with a probe before the fix: navigating from one
+job to another while the first request was open took the state from
+`job=Miro error=none` to `job=none error=Failed to load job`. `useJob`
+now keeps its own request id and drops a response that is no longer the
+current one. The regression case
+`ignores an abandoned request that answers with no job` fails without it,
+at "Unable to find /Miro/" with the error rendered instead.
+
+The same pattern sits in `useUpdateJob` and in the merged `useCreateJob`
+and is deliberately left alone: both resolve into a submit handler that
+navigates away, and no user-visible failure was demonstrated for either.
+Hardening them on suspicion would change a merged file with no case to
+show for it.
+
+**A save onto a deleted job offered only an endless retry.** A 404 from
+`PUT` rendered the same retryable "Job could not be saved" state as a
+500, so every further submit failed identically with no way forward.
+`isJobNotFoundError` is now exported from `useJob`, so the status list
+lives in one place, and `EditJobForm` titles that case "Job not found"
+and offers Back to jobs. The entered values stay on screen: they cannot
+be saved, but they are the user's to copy elsewhere, and discarding them
+unasked would be worse than leaving them. The regression case
+`says the job is gone and offers the way out when the save 404s` fails
+without the classification.
+
+Verification after both fixes: 114 test files and 292 tests, 100 per cent
+of lines (993/993) and functions (414/414).
+
 ## Acceptance Criteria
 
 - [x] The edit form prefills from `GET /api/jobs/{id}`.

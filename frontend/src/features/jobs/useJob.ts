@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
   getJobById,
@@ -34,6 +34,18 @@ export interface IJobState {
 const NOT_FOUND_STATUSES = [400, 404];
 
 /**
+ * Checks whether a job request failed because the id does not name a job.
+ *
+ * Exported so the screens that write to a job can tell a job that is gone
+ * from a request that failed, without repeating the status list.
+ *
+ * @param {AppError | null} error Recorded job request error.
+ * @returns {boolean} True when the id does not name a job.
+ */
+export const isJobNotFoundError = (error: AppError | null): boolean =>
+  error !== null && NOT_FOUND_STATUSES.includes(error.status ?? 0);
+
+/**
  * Loads one saved job from the backend and reports the request state.
  *
  * Wraps `useAsyncMutation` in the shape `useJobsList` established, so the
@@ -56,6 +68,7 @@ const NOT_FOUND_STATUSES = [400, 404];
  * @returns {IJobState} Mapped job, request state, and retry.
  */
 export const useJob = (jobId: string): IJobState => {
+  const requestIdRef = useRef(0);
   const {
     mutate: loadJob,
     request: { data, error, isIdle, isLoading, setError },
@@ -69,10 +82,21 @@ export const useJob = (jobId: string): IJobState => {
    * failure rather than a missing job: the server answered that the job
    * exists and then sent none, and that is worth retrying. `useCreateJob`
    * guards its own response the same way.
+   *
+   * The request id is this hook's own, because `useAsyncMutation` applies its
+   * guard only to the state it sets: `mutate` still resolves with a stale
+   * response, so without this an abandoned request answering 204 would
+   * report a failure over the request that replaced it.
    */
   const reload = useCallback(() => {
+    const requestId = requestIdRef.current + 1;
+
+    requestIdRef.current = requestId;
+
     loadJob(jobId)
       .then((response) => {
+        if (requestId !== requestIdRef.current) return;
+
         if (!response?.id)
           setError(
             new AppError(getJobFallbackErrorMessage('getJob'), APP_ERROR_CODES.JOB_REQUEST_FAILED),
@@ -92,7 +116,7 @@ export const useJob = (jobId: string): IJobState => {
   return {
     error,
     isLoading: isIdle || isLoading,
-    isNotFound: error !== null && NOT_FOUND_STATUSES.includes(error.status ?? 0),
+    isNotFound: isJobNotFoundError(error),
     job,
     reload,
   };
