@@ -112,7 +112,9 @@
     "openPosting": "Open posting",
     "statusLabel": "Job status",
     "notFoundTitle": "Job not found",
-    "notFoundDescription": "The selected job does not exist in the saved local tracker data.",
+    "notFoundDescription": "The selected job does not exist.",
+    "loading": "Loading job",
+    "loadErrorTitle": "Job could not be loaded",
     "tabs": {
       "label": "Job detail sections",
       "overview": "Overview",

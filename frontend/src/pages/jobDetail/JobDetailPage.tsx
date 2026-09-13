@@ -1,65 +1,74 @@
-import { useMemo, type FC } from 'react';
+import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, ErrorState } from '../../components/ui';
+import { Button, ErrorState, LoadingState } from '../../components/ui';
 import { JobDetailHeader, JobDetailTabs } from '../../features/jobDetail';
 import { ArrowLeftIcon } from '../../components/icons';
 import { useTranslation } from '../../i18n';
-import { APP_PATH_BUILDERS, APP_PATHS } from '../../routes/paths';
+import type { AppError } from '../../errors';
+import { APP_PATHS } from '../../routes/paths';
 import type { TJobDetail } from '../../types';
-import type { IJobDetailPageActions } from '../../features/jobDetail/jobDetail.types';
 
 /**
  * Props used by the job detail page.
  */
-interface IJobDetailPageProps extends IJobDetailPageActions {
-  jobId: string;
-  jobs: TJobDetail[];
+interface IJobDetailPageProps {
+  error: AppError | null;
+  isLoading: boolean;
+  isNotFound: boolean;
+  job: TJobDetail | null;
+  onRetry: () => void;
 }
 
 /**
- * Renders the saved local job detail workflow.
+ * Renders one saved job loaded from the backend.
+ *
+ * The page is read-only. Every write it used to offer went to the
+ * localStorage store keyed by job id, which matches nothing for a job that
+ * came from the API, so each one would look like it worked and do nothing.
+ * Status and delete arrive with task 028, editing with 027, and the tasks,
+ * notes and timeline tabs with tasks 030 to 032; until then the page renders
+ * what the backend has and offers no control it cannot complete.
  *
  * @param {IJobDetailPageProps} props Component props.
  * @returns {JSX.Element} Job detail page.
  */
 export const JobDetailPage: FC<IJobDetailPageProps> = ({
-  jobId,
-  jobs,
-  onAnalyzeJob,
-  onCreateNote,
-  onCreateTask,
-  onDeleteJob,
-  onDeleteNote,
-  onDeleteTask,
-  onStatusChange,
-  onUpdateNote,
-  onUpdateTask,
+  error,
+  isLoading,
+  isNotFound,
+  job,
+  onRetry,
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const job = useMemo(() => jobs.find((savedJob) => savedJob.id === jobId), [jobId, jobs]);
 
-  if (!job) {
+  const backToJobsButton = (
+    <Button onClick={() => navigate(APP_PATHS.JOBS)}>{t('jobDetail.backToJobs')}</Button>
+  );
+
+  if (isLoading) return <LoadingState label={t('jobDetail.loading')} />;
+
+  // Checked before `error`, which a missing job also sets. Nothing about a
+  // job that does not exist improves by asking for it again, so this state
+  // offers the way back rather than a retry.
+  if (isNotFound)
     return (
       <ErrorState
-        action={
-          <Button onClick={() => navigate(APP_PATHS.JOBS)}>{t('jobDetail.backToJobs')}</Button>
-        }
+        action={backToJobsButton}
         description={t('jobDetail.notFoundDescription')}
         title={t('jobDetail.notFoundTitle')}
       />
     );
-  }
 
-  const handleDeleteJob = () => {
-    onDeleteJob?.(job.id);
-    navigate(APP_PATHS.JOBS);
-  };
-
-  const handleEditJob = () => {
-    navigate(APP_PATH_BUILDERS.jobEdit(job.id));
-  };
+  if (error || !job)
+    return (
+      <ErrorState
+        action={<Button onClick={onRetry}>{t('jobs.loadErrorRetry')}</Button>}
+        description={error?.message}
+        title={t('jobDetail.loadErrorTitle')}
+      />
+    );
 
   return (
     <div className="space-y-6">
@@ -73,24 +82,10 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
           {t('jobDetail.backToJobs')}
         </Button>
 
-        <JobDetailHeader
-          job={job}
-          onDeleteJob={handleDeleteJob}
-          onEditJob={handleEditJob}
-          onStatusChange={(status) => onStatusChange?.(job.id, status)}
-        />
+        <JobDetailHeader job={job} />
       </div>
 
-      <JobDetailTabs
-        job={job}
-        onAnalyzeJob={onAnalyzeJob}
-        onCreateNote={onCreateNote}
-        onCreateTask={onCreateTask}
-        onDeleteNote={onDeleteNote}
-        onDeleteTask={onDeleteTask}
-        onUpdateNote={onUpdateNote}
-        onUpdateTask={onUpdateTask}
-      />
+      <JobDetailTabs job={job} />
     </div>
   );
 };

@@ -63,6 +63,9 @@ describe('JobDetailHeader', () => {
 
     expect(screen.queryByRole('button', { name: 'Edit job' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete job' })).not.toBeInTheDocument();
+    // The select always renders, so it is disabled instead. Left enabled it
+    // would take a choice and snap back, which reads as a failed save.
+    expect(screen.getByRole('combobox', { name: 'Job status' })).toBeDisabled();
   });
 
   it('updates status and omits the external link when no URL exists', async () => {

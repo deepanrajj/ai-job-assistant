@@ -112,7 +112,9 @@
     "openPosting": "Anzeige öffnen",
     "statusLabel": "Jobstatus",
     "notFoundTitle": "Job nicht gefunden",
-    "notFoundDescription": "Der ausgewählte Job existiert nicht in den lokal gespeicherten Tracker-Daten.",
+    "notFoundDescription": "Der ausgewählte Job existiert nicht.",
+    "loading": "Job wird geladen",
+    "loadErrorTitle": "Job konnte nicht geladen werden",
     "tabs": {
       "label": "Job-Detailbereiche",
       "overview": "Übersicht",

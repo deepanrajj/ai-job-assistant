@@ -1,4 +1,4 @@
-import { createLocalId } from './jobs.utils';
+import { createLocalId, mapJobToJobDetail } from './jobs.utils';
 import { jobStatusOptions } from './jobs.constants';
 import type {
   TJob,
@@ -123,24 +123,17 @@ export const createJobTimelineEvent = (
 /**
  * Creates the richer job detail shape required by the saved job workflow.
  *
+ * Adds the one thing only a locally saved job has: the timeline event
+ * recording that it was saved. Everything else is the shared widening in
+ * `mapJobToJobDetail`, so the two paths cannot drift on what an absent
+ * optional field becomes.
+ *
  * @param {TJob} job Base job payload.
  * @param {string} createdAt ISO timestamp used for generated detail records.
  * @returns {TJobDetail} Job detail record.
  */
 export const createJobDetailFromJob = (job: TJob, createdAt = job.updatedAt): TJobDetail => ({
-  ...job,
-  description: job.description ?? '',
-  jobUrl: job.jobUrl ?? '',
-  location: job.location ?? '',
-  salaryMax: job.salaryMax ?? 0,
-  salaryMin: job.salaryMin ?? 0,
-  aiInsights: {
-    summary: '',
-    strengths: [],
-    gaps: [],
-  },
-  notes: [],
-  tasks: [],
+  ...mapJobToJobDetail(job),
   timeline: [
     createJobTimelineEvent(
       job.id,

@@ -48,6 +48,13 @@ export const getApiErrorMessage = async (
 /**
  * Creates an AppError from a failed HTTP response.
  *
+ * The status is carried onto the error because it is the only thing that
+ * separates failures a caller must answer differently on one endpoint, such
+ * as a 404 for a job that does not exist and a 500 for one that could not be
+ * read. The backend's own error `code` is not used for that: it is absent
+ * whenever the failure came from something other than the API itself, such
+ * as a proxy, which is exactly when an error state matters.
+ *
  * @param {Response} response Failed fetch response.
  * @param {IApiErrorOptions} options Error mapping options for the request.
  * @returns {Promise<AppError>} Display-ready API error.
@@ -56,7 +63,11 @@ export const createApiError = async (
   response: Response,
   { errorCode, fallbackErrorMessage }: IApiErrorOptions,
 ): Promise<AppError> =>
-  new AppError(await getApiErrorMessage(response, fallbackErrorMessage), errorCode);
+  new AppError(
+    await getApiErrorMessage(response, fallbackErrorMessage),
+    errorCode,
+    response.status,
+  );
 
 /**
  * Creates an AppError for request failures without a displayable API response.

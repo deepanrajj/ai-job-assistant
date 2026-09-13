@@ -11,6 +11,11 @@ import type { IJobDetailMetadataItem } from '../jobDetail.types';
 
 /**
  * Props used by the job detail header.
+ *
+ * Each action is optional and its control is only offered when the handler
+ * exists. The status select is the one control that always renders, so it is
+ * disabled without `onStatusChange`: a select that silently snaps back reads
+ * as a broken save rather than as a screen that cannot save yet.
  */
 interface IJobDetailHeaderProps {
   job: TJobDetail;
@@ -73,6 +78,7 @@ const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
               aria-label={t('jobDetail.statusLabel')}
               className="!h-9 !w-auto min-w-[7.5rem] !rounded-md !border-app-borderSoft !bg-app-surface !px-2.5 !pr-8"
               containerClassName="shrink-0"
+              disabled={!onStatusChange}
               onChange={(event) => onStatusChange?.(event.target.value as TJobStatus)}
               value={job.status}
             >

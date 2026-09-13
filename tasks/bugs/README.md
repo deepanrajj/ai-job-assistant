@@ -49,8 +49,11 @@ deleting the knowledge with the file.
   every row's details action lands on "Job not found". Retired into
   [task 029](../roadmap/029-connect-job-detail-page-to-backend.md),
   whose stated scope is exactly the fix; its background, test list, and
-  acceptance criteria now carry the defect and the handoff test.
-  **Still live until task 029 ships.**
+  acceptance criteria carried the defect and the handoff test.
+  **Closed by task 029.** The detail page fetches by route id, so the
+  two id spaces are one, and `jobDetailRoute.test.tsx` clicks a row's
+  details action and asserts it opens that row's job. That case was
+  seen to fail against a route that ignored the param.
 
 ## Fixed
 
