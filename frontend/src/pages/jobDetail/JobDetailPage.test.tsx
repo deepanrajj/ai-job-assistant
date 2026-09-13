@@ -12,6 +12,7 @@ import { APP_PATH_BUILDERS, APP_PATHS } from '../../routes/paths';
 import { APP_ERROR_CODES, type TJobDetail } from '../../types';
 
 const JOBS_ROUTE_TEXT = 'Jobs route';
+const EDIT_ROUTE_TEXT = 'Edit job route';
 
 const mockJobDetail: TJobDetail = mapJobToJobDetail(
   createMockJob({
@@ -56,6 +57,7 @@ const renderJobDetailPage = ({
           path={APP_PATHS.JOB_DETAIL}
         />
         <Route element={<p>{JOBS_ROUTE_TEXT}</p>} path={APP_PATHS.JOBS} />
+        <Route element={<p>{EDIT_ROUTE_TEXT}</p>} path={APP_PATHS.JOB_EDIT} />
       </Routes>
     </MemoryRouter>,
   );
@@ -150,6 +152,15 @@ describe('JobDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'Saved AI analysis' })).toBeInTheDocument();
   });
 
+  it('opens the edit route from the header action', async () => {
+    const user = userEvent.setup();
+    renderJobDetailPage();
+
+    await user.click(screen.getByRole('button', { name: 'Edit job' }));
+
+    expect(screen.getByText(EDIT_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
   it('offers no write it cannot complete', async () => {
     const user = userEvent.setup();
     renderJobDetailPage();
@@ -157,7 +168,6 @@ describe('JobDetailPage', () => {
     // Every one of these wrote to the localStorage store by job id, which a
     // backend id never matches, so each would have looked like it worked.
     expect(screen.getByRole('combobox', { name: 'Job status' })).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Edit job' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete job' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Notes' }));

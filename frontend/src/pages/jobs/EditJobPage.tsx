@@ -1,16 +1,10 @@
-import { useCallback, useMemo, type FC } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, ErrorState } from '../../components/ui';
-import { JobForm } from '../../features/jobs/components/JobForm';
-import { createJobFormSchema, type TJobFormValues } from '../../features/jobs/jobFormSchema';
+import { Button, ErrorState, LoadingState } from '../../components/ui';
+import { EditJobForm } from './EditJobForm';
 import { useTranslation } from '../../i18n';
-import {
-  createJobFormDefaultValues,
-  createJobFormPayload,
-} from '../../features/jobs/jobForm.utils';
+import type { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
 
@@ -18,67 +12,55 @@ import type { TJob } from '../../types';
  * Props used by the edit job page.
  */
 interface IEditJobPageProps {
-  jobId: string;
-  jobs: TJob[];
-  onSave?: (job: TJob) => void;
+  error: AppError | null;
+  isLoading: boolean;
+  isNotFound: boolean;
+  job: TJob | null;
+  onRetry: () => void;
 }
 
 /**
- * Renders the frontend-only edit job workflow.
+ * Renders the edit workflow for one job loaded from the backend.
+ *
+ * The page chooses the state and `EditJobForm` owns the form, which is what
+ * keeps the form's default values and the loaded job the same thing.
  *
  * @param {IEditJobPageProps} props Component props.
  * @returns {JSX.Element} Edit job page.
  */
-export const EditJobPage: FC<IEditJobPageProps> = ({ jobId, jobs, onSave }) => {
+export const EditJobPage: FC<IEditJobPageProps> = ({
+  error,
+  isLoading,
+  isNotFound,
+  job,
+  onRetry,
+}) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const job = useMemo(() => jobs.find((savedJob) => savedJob.id === jobId), [jobId, jobs]);
-  const schema = useMemo(
-    () =>
-      createJobFormSchema({
-        invalidSalary: t('jobForm.validation.invalidSalary'),
-        invalidSalaryRange: t('jobForm.validation.invalidSalaryRange'),
-        invalidUrl: t('jobForm.validation.invalidUrl'),
-        requiredCompany: t('jobForm.validation.requiredCompany'),
-        requiredRole: t('jobForm.validation.requiredRole'),
-      }),
-    [t],
-  );
-  const form = useForm<TJobFormValues>({
-    defaultValues: createJobFormDefaultValues(job),
-    resolver: zodResolver(schema),
-  });
 
-  const handleCancel = useCallback(() => {
-    navigate(APP_PATHS.JOBS);
-  }, [navigate]);
+  if (isLoading) return <LoadingState label={t('jobDetail.loading')} />;
 
-  const handleSubmit: SubmitHandler<TJobFormValues> = useCallback(
-    (values) => {
-      onSave?.(createJobFormPayload(values, job));
-      navigate(APP_PATHS.JOBS);
-    },
-    [job, navigate, onSave],
-  );
-
-  if (!job) {
+  // Checked before `error`, which a missing job also sets. Asking again for
+  // a job that does not exist cannot answer differently.
+  if (isNotFound)
     return (
       <ErrorState
-        action={<Button onClick={handleCancel}>{t('jobDetail.backToJobs')}</Button>}
+        action={
+          <Button onClick={() => navigate(APP_PATHS.JOBS)}>{t('jobDetail.backToJobs')}</Button>
+        }
         description={t('jobDetail.notFoundDescription')}
         title={t('jobDetail.notFoundTitle')}
       />
     );
-  }
 
-  return (
-    <JobForm
-      form={form}
-      onCancel={handleCancel}
-      onSubmit={handleSubmit}
-      submitLabel={t('jobForm.actions.save')}
-      subtitle={t('jobForm.editSubtitle')}
-      title={t('jobForm.editTitle')}
-    />
-  );
+  if (error || !job)
+    return (
+      <ErrorState
+        action={<Button onClick={onRetry}>{t('jobs.loadErrorRetry')}</Button>}
+        description={error?.message}
+        title={t('jobDetail.loadErrorTitle')}
+      />
+    );
+
+  return <EditJobForm job={job} />;
 };
