@@ -529,3 +529,29 @@ lesson is the one this repository keeps relearning: the original case
 waited for `toBeDisabled` before clicking again, so it tested that a
 disabled button cannot be clicked, which was never in doubt. A guard is
 only proven by a test that runs before the guard is visible.
+
+### Second review pass
+
+A further review found the submit handler's `catch` swallowing every
+throw, not only the recorded request rejection. Measured with a probe
+answering the create with 204: `parseJsonResponse` resolves a body-less
+2xx as `undefined`, the mutation therefore succeeds with no error
+recorded, `mapJobResponseToJob(undefined)` throws a bare TypeError, and
+the empty `catch` hid it. The user clicked Create job and nothing
+happened at all, repeatedly, with nothing reported.
+
+Fixed in two places, one per half of the defect. `useCreateJob` now
+rejects a response carrying no job, recording an `AppError` so the
+existing error state renders it, which is the guard `useJobsList`
+already applies to the list response. `NewJobPage` narrows its `catch`
+to `AppError` and rethrows anything else, so a future throw from the
+field mapper or from `navigate` is loud rather than silent.
+
+`announces a failure when the create answers 2xx with no job` covers it
+and was seen to fail with the guard disabled:
+
+```text
+FAIL  src/pages/jobs/NewJobPage.test.tsx > NewJobPage >
+      announces a failure when the create answers 2xx with no job
+TestingLibraryElementError: Unable to find role="alert"
+```

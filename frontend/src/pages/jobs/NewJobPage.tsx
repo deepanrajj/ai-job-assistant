@@ -9,6 +9,7 @@ import { createJobFormSchema, type TJobFormValues } from '../../features/jobs/jo
 import { useCreateJob } from '../../features/jobs';
 import { useTranslation } from '../../i18n';
 import { createJobFormDefaultValues, createJobFormFields } from '../../features/jobs/jobForm.utils';
+import { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
 
 /**
@@ -57,10 +58,12 @@ export const NewJobPage: FC = () => {
    * so that is two jobs. A ref is set synchronously and is therefore already
    * true when the second call arrives.
    *
-   * The `catch` is required rather than defensive. `saveJob` rejects after
-   * the error is already recorded in request state, and `handleSubmit`
-   * rethrows whatever this handler rejects with, which would surface as an
-   * unhandled rejection while the error renders correctly anyway.
+   * The `catch` is required rather than defensive, and it is narrow on
+   * purpose. `saveJob` rejects with an `AppError` after the error is already
+   * recorded in request state, and `handleSubmit` rethrows whatever this
+   * handler rejects with, which would surface as an unhandled rejection
+   * while the error renders correctly anyway. Any other throw is a defect
+   * and is rethrown rather than hidden.
    *
    * Success goes to the jobs list rather than the new job's detail page,
    * which still resolves ids against localStorage and would answer
@@ -75,8 +78,12 @@ export const NewJobPage: FC = () => {
       try {
         await saveJob(createJobFormFields(values));
         navigate(APP_PATHS.JOBS);
-      } catch {
-        // Error is already recorded in request state and rendered from it.
+      } catch (caught) {
+        // Only a recorded request error is safe to swallow, because it is
+        // already rendered from `error`. Anything else is a defect, and
+        // swallowing it would leave the submit doing nothing at all with
+        // nothing reported.
+        if (!(caught instanceof AppError)) throw caught;
       } finally {
         isSavingRef.current = false;
       }

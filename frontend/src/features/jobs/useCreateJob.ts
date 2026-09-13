@@ -2,14 +2,15 @@ import { useCallback } from 'react';
 
 import {
   createJob,
+  getJobFallbackErrorMessage,
   mapJobResponseToJob,
   mapJobToCreateRequest,
   type TJobFormPayload,
   type TJobResponse,
 } from '../../services';
 import { useAsyncMutation } from '../../hooks';
-import type { AppError } from '../../errors';
-import type { TJob } from '../../types';
+import { AppError } from '../../errors';
+import { APP_ERROR_CODES, type TJob } from '../../types';
 
 /**
  * Job creation state returned by useCreateJob.
@@ -51,12 +52,34 @@ const postJobFields = (payload: TJobFormPayload): Promise<TJobResponse> =>
 export const useCreateJob = (): ICreateJobState => {
   const {
     mutate: postJob,
-    request: { error, isLoading },
+    request: { error, isLoading, setError },
   } = useAsyncMutation<TJobFormPayload, TJobResponse>(postJobFields);
 
+  /**
+   * The response body is cast, not validated, so a 2xx that carries no job
+   * has to be turned into a recorded error here. `parseJsonResponse`
+   * resolves a 204 as `undefined`, which would otherwise reach
+   * `mapJobResponseToJob` and throw a bare TypeError past every error state,
+   * leaving the submit silently doing nothing. `useJobsList` guards the
+   * list response the same way.
+   */
   const saveJob = useCallback(
-    (payload: TJobFormPayload) => postJob(payload).then(mapJobResponseToJob),
-    [postJob],
+    (payload: TJobFormPayload) =>
+      postJob(payload).then((response) => {
+        if (!response?.id) {
+          const invalidResponseError = new AppError(
+            getJobFallbackErrorMessage('createJob'),
+            APP_ERROR_CODES.JOB_REQUEST_FAILED,
+          );
+
+          setError(invalidResponseError);
+
+          throw invalidResponseError;
+        }
+
+        return mapJobResponseToJob(response);
+      }),
+    [postJob, setError],
   );
 
   return {

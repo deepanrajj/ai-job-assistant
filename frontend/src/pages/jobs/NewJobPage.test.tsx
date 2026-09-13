@@ -140,6 +140,24 @@ describe('NewJobPage', () => {
     expect(createHandler).toHaveBeenCalledTimes(1);
   });
 
+  it('announces a failure when the create answers 2xx with no job', async () => {
+    const user = userEvent.setup();
+
+    // `parseJsonResponse` resolves a 204 as undefined, so the request looks
+    // successful while carrying nothing to map. Without a guard the submit
+    // does nothing at all: no navigation, no alert, nothing reported.
+    server.use(http.post('/api/jobs', () => new HttpResponse(null, { status: 204 })));
+    renderNewJobPage();
+
+    await user.type(screen.getByLabelText('Company'), 'Acme GmbH');
+    await user.type(screen.getByLabelText('Role'), 'Frontend Engineer');
+    await user.click(screen.getByRole('button', { name: 'Create job' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Job could not be created');
+    expect(screen.getByLabelText('Company')).toHaveValue('Acme GmbH');
+    expect(screen.queryByText('Jobs route')).not.toBeInTheDocument();
+  });
+
   it('creates one job when two clicks land before the button disables', async () => {
     let release = () => {};
     const released = new Promise<void>((resolve) => {
