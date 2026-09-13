@@ -165,6 +165,7 @@
   "jobForm": {
     "createTitle": "Job hinzufügen",
     "createErrorTitle": "Job konnte nicht erstellt werden",
+    "updateErrorTitle": "Job konnte nicht gespeichert werden",
     "createSubtitle": "Speichere Firma, Rolle, Status und nächsten Schritt für eine neue Chance.",
     "editTitle": "Job bearbeiten",
     "editSubtitle": "Halte die gespeicherte Chance aktuell, während deine Bewerbung weitergeht.",

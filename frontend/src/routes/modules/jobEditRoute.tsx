@@ -2,16 +2,27 @@ import type { FC } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { EditJobPage } from '../../pages/jobs/EditJobPage';
-import { useJobs } from '../../features/jobs';
+import { useJob } from '../../features/jobs';
 
 /**
- * Renders the edit job route with saved local job data.
+ * Renders the edit job route with the job loaded from the backend.
+ *
+ * `useJob` rather than `useJobDetail`: the form round-trips the values it
+ * prefills, and the detail widening turns an absent salary into a real zero.
  *
  * @returns {JSX.Element} Edit job route content.
  */
 export const Component: FC = () => {
   const { jobId = '' } = useParams();
-  const { jobs, updateJob } = useJobs();
+  const { error, isLoading, isNotFound, job, reload } = useJob(jobId);
 
-  return <EditJobPage jobId={jobId} jobs={jobs} onSave={updateJob} />;
+  return (
+    <EditJobPage
+      error={error}
+      isLoading={isLoading}
+      isNotFound={isNotFound}
+      job={job}
+      onRetry={reload}
+    />
+  );
 };

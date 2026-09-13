@@ -6,7 +6,7 @@ import { JobDetailHeader, JobDetailTabs } from '../../features/jobDetail';
 import { ArrowLeftIcon } from '../../components/icons';
 import { useTranslation } from '../../i18n';
 import type { AppError } from '../../errors';
-import { APP_PATHS } from '../../routes/paths';
+import { APP_PATH_BUILDERS, APP_PATHS } from '../../routes/paths';
 import type { TJobDetail } from '../../types';
 
 /**
@@ -23,12 +23,13 @@ interface IJobDetailPageProps {
 /**
  * Renders one saved job loaded from the backend.
  *
- * The page is read-only. Every write it used to offer went to the
- * localStorage store keyed by job id, which matches nothing for a job that
- * came from the API, so each one would look like it worked and do nothing.
- * Status and delete arrive with task 028, editing with 027, and the tasks,
- * notes and timeline tabs with tasks 030 to 032; until then the page renders
- * what the backend has and offers no control it cannot complete.
+ * The page holds no write of its own. Every one it used to offer went to
+ * the localStorage store keyed by job id, which matches nothing for a job
+ * that came from the API, so each would look like it worked and do nothing.
+ * Status and delete arrive with task 028, and the tasks, notes and timeline
+ * tabs with tasks 030 to 032; until then the page offers no control it
+ * cannot complete. Editing is not one of those: task 027 put the edit form
+ * on the backend, so the header's edit action leads somewhere again.
  *
  * @param {IJobDetailPageProps} props Component props.
  * @returns {JSX.Element} Job detail page.
@@ -82,7 +83,7 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
           {t('jobDetail.backToJobs')}
         </Button>
 
-        <JobDetailHeader job={job} />
+        <JobDetailHeader job={job} onEditJob={() => navigate(APP_PATH_BUILDERS.jobEdit(job.id))} />
       </div>
 
       <JobDetailTabs job={job} />

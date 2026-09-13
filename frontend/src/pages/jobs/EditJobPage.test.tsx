@@ -1,24 +1,75 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { EditJobPage } from './EditJobPage';
+import { AppError } from '../../errors';
 import { renderWithProviders } from '../../test/renderWithProviders';
-import { MOCK_JOB_IDS, createMockJobs } from '../../test/mockJobs';
+import { MOCK_JOB_IDS, createMockJob, createMockJobResponse } from '../../test/mockJobs';
+import { server } from '../../test/server';
+import { APP_ERROR_CODES, type TJob } from '../../types';
+
+const JOBS_ROUTE_TEXT = 'Jobs route';
+
+const mockJob = createMockJob({
+  company: 'Celonis',
+  id: MOCK_JOB_IDS.celonis,
+  roleTitle: 'Senior Frontend Engineer',
+  status: 'INTERVIEW',
+});
+
+const jobEndpoint = `/api/jobs/${MOCK_JOB_IDS.celonis}`;
+
+/**
+ * Props used by the edit job page test renderer.
+ */
+interface IRenderEditJobPageOptions {
+  error?: AppError | null;
+  isLoading?: boolean;
+  isNotFound?: boolean;
+  job?: TJob | null;
+  onRetry?: () => void;
+}
+
+const renderEditJobPage = ({
+  error = null,
+  isLoading = false,
+  isNotFound = false,
+  job = mockJob,
+  onRetry = () => {},
+}: IRenderEditJobPageOptions = {}) => {
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/jobs/:jobId/edit',
+        element: (
+          <EditJobPage
+            error={error}
+            isLoading={isLoading}
+            isNotFound={isNotFound}
+            job={job}
+            onRetry={onRetry}
+          />
+        ),
+      },
+      {
+        path: '/jobs',
+        element: <p>{JOBS_ROUTE_TEXT}</p>,
+      },
+    ],
+    {
+      initialEntries: [`/jobs/${MOCK_JOB_IDS.celonis}/edit`],
+    },
+  );
+
+  return renderWithProviders(<RouterProvider router={router} />);
+};
 
 describe('EditJobPage', () => {
-  it('renders an edit form with existing job values', () => {
-    renderWithProviders(
-      <RouterProvider
-        router={createMemoryRouter([
-          {
-            path: '/',
-            element: <EditJobPage jobId={MOCK_JOB_IDS.celonis} jobs={createMockJobs()} />,
-          },
-        ])}
-      />,
-    );
+  it('prefills the form with the loaded job values', () => {
+    renderEditJobPage();
 
     expect(screen.getByRole('heading', { name: 'Edit job' })).toBeInTheDocument();
     expect(screen.getByLabelText('Company')).toHaveValue('Celonis');
@@ -26,68 +77,147 @@ describe('EditJobPage', () => {
     expect(screen.getByRole('combobox', { name: 'Status' })).toHaveValue('INTERVIEW');
   });
 
-  it('submits an edited job payload and returns to jobs', async () => {
-    const user = userEvent.setup();
-    const handleSave = vi.fn();
-    const router = createMemoryRouter(
-      [
-        {
-          path: '/jobs/:jobId/edit',
-          element: (
-            <EditJobPage jobId={MOCK_JOB_IDS.celonis} jobs={createMockJobs()} onSave={handleSave} />
-          ),
-        },
-        {
-          path: '/jobs',
-          element: <p>Jobs route</p>,
-        },
-      ],
-      {
-        initialEntries: [`/jobs/${MOCK_JOB_IDS.celonis}/edit`],
-      },
-    );
+  it('leaves the salary fields blank for a job that has no salary', () => {
+    // The form round-trips what it prefills, so it has to be fed the job as
+    // the API models it. The widened `TJobDetail` shape turns an absent
+    // salary into a real 0, which would prefill "0" and save it back as a
+    // salary the user never typed.
+    renderEditJobPage({
+      job: createMockJob({
+        salaryMax: undefined,
+        salaryMin: undefined,
+      }),
+    });
 
-    renderWithProviders(<RouterProvider router={router} />);
+    // A number input with no value reads as null rather than as an empty
+    // string; a widened job would make both of these 0.
+    expect(screen.getByLabelText('Minimum salary')).toHaveValue(null);
+    expect(screen.getByLabelText('Maximum salary')).toHaveValue(null);
+  });
+
+  it('saves the edited job through the API and returns to jobs', async () => {
+    const user = userEvent.setup();
+    let body: unknown;
+
+    server.use(
+      http.put(jobEndpoint, async ({ request }) => {
+        body = await request.json();
+
+        return HttpResponse.json(createMockJobResponse({ id: MOCK_JOB_IDS.celonis }));
+      }),
+    );
+    renderEditJobPage();
 
     await user.clear(screen.getByLabelText('Company'));
     await user.type(screen.getByLabelText('Company'), 'Updated GmbH');
     await user.click(screen.getByRole('button', { name: 'Save changes' }));
 
     await waitFor(() =>
-      expect(handleSave).toHaveBeenCalledWith(
-        expect.objectContaining({
-          company: 'Updated GmbH',
-          id: MOCK_JOB_IDS.celonis,
-        }),
-      ),
+      expect(body).toMatchObject({
+        company: 'Updated GmbH',
+        roleTitle: 'Senior Frontend Engineer',
+        status: 'INTERVIEW',
+      }),
     );
-    expect(await screen.findByText('Jobs route')).toBeInTheDocument();
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
   });
 
-  it('renders an error state when the edited job does not exist', async () => {
+  it('keeps the entered values and announces the error when the save fails', async () => {
     const user = userEvent.setup();
-    const router = createMemoryRouter(
-      [
-        {
-          path: '/jobs/:jobId/edit',
-          element: <EditJobPage jobId="missing-job" jobs={createMockJobs()} />,
-        },
-        {
-          path: '/jobs',
-          element: <p>Jobs route</p>,
-        },
-      ],
-      {
-        initialEntries: ['/jobs/missing-job/edit'],
-      },
-    );
 
-    renderWithProviders(<RouterProvider router={router} />);
+    server.use(http.put(jobEndpoint, () => new HttpResponse(null, { status: 500 })));
+    renderEditJobPage();
+
+    await user.clear(screen.getByLabelText('Company'));
+    await user.type(screen.getByLabelText('Company'), 'Updated GmbH');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert).toHaveTextContent('Job could not be saved');
+    expect(alert).toHaveTextContent('Failed to update job');
+    expect(screen.getByLabelText('Company')).toHaveValue('Updated GmbH');
+    expect(screen.queryByText(JOBS_ROUTE_TEXT)).not.toBeInTheDocument();
+  });
+
+  it('disables the submit button while the save is in flight', async () => {
+    const user = userEvent.setup();
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    server.use(
+      http.put(jobEndpoint, async () => {
+        await released;
+
+        return HttpResponse.json(createMockJobResponse({ id: MOCK_JOB_IDS.celonis }));
+      }),
+    );
+    renderEditJobPage();
+
+    const submitButton = screen.getByRole('button', { name: 'Save changes' });
+
+    await user.click(submitButton);
+
+    await waitFor(() => expect(submitButton).toBeDisabled());
+
+    release();
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
+  it('returns to jobs when the edit is cancelled', async () => {
+    const user = userEvent.setup();
+    renderEditJobPage();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
+  it('renders the loading state while the job is in flight', () => {
+    renderEditJobPage({
+      isLoading: true,
+      job: null,
+    });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Loading job');
+    expect(screen.queryByLabelText('Company')).not.toBeInTheDocument();
+  });
+
+  it('renders the not found state without offering a retry', async () => {
+    const user = userEvent.setup();
+    const onRetry = vi.fn();
+    renderEditJobPage({
+      error: new AppError('Job not found.', APP_ERROR_CODES.JOB_REQUEST_FAILED, 404),
+      isNotFound: true,
+      job: null,
+      onRetry,
+    });
 
     expect(screen.getByRole('alert')).toHaveTextContent('Job not found');
+    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Back to jobs' }));
 
-    expect(await screen.findByText('Jobs route')).toBeInTheDocument();
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+    expect(onRetry).not.toHaveBeenCalled();
+  });
+
+  it('renders the load error state with a working retry', async () => {
+    const user = userEvent.setup();
+    const onRetry = vi.fn();
+    renderEditJobPage({
+      error: new AppError('Failed to load job', APP_ERROR_CODES.JOB_REQUEST_FAILED, 500),
+      job: null,
+      onRetry,
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Job could not be loaded');
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,7 @@
 # Task 027 - Connect Edit Job Form To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -42,9 +44,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Edit page loads from backend.
-- [ ] Job updates go through backend.
-- [ ] Tests cover visible states.
+- [x] Edit page loads from backend.
+- [x] Job updates go through backend.
+- [x] Tests cover visible states.
 
 ## Commit
 
