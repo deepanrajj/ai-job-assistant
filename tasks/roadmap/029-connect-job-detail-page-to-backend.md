@@ -1,5 +1,7 @@
 # Task 029 - Connect Job Detail Page To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -58,10 +60,10 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Job detail uses backend data.
-- [ ] Missing jobs are handled clearly.
-- [ ] Existing tab behavior is preserved.
-- [ ] A row on the jobs list reaches the job it shows.
+- [x] Job detail uses backend data.
+- [x] Missing jobs are handled clearly.
+- [x] Existing tab behavior is preserved.
+- [x] A row on the jobs list reaches the job it shows.
 
 ## Commit
 

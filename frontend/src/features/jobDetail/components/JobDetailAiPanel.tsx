@@ -10,6 +10,11 @@ import type { TJobAiAnalysis, TJobDetail } from '../../../types';
 
 /**
  * Props used by the job detail AI panel.
+ *
+ * `onAnalyzeJob` is what saves the result, and nothing here renders an
+ * analysis that was not saved. Without it the request would reach a paid
+ * provider and the answer would be dropped, so the button is disabled rather
+ * than merely inert.
  */
 interface IJobDetailAiPanelProps {
   job: TJobDetail;
@@ -46,7 +51,7 @@ const JobDetailAiPanelComponent: FC<IJobDetailAiPanelProps> = ({ job, onAnalyzeJ
         action={
           <Button
             aria-busy={request.isLoading}
-            disabled={request.isLoading || !job.description.trim()}
+            disabled={request.isLoading || !onAnalyzeJob || !job.description.trim()}
             onClick={handleAnalyzeJob}
             size="sm"
           >

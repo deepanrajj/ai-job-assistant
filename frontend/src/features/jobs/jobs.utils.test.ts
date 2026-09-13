@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createLocalId, formatJobDate, formatJobSalary } from './jobs.utils';
+import { createLocalId, formatJobDate, formatJobSalary, mapJobToJobDetail } from './jobs.utils';
 import { createMockJob } from '../../test/mockJobs';
 
 describe('createLocalId', () => {
@@ -70,5 +70,46 @@ describe('formatJobSalary', () => {
         }),
       ),
     ).toBeNull();
+  });
+});
+
+describe('mapJobToJobDetail', () => {
+  it('fills the optional job fields and leaves every detail collection empty', () => {
+    const job = createMockJob({
+      description: undefined,
+      jobUrl: undefined,
+      location: undefined,
+      salaryMax: undefined,
+      salaryMin: undefined,
+    });
+
+    expect(mapJobToJobDetail(job)).toMatchObject({
+      aiInsights: {
+        gaps: [],
+        strengths: [],
+        summary: '',
+      },
+      description: '',
+      id: job.id,
+      jobUrl: '',
+      location: '',
+      notes: [],
+      salaryMax: 0,
+      salaryMin: 0,
+      tasks: [],
+      // A job from the API has no history, and inventing one would put a
+      // fabricated event on a tab whose data source is task 032.
+      timeline: [],
+    });
+  });
+
+  it('keeps the values a job already carries', () => {
+    expect(mapJobToJobDetail(createMockJob({ description: 'Platform work' }))).toMatchObject({
+      description: 'Platform work',
+      jobUrl: 'https://example.com/jobs/frontend',
+      location: 'Berlin',
+      salaryMax: 90000,
+      salaryMin: 70000,
+    });
   });
 });

@@ -86,20 +86,22 @@ describe('JobDetailAiPanel', () => {
         ),
       ),
     );
-    renderWithProviders(<JobDetailAiPanel job={mockJobDetails[0]} />);
+    // Analysis is only offered when the result has somewhere to go, so the
+    // failure case needs the save handler the working panel has.
+    renderWithProviders(<JobDetailAiPanel job={mockJobDetails[0]} onAnalyzeJob={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: 'Analyze saved job' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('AI service failed.');
   });
 
-  it('can analyze without a parent save callback', async () => {
-    const user = userEvent.setup();
+  it('does not offer to analyze when there is nowhere to save the result', () => {
     renderWithProviders(<JobDetailAiPanel job={mockJobDetails[0]} />);
 
-    await user.click(screen.getByRole('button', { name: 'Analyze saved job' }));
-
-    expect(await screen.findByRole('button', { name: 'Analyze saved job' })).toBeEnabled();
+    // Nothing here renders an analysis that was not saved, so without
+    // `onAnalyzeJob` the request would reach a paid provider and the answer
+    // would be dropped.
+    expect(screen.getByRole('button', { name: 'Analyze saved job' })).toBeDisabled();
   });
 
   it('renders an empty state when no insights are saved', () => {

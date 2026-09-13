@@ -91,9 +91,12 @@ Frontend currently has:
   `GET /api/jobs` with loading, error, and retry states
 - an add job form that creates through `POST /api/jobs`, keeping entered
   values and announcing the failure when the request fails
+- a job detail page that reads `GET /api/jobs/{id}` with loading,
+  not-found, and retryable error states, and is read-only until the
+  tasks that connect its writes and its tabs
 - localStorage-backed job persistence for every other job screen, so the
-  dashboard, job detail, and the edit/delete forms still read and write
-  locally until tasks 025, 027, 028 and 029 move them
+  dashboard and the edit/delete forms still read and write locally until
+  tasks 025, 027 and 028 move them
 - English and German translations
 - reusable UI, form, table, icon, and layout components
 - frontend tests and coverage gate

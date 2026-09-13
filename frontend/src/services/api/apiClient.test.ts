@@ -147,6 +147,35 @@ describe('apiClient', () => {
     });
   });
 
+  it('records the response status on API errors and omits it otherwise', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: 'Job not found.' }), {
+          status: 404,
+        }),
+      )
+      .mockRejectedValueOnce(new Error('Network failed'));
+
+    // The status is what lets one endpoint answer a 404 and a 500
+    // differently; a failure with no response has nothing to report.
+    await expect(
+      getJson('/api/jobs/job-001', {
+        errorCode: APP_ERROR_CODES.JOB_REQUEST_FAILED,
+        fallbackErrorMessage,
+      }),
+    ).rejects.toMatchObject({
+      message: 'Job not found.',
+      status: 404,
+    });
+
+    await expect(
+      getJson('/api/jobs/job-001', {
+        errorCode: APP_ERROR_CODES.JOB_REQUEST_FAILED,
+        fallbackErrorMessage,
+      }),
+    ).rejects.toHaveProperty('status', undefined);
+  });
+
   it('uses fallback errors for network failures', async () => {
     vi.mocked(fetch).mockRejectedValue(new Error('Network failed'));
 

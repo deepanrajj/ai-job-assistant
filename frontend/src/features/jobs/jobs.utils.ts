@@ -1,5 +1,5 @@
 import type { TLanguage } from '../../i18n';
-import type { TJob } from '../../types';
+import type { TJob, TJobDetail } from '../../types';
 
 /**
  * Creates a browser-native random id when the runtime supports it.
@@ -64,3 +64,31 @@ export const formatJobSalary = (job: TJob): string | null => {
     ? `EUR ${salaryMin / 1000}k - EUR ${salaryMax / 1000}k`
     : `EUR ${salary / 1000}k`;
 };
+
+/**
+ * Widens a job into the detail shape the job detail screen renders.
+ *
+ * `TJobDetail` requires the four fields `TJob` leaves optional and adds the
+ * notes, tasks, timeline and AI collections. The backend job endpoints carry
+ * none of those collections, so they start empty and each one is filled by
+ * its own task. Callers that own extra detail data spread their own on top.
+ *
+ * @param {TJob} job Base job payload.
+ * @returns {TJobDetail} Job detail record with empty detail collections.
+ */
+export const mapJobToJobDetail = (job: TJob): TJobDetail => ({
+  ...job,
+  description: job.description ?? '',
+  jobUrl: job.jobUrl ?? '',
+  location: job.location ?? '',
+  salaryMax: job.salaryMax ?? 0,
+  salaryMin: job.salaryMin ?? 0,
+  aiInsights: {
+    summary: '',
+    strengths: [],
+    gaps: [],
+  },
+  notes: [],
+  tasks: [],
+  timeline: [],
+});
