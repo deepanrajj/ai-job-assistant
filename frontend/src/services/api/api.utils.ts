@@ -27,21 +27,20 @@ export const createFetchOptions = <TBody>({
 };
 
 /**
- * Reads the backend error message when the response body contains one.
+ * Parses a failed response's body, or answers with an empty one.
+ *
+ * A failure that never reached the API - a proxy 404, a gateway timeout -
+ * has no body in the backend's error shape, and that absence is itself the
+ * signal callers need.
  *
  * @param {Response} response Failed fetch response.
- * @param {string} fallbackMessage Message used when the response body has no readable error.
- * @returns {Promise<string>} Backend error message or fallback message.
+ * @returns {Promise<TApiErrorResponse>} Parsed error body, or an empty object.
  */
-export const getApiErrorMessage = async (
-  response: Response,
-  fallbackMessage: string,
-): Promise<string> => {
+export const readApiErrorBody = async (response: Response): Promise<TApiErrorResponse> => {
   try {
-    const errorBody = (await response.json()) as TApiErrorResponse;
-    return errorBody.error ?? errorBody.message ?? fallbackMessage;
+    return (await response.json()) as TApiErrorResponse;
   } catch {
-    return fallbackMessage;
+    return {};
   }
 };
 
@@ -62,12 +61,16 @@ export const getApiErrorMessage = async (
 export const createApiError = async (
   response: Response,
   { errorCode, fallbackErrorMessage }: IApiErrorOptions,
-): Promise<AppError> =>
-  new AppError(
-    await getApiErrorMessage(response, fallbackErrorMessage),
+): Promise<AppError> => {
+  const errorBody = await readApiErrorBody(response);
+
+  return new AppError(
+    errorBody.error ?? errorBody.message ?? fallbackErrorMessage,
     errorCode,
     response.status,
+    errorBody.code,
   );
+};
 
 /**
  * Creates an AppError for request failures without a displayable API response.

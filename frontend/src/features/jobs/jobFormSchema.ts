@@ -12,7 +12,25 @@ export interface IJobFormSchemaMessages {
   invalidUrl: string;
   requiredCompany: string;
   requiredRole: string;
+  tooLongText: string;
+  tooLongUrl: string;
 }
+
+/**
+ * Field limits mirroring the backend's `@Size` and `@Digits` constraints.
+ *
+ * Kept in step with `JobFieldLimits.kt` on purpose. Without them the form
+ * submits values the API rejects with a 400 that names the offending field
+ * in a part of the body this client does not read, so the user is told that
+ * validation failed and never which field to fix.
+ */
+const MAX_SHORT_TEXT_LENGTH = 255;
+
+const MAX_URL_LENGTH = 2048;
+
+const MAX_SALARY = 9_999_999_999;
+
+const MAX_SALARY_FRACTION_DIGITS = 2;
 
 /**
  * Checks whether an optional string contains a valid URL.
@@ -32,17 +50,45 @@ const isOptionalUrl = (value: string): boolean => {
 };
 
 /**
- * Checks whether an optional string contains a positive number.
+ * Counts the decimal places the request body would carry for a salary.
+ *
+ * Read from the number rather than the typed text, because that is what
+ * `createJobFormFields` sends: "1.5e3" reaches the API as 1500, with none.
+ * A magnitude small enough to keep its exponent in `toString` has more
+ * decimal places than the backend accepts unless it is a whole number.
+ *
+ * @param {number} value Salary as the request would carry it.
+ * @returns {number} Decimal places in the value sent.
+ */
+const getSalaryFractionDigits = (value: number): number => {
+  const text = value.toString();
+
+  if (text.includes('e')) return Number.isInteger(value) ? 0 : MAX_SALARY_FRACTION_DIGITS + 1;
+
+  return (text.split('.')[1] ?? '').length;
+};
+
+/**
+ * Checks whether an optional string contains a salary the backend accepts.
+ *
+ * Mirrors `@Digits(integer = 10, fraction = 2)` in full. Checking only the
+ * digit count would leave 70000.555 to be rejected by the API instead, as a
+ * 400 whose message names no field.
  *
  * @param {string} value Optional salary text.
- * @returns {boolean} True when the value is empty or a positive number.
+ * @returns {boolean} True when the value is empty or a salary within limits.
  */
 const isOptionalPositiveNumber = (value: string): boolean => {
   if (!value.trim()) return true;
 
   const numberValue = Number(value);
 
-  return Number.isFinite(numberValue) && numberValue > 0;
+  return (
+    Number.isFinite(numberValue) &&
+    numberValue > 0 &&
+    numberValue <= MAX_SALARY &&
+    getSalaryFractionDigits(numberValue) <= MAX_SALARY_FRACTION_DIGITS
+  );
 };
 
 /**
@@ -66,16 +112,30 @@ export const createJobFormSchema = ({
   invalidUrl,
   requiredCompany,
   requiredRole,
+  tooLongText,
+  tooLongUrl,
 }: IJobFormSchemaMessages) =>
   z
     .object({
-      company: createRequiredTrimmedTextSchema(requiredCompany),
-      description: z.string().trim(),
-      jobUrl: z.string().trim().refine(isOptionalUrl, {
-        message: invalidUrl,
+      company: createRequiredTrimmedTextSchema(requiredCompany).max(MAX_SHORT_TEXT_LENGTH, {
+        message: tooLongText,
       }),
-      location: z.string().trim(),
-      roleTitle: createRequiredTrimmedTextSchema(requiredRole),
+      description: z.string().trim(),
+      jobUrl: z
+        .string()
+        .trim()
+        .max(MAX_URL_LENGTH, {
+          message: tooLongUrl,
+        })
+        .refine(isOptionalUrl, {
+          message: invalidUrl,
+        }),
+      location: z.string().trim().max(MAX_SHORT_TEXT_LENGTH, {
+        message: tooLongText,
+      }),
+      roleTitle: createRequiredTrimmedTextSchema(requiredRole).max(MAX_SHORT_TEXT_LENGTH, {
+        message: tooLongText,
+      }),
       salaryMax: z.string().trim().refine(isOptionalPositiveNumber, {
         message: invalidSalary,
       }),

@@ -58,15 +58,17 @@ describe('JobDetailHeader', () => {
     expect(screen.getByRole('tooltip')).toHaveTextContent('Delete job');
   });
 
-  it('disables the delete button while its request is in flight', () => {
+  it('marks the delete button busy without disabling it', () => {
     renderWithProviders(
       <JobDetailHeader isDeletingJob job={mockJobDetails[0]} onDeleteJob={vi.fn()} />,
     );
 
-    // The visible half of the guard, and the half that also stops a second
-    // request: the mutation is called from the click handler, so the disable
-    // is in the DOM before another click can be dispatched.
-    expect(screen.getByRole('button', { name: 'Delete job' })).toBeDisabled();
+    // A disabled element is blurred, which would drop a keyboard user's
+    // place. Extra activations are the caller's to ignore.
+    const deleteButton = screen.getByRole('button', { name: 'Delete job' });
+
+    expect(deleteButton).toHaveAttribute('aria-busy', 'true');
+    expect(deleteButton).toBeEnabled();
   });
 
   it('omits optional job actions when handlers are not provided', () => {

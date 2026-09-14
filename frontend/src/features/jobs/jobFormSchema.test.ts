@@ -8,6 +8,8 @@ const schema = createJobFormSchema({
   invalidUrl: 'Invalid URL',
   requiredCompany: 'Company required',
   requiredRole: 'Role required',
+  tooLongText: 'Too long',
+  tooLongUrl: 'URL too long',
 });
 
 const validJobFormValues = {
@@ -70,6 +72,33 @@ describe('job form schema', () => {
       'Invalid URL',
       'Invalid salary',
     ]);
+  });
+
+  it('rejects values past the limits the backend enforces', () => {
+    // Mirrors `JobFieldLimits.kt`. Without these the form sends values the
+    // API rejects with a 400 that names the offending field only in
+    // `fieldErrors`, which this client does not read, so the user is told
+    // that validation failed and never which field to fix.
+    expect(schema.safeParse({ ...validJobFormValues, company: 'a'.repeat(256) }).success).toBe(
+      false,
+    );
+    expect(schema.safeParse({ ...validJobFormValues, location: 'a'.repeat(256) }).success).toBe(
+      false,
+    );
+    expect(schema.safeParse({ ...validJobFormValues, roleTitle: 'a'.repeat(256) }).success).toBe(
+      false,
+    );
+    expect(
+      schema.safeParse({ ...validJobFormValues, salaryMax: '99999999999', salaryMin: '1' }).success,
+    ).toBe(false);
+    // `@Digits` caps the decimal places too, and the request carries the
+    // number rather than the typed text: "1.5e3" arrives as 1500.
+    expect(schema.safeParse({ ...validJobFormValues, salaryMin: '70000.555' }).success).toBe(false);
+    expect(schema.safeParse({ ...validJobFormValues, salaryMin: '70000.55' }).success).toBe(true);
+    expect(schema.safeParse({ ...validJobFormValues, salaryMin: '1.5e3' }).success).toBe(true);
+    expect(schema.safeParse({ ...validJobFormValues, company: 'a'.repeat(255) }).success).toBe(
+      true,
+    );
   });
 
   it('rejects zero salary values', () => {

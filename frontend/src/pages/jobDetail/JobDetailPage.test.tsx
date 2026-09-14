@@ -212,7 +212,23 @@ describe('JobDetailPage', () => {
     expect(screen.queryByText('Job could not be deleted')).not.toBeInTheDocument();
   });
 
-  it('sends one delete when two clicks land before the button disables', async () => {
+  it('does not treat a 404 the API did not send as a completed delete', async () => {
+    const user = userEvent.setup();
+
+    // What a proxy or a routing change answers: a 404 with no error body in
+    // the backend's shape. The request never reached the controller, so the
+    // job is still there and leaving would report a delete that never
+    // happened.
+    server.use(http.delete(jobEndpoint, () => new HttpResponse('Not Found', { status: 404 })));
+    renderJobDetailPage();
+
+    await user.click(screen.getByRole('button', { name: 'Delete job' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Job could not be deleted');
+    expect(screen.queryByText(JOBS_ROUTE_TEXT)).not.toBeInTheDocument();
+  });
+
+  it('sends one delete when two clicks land in the same tick', async () => {
     let release = () => {};
     const released = new Promise<void>((resolve) => {
       release = resolve;
@@ -228,9 +244,9 @@ describe('JobDetailPage', () => {
 
     const deleteButton = screen.getByRole('button', { name: 'Delete job' });
 
-    // No await between the clicks, which is the case the disabled button
-    // cannot catch. Two deletes are not two of the same answer: the second
-    // answers 404, and that is the state the hook would keep.
+    // Two deletes are not two of the same answer: the second answers 404,
+    // and that is the state the hook would keep. The in-flight ref is what
+    // stops it, and this case reports two calls without it.
     fireEvent.click(deleteButton);
     fireEvent.click(deleteButton);
 
@@ -245,7 +261,7 @@ describe('JobDetailPage', () => {
     expect(deleteHandler).toHaveBeenCalledTimes(1);
   });
 
-  it('disables the delete button while the delete is in flight', async () => {
+  it('reports the delete as busy while keeping the button focusable', async () => {
     const user = userEvent.setup();
     let release = () => {};
     const released = new Promise<void>((resolve) => {
@@ -265,7 +281,12 @@ describe('JobDetailPage', () => {
 
     await user.click(deleteButton);
 
-    await waitFor(() => expect(deleteButton).toBeDisabled());
+    await waitFor(() => expect(deleteButton).toHaveAttribute('aria-busy', 'true'));
+
+    // Disabling it would blur it, which costs a keyboard user their place
+    // for the length of the request and after a failure.
+    expect(deleteButton).toBeEnabled();
+    expect(deleteButton).toHaveFocus();
 
     release();
 

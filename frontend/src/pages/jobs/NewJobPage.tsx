@@ -29,6 +29,8 @@ export const NewJobPage: FC = () => {
         invalidUrl: t('jobForm.validation.invalidUrl'),
         requiredCompany: t('jobForm.validation.requiredCompany'),
         requiredRole: t('jobForm.validation.requiredRole'),
+        tooLongText: t('jobForm.validation.tooLongText'),
+        tooLongUrl: t('jobForm.validation.tooLongUrl'),
       }),
     [t],
   );

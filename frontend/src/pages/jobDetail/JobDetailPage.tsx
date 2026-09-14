@@ -1,4 +1,4 @@
-import { useCallback, type FC } from 'react';
+import { useCallback, useRef, type FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, ErrorState, LoadingState } from '../../components/ui';
@@ -43,6 +43,7 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { deleteJob, error: deleteError, isDeleting } = useDeleteJob();
+  const isDeletingRef = useRef(false);
 
   /**
    * Leaves for the jobs list only once the job is gone from the server, so a
@@ -50,13 +51,13 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
    * on mount, so arriving there shows it without the row.
    *
    * Two deletes of one job are not two of the same answer: the first removes
-   * the row and the second answers 404. What stops the second is the button
-   * disabling, measured: with `isDeletingJob` removed, two clicks with no
-   * await between them send two requests. This needs no in-flight ref, unlike
-   * the create form, because that one awaited form validation before reaching
-   * its mutation, so the disable landed a render too late. Here the mutation
-   * is called from the click handler itself and the disable is already in the
-   * DOM before a second click can be dispatched.
+   * the row and the second answers 404, and `useAsyncMutation` keeps the
+   * state of the last request it started. The ref is what stops the second,
+   * and it is set synchronously so it is already true when that call
+   * arrives. Disabling the button would stop it too — measured, either guard
+   * alone holds and only removing both sends two requests — but a disabled
+   * element loses focus, so the button stays operable and this ignores the
+   * extra activation instead.
    *
    * A 404 goes to the list too. The job is already absent, which is what the
    * user asked for, and reporting a failure would offer a retry that cannot
@@ -64,6 +65,10 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
    */
   const handleDeleteJob = useCallback(
     async (jobId: string) => {
+      if (isDeletingRef.current) return;
+
+      isDeletingRef.current = true;
+
       try {
         await deleteJob(jobId);
         navigate(APP_PATHS.JOBS);
@@ -71,6 +76,8 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
         if (!(caught instanceof AppError)) throw caught;
 
         if (isJobNotFoundError(caught)) navigate(APP_PATHS.JOBS);
+      } finally {
+        isDeletingRef.current = false;
       }
     },
     [deleteJob, navigate],

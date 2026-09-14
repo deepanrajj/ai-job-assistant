@@ -22,8 +22,14 @@ export type TApiRequestMethod = 'DELETE' | 'GET' | 'POST' | 'PUT';
 
 /**
  * Error response shape expected from backend API endpoints.
+ *
+ * `code` is the backend's own classification, such as `JOB_NOT_FOUND` or
+ * `VALIDATION_FAILED`. It is what separates a 404 the API meant from a 404
+ * anything between the browser and the API produced, which a status alone
+ * cannot tell apart.
  */
 export type TApiErrorResponse = {
+  code?: string;
   error?: string;
   message?: string;
 };

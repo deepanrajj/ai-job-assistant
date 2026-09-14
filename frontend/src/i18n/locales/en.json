@@ -198,7 +198,9 @@
       "requiredCompany": "Company is required.",
       "requiredRole": "Role is required.",
       "invalidUrl": "Enter a valid URL or leave this empty.",
-      "invalidSalary": "Enter a positive salary number or leave this empty.",
+      "invalidSalary": "Enter a positive salary with at most 10 digits and 2 decimal places, or leave this empty.",
+      "tooLongText": "Use at most 255 characters.",
+      "tooLongUrl": "Use at most 2048 characters.",
       "invalidSalaryRange": "Maximum salary must be greater than or equal to minimum salary."
     }
   },

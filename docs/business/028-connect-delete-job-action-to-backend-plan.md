@@ -139,16 +139,15 @@ job could not be deleted while looking at a job that no longer exists,
 and the only recovery offered would be to try again, which cannot
 change the answer.
 
-### Decision 4: the disabled button is the guard, and there is no ref
+### Decision 4: the button reports busy, and an in-flight ref guards it
 
-The header's delete button disables while the delete is in flight,
-through a new optional `isDeletingJob` prop. There is no in-flight ref.
+The delete button sets `aria-busy` and dims while its request is in
+flight, and `JobDetailPage` holds an `isDeletingRef` the handler checks
+and sets synchronously. The button is **not** disabled.
 
-**Corrected after measurement.** This decision first proposed a ref as
-well, arguing from task 026 that a disabled button lands a render too
-late. That argument does not transfer, and the plan asserted it instead
-of checking. Removing each guard in turn showed that either one alone
-holds and only removing **both** sends two requests:
+**Revised twice, both times by measurement.** The plan first argued from
+task 026 that a ref was needed because a disabled button lands a render
+too late. Removing each guard in turn disproved that:
 
 | Guard removed | DELETE requests from two clicks |
 | --- | --- |
@@ -157,25 +156,33 @@ holds and only removing **both** sends two requests:
 | the disabled button | 1 |
 | both | 2 |
 
-The reason is the shape of the call, not the shape of the guard. Task
-026's submit awaited React Hook Form's validation before reaching its
-mutation, so both clicks arrived before the pending state rendered. Here
-the mutation is called from the click handler itself, React flushes a
-discrete event's updates synchronously, and the button carries
-`disabled` in the DOM before a second click can be dispatched. So the
-ref is redundant, and `AGENTS.md` section 0 asks for the smallest change
-that works.
+Task 026's submit awaited React Hook Form's validation before reaching
+its mutation, so both clicks arrived before the pending state rendered.
+Here the mutation is called from the click handler itself, so either
+guard alone holds, and the ref was dropped as redundant.
 
-Two deletes would still be worth avoiding: the first removes the row and
-the second answers 404, and `useAsyncMutation` keeps the state of the
-last request it started, so the 404 is the one that would be recorded.
-Decision 3 is the backstop for whatever no local guard can see, such as
-a second tab.
+Review then found the cost of the half that was kept: a focused element
+that becomes disabled is blurred. A keyboard user who presses Enter on
+Delete loses their place for the length of the request, and after a
+failure has to tab in from the top of the page to reach the error that
+was just announced. The task file asks to preserve keyboard
+accessibility.
 
-**Rejected: keep the ref anyway, as defence in depth.** Two guards where
-one is measured sufficient is one more thing to explain and one more
-thing to keep true. The double-click case has teeth either way: with the
-disable removed it reports two calls.
+So the disable is gone and the ref is back. The button stays operable
+and reports itself busy; the extra activation is ignored by the caller
+rather than prevented by removing the control. `Button` is a plain `FC`
+with no ref forwarding, so restoring focus after a disable was not
+available without changing a shared component this task has no business
+touching.
+
+**Rejected: disable it and refocus it afterwards.** That needs
+`forwardRef` on the shared `Button`, and it still leaves the gap between
+disable and refocus.
+
+**Rejected: `pointer-events-none` instead of `disabled`.** It blocks the
+mouse and not the keyboard, so the ref would still be doing the work,
+and it makes the control look inert to a sighted user while remaining
+operable by keyboard.
 
 ### Decision 5: the failure renders above the header, and 404 never does
 
@@ -267,7 +274,7 @@ back. Its other assertions stand.
 | a failed delete stays and announces it | `role="alert"` with the delete title, still on the job |
 | a 404 delete returns to jobs without an error | the jobs route, and no alert |
 | two clicks send one delete | two `fireEvent.click` with no await, exactly one request |
-| the delete button disables while in flight | held-open handler |
+| the delete reports busy without disabling | held-open handler, `aria-busy`, still focused |
 
 The plan's own acceptance criterion "two clicks send one request" is
 what decision 4 was measured against.
@@ -335,6 +342,106 @@ After `npm run frontend:verify` passes:
 - Mark this plan `Completed` and add a verified-state section.
 - Update `docs/context.md` section 3, which still lists the delete
   action among the screens reading localStorage.
+
+### Review pass
+
+Four findings, all applied.
+
+**A rejected field was reported as a missing job.** `isJobNotFoundError`
+counted 400 as gone, which is only safe on the load path: `GET`'s one
+parameter is the id, but a write carries a body and 400 is also how the
+backend rejects it. Measured with a probe: a `PUT` answering 400
+`VALIDATION_FAILED` — what an 11-digit salary or a 256-character company
+really gets, since the Zod schema enforces neither limit — made the edit
+form announce "Job not found / Request validation failed." with a Back
+to jobs button, for a job that exists. The exported helper is now 404
+only; the loader keeps 400 inline, where it means the id cannot be a
+UUID. The regression case fails against the old classifier.
+
+**The delete button lost keyboard focus while deleting**, which is
+decision 4 above.
+
+Two comments contradicted the measurement they were written beside: the
+header's JSDoc credited a ref that had been removed, and the
+double-click case called itself "the case the disabled button cannot
+catch". Both are corrected. They are not runtime defects, but each one
+would have told the next reader that the guard actually holding the line
+was cosmetic.
+
+Verification after all four: 115 test files and 302 tests, 100 per cent
+of lines (1008/1008) and functions.
+
+### Second review pass
+
+Three findings, all applied. Two shared one root cause: the client
+modelled the backend's error body as `{ error?, message? }` when it
+actually sends `{ code, message, fieldErrors[] }`, so every decision
+about what a failure meant was being made from the HTTP status alone.
+
+**Any 404 counted as a completed delete.** A 404 from a proxy or a
+routing change never reached the controller, yet the page left for the
+jobs list as though the job were gone, and the list then refetched and
+still showed the row. `AppError` now carries `apiCode` from the parsed
+body, and `isJobNotFoundError` matches `JOB_NOT_FOUND` rather than a
+status. The loader matches `JOB_NOT_FOUND` or `INVALID_REQUEST_PARAMETER`
+the same way. The regression case answers 404 with no body in the
+backend's shape and fails against status matching, at "Unable to find
+role=alert".
+
+**A rejected field left the user stuck.** A 400 said only "Request
+validation failed", naming no field, and that branch offered no way out.
+Two edits: the form schema now carries the limits `JobFieldLimits.kt`
+enforces, so an oversized value is caught per field before a request
+goes out, and the error state offers Back to jobs whatever the failure
+was. The new case types an 11-digit salary and asserts no request is
+made.
+
+This crosses task 027's scope boundary, which said not to touch
+`jobFormSchema`. That boundary was written before the gap was known and
+the gap is what this finding is; leaving the schema alone would have
+meant shipping a form that can only fail with a message the user cannot
+act on. The create form gets the same fix, since it shares the schema.
+
+**The busy delete button still looked clickable.** Removing `disabled`
+for the focus fix also removed `disabled:cursor-not-allowed`, so a
+sighted user got pointer cursor and hover styling on a control whose
+clicks the ref silently swallowed. It now also carries
+`pointer-events-none`, which leaves keyboard activation working.
+
+`getApiErrorMessage` was orphaned by the `createApiError` change and is
+removed rather than left uncovered.
+
+Verification after all three: 115 test files and 305 tests, 100 per cent
+of lines (1013/1013) and functions.
+
+### Third review pass
+
+Two findings, both applied, and both left over from the previous pass.
+
+**The salary limit mirrored the digit count but not the decimal places.**
+`@Digits(integer = 10, fraction = 2)` has two halves and only one was
+copied, so 70000.555 still reached the API and came back as the
+unactionable 400 the limits exist to prevent. The check now reads the
+decimal places from the number the request would carry rather than the
+typed text, because `createJobFormFields` sends `Number(value)`: "1.5e3"
+arrives as 1500 and is fine, while a magnitude small enough to keep its
+exponent is not. The case fails without the check.
+
+**`AppError`'s doc still recommended branching on `status`**, directly
+above the field that replaced it for exactly that purpose. The two
+paragraphs are swapped and rewritten: `apiCode` is what to branch on,
+and `status` is for reporting. `status` keeps no production reader, and
+that is now what the doc says rather than something a reader has to
+discover.
+
+Verification: 115 test files and 305 tests, 100 per cent of lines
+(1018/1018) and functions.
+
+A note for whoever picks up task 025. Three of the four review passes on
+this branch found a comment that contradicted a decision the same branch
+had measured, and the code was right every time. The rationale is worth
+keeping, but the plan is a better home for it than a JSDoc block that
+has to be re-edited whenever a decision moves.
 
 ## Acceptance Criteria
 

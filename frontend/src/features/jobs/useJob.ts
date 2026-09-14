@@ -22,28 +22,37 @@ export interface IJobState {
 }
 
 /**
- * Response statuses that mean the route id does not name a job.
+ * Backend error codes that mean the route id does not name a job.
  *
- * 404 is the job that does not exist. 400 is the id that cannot be one:
- * `GET /api/jobs/{id}` declares its path variable as a UUID, so anything
- * else fails conversion before the controller runs and comes back as
- * `INVALID_REQUEST_PARAMETER`. A stale link or an old localStorage id is
- * exactly that, and to the reader of the page both are the same answer.
- * The endpoint takes one parameter, so a 400 from it can only be the id.
+ * `JOB_NOT_FOUND` is the job that does not exist. `INVALID_REQUEST_PARAMETER`
+ * is the id that cannot be one: `GET /api/jobs/{id}` declares its path
+ * variable as a UUID, so anything else fails conversion before the
+ * controller runs. A stale link or an old localStorage id is exactly that,
+ * and to the reader of the page both are the same answer.
+ *
+ * Matched on the code rather than the status because only the code says the
+ * API meant it. A 404 from a proxy carries no code, and reading that as "no
+ * such job" would report a request that never arrived as an answer.
  */
-const NOT_FOUND_STATUSES = [400, 404];
+const MISSING_JOB_API_CODES = ['INVALID_REQUEST_PARAMETER', 'JOB_NOT_FOUND'];
 
 /**
- * Checks whether a job request failed because the id does not name a job.
+ * Checks whether a request failed because the job no longer exists.
  *
- * Exported so the screens that write to a job can tell a job that is gone
- * from a request that failed, without repeating the status list.
+ * `JOB_NOT_FOUND` only, deliberately narrower than the loader's set. The
+ * loader also accepts `INVALID_REQUEST_PARAMETER`, which on a GET can only be
+ * the path id; a write carries a body, and that code would be the backend
+ * rejecting the body rather than the id.
+ *
+ * The status is not consulted. A 404 the API did not send - a proxy, a
+ * gateway - carries no code, and treating it as a deleted job would report
+ * a request that never arrived as a completed one.
  *
  * @param {AppError | null} error Recorded job request error.
- * @returns {boolean} True when the id does not name a job.
+ * @returns {boolean} True when the API said the job does not exist.
  */
 export const isJobNotFoundError = (error: AppError | null): boolean =>
-  error !== null && NOT_FOUND_STATUSES.includes(error.status ?? 0);
+  error?.apiCode === 'JOB_NOT_FOUND';
 
 /**
  * Loads one saved job from the backend and reports the request state.
@@ -116,7 +125,7 @@ export const useJob = (jobId: string): IJobState => {
   return {
     error,
     isLoading: isIdle || isLoading,
-    isNotFound: isJobNotFoundError(error),
+    isNotFound: error?.apiCode !== undefined && MISSING_JOB_API_CODES.includes(error.apiCode),
     job,
     reload,
   };

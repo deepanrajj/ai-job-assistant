@@ -147,7 +147,7 @@ describe('EditJobPage', () => {
     // Retrying cannot succeed, so the error has to say so and lead somewhere.
     server.use(
       http.put(jobEndpoint, () =>
-        HttpResponse.json({ message: 'Job not found.' }, { status: 404 }),
+        HttpResponse.json({ code: 'JOB_NOT_FOUND', message: 'Job not found.' }, { status: 404 }),
       ),
     );
     renderEditJobPage();
@@ -164,6 +164,63 @@ describe('EditJobPage', () => {
     await user.click(screen.getByRole('button', { name: 'Back to jobs' }));
 
     expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
+  it('names the field the backend would reject, before sending it', async () => {
+    const user = userEvent.setup();
+    const putHandler = vi.fn(() => HttpResponse.json(createMockJobResponse()));
+
+    // The backend caps salaries at 10 integer digits and short text at 255
+    // characters. Without the same limits here the request goes out and comes
+    // back as a 400 whose only readable message is "Request validation
+    // failed", which names no field.
+    server.use(http.put(jobEndpoint, putHandler));
+    renderEditJobPage();
+
+    await user.clear(screen.getByLabelText('Minimum salary'));
+    await user.type(screen.getByLabelText('Minimum salary'), '99999999999');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    expect(
+      await screen.findByText(
+        'Enter a positive salary with at most 10 digits and 2 decimal places, or leave this empty.',
+      ),
+    ).toBeInTheDocument();
+    expect(putHandler).not.toHaveBeenCalled();
+  });
+
+  it('reports a rejected field as a failed save, not as a missing job', async () => {
+    const user = userEvent.setup();
+
+    // The backend rejects an oversized field with 400, the same status a
+    // malformed path id gets. Only the load path may read a 400 as "no such
+    // job": a write carries a body, and this job exists.
+    server.use(
+      http.put(jobEndpoint, () =>
+        HttpResponse.json(
+          {
+            code: 'VALIDATION_FAILED',
+            message: 'Request validation failed.',
+            fieldErrors: [
+              { field: 'salaryMin', message: 'Minimum salary must have at most 10 digits' },
+            ],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    renderEditJobPage();
+
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert).toHaveTextContent('Job could not be saved');
+    expect(alert).not.toHaveTextContent('Job not found');
+    // The way out is offered whatever the failure was: a 400 can name the
+    // field in a part of the body this client does not read, so retrying is
+    // not always something the user can act on.
+    expect(screen.getByRole('button', { name: 'Back to jobs' })).toBeInTheDocument();
   });
 
   it('disables the submit button while the save is in flight', async () => {

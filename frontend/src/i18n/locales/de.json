@@ -198,7 +198,9 @@
       "requiredCompany": "Firma ist erforderlich.",
       "requiredRole": "Rolle ist erforderlich.",
       "invalidUrl": "Gib eine gültige URL ein oder lasse das Feld leer.",
-      "invalidSalary": "Gib eine positive Gehaltszahl ein oder lasse das Feld leer.",
+      "invalidSalary": "Gib ein positives Gehalt mit höchstens 10 Stellen und 2 Nachkommastellen ein oder lasse das Feld leer.",
+      "tooLongText": "Verwende höchstens 255 Zeichen.",
+      "tooLongUrl": "Verwende höchstens 2048 Zeichen.",
       "invalidSalaryRange": "Das Maximalgehalt muss größer oder gleich dem Mindestgehalt sein."
     }
   },

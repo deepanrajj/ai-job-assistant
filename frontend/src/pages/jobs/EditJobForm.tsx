@@ -45,6 +45,8 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
         invalidUrl: t('jobForm.validation.invalidUrl'),
         requiredCompany: t('jobForm.validation.requiredCompany'),
         requiredRole: t('jobForm.validation.requiredRole'),
+        tooLongText: t('jobForm.validation.tooLongText'),
+        tooLongUrl: t('jobForm.validation.tooLongUrl'),
       }),
     [t],
   );
@@ -93,7 +95,11 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
    * longer exists fails the same way every time, so that case says what
    * happened and offers the way out instead of an action that cannot work.
    * The entered values stay on screen either way; they are the user's to
-   * copy elsewhere, and discarding them unasked would be worse.
+   * copy elsewhere, and discarding them unasked would be worse. Both cases
+   * offer the way out: a save can fail for a reason this form cannot show,
+   * such as a validation error naming a field in a part of the response body
+   * the client does not read, and leaving should not require the browser's
+   * back button.
    */
   const isJobGone = isJobNotFoundError(error);
 
@@ -102,11 +108,7 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
       error={
         error && (
           <ErrorState
-            action={
-              isJobGone ? (
-                <Button onClick={handleCancel}>{t('jobDetail.backToJobs')}</Button>
-              ) : undefined
-            }
+            action={<Button onClick={handleCancel}>{t('jobDetail.backToJobs')}</Button>}
             description={error.message}
             title={isJobGone ? t('jobDetail.notFoundTitle') : t('jobForm.updateErrorTitle')}
           />

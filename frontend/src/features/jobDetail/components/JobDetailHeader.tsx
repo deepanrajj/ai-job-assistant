@@ -4,6 +4,7 @@ import { Button, Select, Tooltip } from '../../../components/ui';
 import { StatusPill } from '../../jobs/components/StatusPill';
 import { EditIcon, ExternalLinkIcon, TrashIcon } from '../../../components/icons';
 import { useTranslation } from '../../../i18n';
+import { classNames } from '../../../utils';
 import { createJobDetailMetadataItems } from '../jobDetail.utils';
 import { jobStatusOptions } from '../../jobs/jobs.constants';
 import { JOB_STATUS_TRANSLATION_KEYS, type TJobDetail, type TJobStatus } from '../../../types';
@@ -17,9 +18,17 @@ import type { IJobDetailMetadataItem } from '../jobDetail.types';
  * disabled without `onStatusChange`: a select that silently snaps back reads
  * as a broken save rather than as a screen that cannot save yet.
  *
- * `isDeletingJob` disables the delete button while its request is in flight.
- * It is the visible half of the guard only; the caller's ref is what stops a
- * second request, because this prop is state and lands a render too late.
+ * `isDeletingJob` reports the delete as in flight. It dims the button, sets
+ * `aria-busy` and takes it out of pointer events, but deliberately does
+ * **not** disable it: a focused element that becomes disabled is blurred,
+ * which would drop a keyboard user's place for as long as the request runs
+ * and leave them tabbing in from the top of the page to reach the failure.
+ *
+ * `pointer-events-none` is what a sighted mouse user gets instead. Without
+ * it the button keeps its pointer cursor and hover styling while every click
+ * is silently swallowed, which reads as a broken control rather than a busy
+ * one. Keyboard activation still reaches the handler, and `JobDetailPage`
+ * ignores it with an in-flight ref.
  */
 interface IJobDetailHeaderProps {
   isDeletingJob?: boolean;
@@ -125,8 +134,10 @@ const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
                 <Button
                   aria-busy={isDeletingJob}
                   aria-label={t('jobDetail.deleteJob')}
-                  className="w-9 !px-0"
-                  disabled={isDeletingJob}
+                  className={classNames(
+                    'w-9 !px-0',
+                    isDeletingJob && 'pointer-events-none opacity-60',
+                  )}
                   onClick={onDeleteJob}
                   size="sm"
                   variant="danger"
