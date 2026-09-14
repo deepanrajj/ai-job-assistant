@@ -1,5 +1,7 @@
 # Task 028 - Connect Delete Job Action To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -41,9 +43,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Delete uses backend API.
-- [ ] UI updates after successful delete.
-- [ ] Error behavior is tested.
+- [x] Delete uses backend API.
+- [x] UI updates after successful delete.
+- [x] Error behavior is tested.
 
 ## Commit
 

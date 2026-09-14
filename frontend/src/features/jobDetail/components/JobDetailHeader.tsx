@@ -16,8 +16,13 @@ import type { IJobDetailMetadataItem } from '../jobDetail.types';
  * exists. The status select is the one control that always renders, so it is
  * disabled without `onStatusChange`: a select that silently snaps back reads
  * as a broken save rather than as a screen that cannot save yet.
+ *
+ * `isDeletingJob` disables the delete button while its request is in flight.
+ * It is the visible half of the guard only; the caller's ref is what stops a
+ * second request, because this prop is state and lands a render too late.
  */
 interface IJobDetailHeaderProps {
+  isDeletingJob?: boolean;
   job: TJobDetail;
   onDeleteJob?: () => void;
   onEditJob?: () => void;
@@ -53,6 +58,7 @@ const MemoizedJobDetailMetadataItem = memo(JobDetailMetadataItem);
  * @returns {JSX.Element} Job detail header.
  */
 const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
+  isDeletingJob = false,
   job,
   onDeleteJob,
   onEditJob,
@@ -117,8 +123,10 @@ const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
             {onDeleteJob && (
               <Tooltip content={t('jobDetail.deleteJob')}>
                 <Button
+                  aria-busy={isDeletingJob}
                   aria-label={t('jobDetail.deleteJob')}
                   className="w-9 !px-0"
+                  disabled={isDeletingJob}
                   onClick={onDeleteJob}
                   size="sm"
                   variant="danger"

@@ -1,5 +1,6 @@
 export * from './JobsProvider';
 export * from './useCreateJob';
+export * from './useDeleteJob';
 export * from './useJob';
 export * from './useJobDetail';
 export * from './useJobs';

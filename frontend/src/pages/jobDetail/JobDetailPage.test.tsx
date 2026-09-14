@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { JobDetailPage } from './JobDetailPage';
@@ -8,6 +9,7 @@ import { mapJobToJobDetail } from '../../features/jobs/jobs.utils';
 import { AppError } from '../../errors';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { createMockJob } from '../../test/mockJobs';
+import { server } from '../../test/server';
 import { APP_PATH_BUILDERS, APP_PATHS } from '../../routes/paths';
 import { APP_ERROR_CODES, type TJobDetail } from '../../types';
 
@@ -61,6 +63,8 @@ const renderJobDetailPage = ({
       </Routes>
     </MemoryRouter>,
   );
+
+const jobEndpoint = `/api/jobs/${mockJobDetail.id}`;
 
 describe('JobDetailPage', () => {
   it('renders the loaded job overview and metadata', () => {
@@ -161,6 +165,113 @@ describe('JobDetailPage', () => {
     expect(screen.getByText(EDIT_ROUTE_TEXT)).toBeInTheDocument();
   });
 
+  it('deletes the job through the API and returns to jobs', async () => {
+    const user = userEvent.setup();
+    const deleteHandler = vi.fn(() => new HttpResponse(null, { status: 204 }));
+
+    server.use(http.delete(jobEndpoint, deleteHandler));
+    renderJobDetailPage();
+
+    await user.click(screen.getByRole('button', { name: 'Delete job' }));
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+    expect(deleteHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays on the job and announces a failed delete', async () => {
+    const user = userEvent.setup();
+
+    server.use(http.delete(jobEndpoint, () => new HttpResponse(null, { status: 500 })));
+    renderJobDetailPage();
+
+    await user.click(screen.getByRole('button', { name: 'Delete job' }));
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert).toHaveTextContent('Job could not be deleted');
+    expect(alert).toHaveTextContent('Failed to delete job');
+    expect(screen.getByRole('heading', { name: 'Senior Frontend Engineer' })).toBeInTheDocument();
+    expect(screen.queryByText(JOBS_ROUTE_TEXT)).not.toBeInTheDocument();
+  });
+
+  it('treats a delete that answers 404 as done', async () => {
+    const user = userEvent.setup();
+
+    // The job is already absent, which is what the user asked for. Reporting
+    // a failure would offer a retry that cannot change the answer.
+    server.use(
+      http.delete(jobEndpoint, () =>
+        HttpResponse.json({ code: 'JOB_NOT_FOUND', message: 'Job not found.' }, { status: 404 }),
+      ),
+    );
+    renderJobDetailPage();
+
+    await user.click(screen.getByRole('button', { name: 'Delete job' }));
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+    expect(screen.queryByText('Job could not be deleted')).not.toBeInTheDocument();
+  });
+
+  it('sends one delete when two clicks land before the button disables', async () => {
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const deleteHandler = vi.fn(async () => {
+      await released;
+
+      return new HttpResponse(null, { status: 204 });
+    });
+
+    server.use(http.delete(jobEndpoint, deleteHandler));
+    renderJobDetailPage();
+
+    const deleteButton = screen.getByRole('button', { name: 'Delete job' });
+
+    // No await between the clicks, which is the case the disabled button
+    // cannot catch. Two deletes are not two of the same answer: the second
+    // answers 404, and that is the state the hook would keep.
+    fireEvent.click(deleteButton);
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => expect(deleteHandler).toHaveBeenCalled());
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+
+    release();
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+    expect(deleteHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables the delete button while the delete is in flight', async () => {
+    const user = userEvent.setup();
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    server.use(
+      http.delete(jobEndpoint, async () => {
+        await released;
+
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderJobDetailPage();
+
+    const deleteButton = screen.getByRole('button', { name: 'Delete job' });
+
+    await user.click(deleteButton);
+
+    await waitFor(() => expect(deleteButton).toBeDisabled());
+
+    release();
+
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
   it('offers no write it cannot complete', async () => {
     const user = userEvent.setup();
     renderJobDetailPage();
@@ -168,7 +279,6 @@ describe('JobDetailPage', () => {
     // Every one of these wrote to the localStorage store by job id, which a
     // backend id never matches, so each would have looked like it worked.
     expect(screen.getByRole('combobox', { name: 'Job status' })).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Delete job' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Notes' }));
     expect(screen.queryByRole('button', { name: 'Add note' })).not.toBeInTheDocument();

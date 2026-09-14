@@ -97,9 +97,11 @@ Frontend currently has:
 - an edit job form that loads through `GET /api/jobs/{id}` and saves
   through `PUT /api/jobs/{id}`, keeping entered values and announcing
   the failure when the request fails
-- localStorage-backed job persistence for the two job screens that are
-  left, so the dashboard and the delete action still read and write
-  locally until tasks 025 and 028 move them
+- a delete action that removes the job through `DELETE /api/jobs/{id}`,
+  leaving for the jobs list only once the server confirms
+- localStorage-backed job persistence for the dashboard alone, which is
+  the last screen reading it and the reason `JobsProvider` still exists
+  until task 025
 - English and German translations
 - reusable UI, form, table, icon, and layout components
 - frontend tests and coverage gate
