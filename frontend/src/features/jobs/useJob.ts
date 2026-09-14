@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
   getJobById,
@@ -22,16 +22,37 @@ export interface IJobState {
 }
 
 /**
- * Response statuses that mean the route id does not name a job.
+ * Backend error codes that mean the route id does not name a job.
  *
- * 404 is the job that does not exist. 400 is the id that cannot be one:
- * `GET /api/jobs/{id}` declares its path variable as a UUID, so anything
- * else fails conversion before the controller runs and comes back as
- * `INVALID_REQUEST_PARAMETER`. A stale link or an old localStorage id is
- * exactly that, and to the reader of the page both are the same answer.
- * The endpoint takes one parameter, so a 400 from it can only be the id.
+ * `JOB_NOT_FOUND` is the job that does not exist. `INVALID_REQUEST_PARAMETER`
+ * is the id that cannot be one: `GET /api/jobs/{id}` declares its path
+ * variable as a UUID, so anything else fails conversion before the
+ * controller runs. A stale link or an old localStorage id is exactly that,
+ * and to the reader of the page both are the same answer.
+ *
+ * Matched on the code rather than the status because only the code says the
+ * API meant it. A 404 from a proxy carries no code, and reading that as "no
+ * such job" would report a request that never arrived as an answer.
  */
-const NOT_FOUND_STATUSES = [400, 404];
+const MISSING_JOB_API_CODES = ['INVALID_REQUEST_PARAMETER', 'JOB_NOT_FOUND'];
+
+/**
+ * Checks whether a request failed because the job no longer exists.
+ *
+ * `JOB_NOT_FOUND` only, deliberately narrower than the loader's set. The
+ * loader also accepts `INVALID_REQUEST_PARAMETER`, which on a GET can only be
+ * the path id; a write carries a body, and that code would be the backend
+ * rejecting the body rather than the id.
+ *
+ * The status is not consulted. A 404 the API did not send - a proxy, a
+ * gateway - carries no code, and treating it as a deleted job would report
+ * a request that never arrived as a completed one.
+ *
+ * @param {AppError | null} error Recorded job request error.
+ * @returns {boolean} True when the API said the job does not exist.
+ */
+export const isJobNotFoundError = (error: AppError | null): boolean =>
+  error?.apiCode === 'JOB_NOT_FOUND';
 
 /**
  * Loads one saved job from the backend and reports the request state.
@@ -56,6 +77,7 @@ const NOT_FOUND_STATUSES = [400, 404];
  * @returns {IJobState} Mapped job, request state, and retry.
  */
 export const useJob = (jobId: string): IJobState => {
+  const requestIdRef = useRef(0);
   const {
     mutate: loadJob,
     request: { data, error, isIdle, isLoading, setError },
@@ -69,10 +91,21 @@ export const useJob = (jobId: string): IJobState => {
    * failure rather than a missing job: the server answered that the job
    * exists and then sent none, and that is worth retrying. `useCreateJob`
    * guards its own response the same way.
+   *
+   * The request id is this hook's own, because `useAsyncMutation` applies its
+   * guard only to the state it sets: `mutate` still resolves with a stale
+   * response, so without this an abandoned request answering 204 would
+   * report a failure over the request that replaced it.
    */
   const reload = useCallback(() => {
+    const requestId = requestIdRef.current + 1;
+
+    requestIdRef.current = requestId;
+
     loadJob(jobId)
       .then((response) => {
+        if (requestId !== requestIdRef.current) return;
+
         if (!response?.id)
           setError(
             new AppError(getJobFallbackErrorMessage('getJob'), APP_ERROR_CODES.JOB_REQUEST_FAILED),
@@ -92,7 +125,7 @@ export const useJob = (jobId: string): IJobState => {
   return {
     error,
     isLoading: isIdle || isLoading,
-    isNotFound: error !== null && NOT_FOUND_STATUSES.includes(error.status ?? 0),
+    isNotFound: error?.apiCode !== undefined && MISSING_JOB_API_CODES.includes(error.apiCode),
     job,
     reload,
   };

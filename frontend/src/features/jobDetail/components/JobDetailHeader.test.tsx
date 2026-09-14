@@ -58,6 +58,19 @@ describe('JobDetailHeader', () => {
     expect(screen.getByRole('tooltip')).toHaveTextContent('Delete job');
   });
 
+  it('marks the delete button busy without disabling it', () => {
+    renderWithProviders(
+      <JobDetailHeader isDeletingJob job={mockJobDetails[0]} onDeleteJob={vi.fn()} />,
+    );
+
+    // A disabled element is blurred, which would drop a keyboard user's
+    // place. Extra activations are the caller's to ignore.
+    const deleteButton = screen.getByRole('button', { name: 'Delete job' });
+
+    expect(deleteButton).toHaveAttribute('aria-busy', 'true');
+    expect(deleteButton).toBeEnabled();
+  });
+
   it('omits optional job actions when handlers are not provided', () => {
     renderWithProviders(<JobDetailHeader job={mockJobDetails[0]} />);
 

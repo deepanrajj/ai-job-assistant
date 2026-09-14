@@ -37,6 +37,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)
 - [Task 026 - Connect Add Job Form To Backend Plan](./026-connect-add-job-form-to-backend-plan.md)
 - [Task 027 - Connect Edit Job Form To Backend Plan](./027-connect-edit-job-form-to-backend-plan.md)
+- [Task 028 - Connect Delete Job Action To Backend Plan](./028-connect-delete-job-action-to-backend-plan.md)
 - [Task 029 - Connect Job Detail Page To Backend Plan](./029-connect-job-detail-page-to-backend-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)

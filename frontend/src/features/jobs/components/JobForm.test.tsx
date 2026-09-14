@@ -26,6 +26,8 @@ const schema = createJobFormSchema({
   invalidUrl: 'Invalid URL',
   requiredCompany: 'Company required',
   requiredRole: 'Role required',
+  tooLongText: 'Too long',
+  tooLongUrl: 'URL too long',
 });
 
 const JobFormTestWrapper = ({

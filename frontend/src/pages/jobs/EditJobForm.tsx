@@ -3,10 +3,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-import { ErrorState } from '../../components/ui';
+import { Button, ErrorState } from '../../components/ui';
 import { JobForm } from '../../features/jobs/components/JobForm';
 import { createJobFormSchema, type TJobFormValues } from '../../features/jobs/jobFormSchema';
-import { useUpdateJob } from '../../features/jobs';
+import { isJobNotFoundError, useUpdateJob } from '../../features/jobs';
 import { useTranslation } from '../../i18n';
 import { createJobFormDefaultValues, createJobFormFields } from '../../features/jobs/jobForm.utils';
 import { AppError } from '../../errors';
@@ -45,6 +45,8 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
         invalidUrl: t('jobForm.validation.invalidUrl'),
         requiredCompany: t('jobForm.validation.requiredCompany'),
         requiredRole: t('jobForm.validation.requiredRole'),
+        tooLongText: t('jobForm.validation.tooLongText'),
+        tooLongUrl: t('jobForm.validation.tooLongUrl'),
       }),
     [t],
   );
@@ -87,10 +89,30 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
     [job.id, navigate, saveJob],
   );
 
+  /**
+   * A save can fail because the job is gone rather than because the request
+   * failed, and the two need different answers. Retrying a job that no
+   * longer exists fails the same way every time, so that case says what
+   * happened and offers the way out instead of an action that cannot work.
+   * The entered values stay on screen either way; they are the user's to
+   * copy elsewhere, and discarding them unasked would be worse. Both cases
+   * offer the way out: a save can fail for a reason this form cannot show,
+   * such as a validation error naming a field in a part of the response body
+   * the client does not read, and leaving should not require the browser's
+   * back button.
+   */
+  const isJobGone = isJobNotFoundError(error);
+
   return (
     <JobForm
       error={
-        error && <ErrorState description={error.message} title={t('jobForm.updateErrorTitle')} />
+        error && (
+          <ErrorState
+            action={<Button onClick={handleCancel}>{t('jobDetail.backToJobs')}</Button>}
+            description={error.message}
+            title={isJobGone ? t('jobDetail.notFoundTitle') : t('jobForm.updateErrorTitle')}
+          />
+        )
       }
       form={form}
       isSubmitting={isSaving}

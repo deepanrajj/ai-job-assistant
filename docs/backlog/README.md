@@ -35,4 +35,4 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 028: Connect delete job action to backend](../../tasks/roadmap/028-connect-delete-job-action-to-backend.md).
+- [ ] [Task 025: Replace mock jobs on dashboard page](../../tasks/roadmap/025-replace-mock-jobs-on-dashboard-page.md).

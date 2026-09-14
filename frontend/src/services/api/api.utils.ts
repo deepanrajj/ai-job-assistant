@@ -27,33 +27,40 @@ export const createFetchOptions = <TBody>({
 };
 
 /**
- * Reads the backend error message when the response body contains one.
+ * Parses a failed response's body, or answers with an empty one.
+ *
+ * A failure that never reached the API - a proxy 404, a gateway timeout -
+ * has no body in the backend's error shape, and that absence is itself the
+ * signal callers need.
  *
  * @param {Response} response Failed fetch response.
- * @param {string} fallbackMessage Message used when the response body has no readable error.
- * @returns {Promise<string>} Backend error message or fallback message.
+ * @returns {Promise<TApiErrorResponse>} Parsed error body, or an empty object.
  */
-export const getApiErrorMessage = async (
-  response: Response,
-  fallbackMessage: string,
-): Promise<string> => {
+export const readApiErrorBody = async (response: Response): Promise<TApiErrorResponse> => {
   try {
-    const errorBody = (await response.json()) as TApiErrorResponse;
-    return errorBody.error ?? errorBody.message ?? fallbackMessage;
+    const body: unknown = await response.json();
+
+    // `null`, a bare string and an array are all valid JSON, so `json()`
+    // resolves and the `catch` never fires. Casting one of those to the
+    // error shape makes the property reads below throw instead, which loses
+    // the status and the code this error exists to carry.
+    return typeof body === 'object' && body !== null && !Array.isArray(body)
+      ? (body as TApiErrorResponse)
+      : {};
   } catch {
-    return fallbackMessage;
+    return {};
   }
 };
 
 /**
  * Creates an AppError from a failed HTTP response.
  *
- * The status is carried onto the error because it is the only thing that
- * separates failures a caller must answer differently on one endpoint, such
- * as a 404 for a job that does not exist and a 500 for one that could not be
- * read. The backend's own error `code` is not used for that: it is absent
- * whenever the failure came from something other than the API itself, such
- * as a proxy, which is exactly when an error state matters.
+ * Carries both the backend's `code` and the HTTP status, and callers branch
+ * on the code. That is the half which says the API meant the answer: a
+ * proxy, a gateway or a routing change can reply with any status, so a 404
+ * with no `code` is a request that never reached a controller rather than a
+ * thing that does not exist. The status is carried for reporting, and
+ * `AppError` says so.
  *
  * @param {Response} response Failed fetch response.
  * @param {IApiErrorOptions} options Error mapping options for the request.
@@ -62,12 +69,16 @@ export const getApiErrorMessage = async (
 export const createApiError = async (
   response: Response,
   { errorCode, fallbackErrorMessage }: IApiErrorOptions,
-): Promise<AppError> =>
-  new AppError(
-    await getApiErrorMessage(response, fallbackErrorMessage),
+): Promise<AppError> => {
+  const errorBody = await readApiErrorBody(response);
+
+  return new AppError(
+    errorBody.error ?? errorBody.message ?? fallbackErrorMessage,
     errorCode,
     response.status,
+    errorBody.code,
   );
+};
 
 /**
  * Creates an AppError for request failures without a displayable API response.
