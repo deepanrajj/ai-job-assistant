@@ -96,6 +96,15 @@ describe('job form schema', () => {
     expect(schema.safeParse({ ...validJobFormValues, salaryMin: '70000.555' }).success).toBe(false);
     expect(schema.safeParse({ ...validJobFormValues, salaryMin: '70000.55' }).success).toBe(true);
     expect(schema.safeParse({ ...validJobFormValues, salaryMin: '1.5e3' }).success).toBe(true);
+    // `NUMERIC(12, 2)` stores ten integer digits plus two decimals, so the
+    // limit counts the whole-number part rather than capping the value.
+    expect(
+      schema.safeParse({ ...validJobFormValues, salaryMax: '9999999999.99', salaryMin: '1' })
+        .success,
+    ).toBe(true);
+    expect(
+      schema.safeParse({ ...validJobFormValues, salaryMax: '10000000000', salaryMin: '1' }).success,
+    ).toBe(false);
     expect(schema.safeParse({ ...validJobFormValues, company: 'a'.repeat(255) }).success).toBe(
       true,
     );

@@ -443,6 +443,32 @@ had measured, and the code was right every time. The rationale is worth
 keeping, but the plan is a better home for it than a JSDoc block that
 has to be re-edited whenever a decision moves.
 
+### Fourth review pass
+
+One finding, applied. The salary mirror capped the whole value at ten
+nines when `@Digits(integer = 10)` caps the whole-number *part*, and
+`salary_min NUMERIC(12, 2)` stores 9999999999.99. So a salary with
+exactly ten integer digits and two decimals was rejected client-side by
+a message that value satisfies, and a job already holding one could not
+be saved from the edit form at all, on a field the user never touched.
+
+`Math.trunc(numberValue) <= MAX_SALARY_INTEGER_PART` is the check that
+mirrors the constraint as written. The constant is renamed to say which
+half it bounds. The case fails against the value cap, at expected false
+to be true for 9999999999.99.
+
+This came from the interrupted max-effort review, which the usage limit
+cut off before its verify and sweep phases. Two of its other reports are
+worth someone's time and are **not** addressed here: `readApiErrorBody`
+casts an unvalidated `response.json()`, so a failure body of JSON `null`
+makes `createApiError` throw and the caller loses both `status` and
+`apiCode`; and `createApiError`'s own docblock still says the backend's
+`code` "is not used" for telling failures apart, which is now the
+opposite of what the function does.
+
+Verification: 115 test files and 305 tests, 100 per cent of lines
+(1018/1018) and functions.
+
 ## Acceptance Criteria
 
 - [x] Deleting a job sends `DELETE /api/jobs/{id}`.

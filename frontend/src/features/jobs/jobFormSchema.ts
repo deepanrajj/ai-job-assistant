@@ -28,7 +28,7 @@ const MAX_SHORT_TEXT_LENGTH = 255;
 
 const MAX_URL_LENGTH = 2048;
 
-const MAX_SALARY = 9_999_999_999;
+const MAX_SALARY_INTEGER_PART = 9_999_999_999;
 
 const MAX_SALARY_FRACTION_DIGITS = 2;
 
@@ -71,9 +71,13 @@ const getSalaryFractionDigits = (value: number): number => {
 /**
  * Checks whether an optional string contains a salary the backend accepts.
  *
- * Mirrors `@Digits(integer = 10, fraction = 2)` in full. Checking only the
- * digit count would leave 70000.555 to be rejected by the API instead, as a
- * 400 whose message names no field.
+ * Mirrors `@Digits(integer = 10, fraction = 2)` in full, and each half is
+ * measured the way the constraint states it. The integer limit counts the
+ * whole-number part rather than capping the value: `salary_min NUMERIC(12, 2)`
+ * stores 9999999999.99, so comparing the whole value against ten nines would
+ * reject a salary the backend accepts, using a message that value satisfies.
+ * The fraction limit is what keeps 70000.555 from being rejected by the API
+ * instead, as a 400 whose message names no field.
  *
  * @param {string} value Optional salary text.
  * @returns {boolean} True when the value is empty or a salary within limits.
@@ -86,7 +90,7 @@ const isOptionalPositiveNumber = (value: string): boolean => {
   return (
     Number.isFinite(numberValue) &&
     numberValue > 0 &&
-    numberValue <= MAX_SALARY &&
+    Math.trunc(numberValue) <= MAX_SALARY_INTEGER_PART &&
     getSalaryFractionDigits(numberValue) <= MAX_SALARY_FRACTION_DIGITS
   );
 };
