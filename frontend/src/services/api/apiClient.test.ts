@@ -176,6 +176,63 @@ describe('apiClient', () => {
     ).rejects.toHaveProperty('status', undefined);
   });
 
+  it('survives a failure body that is valid JSON but not an error object', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(new Response('null', { status: 404 }))
+      .mockResolvedValueOnce(new Response('"gateway down"', { status: 502 }));
+
+    // `null` and a bare string both parse, so the parse guard never fires.
+    // Reading `.error` off one of them throws, and `requestJson` would then
+    // downgrade to a request error carrying neither status nor code.
+    await expect(
+      getJson('/api/jobs/job-001', {
+        errorCode: APP_ERROR_CODES.JOB_REQUEST_FAILED,
+        fallbackErrorMessage,
+      }),
+    ).rejects.toMatchObject({
+      message: fallbackErrorMessage,
+      status: 404,
+    });
+
+    await expect(
+      getJson('/api/jobs/job-001', {
+        errorCode: APP_ERROR_CODES.JOB_REQUEST_FAILED,
+        fallbackErrorMessage,
+      }),
+    ).rejects.toMatchObject({
+      message: fallbackErrorMessage,
+      status: 502,
+    });
+  });
+
+  it('carries the backend error code so callers can tell the API meant it', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ code: 'JOB_NOT_FOUND', message: 'Job not found.' }), {
+          status: 404,
+        }),
+      )
+      .mockResolvedValueOnce(new Response('Not Found', { status: 404 }));
+
+    // Same status, different meaning: the second never reached a controller.
+    await expect(
+      getJson('/api/jobs/job-001', {
+        errorCode: APP_ERROR_CODES.JOB_REQUEST_FAILED,
+        fallbackErrorMessage,
+      }),
+    ).rejects.toMatchObject({
+      apiCode: 'JOB_NOT_FOUND',
+      message: 'Job not found.',
+    });
+
+    await expect(
+      getJson('/api/jobs/job-001', {
+        errorCode: APP_ERROR_CODES.JOB_REQUEST_FAILED,
+        fallbackErrorMessage,
+      }),
+    ).rejects.toHaveProperty('apiCode', undefined);
+  });
+
   it('uses fallback errors for network failures', async () => {
     vi.mocked(fetch).mockRejectedValue(new Error('Network failed'));
 

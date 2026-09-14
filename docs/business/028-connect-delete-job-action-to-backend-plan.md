@@ -458,13 +458,25 @@ half it bounds. The case fails against the value cap, at expected false
 to be true for 9999999999.99.
 
 This came from the interrupted max-effort review, which the usage limit
-cut off before its verify and sweep phases. Two of its other reports are
-worth someone's time and are **not** addressed here: `readApiErrorBody`
-casts an unvalidated `response.json()`, so a failure body of JSON `null`
-makes `createApiError` throw and the caller loses both `status` and
-`apiCode`; and `createApiError`'s own docblock still says the backend's
-`code` "is not used" for telling failures apart, which is now the
-opposite of what the function does.
+cut off before its verify and sweep phases. Two further reports from the
+same run are applied alongside it.
+
+**`readApiErrorBody` cast an unvalidated `response.json()`.** `null`, a
+bare string and an array are all valid JSON, so the parse guard never
+fired and the property reads in `createApiError` threw instead.
+`requestJson` caught that as a non-`AppError` and downgraded it to
+`createRequestError`, which carries neither `status` nor `apiCode` - the
+exact discrimination the two rounds before this one were built to add.
+Measured: with the guard removed, a 404 whose body is `null` arrives as
+`status: undefined`. The body is now checked for being a plain object
+before it is treated as one.
+
+**`createApiError`'s docblock argued against its own body**, still
+saying the backend's `code` "is not used" for telling failures apart
+while the line below passed it to `AppError`. Rewritten to say what the
+function does, and `apiClient.test.ts` now pins the code propagation it
+never covered: the same 404 with and without a backend body, which are
+the same status and different answers.
 
 Verification: 115 test files and 305 tests, 100 per cent of lines
 (1018/1018) and functions.
