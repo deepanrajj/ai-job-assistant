@@ -54,6 +54,14 @@ AssertJ
   callers.
 - Keep OpenAPI documentation generated from controllers and DTOs; add
   annotations only when they clarify generated docs.
+- Do not add a CORS configuration. The browser always reaches this API
+  through a proxy on its own origin, so there is no cross-origin
+  request to permit, and a registered mapping refuses same-origin
+  writes instead. A `403 Invalid CORS request` is a symptom of a
+  mapping existing, not of one missing. Read
+  `../docs/engineering/same-origin-api-boundary.md` before changing
+  anything about it; deploying the two apps to different hosts, in
+  tasks 075 and 076, is the first legitimate reason to revisit it.
 
 ## 4. Persistence
 

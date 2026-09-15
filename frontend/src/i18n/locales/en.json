@@ -2,7 +2,6 @@
   "app": {
     "name": "Smart Job Tracker",
     "stage": "Frontend MVP",
-    "localMockData": "Local tracker data",
     "language": {
       "label": "Language",
       "en": "English",
@@ -71,7 +70,11 @@
     "offers": "Offers",
     "statusOverview": "Status overview",
     "recentActivity": "Recent activity",
-    "updated": "Updated {{date}}"
+    "updated": "Updated {{date}}",
+    "loading": "Loading dashboard",
+    "loadErrorTitle": "Dashboard could not be loaded",
+    "noActivityYet": "No activity yet",
+    "noActivityYetDescription": "Saved jobs appear here as soon as you add one."
   },
   "jobs": {
     "savedJobs": "Saved jobs",

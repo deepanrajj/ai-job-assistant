@@ -35,6 +35,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)
+- [Task 025 - Replace Mock Jobs On Dashboard Page Plan](./025-replace-mock-jobs-on-dashboard-page-plan.md)
 - [Task 026 - Connect Add Job Form To Backend Plan](./026-connect-add-job-form-to-backend-plan.md)
 - [Task 027 - Connect Edit Job Form To Backend Plan](./027-connect-edit-job-form-to-backend-plan.md)
 - [Task 028 - Connect Delete Job Action To Backend Plan](./028-connect-delete-job-action-to-backend-plan.md)

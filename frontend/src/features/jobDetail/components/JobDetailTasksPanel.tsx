@@ -8,7 +8,7 @@ import {
   isJobTaskComplete,
 } from '../jobDetail.utils';
 import type { TJobDetail, TJobTask } from '../../../types';
-import type { IUpdateJobTaskInput } from '../../jobs/jobsStore.types';
+import type { IUpdateJobTaskInput } from '../jobDetail.types';
 
 /**
  * Props used by the job detail tasks panel.

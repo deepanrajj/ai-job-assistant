@@ -47,8 +47,25 @@ smart-job-tracker-local.postman_environment.json
 
 Import the collection and whichever environment matches how you are
 running the backend, then select it in the environment dropdown. Both
-environments define the same `baseUrl` variable and differ only in its
-value, so switching runtime is switching environment.
+environments define the same two variables and differ only in their
+values, so switching runtime is switching environment.
+
+| Variable | What it addresses |
+| --- | --- |
+| `baseUrl` | the API, including the `/api` context path |
+| `appOrigin` | the origin a *browser* loads the app from in that runtime |
+
+`appOrigin` exists for the three write requests. `Create job`,
+`Update job` and `Delete job` each send it as an `Origin` header, because
+a browser attaches `Origin` to every write and Newman does not, so
+without it no run here can see a CORS mapping refusing the app's own
+origin. Each then asserts the response carries no
+`Access-Control-Allow-Origin`, which is what makes the check independent
+of the origin sent: a mapping that allowed this origin explicitly, or
+allowed every origin, would answer 200 and still be caught. All three
+verbs carry it because a mapping can restrict methods as well as
+origins. That defect was real and shipped through three tasks. See
+[`../engineering/same-origin-api-boundary.md`](../engineering/same-origin-api-boundary.md).
 
 There are two environments for three runtimes, and that is deliberate.
 The Kubernetes cluster and the Docker Compose stack both publish the

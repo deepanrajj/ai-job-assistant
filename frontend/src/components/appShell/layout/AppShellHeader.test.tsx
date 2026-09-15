@@ -7,7 +7,7 @@ import { renderWithProviders } from '../../../test/renderWithProviders';
 import { appRouteHandles } from '../../../routes/routes.constants';
 
 describe('AppShellHeader', () => {
-  it('renders route title, subtitle, local data badge, and mobile navigation', () => {
+  it('renders route title, subtitle, and mobile navigation', () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/jobs']}>
         <AppShellHeader page={appRouteHandles.JOBS} />
@@ -18,7 +18,21 @@ describe('AppShellHeader', () => {
     expect(
       screen.getByText('Review your saved opportunities and keep the pipeline moving.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Local tracker data')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Mobile navigation' })).toBeInTheDocument();
+  });
+
+  /**
+   * The badge claimed the app ran on local tracker data. Task 025 removed
+   * the last local store, so the claim became false on every page. Pinned
+   * here so it cannot come back with the store gone.
+   */
+  it('makes no claim about the data source', () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/jobs']}>
+        <AppShellHeader page={appRouteHandles.JOBS} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText(/local tracker data/i)).not.toBeInTheDocument();
   });
 });

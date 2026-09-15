@@ -1,5 +1,4 @@
-import type { TJobAiAnalysis, TJobStatus } from '../../types';
-import type { IUpdateJobTaskInput } from '../jobs/jobsStore.types';
+import type { TJobAiAnalysis, TJobStatus, TJobTaskStatus } from '../../types';
 
 /**
  * Represents one metadata item rendered in the job detail header.
@@ -23,4 +22,13 @@ export interface IJobDetailPageActions {
   onStatusChange?: (jobId: string, status: TJobStatus) => void;
   onUpdateNote?: (jobId: string, noteId: string, body: string) => void;
   onUpdateTask?: (jobId: string, taskId: string, input: IUpdateJobTaskInput) => void;
+}
+
+/**
+ * Represents fields that can be changed on a saved job task.
+ */
+export interface IUpdateJobTaskInput {
+  dueDate?: string;
+  status?: TJobTaskStatus;
+  title?: string;
 }

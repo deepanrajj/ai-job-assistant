@@ -2,16 +2,16 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import App from './App.tsx';
-import { JobsProvider } from './features/jobs';
 import { TranslationProvider } from './i18n';
+import { clearLegacyJobStorage } from './utils';
 import './index.css';
+
+clearLegacyJobStorage();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TranslationProvider>
-      <JobsProvider>
-        <App />
-      </JobsProvider>
+      <App />
     </TranslationProvider>
   </StrictMode>,
 );
