@@ -60,6 +60,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
               }
             ],
             "body": {
@@ -71,7 +76,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["jobs"]
             },
-            "description": "Every field is optional except company and roleTitle. Omitting status defaults it to WISHLIST in CreateJobCommand rather than in the request DTO."
+            "description": "Every field is optional except company and roleTitle. Omitting status defaults it to WISHLIST in CreateJobCommand rather than in the request DTO.\n\nThis is the only request in the collection that sends an Origin header, and it is not decoration. A browser sends Origin on every write, so a CORS mapping that does not list the app's own origin answers 403 to all of them while reads keep working. That defect shipped through three tasks because nothing here, and no curl check, sent the header. See docs/engineering/same-origin-api-boundary.md."
           },
           "event": [
             {
@@ -81,6 +86,15 @@
                 "exec": [
                   "pm.test('responds 201 Created', function () {",
                   "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('is not refused as an invalid CORS request', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
                   "});",
                   "",
                   "const job = pm.response.json();",

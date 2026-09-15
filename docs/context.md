@@ -122,6 +122,9 @@ Backend currently has:
 - PostgreSQL datasource configuration, Flyway migration setup, and a
   saved-job JPA entity, repository, and service layer
 - job CRUD endpoints under `/api/jobs`
+- no CORS configuration, deliberately: the browser reaches the API
+  through the Nginx or Vite proxy on its own origin. See
+  `docs/engineering/same-origin-api-boundary.md`
 - a job-task JPA entity and repository, with tasks cascading on job
   deletion
 - a shared `AssignedIdEntity` mapped superclass that every JPA entity

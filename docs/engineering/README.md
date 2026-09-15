@@ -16,6 +16,7 @@ Use it for:
 Existing engineering references:
 
 - [`frontend-test-reliability.md`](./frontend-test-reliability.md)
+- [`same-origin-api-boundary.md`](./same-origin-api-boundary.md)
 - [`local-runtime-environment.md`](./local-runtime-environment.md)
 - [`claude-code-skills.md`](./claude-code-skills.md)
 - [`github-pipeline.md`](./github-pipeline.md)
