@@ -22,6 +22,15 @@ spec:
         app.kubernetes.io/name: smart-job-tracker-postgres
         app.kubernetes.io/part-of: smart-job-tracker
     spec:
+      securityContext:
+        # The postgres image runs as uid/gid 999. Without this, a storage
+        # class that formats a block device hands kubelet an empty root
+        # owned by root, the subPath directory below is created root:root
+        # 0755, and the server cannot write to its own data directory.
+        # Docker Desktop's hostpath provisioner is permissive enough not
+        # to need it, so this is portability rather than something that
+        # was reproduced here.
+        fsGroup: 999
       containers:
         - name: postgres
           image: postgres:16
@@ -43,7 +52,8 @@ spec:
               # A subdirectory rather than the volume root. A storage
               # class that formats a block device leaves lost+found in
               # that root, and initdb refuses to start in a directory
-              # that is not empty.
+              # that is not empty. Pairs with the fsGroup above, which
+              # is what makes the created subdirectory writable.
               subPath: pgdata
       volumes:
         - name: postgres-data

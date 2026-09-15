@@ -250,6 +250,14 @@ comes from the `smart-job-tracker-secrets` Secret:
 POSTGRES_PASSWORD
 ```
 
+PostgreSQL applies that password once, during `initdb`, and the data
+directory now persists, so changing the secret later desynchronises the
+two: the backend presents the new password to a database still holding
+the old one and crash-loops. Recreating the secret means deleting the
+claim as well, which recreates the database empty. `POSTGRES_DB` and
+`POSTGRES_USER` in the config map above are init-only for the same
+reason.
+
 In-cluster hostname: `smart-job-tracker-postgres`
 Port: `5432`
 

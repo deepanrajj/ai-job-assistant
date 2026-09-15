@@ -202,6 +202,29 @@ PersistentVolumeClaim, so it survives pod recreation and scaling to
 zero. The two stores are separate, so the same job is not visible in
 both. Deleting the namespace deletes the claim with it.
 
+Persistence makes `POSTGRES_PASSWORD` init-only in Kubernetes too, and
+that one bites harder than the Compose case above. The image sets the
+password during `initdb` and never again, while the backend reads the
+same secret key on every start. Change the secret and restart, and the
+backend presents the new password to a database that still holds the
+old one: the pod crash-loops on `password authentication failed`, and
+no number of restarts clears it, because the data directory now
+outlives the pod.
+
+Recreating the secret therefore means recreating the database:
+
+```bash
+kubectl delete pvc smart-job-tracker-postgres-data --namespace smart-job-tracker
+```
+
+```bash
+kubectl rollout restart deployment/smart-job-tracker-postgres --namespace smart-job-tracker
+```
+
+That deletes the local data, which is the point - the claim is what
+holds the old password. Before this runtime persisted anything, pod
+recreation re-ran `initdb` and re-synced the two by accident.
+
 Because Compose publishes PostgreSQL on the same `5434` the Kubernetes
 port-forward uses, you can also run the database alone and point the
 host processes from `npm run dev:local` at it:
@@ -331,6 +354,12 @@ Remove the local runtime:
 ```bash
 npm run k8s:delete
 ```
+
+That is a full teardown. It deletes the namespace, and with it the
+PersistentVolumeClaim holding the database and the
+`smart-job-tracker-secrets` Secret, which has to be recreated by hand
+before the next `npm run dev`. Scaling the deployments to zero frees
+the same CPU and memory and keeps both.
 
 Delete the namespace and local secret:
 
