@@ -3,7 +3,10 @@ import { createRoot } from 'react-dom/client';
 
 import App from './App.tsx';
 import { TranslationProvider } from './i18n';
+import { clearLegacyJobStorage } from './utils';
 import './index.css';
+
+clearLegacyJobStorage(window.localStorage);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

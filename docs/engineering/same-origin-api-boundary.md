@@ -109,22 +109,36 @@ reproduce it the way a user produces it.
 
 `backend/src/test/kotlin/com/smartjobtracker/config/CorsPolicyTest.kt`
 sends the deployed app origin explicitly on a read and on a write, and
-asserts both are served rather than refused. Against the old
-configuration it failed with `expected:<200> but was:<403>` and
+asserts both that they are served rather than refused and that neither
+response carries an `Access-Control-Allow-Origin` header. Against the
+old configuration it failed with `expected:<200> but was:<403>` and
 `expected:<201> but was:<403>`.
 
 The read case is not redundant. It proves the refusal was about the
 header rather than the verb, which is the fact that makes the
 reads-work-writes-fail behaviour comprehensible.
 
-A second guard sits one layer out. `Create job` in
-`docs/api/smart-job-tracker.postman_collection.json` now sends an
-`Origin` header taken from the `appOrigin` environment variable, and
-asserts the response is not a 403. That is the only request in the
-collection carrying the header, and it is deliberate: the backend test
-proves the application accepts the origin, while the collection proves
-it through the proxy, against a stack built from images, on the port a
-browser really uses. CI runs it in the Docker Build workflow.
+A second guard sits one layer out. `Create job`, `Update job` and
+`Delete job` in `docs/api/smart-job-tracker.postman_collection.json`
+each send an `Origin` header taken from the `appOrigin` environment
+variable, and assert both that the response is not a 403 and that it
+carries no `Access-Control-Allow-Origin`. The backend test proves the
+application ignores the header; the collection proves it through the
+proxy, against a stack built from images, on the port a browser really
+uses. CI runs it in the Docker Build workflow.
+
+Three properties of those assertions are deliberate:
+
+- **All three verbs carry the header.** A mapping restricts methods as
+  well as origins, so one that allowed `GET` and `POST` would break edit
+  and delete while leaving create green.
+- **The allow-origin header must be absent**, not merely permissive.
+  Asserting only "not 403" would pass for `allowedOrigins("*")`, which
+  answers the symptom by opening the API to every site.
+- **That absence is what makes the check origin-independent.** It holds
+  whichever value `appOrigin` carries, so the local environment's
+  `http://localhost:5173` catches a reinstated mapping even though that
+  was the origin the old one allowed.
 
 The two guards fail in different situations. The backend test catches a
 CORS mapping being reintroduced in code. The collection catches the same
@@ -142,7 +156,9 @@ running `npm run api:test` against it:
 ```
 
 Newman exited 1, so CI would stop. Removing the file and rebuilding
-returned the run to 26 assertions and 0 failures. A guard nobody has
+returned the run to green. That transcript is from the run as it stood
+then; the assertion has since been renamed and widened to cover the
+allow-origin header and the other two write verbs. A guard nobody has
 seen fail is the same kind of thing as the checks that missed this
 defect in the first place, which is why this paragraph exists.
 

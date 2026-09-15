@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
@@ -28,6 +29,14 @@ import org.springframework.transaction.annotation.Transactional
  * The write case is the one that matters. The read case is here to show
  * the refusal was never about the verb: it was about the header, which a
  * same-origin GET simply does not carry.
+ *
+ * Each case also asserts the response carries no
+ * `Access-Control-Allow-Origin`. Asserting only that the request is not
+ * refused would stay green if someone answered a future 403 with
+ * `allowedOrigins("*")`, which opens the API to every origin instead of
+ * removing the check. The absence of that header is the real invariant:
+ * this application performs no CORS processing at all, whatever origin
+ * arrives.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,6 +50,7 @@ class CorsPolicyTest {
         mockMvc
             .perform(get("/jobs").header(HttpHeaders.ORIGIN, DEPLOYED_APP_ORIGIN))
             .andExpect(status().isOk)
+            .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
     }
 
     @Test
@@ -59,6 +69,7 @@ class CorsPolicyTest {
                         """.trimIndent(),
                     ),
             ).andExpect(status().isCreated)
+            .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
     }
 
     private companion object {
