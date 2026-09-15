@@ -685,3 +685,86 @@ Task 024 recorded that the list read the backend while the forms and
 the dashboard did not, and predicted it would close across 025 to 028.
 It has. Every screen now reads one source, and there is no second store
 to diverge from it.
+
+## Review Fixes
+
+A review of pull request #30 raised four findings. All four were applied
+on the branch. Every one of them was about a **guard that could not fail
+for the reason it existed**, which is the same shape as the checks that
+missed the CORS defect in the first place.
+
+### Applied
+
+| Area | Change |
+| --- | --- |
+| `CorsPolicyTest` | both cases assert the response carries no `Access-Control-Allow-Origin` header |
+| API collection | `Update job` and `Delete job` send `Origin` and carry the same assertion |
+| API collection | the create assertion widened and renamed to `the backend applied no CORS processing` |
+| `main.tsx` | clears the retired `smart-job-tracker-jobs` key at startup |
+| `utils/clearLegacyJobStorage.ts` | new, with two cases |
+| docs | three places claimed the header sat on one request only |
+
+### Why the header assertion, and not a second origin
+
+Findings 1 and 2 looked separate and share one fix.
+
+The first: asserting only "not 403" stays green for
+`allowedOrigins("*")`, which answers a future 403 by opening the API to
+every site rather than removing the check. The second: the local
+environment sends `http://localhost:5173`, which is exactly the origin
+the deleted mapping allowed, so `npm run api:test:local` could not see a
+reinstated mapping at all.
+
+Asserting the **absence of an allow-origin header** closes both. A
+mapping emits that header for any origin it permits, so the check stops
+depending on which origin is sent, and a permissive mapping fails it as
+surely as a restrictive one.
+
+The local `appOrigin` value therefore stays at `http://localhost:5173`.
+It is documented as "the origin a browser loads the app from in that
+runtime", and that is true; changing it to make the guard bite would
+have made the variable describe something false to compensate for a weak
+assertion.
+
+### All three write verbs, not just create
+
+A CORS mapping restricts methods as well as origins. One allowing `GET`
+and `POST` would have broken edit and delete in the browser while
+`Create job` stayed green - the original defect's blind spot, narrowed
+rather than removed.
+
+### The widened guard was watched failing
+
+Restoring `WebConfig` with `allowedOrigins("*")`, the exact scenario the
+finding described:
+
+```text
+CorsPolicyTest > a read carrying the deployed app origin is served() FAILED
+CorsPolicyTest > a write carrying the deployed app origin is served() FAILED
+2 tests completed, 2 failed
+```
+
+The status assertions still passed; both cases failed on the header,
+which is precisely the hole that existed before. Deleting the file
+returned them to green.
+
+`npm run api:test` then reported 28 assertions and 0 failures against a
+rebuilt stack, with `Origin: http://localhost:30080` confirmed in
+`newman.json` on `POST`, `PUT` and `DELETE`.
+
+### The stale key
+
+Nothing had read `smart-job-tracker-jobs` since the provider was
+removed, so it would have sat in every existing browser indefinitely
+holding job data no screen can reach - including entries a user made
+through the add form before task 026 connected it to the backend.
+`clearLegacyJobStorage` removes it at startup. Storage access is wrapped
+in `try`/`catch`, because a private window or blocked site data throws
+rather than returning null, and a browser that refuses storage has
+nothing to clear.
+
+| Check | Result |
+| --- | --- |
+| `npm run verify` | exit 0 |
+| frontend tests | 307 passing, two added |
+| `npm run api:test` | 28 assertions, 0 failures |
