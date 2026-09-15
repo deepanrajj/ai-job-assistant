@@ -11,16 +11,18 @@ const LEGACY_JOBS_STORAGE_KEY = 'smart-job-tracker-jobs';
  * existing browser indefinitely. Clearing it on startup keeps a stale copy
  * of job data from outliving the store that wrote it.
  *
- * Storage can throw rather than return null - a private window, or site
- * data blocked entirely - and a browser that cannot reach storage has
- * nothing to clear, so a failure here is not worth surfacing.
+ * Reaching storage is inside the `try` rather than at the call site because
+ * a browser with site data blocked entirely throws on the `localStorage`
+ * property access itself, before any method runs. Taking storage as an
+ * argument moved that access outside the guard, where a throw would reach
+ * `main.tsx` and stop the app rendering at all. A browser that cannot reach
+ * storage holds no stale key, so there is nothing here worth surfacing.
  *
- * @param {Storage} storage Browser storage implementation.
  * @returns {void}
  */
-export const clearLegacyJobStorage = (storage: Storage): void => {
+export const clearLegacyJobStorage = (): void => {
   try {
-    storage.removeItem(LEGACY_JOBS_STORAGE_KEY);
+    window.localStorage.removeItem(LEGACY_JOBS_STORAGE_KEY);
   } catch {
     // A browser that refuses storage access holds no stale key to remove.
   }

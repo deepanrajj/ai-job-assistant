@@ -14,13 +14,17 @@ front end serves the app and proxies `/api` to the backend on that same
 origin. The browser never addresses the backend directly.
 
 ```text
-dev        browser -> localhost:5173  (Vite serves app, proxies /api) -> localhost:4000
-compose    browser -> localhost:30080 (Nginx serves app, proxies /api) -> backend:8080
-k8s        browser -> localhost:30080 (Nginx serves app, proxies /api) -> backend:8080
+dev      browser -> localhost:5173  (Vite serves app, proxies /api)  -> localhost:4000
+compose  browser -> localhost:30080 (Nginx serves app, proxies /api) -> smart-job-tracker-backend:4000
+k8s      browser -> localhost:30080 (Nginx serves app, proxies /api) -> smart-job-tracker-backend:4000
 ```
 
 The dev proxy is `server.proxy` in `frontend/vite.config.ts`. The
-container proxy is `infra/docker/nginx.conf`.
+container proxy is `infra/docker/nginx.conf`. The backend listens on
+4000 in every runtime, not the Spring default of 8080:
+`server.port=4000` in `application.properties`, matched by `proxy_pass`
+in `nginx.conf` and `containerPort` in
+`infra/k8s/local/backend-deployment.yaml`.
 
 Nothing here is cross-origin, so **CORS has no work to do** and the
 backend configures none. That is deliberate, not an oversight.

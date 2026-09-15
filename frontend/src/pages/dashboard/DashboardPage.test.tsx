@@ -107,11 +107,14 @@ describe('DashboardPage', () => {
   });
 
   /**
-   * A retry keeps the previous error in state until the new request settles,
-   * so without this precedence the page would show a stale alert over a
-   * request that is already in flight.
+   * `useJobsList` cannot currently produce both at once: `useAsyncMutation`
+   * clears `error` in the same update that sets `loading`, so a retry never
+   * carries the previous failure forward. This pins the page's own ordering
+   * rather than the hook's behaviour, so a future caller that does report
+   * both shows the in-flight request instead of a stale alert. The props are
+   * set by hand because the hook cannot reach this state.
    */
-  it('shows the loading state ahead of an error from a previous attempt', () => {
+  it('shows the loading state ahead of an error when a caller reports both', () => {
     renderDashboardPage({
       error: loadError(),
       isLoading: true,

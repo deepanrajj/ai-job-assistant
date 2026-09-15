@@ -125,8 +125,16 @@ is the shape a `useAsyncQuery` task would revisit.
 
 `DashboardPage` gains `error`, `isLoading`, and `onRetry`, and returns
 `LoadingState`, `ErrorState`, or the existing dashboard body. This
-mirrors `JobsPage` exactly, down to loading taking precedence over an
-error from a previous attempt.
+mirrors `JobsPage` exactly, including loading taking precedence over
+error.
+
+**Corrected after review.** That precedence was justified here as
+covering a retry that carries the previous failure forward while the new
+request is in flight. It cannot: `useAsyncMutation.mutate` sets `error`
+to `null` in the same update that sets `loading`, so `useJobsList` never
+reports both. The ordering is worth keeping as the page's own contract,
+and its test now says so instead of describing a state the hook cannot
+reach.
 
 **Rejected: fetching inside `DashboardPage`.** Its two existing tests
 pass plain arrays and assert metric values and meter ordering. Moving

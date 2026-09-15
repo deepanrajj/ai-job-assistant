@@ -6,7 +6,7 @@ import { TranslationProvider } from './i18n';
 import { clearLegacyJobStorage } from './utils';
 import './index.css';
 
-clearLegacyJobStorage(window.localStorage);
+clearLegacyJobStorage();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
