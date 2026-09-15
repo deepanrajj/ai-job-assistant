@@ -43,7 +43,8 @@ PostgreSQL
   Service:    smart-job-tracker-postgres
   Image:      postgres:16
   Port:       5432
-  Storage:    emptyDir (ephemeral; data resets on pod recreation)
+  Storage:    PersistentVolumeClaim smart-job-tracker-postgres-data
+              (1Gi, survives pod recreation; deleted with the namespace)
 ```
 
 ## Docker Compose Runtime
@@ -96,7 +97,7 @@ config serve both runtimes.
 
 | | Kubernetes | Compose |
 | --- | --- | --- |
-| Database storage | `emptyDir`, resets on pod recreation | named volume, survives restarts |
+| Database storage | PersistentVolumeClaim, survives restarts | named volume, survives restarts |
 | Secrets | `smart-job-tracker-secrets` Secret, no defaults | `infra/docker/.env`, with local defaults |
 | Startup ordering | probes and Service objects | `depends_on` with health conditions |
 | Image delivery | `k8s:load-images` into the node | built in place by Compose |
@@ -248,6 +249,14 @@ comes from the `smart-job-tracker-secrets` Secret:
 ```text
 POSTGRES_PASSWORD
 ```
+
+PostgreSQL applies that password once, during `initdb`, and the data
+directory now persists, so changing the secret later desynchronises the
+two: the backend presents the new password to a database still holding
+the old one and crash-loops. Recreating the secret means deleting the
+claim as well, which recreates the database empty. `POSTGRES_DB` and
+`POSTGRES_USER` in the config map above are init-only for the same
+reason.
 
 In-cluster hostname: `smart-job-tracker-postgres`
 Port: `5432`

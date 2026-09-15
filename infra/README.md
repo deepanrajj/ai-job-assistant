@@ -70,8 +70,10 @@ npm run compose:down
 `compose:smoke` is the focused check for this runtime. Run it after any
 change to `infra/docker/`, before the full verification.
 
-`npm run compose:reset` also deletes the PostgreSQL volume. Unlike the
-Kubernetes runtime, Compose keeps the database between restarts.
+`npm run compose:reset` also deletes the PostgreSQL volume. Both
+runtimes keep the database between restarts - Compose in that named
+volume, Kubernetes in a PersistentVolumeClaim - and the two stores are
+separate, so a job created in one is not visible in the other.
 
 The app is at the same address either way:
 
@@ -141,6 +143,13 @@ Remove the local runtime:
 ```bash
 npm run k8s:delete
 ```
+
+That is a full teardown, not a stop. `kustomization.yaml` lists
+`namespace.yaml`, so it deletes the namespace and everything in it: the
+PersistentVolumeClaim holding the database, and the secret, which the
+kustomization does not manage and cannot recreate. To stop the runtime
+without losing either, release the port forwards or scale the
+deployments to zero; both keep the claim.
 
 Delete the namespace and local secret:
 

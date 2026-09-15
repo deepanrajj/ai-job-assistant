@@ -139,7 +139,8 @@ Local infrastructure currently has:
 - Kubernetes namespace, deployments, services, and config map
 - example Kubernetes secret manifest
 - local image loading script for Docker Desktop Kubernetes
-- PostgreSQL deployment and service (ephemeral emptyDir storage; data resets on pod recreation)
+- PostgreSQL deployment and service, with a PersistentVolumeClaim so the
+  database survives pod recreation and scaling to zero
 - Docker Compose runtime covering frontend, backend, and PostgreSQL,
   with a named volume so the database survives a restart
 

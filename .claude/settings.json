@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(kubectl delete namespace *)",
+      "Bash(kubectl delete ns *)",
+      "Bash(kubectl delete -k *)",
+      "Bash(kubectl delete -f *)",
+      "Bash(kubectl delete pvc *)",
+      "Bash(kubectl delete persistentvolumeclaim *)",
+      "Bash(kubectl delete pv *)",
+      "Bash(kubectl delete persistentvolume *)",
+      "Bash(kubectl delete * pvc *)",
+      "Bash(kubectl delete * persistentvolumeclaim *)",
+      "Bash(kubectl scale *--replicas=0*)",
+      "Bash(npm run k8s:delete)",
+      "Bash(docker compose * down -v*)",
+      "Bash(npm run compose:reset)",
+      "Bash(docker volume rm *)"
+    ]
+  }
+}
