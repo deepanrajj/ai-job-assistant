@@ -53,9 +53,9 @@ is one command:
 kubectl scale deployment --all --replicas=1 --namespace smart-job-tracker
 ```
 
-PostgreSQL data does **not** survive. Its volume is `emptyDir`, which
-lives and dies with the pod, so scaling to zero empties the database.
-Flyway rebuilds the schema on the next start; the rows are gone.
+PostgreSQL data survives. Its volume is a PersistentVolumeClaim, which
+outlives the pod, so scaling to zero and back keeps the rows. Deleting
+the PVC is what destroys them, and that is level 3.
 
 ## Level 3 - full teardown
 
@@ -63,8 +63,10 @@ Flyway rebuilds the schema on the next start; the rows are gone.
 kubectl delete namespace smart-job-tracker
 ```
 
-Removes everything: deployments, services, config maps, PostgreSQL data,
-and **the secret**.
+Removes everything: deployments, services, config maps, **the
+PersistentVolumeClaim holding the database**, and **the secret**. This
+is now the only level that loses data, and it is why the claim is worth
+protecting: levels 1 and 2 keep it.
 
 `npm run k8s:delete` does the same damage. It runs
 `kubectl delete -k infra/k8s/local`, and `kustomization.yaml` lists

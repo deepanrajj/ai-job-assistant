@@ -11,5 +11,6 @@ resources:
   - frontend-deployment.yaml
   - frontend-service.yaml
   - postgres-configmap.yaml
+  - postgres-pvc.yaml
   - postgres-deployment.yaml
   - postgres-service.yaml

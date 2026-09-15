@@ -41,10 +41,10 @@ services:
       - "127.0.0.1:5434:5432"
       - "[::1]:5434:5432"
     volumes:
-      # The Kubernetes runtime uses an emptyDir and loses the database
-      # whenever the pod is recreated. Compose keeps it, which is what
-      # the demo-data and screenshot tasks need. npm run compose:reset
-      # deletes it.
+      # Both runtimes persist their database now: Kubernetes through a
+      # PersistentVolumeClaim, Compose through this named volume. The
+      # two stores are separate, so a job created in one is not visible
+      # in the other. npm run compose:reset deletes this one.
       - smart-job-tracker-postgres-data:/var/lib/postgresql/data
     healthcheck:
       # -h 127.0.0.1 forces a TCP probe. Without it pg_isready checks the

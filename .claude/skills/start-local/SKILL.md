@@ -162,7 +162,7 @@ curl -s -X DELETE http://localhost:30080/api/jobs/<id> -w "%{http_code}\n"
 | Backend pod crash-loops and never becomes ready | password does not match the secret, or PostgreSQL itself is failing | check the postgres pod first, then `kubectl logs deployment/smart-job-tracker-backend -n smart-job-tracker --previous` for the real cause |
 | Pods stuck in `CreateContainerConfigError` | the secret exists but is missing a key a deployment references | check both keys are present, then `kubectl rollout restart` the affected deployment |
 | `address already in use` on 30080 or 5434 | a port forward from an earlier run is still alive, **or** the Docker Compose runtime is up and holding the same two ports | `docker compose -f infra/docker/compose.yaml ps` to check for the second cause, then `npm run compose:down`; otherwise see the `stop-local` skill |
-| Data from the last session is gone | expected | PostgreSQL uses `emptyDir`; recreating the pod resets it |
+| Data from the last session is gone | the PVC was deleted, most likely with the namespace | expected only after a level 3 teardown; the claim survives pod recreation and `--replicas=0` |
 
 ## Boundaries
 

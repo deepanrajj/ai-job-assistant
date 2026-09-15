@@ -7,6 +7,12 @@ metadata:
     app.kubernetes.io/part-of: smart-job-tracker
 spec:
   replicas: 1
+  # Recreate, not the default RollingUpdate. The data volume is
+  # ReadWriteOnce, so a rolling update would start the replacement pod
+  # while the old one still holds the mount and leave it stuck pending
+  # until the old pod is deleted by hand.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: smart-job-tracker-postgres
@@ -34,6 +40,12 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+              # A subdirectory rather than the volume root. A storage
+              # class that formats a block device leaves lost+found in
+              # that root, and initdb refuses to start in a directory
+              # that is not empty.
+              subPath: pgdata
       volumes:
         - name: postgres-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: smart-job-tracker-postgres-data

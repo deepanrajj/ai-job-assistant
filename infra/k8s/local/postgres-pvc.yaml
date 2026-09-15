@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: smart-job-tracker-postgres-data
+  labels:
+    app.kubernetes.io/name: smart-job-tracker-postgres
+    app.kubernetes.io/part-of: smart-job-tracker
+spec:
+  # No storageClassName, so the cluster default provisions it. On Docker
+  # Desktop that is the hostpath provisioner, which keeps the data on the
+  # host and therefore survives the node restarting as well as the pod.
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # Local development data: a few hundred jobs, tasks and notes. The
+      # hostpath provisioner does not enforce the request, so this is a
+      # declaration rather than a quota.
+      storage: 1Gi

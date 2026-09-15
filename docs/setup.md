@@ -196,9 +196,11 @@ later does nothing until you run `npm run compose:reset`.
 
 ### Database Differences From Kubernetes
 
-Compose keeps PostgreSQL data in a named volume, so it survives
-`npm run compose:down` and a restart. The Kubernetes runtime uses an
-`emptyDir` and loses the database whenever the pod is recreated.
+Both runtimes keep PostgreSQL data. Compose uses a named volume, so it
+survives `npm run compose:down` and a restart; Kubernetes uses a
+PersistentVolumeClaim, so it survives pod recreation and scaling to
+zero. The two stores are separate, so the same job is not visible in
+both. Deleting the namespace deletes the claim with it.
 
 Because Compose publishes PostgreSQL on the same `5434` the Kubernetes
 port-forward uses, you can also run the database alone and point the
