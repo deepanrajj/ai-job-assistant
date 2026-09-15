@@ -35,4 +35,9 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 025: Replace mock jobs on dashboard page](../../tasks/roadmap/025-replace-mock-jobs-on-dashboard-page.md).
+- [ ] [Task 010: Create task service](../../tasks/roadmap/010-create-task-service.md).
+
+Phase 4's remaining frontend work all waits on phase 3. Tasks 030 to 032
+need job task, note, and timeline endpoints, and task 021's frontend
+task service needs a contract to type against, so the backend task
+service is the next thing that unblocks anything.

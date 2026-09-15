@@ -35,10 +35,6 @@ export const AppShellHeader: FC<IAppShellHeaderProps> = ({ page }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-lg border border-app-border bg-app-surface2 px-3 py-2 text-sm text-app-textSoft sm:flex">
-              <span aria-hidden="true" className="h-2 w-2 rounded-full bg-success-500" />
-              {t('app.localMockData')}
-            </div>
             <LanguageSelect />
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { memo, type FC } from 'react';
 
-import { Card } from '../../../components/ui';
+import { Card, EmptyState } from '../../../components/ui';
 import { useTranslation } from '../../../i18n';
 import { formatDashboardDate } from '../dashboard.utils';
 import type { TJob } from '../../../types';
@@ -20,6 +20,16 @@ interface IDashboardRecentActivityProps {
  */
 const DashboardRecentActivityComponent: FC<IDashboardRecentActivityProps> = ({ jobs }) => {
   const { language, t } = useTranslation();
+
+  if (jobs.length === 0)
+    return (
+      <Card bodyClassName="p-0" padding="none" title={t('dashboard.recentActivity')}>
+        <EmptyState
+          description={t('dashboard.noActivityYetDescription')}
+          title={t('dashboard.noActivityYet')}
+        />
+      </Card>
+    );
 
   return (
     <Card bodyClassName="p-0" padding="none" title={t('dashboard.recentActivity')}>

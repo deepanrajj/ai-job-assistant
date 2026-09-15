@@ -99,9 +99,13 @@ Frontend currently has:
   the failure when the request fails
 - a delete action that removes the job through `DELETE /api/jobs/{id}`,
   leaving for the jobs list only once the server confirms
-- localStorage-backed job persistence for the dashboard alone, which is
-  the last screen reading it and the reason `JobsProvider` still exists
-  until task 025
+- a dashboard whose metrics, status meters, and recent activity derive
+  from `GET /api/jobs`, with loading, retryable error, and first-run
+  empty states
+- no localStorage job persistence. The dashboard was the last screen
+  reading it, so task 025 removed `JobsProvider`, its context, its
+  store utilities, and its hook. `src/data/mockJobDetails.ts` remains
+  as a test fixture only
 - English and German translations
 - reusable UI, form, table, icon, and layout components
 - frontend tests and coverage gate
@@ -191,8 +195,10 @@ AiUsageEvent
   id, userId, operation, creditConsumed, status, createdAt
 ```
 
-Frontend localStorage is temporary. It lets the UI behave like a real
-tracker until backend job APIs exist.
+Frontend localStorage was temporary scaffolding that let the UI behave
+like a real tracker before backend job APIs existed. Task 025 removed
+it once every screen read the backend. Job data now lives only in
+PostgreSQL.
 
 ## 6. API Direction
 

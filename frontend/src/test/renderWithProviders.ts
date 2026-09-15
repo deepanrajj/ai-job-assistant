@@ -1,7 +1,6 @@
 import { render, type RenderOptions } from '@testing-library/react';
 import { createElement, type ReactElement, type ReactNode } from 'react';
 
-import { JobsProvider } from '../features/jobs';
 import { TranslationProvider } from '../i18n';
 
 /**
@@ -18,7 +17,7 @@ interface ITestProvidersProps {
  * @returns {ReactElement} Provider-wrapped children.
  */
 const TestProviders = ({ children }: ITestProvidersProps): ReactElement =>
-  createElement(TranslationProvider, null, createElement(JobsProvider, null, children));
+  createElement(TranslationProvider, null, children);
 
 /**
  * Renders UI with the same core providers used by the application.

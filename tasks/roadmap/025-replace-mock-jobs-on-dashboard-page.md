@@ -1,5 +1,7 @@
 # Task 025 - Replace Mock Jobs On Dashboard Page
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -41,9 +43,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Dashboard uses backend job data.
-- [ ] Existing calculations are preserved.
-- [ ] Tests cover user-visible states.
+- [x] Dashboard uses backend job data.
+- [x] Existing calculations are preserved.
+- [x] Tests cover user-visible states.
 
 ## Commit
 
