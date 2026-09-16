@@ -211,19 +211,89 @@ old one: the pod crash-loops on `password authentication failed`, and
 no number of restarts clears it, because the data directory now
 outlives the pod.
 
-Recreating the secret therefore means recreating the database:
+Recreating the secret therefore means recreating the database. See
+[Resetting The Kubernetes Database](#resetting-the-kubernetes-database)
+below. Before this runtime persisted anything, pod recreation re-ran
+`initdb` and re-synced the two by accident.
+
+### Resetting The Kubernetes Database
+
+This deletes every row in the local cluster database and rebuilds an
+empty one. Use it after recreating `smart-job-tracker-secrets` with a
+different `POSTGRES_PASSWORD`, or whenever you want a clean database. It
+leaves the namespace and the secret alone, so it is not a teardown.
+
+Run the steps in order. Each one exists because skipping it was tried
+and failed.
+
+1. Stop PostgreSQL, so nothing is holding the claim:
+
+   ```bash
+   kubectl scale deployment/smart-job-tracker-postgres --replicas=0 --namespace smart-job-tracker
+   ```
+
+   ```bash
+   kubectl wait --for=delete pod -l app.kubernetes.io/name=smart-job-tracker-postgres --namespace smart-job-tracker --timeout=120s
+   ```
+
+   Skip this and the next step hangs. The claim carries the
+   `kubernetes.io/pvc-protection` finalizer, so Kubernetes will not
+   remove it while a running pod mounts it, and `kubectl delete` waits
+   for the removal by default.
+
+2. Delete the claim:
+
+   ```bash
+   kubectl delete pvc smart-job-tracker-postgres-data --namespace smart-job-tracker
+   ```
+
+   With the pod gone this returns in about a second. The storage class
+   reclaim policy is `Delete`, so the volume behind it goes too.
+
+3. Recreate the claim and start PostgreSQL again:
+
+   ```bash
+   npm run k8s:apply
+   ```
+
+   ```bash
+   kubectl wait --for=condition=available deployment/smart-job-tracker-postgres --namespace smart-job-tracker --timeout=180s
+   ```
+
+   `k8s:apply` is what recreates the claim; a `rollout restart` does not,
+   and leaves the pod pending forever on a claim that no longer exists.
+   It also returns the deployment to one replica, so step 1 needs no
+   matching scale-up. The claim shows `Pending` for a moment: the storage
+   class binds on first use, so it waits for the pod to schedule.
+
+4. Restart the backend, so Flyway builds the schema:
+
+   ```bash
+   kubectl rollout restart deployment/smart-job-tracker-backend --namespace smart-job-tracker
+   ```
+
+   ```bash
+   kubectl rollout status deployment/smart-job-tracker-backend --namespace smart-job-tracker --timeout=180s
+   ```
+
+   Flyway only runs when the backend starts. Without this the new
+   database has no tables at all and every job request answers
+   `500 INTERNAL_ERROR`.
+
+To confirm it worked, forward the port and check for a `200`:
 
 ```bash
-kubectl delete pvc smart-job-tracker-postgres-data --namespace smart-job-tracker
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:30080/api/jobs
 ```
 
-```bash
-kubectl rollout restart deployment/smart-job-tracker-postgres --namespace smart-job-tracker
-```
+A `502 Bad Gateway` in the first few seconds after step 4 is the proxy
+reaching the backend before the new pod is serving, and clears on its
+own. Retry on the status code rather than on `curl` succeeding: `curl`
+exits `0` for a `502` too, so a loop waiting on its exit code does not
+wait at all.
 
-That deletes the local data, which is the point - the claim is what
-holds the old password. Before this runtime persisted anything, pod
-recreation re-ran `initdb` and re-synced the two by accident.
+Steps 1 and 2 match the `ask` rules in `.claude/settings.json`, so an
+agent running them stops for confirmation. That is intended.
 
 Because Compose publishes PostgreSQL on the same `5434` the Kubernetes
 port-forward uses, you can also run the database alone and point the

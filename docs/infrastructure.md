@@ -253,8 +253,10 @@ POSTGRES_PASSWORD
 PostgreSQL applies that password once, during `initdb`, and the data
 directory now persists, so changing the secret later desynchronises the
 two: the backend presents the new password to a database still holding
-the old one and crash-loops. Recreating the secret means deleting the
-claim as well, which recreates the database empty. `POSTGRES_DB` and
+the old one and crash-loops. Recreating the secret means resetting the
+database as well, which leaves it empty - see
+[Resetting The Kubernetes Database](./setup.md#resetting-the-kubernetes-database)
+for the steps, which have an order that matters. `POSTGRES_DB` and
 `POSTGRES_USER` in the config map above are init-only for the same
 reason.
 
