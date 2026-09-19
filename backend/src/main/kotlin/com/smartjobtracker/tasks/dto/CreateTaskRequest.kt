@@ -14,12 +14,9 @@ data class CreateTaskRequest(
     val dueDate: LocalDate? = null,
 )
 
-fun CreateTaskRequest.toCommand(): CreateTaskCommand {
-    val command =
-        CreateTaskCommand(
-            title = title,
-            dueDate = dueDate,
-        )
-
-    return if (status == null) command else command.copy(status = status)
-}
+fun CreateTaskRequest.toCommand(): CreateTaskCommand =
+    CreateTaskCommand(
+        title = title,
+        status = status ?: TaskStatus.TODO,
+        dueDate = dueDate,
+    )

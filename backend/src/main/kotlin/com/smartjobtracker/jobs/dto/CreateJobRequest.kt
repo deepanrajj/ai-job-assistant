@@ -38,17 +38,14 @@ data class CreateJobRequest(
     val description: String? = null,
 )
 
-fun CreateJobRequest.toCommand(): CreateJobCommand {
-    val command =
-        CreateJobCommand(
-            company = company,
-            roleTitle = roleTitle,
-            location = location,
-            jobUrl = jobUrl,
-            salaryMin = salaryMin,
-            salaryMax = salaryMax,
-            description = description,
-        )
-
-    return if (status == null) command else command.copy(status = status)
-}
+fun CreateJobRequest.toCommand(): CreateJobCommand =
+    CreateJobCommand(
+        company = company,
+        roleTitle = roleTitle,
+        status = status ?: JobStatus.WISHLIST,
+        location = location,
+        jobUrl = jobUrl,
+        salaryMin = salaryMin,
+        salaryMax = salaryMax,
+        description = description,
+    )
