@@ -35,7 +35,7 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 011: Create task controller](../../tasks/roadmap/011-create-task-controller.md).
+- [ ] [Task 012: Add task CRUD endpoints](../../tasks/roadmap/012-add-task-crud-endpoints.md).
 
 Phase 4's remaining frontend work all waits on phase 3. Tasks 030 to 032
 need job task, note, and timeline endpoints, and task 021's frontend
