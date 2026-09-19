@@ -22,6 +22,7 @@ focused plan in this folder and link it from the relevant numbered task.
 ## Plans
 
 - [Final Smart Job Tracker roadmap](./final-smart-job-tracker-roadmap.md)
+- [Product improvements and recommendation register](./product-improvements-and-recommendations-plan.md)
 - [End-to-end testing strategy](./e2e-testing-strategy-plan.md)
 - [Task 001 - Add PostgreSQL Docker Service Plan](./postgresql-docker-service-plan.md)
 - [Task 002 - Add Flyway Migration Setup Plan](./002-flyway-migration-setup-plan.md)
@@ -32,6 +33,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 007 - Add Job CRUD Endpoints Plan](./007-add-job-crud-endpoints-plan.md)
 - [Task 008 - Create Task Entity Plan](./008-create-task-entity-plan.md)
 - [Task 009 - Create Task Repository Plan](./009-create-task-repository-plan.md)
+- [Task 010 - Create Task Service Plan](./010-create-task-service-plan.md)
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)
