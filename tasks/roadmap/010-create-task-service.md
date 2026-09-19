@@ -41,9 +41,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Task service owns task business logic.
-- [ ] Parent job boundaries are respected.
-- [ ] Service tests cover behavior.
+- [x] Task service owns task business logic.
+- [x] Parent job boundaries are respected.
+- [x] Service tests cover behavior.
 
 ## Commit
 

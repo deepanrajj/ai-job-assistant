@@ -11,10 +11,11 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
- * Fields stay `val` because nothing mutates a task yet. The task service
- * that first edits one turns the columns it edits into `var` and mutates
- * the managed instance, as `DefaultJobService.updateJob` does; it must
- * not rebuild the entity. See [AssignedIdEntity].
+ * Editable columns are `var` so an update mutates the managed instance
+ * and lets Hibernate's dirty checking write it, as
+ * `DefaultTaskService.updateTask` does; it must not rebuild the entity.
+ * See [AssignedIdEntity]. `jobId` and `createdAt` stay `val` because
+ * nothing moves a task to another job or rewrites when it was created.
  */
 @Entity
 @Table(name = "tasks")
@@ -23,16 +24,16 @@ class Task(
     @Column(name = "job_id", nullable = false)
     val jobId: UUID,
     @Column(nullable = false)
-    val title: String,
+    var title: String,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val status: TaskStatus,
+    var status: TaskStatus,
     @Column(name = "due_date")
-    val dueDate: LocalDate?,
+    var dueDate: LocalDate?,
     @Column(name = "created_at", nullable = false)
     val createdAt: OffsetDateTime,
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: OffsetDateTime,
+    var updatedAt: OffsetDateTime,
 ) : AssignedIdEntity(id)
 
 enum class TaskStatus {
