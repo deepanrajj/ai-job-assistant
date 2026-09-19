@@ -16,6 +16,12 @@ checkboxes, so progress is visible directly in the repository.
 
 ## Backlog Rules
 
+Product refinements, dependencies, and recommendations beyond the numbered
+backlog are tracked in the
+[product improvements plan](../business/product-improvements-and-recommendations-plan.md).
+Its recommendation IDs are planning references; promote each to a scoped
+numbered task before implementation.
+
 - Keep each task small enough to complete in one focused change.
 - Mark a task as complete only when it is implemented and verified.
 - Add a short note under a task if the scope changes.

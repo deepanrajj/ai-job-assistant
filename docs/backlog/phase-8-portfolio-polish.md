@@ -27,6 +27,12 @@ feature work and are worth doing early; 080 and 081 unlock once task
 [the end-to-end testing strategy](../business/e2e-testing-strategy-plan.md)
 for the intended ordering.
 
+Task 070 is now a job-only demo seed that can run as soon as job CRUD
+exists. Bring it and task 080 forward; task 080's tests still own their
+isolated records. Advanced demo scenarios follow their domain schemas
+under R-12 in the
+[product improvements plan](../business/product-improvements-and-recommendations-plan.md#delivery-sequence).
+
 ## Acceptance Criteria
 
 - A new developer can run the project from the README.

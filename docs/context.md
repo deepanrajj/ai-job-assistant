@@ -169,7 +169,7 @@ Note
   id, jobId, body, createdAt, updatedAt
 
 TimelineEvent
-  id, jobId, type, description, createdAt
+  id, jobId, type, description, previousStatus, nextStatus, createdAt
 
 AiOutput
   id, jobId, userId, type, contentJson, createdAt
@@ -203,6 +203,11 @@ Frontend localStorage was temporary scaffolding that let the UI behave
 like a real tracker before backend job APIs existed. Task 025 removed
 it once every screen read the backend. Job data now lives only in
 PostgreSQL.
+
+Planned status events carry structured previous/next statuses (empty for
+other event types). Analytics uses recorded transitions, not job edit
+timestamps or parsed event descriptions. Unknown historical dates and
+employer responses remain unknown until explicitly captured.
 
 ## 6. API Direction
 
@@ -362,6 +367,17 @@ Duplicate detection has two product modes:
 
 First CV generation output is an editable in-app draft. PDF/DOCX export
 is a later enhancement.
+
+Planned fit and material generation link factual claims to captured
+profile-entry evidence, with unsupported claims visibly marked for user
+review. Evidence integrity checks do not establish that a claim is true.
+Profile edits must not silently rewrite the sources of an earlier output.
+
+The [product improvements plan](./business/product-improvements-and-recommendations-plan.md)
+defines analytics semantics, manual candidate intake, AI evidence, and a
+prioritized register of follow-up recommendations. Those recommendations
+are planned work, not current capabilities or additional scope for an
+existing implementation task.
 
 Paid AI rules:
 

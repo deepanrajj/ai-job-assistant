@@ -25,3 +25,6 @@ AI as a standalone assistant.
   material generation are available from relevant workflows.
 - AI outputs can be regenerated, reviewed, cached, and saved as tracker
   data.
+- Fit and generated-material claims reference captured profile evidence;
+  unsupported claims retain a visible review state. Tasks 063-066 follow
+  the [profile evidence plan](../business/product-improvements-and-recommendations-plan.md#ai-claims-need-profile-evidence).
