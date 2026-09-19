@@ -48,6 +48,11 @@ meant to run well before the rest of phase 8; the ordering lives in
 
 ## Deferred Ideas
 
+Additional product recommendations and their promotion rules live in
+the [product improvements plan](../../docs/business/product-improvements-and-recommendations-plan.md).
+R-01 through R-12 are not numbered execution tasks. Their priorities do
+not override the dependency and scope boundaries of existing tasks.
+
 The previous pgvector, embedding, job chunk, and RAG tasks are deferred.
 They are not execution-ready tasks because the final product direction
 prioritizes workflow-integrated AI, duplicate detection, paid access,

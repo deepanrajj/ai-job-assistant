@@ -1,5 +1,7 @@
 # Task 042 - Add Calendar View
 
+Status: Not started
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -21,6 +23,12 @@ Out of scope:
 - External calendar sync.
 - Recurring events.
 - Timezone-heavy scheduling logic.
+
+Calendar-file export and external delivery are separate follow-up R-09
+in the [product improvements plan](../../docs/business/product-improvements-and-recommendations-plan.md#reminder-delivery-is-a-separate-follow-up).
+Date-only reminders remain calendar dates, not invented midnight UTC
+appointments. Timed interview rounds and their timezone model belong to
+R-02 before they can be exported as timed events.
 
 ## Required Changes
 

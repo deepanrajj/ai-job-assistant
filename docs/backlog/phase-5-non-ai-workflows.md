@@ -23,6 +23,14 @@ before adding paid AI workflows.
 
 ## Acceptance Criteria
 
+Planning refinements are recorded in the
+[product improvements plan](../business/product-improvements-and-recommendations-plan.md):
+043 uses structured history and explains unavailable response metrics;
+047 includes manual candidate intake before duplicate review/import;
+044 supplies stable profile-entry references for later AI evidence.
+Calendar export, notification delivery, compensation attributes, and the
+other R-ID recommendations require separate follow-up tasks.
+
 - The app has the final non-AI navigation shape.
 - Saved jobs support pipeline, source, contacts, reminders, documents,
   and calendar-related workflows.

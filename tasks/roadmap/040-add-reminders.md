@@ -1,5 +1,7 @@
 # Task 040 - Add Reminders
 
+Status: Not started
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -21,6 +23,10 @@ Out of scope:
 - Push notifications or email reminders.
 - External calendar sync.
 - Recurring reminders.
+
+Calendar-file export and later opt-in email delivery are tracked as R-09
+in the [product improvements plan](../../docs/business/product-improvements-and-recommendations-plan.md#reminder-delivery-is-a-separate-follow-up).
+They require separate tasks and do not expand this in-app reminder task.
 
 ## Required Changes
 

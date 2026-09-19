@@ -1,7 +1,10 @@
 package com.smartjobtracker.testsupport.tasks
 
 import com.smartjobtracker.tasks.Task
+import com.smartjobtracker.tasks.TaskService
 import com.smartjobtracker.tasks.TaskStatus
+import com.smartjobtracker.tasks.command.CreateTaskCommand
+import com.smartjobtracker.tasks.command.UpdateTaskCommand
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -33,3 +36,60 @@ fun createTaskEntity(
         createdAt = createdAt,
         updatedAt = updatedAt,
     )
+
+class FakeTaskService : TaskService {
+    lateinit var lastListedJobId: UUID
+    lateinit var lastCreateJobId: UUID
+    lateinit var lastCreateCommand: CreateTaskCommand
+    lateinit var lastUpdateJobId: UUID
+    lateinit var lastUpdateTaskId: UUID
+    lateinit var lastUpdateCommand: UpdateTaskCommand
+    lateinit var lastDeleteJobId: UUID
+    lateinit var lastDeleteTaskId: UUID
+
+    var listHandler: (UUID) -> List<Task> = { jobId -> listOf(createTaskEntity(jobId = jobId)) }
+
+    var createHandler: (UUID, CreateTaskCommand) -> Task = { jobId, _ -> createTaskEntity(jobId = jobId) }
+
+    var updateHandler: (UUID, UUID, UpdateTaskCommand) -> Task =
+        { jobId, taskId, _ -> createTaskEntity(jobId = jobId, id = taskId) }
+
+    var deleteHandler: (UUID, UUID) -> Unit = { _, _ -> }
+
+    override fun listTasks(jobId: UUID): List<Task> {
+        lastListedJobId = jobId
+
+        return listHandler(jobId)
+    }
+
+    override fun createTask(
+        jobId: UUID,
+        command: CreateTaskCommand,
+    ): Task {
+        lastCreateJobId = jobId
+        lastCreateCommand = command
+
+        return createHandler(jobId, command)
+    }
+
+    override fun updateTask(
+        jobId: UUID,
+        taskId: UUID,
+        command: UpdateTaskCommand,
+    ): Task {
+        lastUpdateJobId = jobId
+        lastUpdateTaskId = taskId
+        lastUpdateCommand = command
+
+        return updateHandler(jobId, taskId, command)
+    }
+
+    override fun deleteTask(
+        jobId: UUID,
+        taskId: UUID,
+    ) {
+        lastDeleteJobId = jobId
+        lastDeleteTaskId = taskId
+        deleteHandler(jobId, taskId)
+    }
+}

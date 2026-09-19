@@ -34,6 +34,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 008 - Create Task Entity Plan](./008-create-task-entity-plan.md)
 - [Task 009 - Create Task Repository Plan](./009-create-task-repository-plan.md)
 - [Task 010 - Create Task Service Plan](./010-create-task-service-plan.md)
+- [Task 011 - Create Task Controller Plan](./011-create-task-controller-plan.md)
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)

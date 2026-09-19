@@ -90,6 +90,12 @@ Paid AI is introduced after authentication and user-owned data exist.
 
 ## Deferred Ideas
 
+See the [product improvements and recommendation register](./product-improvements-and-recommendations-plan.md)
+for the analytics data definitions, manual candidate intake, profile
+evidence requirements, and proposed capture, interview, snapshot,
+archive/export, compensation, and reminder-delivery follow-ups.
+The linked task refinements are planned behavior, not completed features.
+
 pgvector, embeddings, job chunks, and RAG over saved job content are
 deferred. They may become useful later, but they are not part of the
 active execution backlog because the cohesive product needs discovery,
@@ -97,6 +103,11 @@ deduplication, profile matching, application materials, and paid AI
 controls first.
 
 ## Delivery Order
+
+The sequence below describes product dependencies, not a strict numeric
+task order. Bring the first Playwright journey (080) and job-only demo
+seed (070) forward while completing the tracker; expand their scenarios
+as dependent features land. The improvements plan records that ordering.
 
 1. Complete backend persistence and frontend API integration.
 2. Add non-AI product workflows: Kanban, contacts, reminders, documents,

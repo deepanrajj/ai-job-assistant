@@ -1,5 +1,7 @@
 # Task 044 - Add Profile Resume Library
 
+Status: Not started
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -25,6 +27,11 @@ Out of scope:
 ## Required Changes
 
 - Add resume profile data model support.
+- Give reusable profile entries stable identifiers that survive text
+  edits and reordering, so later fit/draft workflows can reference their
+  source. AI tasks capture the entry content used for each run; this task
+  does not implement AI output storage or profile version history. See
+  the [profile evidence plan](../../docs/business/product-improvements-and-recommendations-plan.md#ai-claims-need-profile-evidence).
 - Create profile list and edit UI.
 - Add tests for profile CRUD/display behavior.
 
@@ -33,6 +40,7 @@ Out of scope:
 - Profiles can be created and edited.
 - Profile list renders saved profiles.
 - Empty profile state is accessible.
+- Entry identifiers remain stable after editing and reordering.
 
 ## Validation
 
