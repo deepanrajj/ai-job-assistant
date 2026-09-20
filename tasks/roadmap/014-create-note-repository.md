@@ -37,9 +37,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Note repository compiles.
-- [ ] Queries support the upcoming service.
-- [ ] No unrelated persistence code is added.
+- [x] Note repository compiles.
+- [x] Queries support the upcoming service.
+- [x] No unrelated persistence code is added.
 
 ## Commit
 
