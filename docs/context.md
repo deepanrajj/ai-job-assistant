@@ -225,6 +225,10 @@ Current API:
 - `POST /api/jobs/{jobId}/tasks`
 - `PUT /api/jobs/{jobId}/tasks/{taskId}`
 - `DELETE /api/jobs/{jobId}/tasks/{taskId}`
+- `GET /api/jobs/{jobId}/notes`
+- `POST /api/jobs/{jobId}/notes`
+- `PUT /api/jobs/{jobId}/notes/{noteId}`
+- `DELETE /api/jobs/{jobId}/notes/{noteId}`
 - Swagger UI at `/api/swagger-ui.html`
 - OpenAPI docs at `/api/v3/api-docs`
 

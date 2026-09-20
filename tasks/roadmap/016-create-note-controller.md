@@ -41,9 +41,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Note controller routes exist.
-- [ ] Requests validate correctly.
-- [ ] Controller tests cover success and error behavior.
+- [x] Note controller routes exist.
+- [x] Requests validate correctly.
+- [x] Controller tests cover success and error behavior.
 
 ## Commit
 
