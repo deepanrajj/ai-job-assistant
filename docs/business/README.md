@@ -37,6 +37,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 011 - Create Task Controller Plan](./011-create-task-controller-plan.md)
 - [Task 012 - Add Task CRUD Endpoints Plan](./012-add-task-crud-endpoints-plan.md)
 - [Task 013 - Create Note Entity Plan](./013-create-note-entity-plan.md)
+- [Task 014 - Create Note Repository Plan](./014-create-note-repository-plan.md)
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)
