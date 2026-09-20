@@ -41,9 +41,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Note service owns note business logic.
-- [ ] Parent job boundaries are respected.
-- [ ] Service tests cover behavior.
+- [x] Note service owns note business logic.
+- [x] Parent job boundaries are respected.
+- [x] Service tests cover behavior.
 
 ## Commit
 
