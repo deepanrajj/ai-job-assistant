@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Smart Job Tracker",
-    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order.",
+    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks' folder the same way for a job's tasks; it seeds its own job rather than depending on the 'Jobs' folder having run first.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -10,6 +10,18 @@
       "value": "",
       "type": "string",
       "description": "Set by 'Create job'. Every later request in the Jobs folder reads it."
+    },
+    {
+      "key": "taskJobId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create job for tasks'. Every later request in the Tasks folder reads it. Separate from jobId so the Tasks folder does not depend on the Jobs folder having run first."
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create task'. Later requests in the Tasks folder read it."
     }
   ],
   "item": [
@@ -426,6 +438,404 @@
                   "",
                   "pm.test('does not echo the rejected value back', function () {",
                   "    pm.expect(error.message).to.not.include('not-a-uuid');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "description": "Run this folder in order. 'Create job for tasks' stores a fresh job id in the taskJobId collection variable, separate from Jobs' own jobId, so this folder is a self-contained CRUD flow that does not depend on the Jobs folder having run first.",
+      "item": [
+        {
+          "name": "Create job for tasks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"status\": \"WISHLIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Every task route is nested under a job, so this folder needs one of its own rather than reusing the Jobs folder's jobId."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('taskJobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prepare portfolio\",\n  \"dueDate\": \"2026-08-25\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{taskJobId}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{taskJobId}}", "tasks"]
+            },
+            "description": "Only title is required. Omitting status defaults it to TODO in CreateTaskCommand rather than in the request DTO, mirroring Create job."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "const task = pm.response.json();",
+                  "",
+                  "pm.test('returns a server-assigned id', function () {",
+                  "    pm.expect(task.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('echoes the submitted fields and defaults status to TODO', function () {",
+                  "    pm.expect(task.title).to.eql('Prepare portfolio');",
+                  "    pm.expect(task.status).to.eql('TODO');",
+                  "    pm.expect(task.dueDate).to.eql('2026-08-25');",
+                  "});",
+                  "",
+                  "pm.test('does not leak jobId into the HTTP contract', function () {",
+                  "    pm.expect(task).to.not.have.property('jobId');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('taskId', task.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{taskJobId}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{taskJobId}}", "tasks"]
+            },
+            "description": "Returns the job's tasks in creation order. There is no single-task GET, so this is how the collection proves a task was created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const tasks = pm.response.json();",
+                  "",
+                  "pm.test('includes the task created by this run', function () {",
+                  "    const ids = tasks.map(function (task) { return task.id; });",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('taskId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prepare portfolio and references\",\n  \"status\": \"DONE\",\n  \"dueDate\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{taskJobId}}/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{taskJobId}}", "tasks", "{{taskId}}"]
+            },
+            "description": "PUT replaces title, status, and dueDate, so all three must be present. Sending dueDate as null clears it; omitting status is a 400 rather than 'leave it alone'."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "const task = pm.response.json();",
+                  "",
+                  "pm.test('applies the new values', function () {",
+                  "    pm.expect(task.title).to.eql('Prepare portfolio and references');",
+                  "    pm.expect(task.status).to.eql('DONE');",
+                  "});",
+                  "",
+                  "pm.test('clears dueDate sent as null', function () {",
+                  "    pm.expect(task.dueDate).to.eql(null);",
+                  "});",
+                  "",
+                  "pm.test('preserves identity and creation time', function () {",
+                  "    pm.expect(task.id).to.eql(pm.collectionVariables.get('taskId'));",
+                  "    pm.expect(Date.parse(task.updatedAt)).to.be.at.least(Date.parse(task.createdAt));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{taskJobId}}/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{taskJobId}}", "tasks", "{{taskId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "pm.test('returns an empty body', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete deleted task returns 404",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{taskJobId}}/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{taskJobId}}", "tasks", "{{taskId}}"]
+            },
+            "description": "Runs immediately after Delete task. Proves the delete actually removed the row: deleting the same id again is now a missing task, not a missing job."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the TASK_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('TASK_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create task with blank title returns 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{taskJobId}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{taskJobId}}", "tasks"]
+            },
+            "description": "Bean Validation rejects the blank title before the service runs. The response carries per-field detail in fieldErrors."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const error = pm.response.json();",
+                  "",
+                  "pm.test('uses the VALIDATION_FAILED error code', function () {",
+                  "    pm.expect(error.code).to.eql('VALIDATION_FAILED');",
+                  "});",
+                  "",
+                  "pm.test('names the offending field', function () {",
+                  "    const fields = error.fieldErrors.map(function (fieldError) { return fieldError.field; });",
+                  "    pm.expect(fields).to.include('title');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create task for missing job returns 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Prepare portfolio\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{$guid}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{$guid}}", "tasks"]
+            },
+            "description": "{{$guid}} generates a well-formed but unused UUID, so this is a genuine 'job does not exist' case rather than a malformed id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the JOB_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('JOB_NOT_FOUND');",
                   "});"
                 ]
               }

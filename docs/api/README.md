@@ -180,12 +180,12 @@ answer happily from a stale container while you are working on port
 4000, and `api:test` would report a green run against a backend that
 has never seen your change.
 
-The script names the folders it runs: `Health` and `Jobs`. That is an
-allowlist, not a filter, and the reason is the `AI` folder. Those
-requests reach OpenAI through the backend and cost money per request,
-so nothing automated may run them. A folder added to the collection
-later does not start running on its own; somebody has to add it to the
-script on purpose.
+The script names the folders it runs: `Health`, `Jobs`, and `Tasks`.
+That is an allowlist, not a filter, and the reason is the `AI` folder.
+Those requests reach OpenAI through the backend and cost money per
+request, so nothing automated may run them. A folder added to the
+collection later does not start running on its own; somebody has to
+add it to the script on purpose.
 
 `Health` is on the list despite the path `/api/ai/health`. That endpoint
 returns a fixed `{"ok": true}` and reaches no provider. It is the same
