@@ -57,6 +57,14 @@ deleting the knowledge with the file.
 
 ## Fixed
 
+- [x] [Bug 005: JobRepository's list finder has no id tie-break](./bug-005-job-repository-finder-missing-id-tie-break.md)
+      — nit, found while reviewing repository conventions during task
+      014 planning. `Task` and `Note` repositories both tie-break their
+      ordered finders on `id`; `JobRepository` predates that convention
+      and never got it. Fixed by renaming the finder to
+      `findAllByOrderByUpdatedAtDescIdAsc`, with a regression test
+      seen to fail against the unfixed method for two jobs sharing an
+      `updatedAt` instant.
 - [x] [Bug 003: the jobs search placeholder still offers to search by
       skill](./bug-003-jobs-search-placeholder-still-offers-skill.md)
       — nit, found while planning task 024. Task 023 removed `tags` from

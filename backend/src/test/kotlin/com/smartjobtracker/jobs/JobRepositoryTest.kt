@@ -18,9 +18,10 @@ class JobRepositoryTest {
     private fun createJob(
         company: String,
         updatedAt: OffsetDateTime,
+        id: UUID = UUID.randomUUID(),
     ): Job =
         Job(
-            id = UUID.randomUUID(),
+            id = id,
             company = company,
             updatedAt = updatedAt,
             createdAt = updatedAt,
@@ -43,8 +44,21 @@ class JobRepositoryTest {
         jobRepository.save(jobNewest)
         val jobMiddle = createJob(company = "Middle", updatedAt = baseTime.minusDays(2))
         jobRepository.save(jobMiddle)
-        val companies = jobRepository.findAllByOrderByUpdatedAtDesc().map { it.company }
+        val companies = jobRepository.findAllByOrderByUpdatedAtDescIdAsc().map { it.company }
 
         assertThat(companies).containsExactly("Newest", "Middle", "Oldest")
+    }
+
+    @Test
+    fun `orders jobs sharing an updated instant by id`() {
+        val sharedInstant = OffsetDateTime.now().truncatedTo(ChronoUnit.MICROS)
+        val firstId = UUID.fromString("11111111-1111-1111-1111-111111111111")
+        val secondId = UUID.fromString("22222222-2222-2222-2222-222222222222")
+        jobRepository.save(createJob(company = "Second", updatedAt = sharedInstant, id = secondId))
+        jobRepository.save(createJob(company = "First", updatedAt = sharedInstant, id = firstId))
+
+        val companies = jobRepository.findAllByOrderByUpdatedAtDescIdAsc().map { it.company }
+
+        assertThat(companies).containsExactly("First", "Second")
     }
 }
