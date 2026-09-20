@@ -145,6 +145,7 @@ unless an existing task is explicitly named as its implementation home.
 | R-10 | Interview answer library | Medium | Store situation-task-action-result stories tagged by skill and link them to interview rounds | Profile and interview workflows. Manual editing first; AI suggestions later must follow evidence review rules. |
 | R-11 | Historical milestones and employer responses | High | Let users record actual application/response dates and response type, including historical applications | Structured history from 018/019. Define corrections as append-only events and update analytics deliberately. No inference from edits, rejection, or withdrawal. Required to enable a numeric response rate in 043. |
 | R-12 | Expanded demo scenarios | Medium | Extend the job-only seed with tasks, notes, timeline, reminders, contacts, documents, and profiles as each lands | Follow-up tasks after the relevant schemas; update reset/loading instructions and ownership once auth exists. Use synthetic data and no paid AI calls. |
+| R-13 | German market employment attributes | Medium | Track contract type (permanent/Befristet with an end date), Probezeit length, Kündigungsfrist, Tarifvertrag, weekly hours, and vacation days per job, plus visa/Blue Card sponsorship and required German level | Standalone schema/API/UI task, independent of R-07's compensation fields. Preserve unknown values; do not infer any field from job description text. Feeds R-08 comparison once both exist, but does not depend on it. |
 
 ## Delivery Sequence
 
@@ -175,6 +176,13 @@ unless an existing task is explicitly named as its implementation home.
   verification succeed. Planning completion is not feature completion.
 - Keep the locked stack, billing rules, and deferred vector/RAG direction
   unchanged. No new dependency is authorized by this planning record.
+
+### Promoted Tasks
+
+| R-ID | Task | Status |
+| --- | --- | --- |
+| R-03 | [Task 082 - Add application snapshots](../../tasks/roadmap/082-add-application-snapshots.md) | Not started |
+| R-13 | [Task 083 - Add German market job attributes](../../tasks/roadmap/083-add-german-market-job-attributes.md) | Not started |
 
 ## External Reference
 
