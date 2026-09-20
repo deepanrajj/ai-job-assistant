@@ -32,7 +32,7 @@ class DefaultJobService(
     private val clock: Clock,
 ) : JobService {
     @Transactional
-    override fun listJobs(): List<Job> = jobRepository.findAllByOrderByUpdatedAtDesc()
+    override fun listJobs(): List<Job> = jobRepository.findAllByOrderByUpdatedAtDescIdAsc()
 
     @Transactional
     override fun getJob(id: UUID): Job = jobRepository.findById(id).orElseThrow { jobNotFound() }
