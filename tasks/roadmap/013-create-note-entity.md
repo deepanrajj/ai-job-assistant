@@ -36,9 +36,9 @@ Run `npm run backend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Note schema exists.
-- [ ] Note entity maps to a job.
-- [ ] No note API is introduced yet.
+- [x] Note schema exists.
+- [x] Note entity maps to a job.
+- [x] No note API is introduced yet.
 
 ## Commit
 
