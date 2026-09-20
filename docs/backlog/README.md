@@ -41,9 +41,9 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 012: Add task CRUD endpoints](../../tasks/roadmap/012-add-task-crud-endpoints.md).
+- [ ] [Task 013: Create note entity](../../tasks/roadmap/013-create-note-entity.md).
 
 Phase 4's remaining frontend work all waits on phase 3. Tasks 030 to 032
 need job task, note, and timeline endpoints, and task 021's frontend
-task service needs a contract to type against, so the backend task
-service is the next thing that unblocks anything.
+task service needs a contract to type against, so the backend note
+entity is the next thing that unblocks anything.
