@@ -42,6 +42,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 016 - Create Note Controller Plan](./016-create-note-controller-plan.md)
 - [Task 017 - Add Note CRUD Endpoints Plan](./017-add-note-crud-endpoints-plan.md)
 - [Task 018 - Create Timeline Event Entity Plan](./018-create-timeline-event-entity-plan.md)
+- [Task 019 - Track Timeline Events When Job Status Changes Plan](./019-track-timeline-events-when-job-status-changes-plan.md)
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)

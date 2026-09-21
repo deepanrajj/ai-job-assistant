@@ -2,7 +2,11 @@ package com.smartjobtracker.testsupport.timeline
 
 import com.smartjobtracker.jobs.JobStatus
 import com.smartjobtracker.timeline.TimelineEvent
+import com.smartjobtracker.timeline.TimelineEventService
 import com.smartjobtracker.timeline.TimelineEventType
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -34,3 +38,31 @@ fun createTimelineEventEntity(
         nextStatus = nextStatus,
         createdAt = createdAt,
     )
+
+class FakeTimelineEventService : TimelineEventService {
+    lateinit var lastListedJobId: UUID
+    var lastListAllPage: Int = 0
+    var lastListAllSize: Int = 0
+
+    var listHandler: (UUID) -> List<TimelineEvent> = { jobId -> listOf(createTimelineEventEntity(jobId = jobId)) }
+
+    var listAllHandler: (Int, Int) -> Page<TimelineEvent> = { page, size ->
+        PageImpl(listOf(createTimelineEventEntity(jobId = UUID.randomUUID())), PageRequest.of(page, size), 1)
+    }
+
+    override fun listTimelineEvents(jobId: UUID): List<TimelineEvent> {
+        lastListedJobId = jobId
+
+        return listHandler(jobId)
+    }
+
+    override fun listAllTimelineEvents(
+        page: Int,
+        size: Int,
+    ): Page<TimelineEvent> {
+        lastListAllPage = page
+        lastListAllSize = size
+
+        return listAllHandler(page, size)
+    }
+}
