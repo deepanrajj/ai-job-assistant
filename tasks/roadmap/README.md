@@ -31,11 +31,16 @@ Execution-ready tasks generated from the phase roadmap in
 - `051`-`058`: Phase 6 authentication, user-owned data, and AI billing foundation.
 - `059`-`067`: Phase 7 integrated paid AI workflows.
 - `068`-`081`: Phase 8 portfolio and production polish.
+- `082`+: promoted product-improvement recommendations (see Deferred
+  Ideas below), slotted into whichever phase they belong to regardless
+  of number.
 
 A task's number is its identity, not its priority. `077` to `081` are
 testing infrastructure grouped with `068`, but several of them are
 meant to run well before the rest of phase 8; the ordering lives in
-`../../docs/business/e2e-testing-strategy-plan.md`.
+`../../docs/business/e2e-testing-strategy-plan.md`. `082` and `083`
+belong to phase 5 despite their number, the same way `077`-`081`
+belong to phase 8's numbering while running earlier.
 
 ## Rules
 
