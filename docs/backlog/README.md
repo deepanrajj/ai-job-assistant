@@ -41,11 +41,9 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 019: Track timeline events when job status changes](../../tasks/roadmap/019-track-timeline-events-when-job-status-changes.md).
+- [ ] [Task 021: Add taskService](../../tasks/roadmap/021-add-task-service.md).
 
-Phase 4's remaining frontend work all waits on phase 3. Tasks 030 to 032
-need job task, note, and timeline endpoints, and task 021's frontend
-task service needs a contract to type against, so wiring timeline
-events into job status changes is the next thing that unblocks
-anything.
+Phase 3 is complete: job, task, note, and timeline endpoints all exist.
+Phase 4's remaining frontend work can now proceed - task 021 adds the
+typed frontend service tasks 030-032 will build on.
 >>>>>>> origin/main

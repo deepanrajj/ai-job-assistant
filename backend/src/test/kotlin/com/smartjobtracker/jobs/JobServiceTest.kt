@@ -5,6 +5,8 @@ import com.smartjobtracker.api.error.ApiException
 import com.smartjobtracker.jobs.command.CreateJobCommand
 import com.smartjobtracker.jobs.command.UpdateJobCommand
 import com.smartjobtracker.testsupport.api.assertApiException
+import com.smartjobtracker.timeline.TimelineEventRepository
+import com.smartjobtracker.timeline.TimelineEventType
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowableOfType
 import org.junit.jupiter.api.BeforeEach
@@ -26,6 +28,9 @@ class JobServiceTest {
     @Autowired
     lateinit var jobRepository: JobRepository
 
+    @Autowired
+    lateinit var timelineEventRepository: TimelineEventRepository
+
     private val fixedClock: Clock = Clock.fixed(Instant.parse("2026-07-05T12:00:00Z"), ZoneOffset.UTC)
 
     private val expectedNow: OffsetDateTime = OffsetDateTime.now(fixedClock)
@@ -34,7 +39,7 @@ class JobServiceTest {
 
     @BeforeEach
     fun setUp() {
-        jobService = DefaultJobService(jobRepository, fixedClock)
+        jobService = DefaultJobService(jobRepository, timelineEventRepository, fixedClock)
     }
 
     private fun seedJob(
@@ -134,6 +139,16 @@ class JobServiceTest {
     }
 
     @Test
+    fun `creating a job with an advanced status does not invent a timeline event`() {
+        val created =
+            jobService.createJob(
+                CreateJobCommand(company = "Acme Corp", roleTitle = "Backend Engineer", status = JobStatus.APPLIED),
+            )
+
+        assertThat(timelineEventRepository.findAllByJobIdOrderByCreatedAtAscIdAsc(created.id)).isEmpty()
+    }
+
+    @Test
     fun `updates editable fields and preserves identity and creation time`() {
         val seeded = seedJob()
 
@@ -167,6 +182,54 @@ class JobServiceTest {
     }
 
     @Test
+    fun `records a timeline event when the status changes`() {
+        val seeded = seedJob()
+
+        jobService.updateJob(
+            seeded.id,
+            UpdateJobCommand(
+                company = seeded.company,
+                roleTitle = seeded.roleTitle,
+                status = JobStatus.INTERVIEW,
+                location = seeded.location,
+                jobUrl = seeded.jobUrl,
+                salaryMin = seeded.salaryMin,
+                salaryMax = seeded.salaryMax,
+                description = seeded.description,
+            ),
+        )
+
+        val events = timelineEventRepository.findAllByJobIdOrderByCreatedAtAscIdAsc(seeded.id)
+
+        assertThat(events).hasSize(1)
+        assertThat(events[0].type).isEqualTo(TimelineEventType.STATUS_CHANGE)
+        assertThat(events[0].previousStatus).isEqualTo(JobStatus.APPLIED)
+        assertThat(events[0].nextStatus).isEqualTo(JobStatus.INTERVIEW)
+        assertThat(events[0].createdAt).isEqualTo(expectedNow)
+    }
+
+    @Test
+    fun `does not record a timeline event when the status is unchanged`() {
+        val seeded = seedJob()
+
+        jobService.updateJob(
+            seeded.id,
+            UpdateJobCommand(
+                company = "New Corp",
+                roleTitle = seeded.roleTitle,
+                status = seeded.status,
+                location = seeded.location,
+                jobUrl = seeded.jobUrl,
+                salaryMin = seeded.salaryMin,
+                salaryMax = seeded.salaryMax,
+                description = seeded.description,
+            ),
+        )
+
+        assertThat(timelineEventRepository.findAllByJobIdOrderByCreatedAtAscIdAsc(seeded.id)).isEmpty()
+    }
+
+    @Test
     fun `throws job not found when updating a missing job`() {
         val command =
             UpdateJobCommand(
@@ -191,6 +254,7 @@ class JobServiceTest {
             errorCode = ApiErrorCode.JOB_NOT_FOUND,
             message = "Job not found.",
         )
+        assertThat(timelineEventRepository.count()).isZero()
     }
 
     @Test
