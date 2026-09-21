@@ -108,6 +108,14 @@
       "deleteJob": "Löschen des Jobs fehlgeschlagen"
     }
   },
+  "tasks": {
+    "fallbackError": {
+      "listTasks": "Laden der Aufgaben fehlgeschlagen",
+      "createTask": "Erstellen der Aufgabe fehlgeschlagen",
+      "updateTask": "Aktualisieren der Aufgabe fehlgeschlagen",
+      "deleteTask": "Löschen der Aufgabe fehlgeschlagen"
+    }
+  },
   "jobDetail": {
     "backToJobs": "Zurück zu Jobs",
     "editJob": "Job bearbeiten",
