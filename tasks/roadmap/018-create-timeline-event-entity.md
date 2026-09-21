@@ -49,10 +49,10 @@ Run `npm run backend:test`, `npm run backend:test:integration`,
 
 ## Acceptance Criteria
 
-- [ ] Timeline event schema exists.
-- [ ] Timeline event entity maps to a job.
-- [ ] Status events expose machine-readable previous/next statuses and dates.
-- [ ] No event mutation API is introduced.
+- [x] Timeline event schema exists.
+- [x] Timeline event entity maps to a job.
+- [x] Status events expose machine-readable previous/next statuses and dates.
+- [x] No event mutation API is introduced.
 
 ## Commit
 

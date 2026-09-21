@@ -5,7 +5,7 @@ Goal: replace mock/local data with real API data.
 ## Tasks
 
 - [x] [Add `jobService`](../../tasks/roadmap/020-add-job-service.md).
-- [ ] [Add `taskService`](../../tasks/roadmap/021-add-task-service.md).
+- [x] [Add `taskService`](../../tasks/roadmap/021-add-task-service.md).
 - [x] [Add `noteService`](../../tasks/roadmap/022-add-note-service.md).
 - [x] [Add typed API response models](../../tasks/roadmap/023-add-typed-api-response-models.md).
 - [x] [Replace mock jobs on jobs list page](../../tasks/roadmap/024-replace-mock-jobs-on-jobs-list-page.md).
