@@ -1,4 +1,4 @@
-import { memo, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { memo, useCallback, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
 
 import { Alert, Button, Card, ErrorState, Input, LoadingState } from '../../../components/ui';
 import { useJobTasks } from '../useJobTasks';
@@ -119,11 +119,25 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
     }
   };
 
-  const handleToggleTask = (task: TJobTask) => {
-    updateJobTask(task.id, {
-      status: isJobTaskComplete(task) ? 'TODO' : 'DONE',
-    });
-  };
+  const handleToggleTask = useCallback(
+    (task: TJobTask) => {
+      updateJobTask(task.id, {
+        status: isJobTaskComplete(task) ? 'TODO' : 'DONE',
+      }).catch(() => {
+        // Error is already recorded in request state and rendered from it.
+      });
+    },
+    [updateJobTask],
+  );
+
+  const handleDeleteTask = useCallback(
+    (taskId: string) => {
+      deleteJobTask(taskId).catch(() => {
+        // Error is already recorded in request state and rendered from it.
+      });
+    },
+    [deleteJobTask],
+  );
 
   if (isLoading)
     return (
@@ -180,7 +194,7 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
             isComplete={isJobTaskComplete(task)}
             isDisabled={isMutating}
             key={task.id}
-            onDeleteTask={deleteJobTask}
+            onDeleteTask={handleDeleteTask}
             onToggleTask={handleToggleTask}
             task={task}
           />

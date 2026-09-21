@@ -43,6 +43,12 @@ interface IDeleteJobTaskInput {
 
 /**
  * Job tasks state returned by useJobTasks.
+ *
+ * `createJobTask`, `updateJobTask`, and `deleteJobTask` all reject when
+ * their write fails, after `mutationError` is already set, the same
+ * contract `useCreateJob`/`useUpdateJob` use for jobs: a caller that needs
+ * to react to the outcome can await and catch, and one that does not can
+ * ignore the rejection and rely on `mutationError` alone.
  */
 export interface IJobTasksState {
   createJobTask: (title: string, dueDate: string) => Promise<void>;
@@ -159,6 +165,7 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
         },
         (error: AppError) => {
           setMutationError(error);
+          throw error;
         },
       );
     },
@@ -174,6 +181,7 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
         },
         (error: AppError) => {
           setMutationError(error);
+          throw error;
         },
       ),
     [jobId, removeTask, reload],

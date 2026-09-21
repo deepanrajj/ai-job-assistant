@@ -5,14 +5,12 @@ import { http, HttpResponse } from 'msw';
 
 import { JobDetailTasksPanel } from './JobDetailTasksPanel';
 import { renderWithProviders } from '../../../test/renderWithProviders';
-import { createMockTaskResponse } from '../../../test/mockTasks';
+import { MOCK_JOB_IDS } from '../../../test/mockJobs';
+import { MOCK_TASK_IDS, createMockTaskResponse } from '../../../test/mockTasks';
 import { server } from '../../../test/server';
 
-const JOB_ID = '11111111-1111-4111-8111-111111111111';
-const TASK_ID = 'a1111111-1111-4111-8111-111111111111';
-
-const mockTasksEndpoint = `/api/jobs/${JOB_ID}/tasks`;
-const mockTaskEndpoint = `${mockTasksEndpoint}/${TASK_ID}`;
+const mockTasksEndpoint = `/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`;
+const mockTaskEndpoint = `${mockTasksEndpoint}/${MOCK_TASK_IDS.primary}`;
 
 describe('JobDetailTasksPanel', () => {
   it('renders task completion summary, task rows, and due dates', async () => {
@@ -20,13 +18,13 @@ describe('JobDetailTasksPanel', () => {
       http.get(mockTasksEndpoint, () =>
         HttpResponse.json([
           createMockTaskResponse({
-            id: TASK_ID,
+            id: MOCK_TASK_IDS.primary,
             title: 'Tailor CV bullets for Senior Frontend Engineer',
             status: 'DONE',
             dueDate: '2026-05-10',
           }),
           createMockTaskResponse({
-            id: 'b2222222-2222-4222-8222-222222222222',
+            id: MOCK_TASK_IDS.secondary,
             title: 'Prepare interview examples for Celonis',
             status: 'TODO',
             dueDate: null,
@@ -34,7 +32,7 @@ describe('JobDetailTasksPanel', () => {
         ]),
       ),
     );
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     expect(await screen.findByRole('heading', { name: 'Preparation tasks' })).toBeInTheDocument();
     expect(screen.getByText('1 of 2 completed')).toBeInTheDocument();
@@ -50,7 +48,7 @@ describe('JobDetailTasksPanel', () => {
 
   it('renders the loading state while the request is in flight', () => {
     server.use(http.get(mockTasksEndpoint, () => new Promise(() => {})));
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText('Loading tasks')).toBeInTheDocument();
@@ -68,7 +66,7 @@ describe('JobDetailTasksPanel', () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Tasks could not be loaded')).toBeInTheDocument();
@@ -87,18 +85,21 @@ describe('JobDetailTasksPanel', () => {
         return callCount === 1
           ? HttpResponse.json([])
           : HttpResponse.json([
-              createMockTaskResponse({ id: TASK_ID, title: 'Practice system design' }),
+              createMockTaskResponse({
+                id: MOCK_TASK_IDS.primary,
+                title: 'Practice system design',
+              }),
             ]);
       }),
       http.post(mockTasksEndpoint, () =>
         HttpResponse.json(
-          createMockTaskResponse({ id: TASK_ID, title: 'Practice system design' }),
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Practice system design' }),
           { status: 201 },
         ),
       ),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     await user.type(await screen.findByLabelText('Task title'), 'Practice system design');
     await user.type(screen.getByLabelText('Due date'), '2026-06-20');
@@ -113,7 +114,7 @@ describe('JobDetailTasksPanel', () => {
       http.post(mockTasksEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     await user.type(await screen.findByLabelText('Task title'), 'Practice system design');
     await user.type(screen.getByLabelText('Due date'), '2026-06-20');
@@ -127,15 +128,19 @@ describe('JobDetailTasksPanel', () => {
   it('clears a stale mutation error once a later write succeeds', async () => {
     server.use(
       http.get(mockTasksEndpoint, () =>
-        HttpResponse.json([createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets' })]),
+        HttpResponse.json([
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+        ]),
       ),
       http.post(mockTasksEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
       http.put(mockTaskEndpoint, () =>
-        HttpResponse.json(createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets' })),
+        HttpResponse.json(
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+        ),
       ),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     await user.type(await screen.findByLabelText('Task title'), 'Another task');
     await user.type(screen.getByLabelText('Due date'), '2026-06-20');
@@ -158,7 +163,7 @@ describe('JobDetailTasksPanel', () => {
             ? []
             : [
                 createMockTaskResponse({
-                  id: TASK_ID,
+                  id: MOCK_TASK_IDS.primary,
                   title: 'Tailor CV bullets',
                   status: taskStatus,
                 }),
@@ -171,7 +176,11 @@ describe('JobDetailTasksPanel', () => {
         taskStatus = body.status;
 
         return HttpResponse.json(
-          createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets', status: taskStatus }),
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.primary,
+            title: 'Tailor CV bullets',
+            status: taskStatus,
+          }),
         );
       }),
       http.delete(mockTaskEndpoint, () => {
@@ -181,7 +190,7 @@ describe('JobDetailTasksPanel', () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     const checkbox = await screen.findByRole('checkbox', { name: 'Tailor CV bullets' });
 
@@ -200,15 +209,35 @@ describe('JobDetailTasksPanel', () => {
     expect(screen.queryByRole('checkbox', { name: 'Tailor CV bullets' })).not.toBeInTheDocument();
   });
 
+  it('renders a mutation failure from a failed delete without losing the loaded tasks', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () =>
+        HttpResponse.json([
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+        ]),
+      ),
+      http.delete(mockTaskEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Delete task Tailor CV bullets' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Tailor CV bullets')).toBeInTheDocument();
+  });
+
   it('renders a mutation failure without losing the loaded tasks', async () => {
     server.use(
       http.get(mockTasksEndpoint, () =>
-        HttpResponse.json([createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets' })]),
+        HttpResponse.json([
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+        ]),
       ),
       http.put(mockTaskEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     await user.click(await screen.findByRole('checkbox', { name: 'Tailor CV bullets' }));
 
@@ -219,12 +248,14 @@ describe('JobDetailTasksPanel', () => {
   it('disables the form and task controls while a write is in flight', async () => {
     server.use(
       http.get(mockTasksEndpoint, () =>
-        HttpResponse.json([createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets' })]),
+        HttpResponse.json([
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+        ]),
       ),
       http.put(mockTaskEndpoint, () => new Promise(() => {})),
     );
     const user = userEvent.setup();
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     await user.click(await screen.findByRole('checkbox', { name: 'Tailor CV bullets' }));
 
@@ -235,11 +266,20 @@ describe('JobDetailTasksPanel', () => {
   });
 
   it('ignores empty task submissions', async () => {
-    server.use(http.get(mockTasksEndpoint, () => HttpResponse.json([])));
-    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+    let createCallCount = 0;
+    server.use(
+      http.get(mockTasksEndpoint, () => HttpResponse.json([])),
+      http.post(mockTasksEndpoint, () => {
+        createCallCount += 1;
+
+        return HttpResponse.json(createMockTaskResponse(), { status: 201 });
+      }),
+    );
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
     fireEvent.submit((await screen.findByLabelText('Task title')).closest('form')!);
 
     expect(screen.getByText('0 of 0 completed')).toBeInTheDocument();
+    expect(createCallCount).toBe(0);
   });
 });

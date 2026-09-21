@@ -4,11 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 
 import { useJobTasks } from './useJobTasks';
-import { createMockTaskResponse } from '../../test/mockTasks';
+import { MOCK_JOB_IDS } from '../../test/mockJobs';
+import { MOCK_TASK_IDS, createMockTaskResponse } from '../../test/mockTasks';
 import { server } from '../../test/server';
-
-const JOB_ID = '11111111-1111-4111-8111-111111111111';
-const TASK_ID = 'a1111111-1111-4111-8111-111111111111';
 
 const JobTasksProbe = () => {
   const {
@@ -20,7 +18,7 @@ const JobTasksProbe = () => {
     reload,
     tasks,
     updateJobTask,
-  } = useJobTasks(JOB_ID);
+  } = useJobTasks(MOCK_JOB_IDS.celonis);
 
   if (isLoading) return <p>loading</p>;
   if (loadError)
@@ -50,11 +48,27 @@ const JobTasksProbe = () => {
       >
         create
       </button>
-      <button onClick={() => updateJobTask(TASK_ID, { status: 'DONE' })}>toggle</button>
+      <button
+        onClick={() =>
+          updateJobTask(MOCK_TASK_IDS.primary, { status: 'DONE' }).catch(() => {
+            // Error is already recorded in request state and rendered from it.
+          })
+        }
+      >
+        toggle
+      </button>
       <button onClick={() => updateJobTask('missing-task-id', { status: 'DONE' })}>
         toggle-missing
       </button>
-      <button onClick={() => deleteJobTask(TASK_ID)}>delete</button>
+      <button
+        onClick={() =>
+          deleteJobTask(MOCK_TASK_IDS.primary).catch(() => {
+            // Error is already recorded in request state and rendered from it.
+          })
+        }
+      >
+        delete
+      </button>
     </div>
   );
 };
@@ -62,9 +76,13 @@ const JobTasksProbe = () => {
 describe('useJobTasks', () => {
   it('loads and maps tasks, converting a null due date to an empty string', async () => {
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () =>
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
         HttpResponse.json([
-          createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets', dueDate: null }),
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.primary,
+            title: 'Tailor CV bullets',
+            dueDate: null,
+          }),
         ]),
       ),
     );
@@ -76,12 +94,12 @@ describe('useJobTasks', () => {
   it('records a load error and retries', async () => {
     let callCount = 0;
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () => {
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () => {
         callCount += 1;
 
         return callCount === 1
           ? HttpResponse.json({ message: 'boom' }, { status: 500 })
-          : HttpResponse.json([createMockTaskResponse({ id: TASK_ID })]);
+          : HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary })]);
       }),
     );
     const user = userEvent.setup();
@@ -97,17 +115,22 @@ describe('useJobTasks', () => {
   it('reloads the list after a successful create', async () => {
     let callCount = 0;
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () => {
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () => {
         callCount += 1;
 
         return callCount === 1
           ? HttpResponse.json([])
-          : HttpResponse.json([createMockTaskResponse({ id: TASK_ID, title: 'New task' })]);
+          : HttpResponse.json([
+              createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'New task' }),
+            ]);
       }),
-      http.post(`/api/jobs/${JOB_ID}/tasks`, () =>
-        HttpResponse.json(createMockTaskResponse({ id: TASK_ID, title: 'New task' }), {
-          status: 201,
-        }),
+      http.post(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json(
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'New task' }),
+          {
+            status: 201,
+          },
+        ),
       ),
     );
     const user = userEvent.setup();
@@ -121,8 +144,8 @@ describe('useJobTasks', () => {
 
   it('records a mutation error and does not reload on a failed create', async () => {
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () => HttpResponse.json([])),
-      http.post(`/api/jobs/${JOB_ID}/tasks`, () =>
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () => HttpResponse.json([])),
+      http.post(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
         HttpResponse.json({ message: 'boom' }, { status: 500 }),
       ),
     );
@@ -138,18 +161,29 @@ describe('useJobTasks', () => {
   it('sends the full replacement body, merged from the loaded task, on update', async () => {
     let putBody: unknown;
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () =>
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
         HttpResponse.json([
-          createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets', status: 'TODO' }),
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.primary,
+            title: 'Tailor CV bullets',
+            status: 'TODO',
+          }),
         ]),
       ),
-      http.put(`/api/jobs/${JOB_ID}/tasks/${TASK_ID}`, async ({ request }) => {
-        putBody = await request.json();
+      http.put(
+        `/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`,
+        async ({ request }) => {
+          putBody = await request.json();
 
-        return HttpResponse.json(
-          createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets', status: 'DONE' }),
-        );
-      }),
+          return HttpResponse.json(
+            createMockTaskResponse({
+              id: MOCK_TASK_IDS.primary,
+              title: 'Tailor CV bullets',
+              status: 'DONE',
+            }),
+          );
+        },
+      ),
     );
     const user = userEvent.setup();
     render(<JobTasksProbe />);
@@ -168,8 +202,8 @@ describe('useJobTasks', () => {
 
   it('does nothing when asked to update a task that is not in the loaded list', async () => {
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () =>
-        HttpResponse.json([createMockTaskResponse({ id: TASK_ID })]),
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary })]),
       ),
     );
     const user = userEvent.setup();
@@ -186,10 +220,10 @@ describe('useJobTasks', () => {
 
   it('records a mutation error and does not reload on a failed update', async () => {
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () =>
-        HttpResponse.json([createMockTaskResponse({ id: TASK_ID, status: 'TODO' })]),
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'TODO' })]),
       ),
-      http.put(`/api/jobs/${JOB_ID}/tasks/${TASK_ID}`, () =>
+      http.put(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`, () =>
         HttpResponse.json({ message: 'boom' }, { status: 500 }),
       ),
     );
@@ -206,15 +240,15 @@ describe('useJobTasks', () => {
   it('reloads the list after a successful delete', async () => {
     let callCount = 0;
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () => {
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () => {
         callCount += 1;
 
         return callCount === 1
-          ? HttpResponse.json([createMockTaskResponse({ id: TASK_ID })])
+          ? HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary })])
           : HttpResponse.json([]);
       }),
       http.delete(
-        `/api/jobs/${JOB_ID}/tasks/${TASK_ID}`,
+        `/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`,
         () => new HttpResponse(null, { status: 204 }),
       ),
     );
@@ -231,10 +265,10 @@ describe('useJobTasks', () => {
 
   it('records a mutation error and does not reload on a failed delete', async () => {
     server.use(
-      http.get(`/api/jobs/${JOB_ID}/tasks`, () =>
-        HttpResponse.json([createMockTaskResponse({ id: TASK_ID })]),
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary })]),
       ),
-      http.delete(`/api/jobs/${JOB_ID}/tasks/${TASK_ID}`, () =>
+      http.delete(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`, () =>
         HttpResponse.json({ message: 'boom' }, { status: 500 }),
       ),
     );

@@ -1,6 +1,15 @@
 import type { TTaskResponse } from '../services';
 
 /**
+ * Ids of the tasks a test can address without hardcoding a UUID, mirroring
+ * `MOCK_JOB_IDS` in `mockJobs.ts`.
+ */
+export const MOCK_TASK_IDS = {
+  primary: 'a1111111-1111-4111-8111-111111111111',
+  secondary: 'b2222222-2222-4222-8222-222222222222',
+} as const;
+
+/**
  * Creates a mock wire task, shaped exactly as
  * `GET /api/jobs/{jobId}/tasks` returns one.
  *
@@ -12,7 +21,7 @@ import type { TTaskResponse } from '../services';
  * @returns {TTaskResponse} Mock task response suitable for API-backed tests.
  */
 export const createMockTaskResponse = (overrides: Partial<TTaskResponse> = {}): TTaskResponse => ({
-  id: 'a1111111-1111-4111-8111-111111111111',
+  id: MOCK_TASK_IDS.primary,
   title: 'Tailor CV bullets',
   status: 'TODO',
   dueDate: '2026-05-10',
