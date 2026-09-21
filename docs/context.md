@@ -229,6 +229,11 @@ Current API:
 - `POST /api/jobs/{jobId}/notes`
 - `PUT /api/jobs/{jobId}/notes/{noteId}`
 - `DELETE /api/jobs/{jobId}/notes/{noteId}`
+- `GET /api/jobs/{jobId}/timeline`
+- `GET /api/timeline-events?page=&size=` - paginated across every job,
+  for dashboard-style reads; `page` defaults to `0`, `size` to `20`
+  clamped to `[1, 100]`; response is `{ content, page, size,
+  totalElements, totalPages }`
 - Swagger UI at `/api/swagger-ui.html`
 - OpenAPI docs at `/api/v3/api-docs`
 
