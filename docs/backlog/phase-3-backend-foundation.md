@@ -20,7 +20,7 @@ Goal: create the Spring Boot Kotlin backend for persisted tracker data.
 - [x] [Add task CRUD endpoints](../../tasks/roadmap/012-add-task-crud-endpoints.md).
 - [x] [Create note entity](../../tasks/roadmap/013-create-note-entity.md).
 - [x] [Create note repository](../../tasks/roadmap/014-create-note-repository.md).
-- [ ] [Create note service](../../tasks/roadmap/015-create-note-service.md).
+- [x] [Create note service](../../tasks/roadmap/015-create-note-service.md).
 - [ ] [Create note controller](../../tasks/roadmap/016-create-note-controller.md).
 - [ ] [Add note CRUD endpoints](../../tasks/roadmap/017-add-note-crud-endpoints.md).
 - [ ] [Create timeline event entity](../../tasks/roadmap/018-create-timeline-event-entity.md).
