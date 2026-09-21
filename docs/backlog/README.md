@@ -41,10 +41,11 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 018: Create timeline event entity](../../tasks/roadmap/018-create-timeline-event-entity.md).
+- [ ] [Task 019: Track timeline events when job status changes](../../tasks/roadmap/019-track-timeline-events-when-job-status-changes.md).
 
 Phase 4's remaining frontend work all waits on phase 3. Tasks 030 to 032
 need job task, note, and timeline endpoints, and task 021's frontend
-task service needs a contract to type against, so timeline events are
-the next thing that unblocks anything.
+task service needs a contract to type against, so wiring timeline
+events into job status changes is the next thing that unblocks
+anything.
 >>>>>>> origin/main
