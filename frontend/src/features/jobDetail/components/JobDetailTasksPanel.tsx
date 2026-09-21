@@ -100,14 +100,23 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
   const completedCount = getCompletedJobTaskCount(tasks);
   const canCreateTask = Boolean(newTaskTitle.trim() && newTaskDueDate && !isMutating);
 
-  const handleCreateTask = (event: ReactSubmitEvent<HTMLFormElement>) => {
+  /**
+   * The inputs are only cleared once the create request actually succeeds.
+   * Clearing them beforehand would lose the user's input the moment a
+   * failed request left them with nothing to retry but retyping it.
+   */
+  const handleCreateTask = async (event: ReactSubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!canCreateTask) return;
 
-    createJobTask(newTaskTitle.trim(), newTaskDueDate);
-    setNewTaskDueDate('');
-    setNewTaskTitle('');
+    try {
+      await createJobTask(newTaskTitle.trim(), newTaskDueDate);
+      setNewTaskDueDate('');
+      setNewTaskTitle('');
+    } catch {
+      // Error is already recorded in request state and rendered from it.
+    }
   };
 
   const handleToggleTask = (task: TJobTask) => {

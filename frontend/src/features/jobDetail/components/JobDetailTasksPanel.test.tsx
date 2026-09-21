@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 
@@ -105,6 +105,47 @@ describe('JobDetailTasksPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Add task' }));
 
     expect(await screen.findByText('Practice system design')).toBeInTheDocument();
+  });
+
+  it('keeps the create form filled in when the create request fails', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () => HttpResponse.json([])),
+      http.post(mockTasksEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+
+    await user.type(await screen.findByLabelText('Task title'), 'Practice system design');
+    await user.type(screen.getByLabelText('Due date'), '2026-06-20');
+    await user.click(screen.getByRole('button', { name: 'Add task' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByLabelText('Task title')).toHaveValue('Practice system design');
+    expect(screen.getByLabelText('Due date')).toHaveValue('2026-06-20');
+  });
+
+  it('clears a stale mutation error once a later write succeeds', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () =>
+        HttpResponse.json([createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets' })]),
+      ),
+      http.post(mockTasksEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+      http.put(mockTaskEndpoint, () =>
+        HttpResponse.json(createMockTaskResponse({ id: TASK_ID, title: 'Tailor CV bullets' })),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={JOB_ID} />);
+
+    await user.type(await screen.findByLabelText('Task title'), 'Another task');
+    await user.type(screen.getByLabelText('Due date'), '2026-06-20');
+    await user.click(screen.getByRole('button', { name: 'Add task' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('checkbox', { name: 'Tailor CV bullets' }));
+
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 
   it('toggles a task complete and back, and deletes it', async () => {

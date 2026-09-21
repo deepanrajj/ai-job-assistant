@@ -41,7 +41,15 @@ const JobTasksProbe = () => {
           </li>
         ))}
       </ul>
-      <button onClick={() => createJobTask('New task', '2026-06-20')}>create</button>
+      <button
+        onClick={() =>
+          createJobTask('New task', '2026-06-20').catch(() => {
+            // Error is already recorded in request state and rendered from it.
+          })
+        }
+      >
+        create
+      </button>
       <button onClick={() => updateJobTask(TASK_ID, { status: 'DONE' })}>toggle</button>
       <button onClick={() => updateJobTask('missing-task-id', { status: 'DONE' })}>
         toggle-missing

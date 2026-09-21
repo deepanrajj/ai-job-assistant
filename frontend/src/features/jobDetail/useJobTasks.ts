@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   createTask,
@@ -92,16 +92,25 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
   } = useAsyncMutation<string, TTaskResponse[]>(getTasks);
   const {
     mutate: postTask,
-    request: { error: createError, isLoading: isCreating },
+    request: { isLoading: isCreating },
   } = useAsyncMutation<ICreateJobTaskInput, TTaskResponse>(postTaskFields);
   const {
     mutate: putTask,
-    request: { error: updateError, isLoading: isUpdating },
+    request: { isLoading: isUpdating },
   } = useAsyncMutation<IUpdateJobTaskFieldsInput, TTaskResponse>(putTaskFields);
   const {
     mutate: removeTask,
-    request: { error: deleteError, isLoading: isDeleting },
+    request: { isLoading: isDeleting },
   } = useAsyncMutation<IDeleteJobTaskInput, void>(removeTaskFields);
+
+  /**
+   * Tracked here rather than derived from the three mutations' own error
+   * states. Each of those only clears when that same mutation runs again,
+   * so a failed create followed by a successful update would otherwise
+   * still show the create's stale error: nothing ever re-invoked `postTask`
+   * to clear it.
+   */
+  const [mutationError, setMutationError] = useState<AppError | null>(null);
 
   const reload = useCallback(() => {
     loadTasks(jobId).catch(() => {
@@ -120,11 +129,16 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
 
   const createJobTask = useCallback(
     (title: string, dueDate: string) =>
-      postTask({ jobId, payload: { title, dueDate } })
-        .then(() => reload())
-        .catch(() => {
-          // Error is already recorded in request state and rendered from it.
-        }),
+      postTask({ jobId, payload: { title, dueDate } }).then(
+        () => {
+          setMutationError(null);
+          reload();
+        },
+        (error: AppError) => {
+          setMutationError(error);
+          throw error;
+        },
+      ),
     [jobId, postTask, reload],
   );
 
@@ -138,22 +152,30 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
         jobId,
         payload: buildJobTaskUpdateRequest(currentTask, input),
         taskId,
-      })
-        .then(() => reload())
-        .catch(() => {
-          // Error is already recorded in request state and rendered from it.
-        });
+      }).then(
+        () => {
+          setMutationError(null);
+          reload();
+        },
+        (error: AppError) => {
+          setMutationError(error);
+        },
+      );
     },
     [jobId, putTask, reload, tasks],
   );
 
   const deleteJobTask = useCallback(
     (taskId: string) =>
-      removeTask({ jobId, taskId })
-        .then(() => reload())
-        .catch(() => {
-          // Error is already recorded in request state and rendered from it.
-        }),
+      removeTask({ jobId, taskId }).then(
+        () => {
+          setMutationError(null);
+          reload();
+        },
+        (error: AppError) => {
+          setMutationError(error);
+        },
+      ),
     [jobId, removeTask, reload],
   );
 
@@ -163,7 +185,7 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
     isLoading: isIdle || isLoading,
     isMutating: isCreating || isUpdating || isDeleting,
     loadError,
-    mutationError: createError ?? updateError ?? deleteError,
+    mutationError,
     reload,
     tasks,
     updateJobTask,
