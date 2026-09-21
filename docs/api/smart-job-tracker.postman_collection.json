@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Smart Job Tracker",
-    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks' folder the same way for a job's tasks; it seeds its own job rather than depending on the 'Jobs' folder having run first.",
+    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks' or 'Notes' folder the same way for a job's tasks or notes; each seeds its own job rather than depending on the 'Jobs' folder having run first.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -22,6 +22,18 @@
       "value": "",
       "type": "string",
       "description": "Set by 'Create task'. Later requests in the Tasks folder read it."
+    },
+    {
+      "key": "noteJobId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create job for notes'. Every later request in the Notes folder reads it. Separate from jobId and taskJobId so the Notes folder does not depend on the Jobs or Tasks folder having run first."
+    },
+    {
+      "key": "noteId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create note'. Later requests in the Notes folder read it."
     }
   ],
   "item": [
@@ -821,6 +833,397 @@
               "raw": "{{baseUrl}}/jobs/{{$guid}}/tasks",
               "host": ["{{baseUrl}}"],
               "path": ["jobs", "{{$guid}}", "tasks"]
+            },
+            "description": "{{$guid}} generates a well-formed but unused UUID, so this is a genuine 'job does not exist' case rather than a malformed id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the JOB_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('JOB_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notes",
+      "description": "Run this folder in order. 'Create job for notes' stores a fresh job id in the noteJobId collection variable, separate from Jobs' jobId and Tasks' taskJobId, so this folder is a self-contained CRUD flow that does not depend on the Jobs or Tasks folder having run first.",
+      "item": [
+        {
+          "name": "Create job for notes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"status\": \"WISHLIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Every note route is nested under a job, so this folder needs one of its own rather than reusing the Jobs or Tasks folder's job id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('noteJobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Recruiter called back\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{noteJobId}}/notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{noteJobId}}", "notes"]
+            },
+            "description": "body is the only field."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "const note = pm.response.json();",
+                  "",
+                  "pm.test('returns a server-assigned id', function () {",
+                  "    pm.expect(note.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('echoes the submitted body', function () {",
+                  "    pm.expect(note.body).to.eql('Recruiter called back');",
+                  "});",
+                  "",
+                  "pm.test('does not leak jobId into the HTTP contract', function () {",
+                  "    pm.expect(note).to.not.have.property('jobId');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('noteId', note.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{noteJobId}}/notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{noteJobId}}", "notes"]
+            },
+            "description": "Returns the job's notes in creation order. There is no single-note GET, so this is how the collection proves a note was created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const notes = pm.response.json();",
+                  "",
+                  "pm.test('includes the note created by this run', function () {",
+                  "    const ids = notes.map(function (note) { return note.id; });",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('noteId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update note",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Recruiter confirmed a Q3 start\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{noteJobId}}/notes/{{noteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{noteJobId}}", "notes", "{{noteId}}"]
+            },
+            "description": "PUT replaces body, so it must be present."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "const note = pm.response.json();",
+                  "",
+                  "pm.test('applies the new body', function () {",
+                  "    pm.expect(note.body).to.eql('Recruiter confirmed a Q3 start');",
+                  "});",
+                  "",
+                  "pm.test('preserves identity and creation time', function () {",
+                  "    pm.expect(note.id).to.eql(pm.collectionVariables.get('noteId'));",
+                  "    pm.expect(Date.parse(note.updatedAt)).to.be.at.least(Date.parse(note.createdAt));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete note",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{noteJobId}}/notes/{{noteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{noteJobId}}", "notes", "{{noteId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "pm.test('returns an empty body', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete deleted note returns 404",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{noteJobId}}/notes/{{noteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{noteJobId}}", "notes", "{{noteId}}"]
+            },
+            "description": "Runs immediately after Delete note. Proves the delete actually removed the row: deleting the same id again is now a missing note, not a missing job."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the NOTE_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('NOTE_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create note with blank body returns 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{noteJobId}}/notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{noteJobId}}", "notes"]
+            },
+            "description": "Bean Validation rejects the blank body before the service runs. The response carries per-field detail in fieldErrors."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const error = pm.response.json();",
+                  "",
+                  "pm.test('uses the VALIDATION_FAILED error code', function () {",
+                  "    pm.expect(error.code).to.eql('VALIDATION_FAILED');",
+                  "});",
+                  "",
+                  "pm.test('names the offending field', function () {",
+                  "    const fields = error.fieldErrors.map(function (fieldError) { return fieldError.field; });",
+                  "    pm.expect(fields).to.include('body');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create note for missing job returns 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Recruiter called back\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{$guid}}/notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{$guid}}", "notes"]
             },
             "description": "{{$guid}} generates a well-formed but unused UUID, so this is a genuine 'job does not exist' case rather than a malformed id."
           },
