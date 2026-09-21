@@ -11,4 +11,14 @@ interface NoteRepository : JpaRepository<Note, UUID> {
      * database chose.
      */
     fun findAllByJobIdOrderByCreatedAtAscIdAsc(jobId: UUID): List<Note>
+
+    /**
+     * One note, only if it belongs to the given job. A note that exists
+     * under a different job comes back `null`, so callers report it as
+     * not found instead of reaching across jobs.
+     */
+    fun findByIdAndJobId(
+        id: UUID,
+        jobId: UUID,
+    ): Note?
 }
