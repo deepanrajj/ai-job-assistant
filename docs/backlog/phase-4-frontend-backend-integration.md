@@ -14,7 +14,7 @@ Goal: replace mock/local data with real API data.
 - [x] [Connect edit job form to backend](../../tasks/roadmap/027-connect-edit-job-form-to-backend.md).
 - [x] [Connect delete job action to backend](../../tasks/roadmap/028-connect-delete-job-action-to-backend.md).
 - [x] [Connect job detail page to backend](../../tasks/roadmap/029-connect-job-detail-page-to-backend.md).
-- [ ] [Connect tasks tab to backend](../../tasks/roadmap/030-connect-tasks-tab-to-backend.md).
+- [x] [Connect tasks tab to backend](../../tasks/roadmap/030-connect-tasks-tab-to-backend.md).
 - [ ] [Connect notes tab to backend](../../tasks/roadmap/031-connect-notes-tab-to-backend.md).
 - [ ] [Connect timeline tab to backend](../../tasks/roadmap/032-connect-timeline-tab-to-backend.md).
 - [ ] [Add loading states for API screens](../../tasks/roadmap/033-add-loading-states-for-api-screens.md).

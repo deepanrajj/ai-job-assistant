@@ -30,25 +30,14 @@ export const JobDetailActivePanel: FC<IJobDetailActivePanelProps> = ({
   job,
   onAnalyzeJob,
   onCreateNote,
-  onCreateTask,
   onDeleteNote,
-  onDeleteTask,
   onUpdateNote,
-  onUpdateTask,
 }) => {
-  if (activeTab === 'tasks')
-    return (
-      <JobDetailTasksPanel
-        job={job}
-        onCreateTask={
-          onCreateTask ? (title, dueDate) => onCreateTask(job.id, title, dueDate) : undefined
-        }
-        onDeleteTask={onDeleteTask ? (taskId) => onDeleteTask(job.id, taskId) : undefined}
-        onUpdateTask={
-          onUpdateTask ? (taskId, input) => onUpdateTask(job.id, taskId, input) : undefined
-        }
-      />
-    );
+  // Keyed on the job id so a jobId change - a navigation that keeps this
+  // subtree mounted, such as an edited URL - remounts the panel instead of
+  // reusing it: `useJobTasks` refetches either way, but only a remount also
+  // clears a mutation failure left over from the previous job.
+  if (activeTab === 'tasks') return <JobDetailTasksPanel jobId={job.id} key={job.id} />;
 
   if (activeTab === 'notes')
     return (

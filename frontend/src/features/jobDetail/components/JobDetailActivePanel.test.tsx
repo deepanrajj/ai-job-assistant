@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 
 import { JobDetailActivePanel } from './JobDetailActivePanel';
 import { renderWithProviders } from '../../../test/renderWithProviders';
+import { createMockTaskResponse } from '../../../test/mockTasks';
+import { server } from '../../../test/server';
 import { mockJobDetails } from '../../../data/mockJobDetails';
 
 const createActionProps = () => ({
   job: mockJobDetails[0],
   onAnalyzeJob: vi.fn(),
   onCreateNote: vi.fn(),
-  onCreateTask: vi.fn(),
   onDeleteNote: vi.fn(),
-  onDeleteTask: vi.fn(),
   onUpdateNote: vi.fn(),
-  onUpdateTask: vi.fn(),
 });
 
 describe('JobDetailActivePanel', () => {
@@ -30,33 +30,16 @@ describe('JobDetailActivePanel', () => {
     expect(screen.getByRole('heading', { name: 'Timeline' })).toBeInTheDocument();
   });
 
-  it('binds the current job id to task actions', async () => {
-    const user = userEvent.setup();
-    const actionProps = createActionProps();
-
-    renderWithProviders(<JobDetailActivePanel activeTab="tasks" {...actionProps} />);
-
-    await user.type(screen.getByLabelText('Task title'), 'Practice architecture');
-    await user.type(screen.getByLabelText('Due date'), '2026-06-20');
-    await user.click(screen.getByRole('button', { name: 'Add task' }));
-    await user.click(
-      screen.getByRole('checkbox', { name: 'Tailor CV bullets for Senior Frontend Engineer' }),
-    );
-    await user.click(
-      screen.getByRole('button', {
-        name: 'Delete task Tailor CV bullets for Senior Frontend Engineer',
-      }),
+  it('passes the current job id to the tasks panel', async () => {
+    server.use(
+      http.get(`/api/jobs/${mockJobDetails[0].id}/tasks`, () =>
+        HttpResponse.json([createMockTaskResponse({ title: 'Practice architecture' })]),
+      ),
     );
 
-    expect(actionProps.onCreateTask).toHaveBeenCalledWith(
-      'job-001',
-      'Practice architecture',
-      '2026-06-20',
-    );
-    expect(actionProps.onUpdateTask).toHaveBeenCalledWith('job-001', 'job-001-task-1', {
-      status: 'TODO',
-    });
-    expect(actionProps.onDeleteTask).toHaveBeenCalledWith('job-001', 'job-001-task-1');
+    renderWithProviders(<JobDetailActivePanel activeTab="tasks" {...createActionProps()} />);
+
+    expect(await screen.findByText('Practice architecture')).toBeInTheDocument();
   });
 
   it('binds the current job id to note actions', async () => {

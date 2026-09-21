@@ -1,7 +1,8 @@
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
 import { formatJobDate, formatJobSalary } from '../jobs/jobs.utils';
 import type { TJobDetail, TJobDetailTab, TJobTask } from '../../types';
-import type { IJobDetailMetadataItem } from './jobDetail.types';
+import type { IJobDetailMetadataItem, IUpdateJobTaskInput } from './jobDetail.types';
+import type { TUpdateTaskRequest } from '../../services';
 
 /**
  * Creates localized metadata items for the job detail header.
@@ -79,6 +80,30 @@ export const getJobTaskDueLabel = (
   language: TLanguage,
   t: TTranslationContextValue['t'],
 ): string =>
-  t('jobDetail.tasks.due', {
-    date: formatJobDate(task.dueDate, language),
-  });
+  task.dueDate
+    ? t('jobDetail.tasks.due', {
+        date: formatJobDate(task.dueDate, language),
+      })
+    : t('jobDetail.tasks.noDueDate');
+
+/**
+ * Builds the full replacement body a task update request requires from a
+ * partial change and the task's currently loaded fields.
+ *
+ * `PUT /api/jobs/{jobId}/tasks/{taskId}` replaces every editable field, so a
+ * caller that only changes one field, such as toggling completion, still has
+ * to send the task's own title and due date. An empty due date is sent as
+ * `null`, matching the backend's "explicit null clears it" contract.
+ *
+ * @param {TJobTask} task Task as currently loaded.
+ * @param {IUpdateJobTaskInput} input Fields the caller wants to change.
+ * @returns {TUpdateTaskRequest} Full replacement request body.
+ */
+export const buildJobTaskUpdateRequest = (
+  task: TJobTask,
+  input: IUpdateJobTaskInput,
+): TUpdateTaskRequest => ({
+  title: input.title ?? task.title,
+  status: input.status ?? task.status,
+  dueDate: (input.dueDate ?? task.dueDate) || null,
+});

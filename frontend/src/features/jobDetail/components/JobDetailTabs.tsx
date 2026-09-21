@@ -34,11 +34,8 @@ export const JobDetailTabs: FC<IJobDetailTabsProps> = ({
   job,
   onAnalyzeJob,
   onCreateNote,
-  onCreateTask,
   onDeleteNote,
-  onDeleteTask,
   onUpdateNote,
-  onUpdateTask,
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TJobDetailTab>('overview');
@@ -85,11 +82,8 @@ export const JobDetailTabs: FC<IJobDetailTabsProps> = ({
           job={job}
           onAnalyzeJob={onAnalyzeJob}
           onCreateNote={onCreateNote}
-          onCreateTask={onCreateTask}
           onDeleteNote={onDeleteNote}
-          onDeleteTask={onDeleteTask}
           onUpdateNote={onUpdateNote}
-          onUpdateTask={onUpdateTask}
         />
       </div>
     </section>
