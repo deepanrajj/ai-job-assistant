@@ -53,6 +53,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 027 - Connect Edit Job Form To Backend Plan](./027-connect-edit-job-form-to-backend-plan.md)
 - [Task 028 - Connect Delete Job Action To Backend Plan](./028-connect-delete-job-action-to-backend-plan.md)
 - [Task 029 - Connect Job Detail Page To Backend Plan](./029-connect-job-detail-page-to-backend-plan.md)
+- [Task 030 - Connect Tasks Tab To Backend Plan](./030-connect-tasks-tab-to-backend-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)

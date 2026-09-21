@@ -30,25 +30,10 @@ export const JobDetailActivePanel: FC<IJobDetailActivePanelProps> = ({
   job,
   onAnalyzeJob,
   onCreateNote,
-  onCreateTask,
   onDeleteNote,
-  onDeleteTask,
   onUpdateNote,
-  onUpdateTask,
 }) => {
-  if (activeTab === 'tasks')
-    return (
-      <JobDetailTasksPanel
-        job={job}
-        onCreateTask={
-          onCreateTask ? (title, dueDate) => onCreateTask(job.id, title, dueDate) : undefined
-        }
-        onDeleteTask={onDeleteTask ? (taskId) => onDeleteTask(job.id, taskId) : undefined}
-        onUpdateTask={
-          onUpdateTask ? (taskId, input) => onUpdateTask(job.id, taskId, input) : undefined
-        }
-      />
-    );
+  if (activeTab === 'tasks') return <JobDetailTasksPanel jobId={job.id} />;
 
   if (activeTab === 'notes')
     return (

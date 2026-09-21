@@ -41,8 +41,8 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 021: Add taskService](../../tasks/roadmap/021-add-task-service.md).
+- [ ] [Task 031: Connect notes tab to backend](../../tasks/roadmap/031-connect-notes-tab-to-backend.md).
 
 Phase 3 is complete: job, task, note, and timeline endpoints all exist.
-Phase 4's remaining frontend work can now proceed - task 021 adds the
-typed frontend service tasks 030-032 will build on.
+Task 030 connected the tasks tab to `taskService`; task 031 follows the
+same shape for notes.

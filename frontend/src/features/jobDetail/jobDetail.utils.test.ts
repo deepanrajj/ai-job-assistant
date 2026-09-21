@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildJobTaskUpdateRequest,
   createJobDetailMetadataItems,
   getCompletedJobTaskCount,
   getJobDetailPanelId,
@@ -64,5 +65,53 @@ describe('jobDetail.utils', () => {
     expect(isJobTaskComplete(tasks[1])).toBe(false);
     expect(getCompletedJobTaskCount(tasks)).toBe(1);
     expect(getJobTaskDueLabel(tasks[0], 'en', t)).toBe('Due May 10, 2026');
+  });
+
+  it('renders a no-due-date label when a task has no due date', () => {
+    expect(getJobTaskDueLabel({ ...mockJobDetails[0].tasks[0], dueDate: '' }, 'en', t)).toBe(
+      'No due date',
+    );
+  });
+
+  describe('buildJobTaskUpdateRequest', () => {
+    const task = mockJobDetails[0].tasks[0];
+
+    it('fills unspecified fields from the currently loaded task', () => {
+      expect(buildJobTaskUpdateRequest(task, { status: 'TODO' })).toEqual({
+        title: task.title,
+        status: 'TODO',
+        dueDate: task.dueDate,
+      });
+    });
+
+    it('keeps the loaded status when only the title changes', () => {
+      expect(buildJobTaskUpdateRequest(task, { title: 'Updated title' })).toEqual({
+        title: 'Updated title',
+        status: task.status,
+        dueDate: task.dueDate,
+      });
+    });
+
+    it('sends every field from the input when the caller provides all of them', () => {
+      expect(
+        buildJobTaskUpdateRequest(task, {
+          title: 'Updated title',
+          status: 'DONE',
+          dueDate: '2026-07-01',
+        }),
+      ).toEqual({
+        title: 'Updated title',
+        status: 'DONE',
+        dueDate: '2026-07-01',
+      });
+    });
+
+    it('sends an explicit null when the resulting due date is empty', () => {
+      expect(buildJobTaskUpdateRequest({ ...task, dueDate: '' }, { status: 'DONE' })).toMatchObject(
+        {
+          dueDate: null,
+        },
+      );
+    });
   });
 });

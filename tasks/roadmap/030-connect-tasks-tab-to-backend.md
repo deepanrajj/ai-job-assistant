@@ -1,5 +1,7 @@
 # Task 030 - Connect Tasks Tab To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -40,9 +42,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Tasks tab uses backend APIs.
-- [ ] Existing UI behavior is preserved.
-- [ ] Tests cover task user flows.
+- [x] Tasks tab uses backend APIs.
+- [x] Existing UI behavior is preserved.
+- [x] Tests cover task user flows.
 
 ## Commit
 
