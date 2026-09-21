@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Smart Job Tracker",
-    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks' or 'Notes' folder the same way for a job's tasks or notes; each seeds its own job rather than depending on the 'Jobs' folder having run first.",
+    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks', 'Notes', or 'Timeline' folder the same way for a job's tasks, notes, or timeline; each seeds its own job rather than depending on the 'Jobs' folder having run first.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -34,6 +34,12 @@
       "value": "",
       "type": "string",
       "description": "Set by 'Create note'. Later requests in the Notes folder read it."
+    },
+    {
+      "key": "timelineJobId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create job for timeline'. Every later request in the Timeline folder reads it. Separate from every other folder's job id so the Timeline folder does not depend on any other folder having run first."
     }
   ],
   "item": [
@@ -1239,6 +1245,210 @@
                   "",
                   "pm.test('uses the JOB_NOT_FOUND error code', function () {",
                   "    pm.expect(pm.response.json().code).to.eql('JOB_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Timeline",
+      "description": "Run this folder in order. 'Create job for timeline' stores a fresh job id in the timelineJobId collection variable, separate from every other folder's job id, so this folder is self-contained. Unlike Jobs/Tasks/Notes, nothing here writes an event directly: 'Update job status' goes through the ordinary job update route, and the timeline event it produces is what the rest of this folder reads back.",
+      "item": [
+        {
+          "name": "Create job for timeline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"status\": \"WISHLIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Every timeline route is nested under a job or reads across jobs, so this folder needs its own job rather than reusing another folder's."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('timelineJobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update job status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"status\": \"APPLIED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{timelineJobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{timelineJobId}}"]
+            },
+            "description": "Changing status from WISHLIST to APPLIED is what the job update route already does; this folder does not call a timeline write route directly because there is not one - events are a side effect of this request."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('status is now APPLIED', function () {",
+                  "    pm.expect(pm.response.json().status).to.eql('APPLIED');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List job timeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{timelineJobId}}/timeline",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{timelineJobId}}", "timeline"]
+            },
+            "description": "Returns the job's timeline events, oldest first. The status update above should have produced exactly one STATUS_CHANGE event."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const events = pm.response.json();",
+                  "",
+                  "pm.test('has exactly one status-change event', function () {",
+                  "    pm.expect(events).to.have.lengthOf(1);",
+                  "    pm.expect(events[0].type).to.eql('STATUS_CHANGE');",
+                  "});",
+                  "",
+                  "pm.test('records the transition from WISHLIST to APPLIED', function () {",
+                  "    pm.expect(events[0].previousStatus).to.eql('WISHLIST');",
+                  "    pm.expect(events[0].nextStatus).to.eql('APPLIED');",
+                  "});",
+                  "",
+                  "pm.test('carries the job id, since this endpoint shares its response shape with the cross-job feed', function () {",
+                  "    pm.expect(events[0].jobId).to.eql(pm.collectionVariables.get('timelineJobId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List job timeline for missing job returns 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{$guid}}/timeline",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{$guid}}", "timeline"]
+            },
+            "description": "{{$guid}} generates a well-formed but unused UUID, so this is a genuine 'job does not exist' case rather than a malformed id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the JOB_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('JOB_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List all timeline events paginated",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/timeline-events?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["timeline-events"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            },
+            "description": "Spans every job in the (shared) test database, so this deliberately does not assert that this run's own event is present - that would need an unrealistically large size or be flaky against accumulated state from prior runs. It only asserts the response shape and that this run's write did not break the endpoint."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test('has the paginated response shape', function () {",
+                  "    pm.expect(body).to.have.property('content').that.is.an('array');",
+                  "    pm.expect(body).to.have.property('page', 0);",
+                  "    pm.expect(body).to.have.property('size', 20);",
+                  "    pm.expect(body).to.have.property('totalElements').that.is.a('number');",
+                  "    pm.expect(body).to.have.property('totalPages').that.is.a('number');",
                   "});"
                 ]
               }

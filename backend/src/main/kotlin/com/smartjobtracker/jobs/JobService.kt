@@ -4,6 +4,9 @@ import com.smartjobtracker.api.error.ApiErrorCode
 import com.smartjobtracker.api.error.ApiException
 import com.smartjobtracker.jobs.command.CreateJobCommand
 import com.smartjobtracker.jobs.command.UpdateJobCommand
+import com.smartjobtracker.timeline.TimelineEvent
+import com.smartjobtracker.timeline.TimelineEventRepository
+import com.smartjobtracker.timeline.TimelineEventType
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,6 +32,7 @@ interface JobService {
 @Service
 class DefaultJobService(
     private val jobRepository: JobRepository,
+    private val timelineEventRepository: TimelineEventRepository,
     private val clock: Clock,
 ) : JobService {
     @Transactional
@@ -65,6 +69,11 @@ class DefaultJobService(
      * no `save` call is needed. Constructing a second `Job` with the same
      * id would report itself as new and fail, by design; see
      * `AssignedIdEntity`.
+     *
+     * A status change also writes a `TimelineEvent` in this same
+     * transaction. If that write fails, the whole transaction rolls back,
+     * including this method's pending `Job` update - `@Transactional`
+     * makes both writes atomic without any extra code here.
      */
     @Transactional
     override fun updateJob(
@@ -72,6 +81,8 @@ class DefaultJobService(
         command: UpdateJobCommand,
     ): Job {
         val job = jobRepository.findById(id).orElseThrow { jobNotFound() }
+        val previousStatus = job.status
+        val timestamp = now()
         job.company = command.company
         job.roleTitle = command.roleTitle
         job.status = command.status
@@ -80,7 +91,21 @@ class DefaultJobService(
         job.description = command.description
         job.salaryMin = command.salaryMin
         job.salaryMax = command.salaryMax
-        job.updatedAt = now()
+        job.updatedAt = timestamp
+
+        if (previousStatus != command.status) {
+            timelineEventRepository.save(
+                TimelineEvent(
+                    id = UUID.randomUUID(),
+                    jobId = job.id,
+                    type = TimelineEventType.STATUS_CHANGE,
+                    description = "Status changed from $previousStatus to ${command.status}.",
+                    previousStatus = previousStatus,
+                    nextStatus = command.status,
+                    createdAt = timestamp,
+                ),
+            )
+        }
 
         return job
     }

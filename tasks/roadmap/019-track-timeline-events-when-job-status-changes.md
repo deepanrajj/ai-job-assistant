@@ -63,11 +63,11 @@ collection checks required by AGENTS.md for changed job contracts.
 
 ## Acceptance Criteria
 
-- [ ] Status changes create timeline events.
-- [ ] Timeline reads return persisted events.
-- [ ] Job update and event creation are atomic.
-- [ ] A documented paginated history contract supports dashboard reads.
-- [ ] Backend verification passes.
+- [x] Status changes create timeline events.
+- [x] Timeline reads return persisted events.
+- [x] Job update and event creation are atomic.
+- [x] A documented paginated history contract supports dashboard reads.
+- [x] Backend verification passes.
 
 ## Commit
 
