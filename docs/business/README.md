@@ -44,6 +44,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 018 - Create Timeline Event Entity Plan](./018-create-timeline-event-entity-plan.md)
 - [Task 019 - Track Timeline Events When Job Status Changes Plan](./019-track-timeline-events-when-job-status-changes-plan.md)
 - [Task 020 - Add Frontend Job Service Plan](./020-add-job-service-plan.md)
+- [Task 021 - Add Frontend Task Service Plan](./021-add-task-service-plan.md)
 - [Task 023 - Add Typed API Response Models Plan](./023-add-typed-api-response-models-plan.md)
 - [Task 024 - Replace Mock Jobs On Jobs List Page Plan](./024-replace-mock-jobs-on-jobs-list-page-plan.md)
 - [Task 025 - Replace Mock Jobs On Dashboard Page Plan](./025-replace-mock-jobs-on-dashboard-page-plan.md)
