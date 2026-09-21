@@ -46,4 +46,3 @@ numbered task before implementation.
 Phase 3 is complete: job, task, note, and timeline endpoints all exist.
 Phase 4's remaining frontend work can now proceed - task 021 adds the
 typed frontend service tasks 030-032 will build on.
->>>>>>> origin/main
