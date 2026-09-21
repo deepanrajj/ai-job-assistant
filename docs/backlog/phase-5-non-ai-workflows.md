@@ -20,6 +20,8 @@ before adding paid AI workflows.
 - [ ] [Add import duplicate detection](../../tasks/roadmap/048-add-import-duplicate-detection.md).
 - [ ] [Add bulk import selected jobs](../../tasks/roadmap/049-add-bulk-import-selected-jobs.md).
 - [ ] [Add manual duplicate warning](../../tasks/roadmap/050-add-manual-duplicate-warning.md).
+- [ ] [Add application snapshots](../../tasks/roadmap/082-add-application-snapshots.md).
+- [ ] [Add German market job attributes](../../tasks/roadmap/083-add-german-market-job-attributes.md).
 
 ## Acceptance Criteria
 
