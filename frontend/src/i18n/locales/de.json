@@ -108,6 +108,14 @@
       "deleteJob": "Löschen des Jobs fehlgeschlagen"
     }
   },
+  "notes": {
+    "fallbackError": {
+      "listNotes": "Laden der Notizen fehlgeschlagen",
+      "createNote": "Erstellen der Notiz fehlgeschlagen",
+      "updateNote": "Aktualisieren der Notiz fehlgeschlagen",
+      "deleteNote": "Löschen der Notiz fehlgeschlagen"
+    }
+  },
   "jobDetail": {
     "backToJobs": "Zurück zu Jobs",
     "editJob": "Job bearbeiten",

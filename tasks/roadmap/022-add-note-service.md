@@ -40,9 +40,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Note service functions are typed.
-- [ ] Tests cover success and error paths.
-- [ ] No UI behavior changes yet.
+- [x] Note service functions are typed.
+- [x] Tests cover success and error paths.
+- [x] No UI behavior changes yet.
 
 ## Commit
 
