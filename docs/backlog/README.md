@@ -41,9 +41,9 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 016: Create note controller](../../tasks/roadmap/016-create-note-controller.md).
+- [ ] [Task 017: Add note CRUD endpoints](../../tasks/roadmap/017-add-note-crud-endpoints.md).
 
 Phase 4's remaining frontend work all waits on phase 3. Tasks 030 to 032
 need job task, note, and timeline endpoints, and task 021's frontend
-task service needs a contract to type against, so the note controller
+task service needs a contract to type against, so closing out note CRUD
 is the next thing that unblocks anything.
