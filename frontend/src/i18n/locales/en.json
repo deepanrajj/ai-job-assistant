@@ -108,6 +108,14 @@
       "deleteJob": "Failed to delete job"
     }
   },
+  "notes": {
+    "fallbackError": {
+      "listNotes": "Failed to load notes",
+      "createNote": "Failed to create note",
+      "updateNote": "Failed to update note",
+      "deleteNote": "Failed to delete note"
+    }
+  },
   "tasks": {
     "fallbackError": {
       "listTasks": "Failed to load tasks",
