@@ -8,9 +8,21 @@ export const appRouteHandles = {
     title: 'route.aiAssistant.title',
     subtitle: 'route.aiAssistant.subtitle',
   },
+  APPLICATIONS: {
+    title: 'route.applications.title',
+    subtitle: 'route.applications.subtitle',
+  },
+  CALENDAR: {
+    title: 'route.calendar.title',
+    subtitle: 'route.calendar.subtitle',
+  },
   DASHBOARD: {
     title: 'route.dashboard.title',
     subtitle: 'route.dashboard.subtitle',
+  },
+  DISCOVER: {
+    title: 'route.discover.title',
+    subtitle: 'route.discover.subtitle',
   },
   JOBS: {
     title: 'route.jobs.title',
@@ -31,5 +43,9 @@ export const appRouteHandles = {
   NOT_FOUND: {
     title: 'route.notFound.title',
     subtitle: 'route.notFound.subtitle',
+  },
+  PROFILE: {
+    title: 'route.profile.title',
+    subtitle: 'route.profile.subtitle',
   },
 } satisfies Record<TAppRouteHandleKey, IAppRouteHandle>;

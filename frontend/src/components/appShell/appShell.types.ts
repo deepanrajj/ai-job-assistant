@@ -5,7 +5,13 @@ import type { TAppPath } from '../../routes/paths';
 /**
  * Represents the route ids used by the app shell navigation and page titles.
  */
-export type TAppRouteId = 'dashboard' | 'jobs' | 'ai-assistant';
+export type TAppRouteId =
+  | 'dashboard'
+  | 'jobs'
+  | 'discover'
+  | 'applications'
+  | 'calendar'
+  | 'profile';
 
 /**
  * Represents a navigation item rendered by the app shell.

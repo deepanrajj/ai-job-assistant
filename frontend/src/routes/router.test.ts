@@ -16,6 +16,10 @@ describe('appRouter', () => {
       APP_PATHS.JOB_NEW,
       APP_PATHS.JOB_EDIT,
       APP_PATHS.JOB_DETAIL,
+      APP_PATHS.DISCOVER,
+      APP_PATHS.APPLICATIONS,
+      APP_PATHS.CALENDAR,
+      APP_PATHS.PROFILE,
       APP_PATHS.AI_ASSISTANT,
       '*',
     ]);

@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
 
-import { AiAssistantIcon, AppLogoIcon, DashboardIcon, JobsIcon } from './appShell.icons';
+import {
+  ApplicationsIcon,
+  AppLogoIcon,
+  CalendarIcon,
+  DashboardIcon,
+  DiscoverIcon,
+  JobsIcon,
+  ProfileIcon,
+} from './appShell.icons';
 
 describe('appShell icons', () => {
   it('renders decorative SVG icons', () => {
@@ -15,7 +23,16 @@ describe('appShell icons', () => {
     rerender(<JobsIcon />);
     expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 24 24');
 
-    rerender(<AiAssistantIcon />);
+    rerender(<DiscoverIcon />);
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+
+    rerender(<ApplicationsIcon />);
+    expect(container.querySelector('svg')).toHaveAttribute('focusable', 'false');
+
+    rerender(<CalendarIcon />);
+    expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 24 24');
+
+    rerender(<ProfileIcon />);
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 });

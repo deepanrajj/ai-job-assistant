@@ -24,9 +24,21 @@ describe('AppShellNavigation', () => {
       '/dashboard',
     );
     expect(within(navigation).getByRole('link', { name: 'Jobs' })).toHaveClass('active');
-    expect(within(navigation).getByRole('link', { name: 'AI Assistant' })).toHaveAttribute(
+    expect(within(navigation).getByRole('link', { name: 'Discover' })).toHaveAttribute(
       'href',
-      '/ai-assistant',
+      '/discover',
+    );
+    expect(within(navigation).getByRole('link', { name: 'Applications' })).toHaveAttribute(
+      'href',
+      '/applications',
+    );
+    expect(within(navigation).getByRole('link', { name: 'Calendar' })).toHaveAttribute(
+      'href',
+      '/calendar',
+    );
+    expect(within(navigation).getByRole('link', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/profile',
     );
   });
 });
