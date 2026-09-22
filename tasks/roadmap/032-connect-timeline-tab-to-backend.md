@@ -1,5 +1,7 @@
 # Task 032 - Connect Timeline Tab To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -41,9 +43,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Timeline tab uses backend data.
-- [ ] Empty and error states are accessible.
-- [ ] Tests cover visible states.
+- [x] Timeline tab uses backend data.
+- [x] Empty and error states are accessible.
+- [x] Tests cover visible states.
 
 ## Commit
 

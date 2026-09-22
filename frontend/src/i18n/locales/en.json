@@ -124,6 +124,11 @@
       "deleteTask": "Failed to delete task"
     }
   },
+  "timeline": {
+    "fallbackError": {
+      "listTimeline": "Failed to load timeline"
+    }
+  },
   "jobDetail": {
     "backToJobs": "Back to jobs",
     "editJob": "Edit job",
@@ -175,7 +180,14 @@
       "deleteNoteLabel": "Delete note from {{date}}"
     },
     "timeline": {
-      "title": "Timeline"
+      "title": "Timeline",
+      "loading": "Loading timeline",
+      "loadErrorTitle": "Timeline could not be loaded",
+      "empty": "No timeline events yet",
+      "emptyDescription": "Status changes on this job will appear here.",
+      "eventType": {
+        "statusChange": "Status change"
+      }
     },
     "ai": {
       "analysisTitle": "Saved AI analysis",

@@ -124,6 +124,11 @@
       "deleteTask": "Löschen der Aufgabe fehlgeschlagen"
     }
   },
+  "timeline": {
+    "fallbackError": {
+      "listTimeline": "Laden des Verlaufs fehlgeschlagen"
+    }
+  },
   "jobDetail": {
     "backToJobs": "Zurück zu Jobs",
     "editJob": "Job bearbeiten",
@@ -175,7 +180,14 @@
       "deleteNoteLabel": "Notiz vom {{date}} löschen"
     },
     "timeline": {
-      "title": "Verlauf"
+      "title": "Verlauf",
+      "loading": "Verlauf wird geladen",
+      "loadErrorTitle": "Verlauf konnte nicht geladen werden",
+      "empty": "Noch keine Verlaufseinträge",
+      "emptyDescription": "Statusänderungen bei diesem Job erscheinen hier.",
+      "eventType": {
+        "statusChange": "Statusänderung"
+      }
     },
     "ai": {
       "analysisTitle": "Gespeicherte KI-Analyse",
