@@ -269,9 +269,16 @@ describe('JobDetailNotesPanel', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Delete note from May 10, 2026' }));
 
+    const saveButton = screen.getByRole('button', { name: 'Save note from May 10, 2026' });
+    const deleteButton = screen.getByRole('button', { name: 'Delete note from May 10, 2026' });
+    const addNoteButton = screen.getByRole('button', { name: 'Add note' });
+
     expect(screen.getByLabelText('Edit note from May 10, 2026')).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Save note from May 10, 2026' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Delete note from May 10, 2026' })).toBeDisabled();
+    expect(saveButton).toBeDisabled();
+    expect(saveButton).toHaveAttribute('aria-busy', 'true');
+    expect(deleteButton).toBeDisabled();
+    expect(deleteButton).toHaveAttribute('aria-busy', 'true');
+    expect(addNoteButton).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByLabelText('New note')).toBeDisabled();
   });
 

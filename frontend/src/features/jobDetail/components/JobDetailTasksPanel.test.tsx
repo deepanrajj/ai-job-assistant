@@ -259,8 +259,13 @@ describe('JobDetailTasksPanel', () => {
 
     await user.click(await screen.findByRole('checkbox', { name: 'Tailor CV bullets' }));
 
+    const deleteButton = screen.getByRole('button', { name: 'Delete task Tailor CV bullets' });
+    const addTaskButton = screen.getByRole('button', { name: 'Add task' });
+
     expect(screen.getByRole('checkbox', { name: 'Tailor CV bullets' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Delete task Tailor CV bullets' })).toBeDisabled();
+    expect(deleteButton).toBeDisabled();
+    expect(deleteButton).toHaveAttribute('aria-busy', 'true');
+    expect(addTaskButton).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByLabelText('Task title')).toBeDisabled();
     expect(screen.getByLabelText('Due date')).toBeDisabled();
   });

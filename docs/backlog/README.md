@@ -41,9 +41,9 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 033: Add loading states for API screens](../../tasks/roadmap/033-add-loading-states-for-api-screens.md).
+- [ ] [Task 034: Add error states for API screens](../../tasks/roadmap/034-add-error-states-for-api-screens.md).
 
-Tasks 030-032 connected the tasks, notes, and timeline tabs to their
-backend services, so every job detail tab now reads real data. Task 033
-starts phase 4's follow-up work: standardizing the loading treatment
-across all of those now-connected screens.
+Task 033 found every named screen already had a loading/error state
+from tasks 024-032, and closed the one real gap: several write buttons
+had no `aria-busy`. Task 034 should start with the same kind of audit
+before assuming there is missing `ErrorState` coverage to add.

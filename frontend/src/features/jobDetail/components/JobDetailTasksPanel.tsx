@@ -60,6 +60,7 @@ const JobDetailTaskItem: FC<IJobDetailTaskItemProps> = ({
         <p className="mt-1 text-xs text-app-textMuted">{dueLabel}</p>
       </div>
       <Button
+        aria-busy={isDisabled}
         aria-label={t('jobDetail.tasks.deleteTaskLabel', {
           title: task.title,
         })}
@@ -182,7 +183,7 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
           type="date"
           value={newTaskDueDate}
         />
-        <Button className="self-end" disabled={!canCreateTask} type="submit">
+        <Button aria-busy={isMutating} className="self-end" disabled={!canCreateTask} type="submit">
           {t('jobDetail.tasks.addTask')}
         </Button>
       </form>

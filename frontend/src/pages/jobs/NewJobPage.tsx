@@ -95,6 +95,7 @@ export const NewJobPage: FC = () => {
 
   return (
     <JobForm
+      busySubmitLabel={t('jobForm.actions.creating')}
       error={
         error && <ErrorState description={error.message} title={t('jobForm.createErrorTitle')} />
       }

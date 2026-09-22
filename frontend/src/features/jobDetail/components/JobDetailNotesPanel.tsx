@@ -55,6 +55,7 @@ const JobDetailNoteItem: FC<IJobDetailNoteItemProps> = ({
       <p className="mt-3 text-xs font-medium text-app-textMuted">{createdAtLabel}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
+          aria-busy={isDisabled}
           aria-label={t('jobDetail.notes.saveNoteLabel', {
             date: createdAtLabel,
           })}
@@ -65,6 +66,7 @@ const JobDetailNoteItem: FC<IJobDetailNoteItemProps> = ({
           {t('jobDetail.notes.saveNote')}
         </Button>
         <Button
+          aria-busy={isDisabled}
           aria-label={t('jobDetail.notes.deleteNoteLabel', {
             date: createdAtLabel,
           })}
@@ -172,7 +174,7 @@ const JobDetailNotesPanelComponent: FC<IJobDetailNotesPanelProps> = ({ jobId }) 
           placeholder={t('jobDetail.notes.notePlaceholder')}
           value={newNoteBody}
         />
-        <Button disabled={!canCreateNote} type="submit">
+        <Button aria-busy={isMutating} disabled={!canCreateNote} type="submit">
           {t('jobDetail.notes.addNote')}
         </Button>
       </form>

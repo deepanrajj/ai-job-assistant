@@ -105,6 +105,7 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
 
   return (
     <JobForm
+      busySubmitLabel={t('jobForm.actions.saving')}
       error={
         error && (
           <ErrorState

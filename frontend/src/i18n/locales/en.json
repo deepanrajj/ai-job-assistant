@@ -209,7 +209,9 @@
     "cancel": "Cancel",
     "actions": {
       "create": "Create job",
-      "save": "Save changes"
+      "creating": "Creating...",
+      "save": "Save changes",
+      "saving": "Saving..."
     },
     "fields": {
       "company": "Company",

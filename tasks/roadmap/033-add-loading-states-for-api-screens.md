@@ -1,5 +1,7 @@
 # Task 033 - Add Loading States For API Screens
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -39,9 +41,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] API screens have consistent loading states.
-- [ ] Loading states are accessible.
-- [ ] Tests cover loading behavior.
+- [x] API screens have consistent loading states.
+- [x] Loading states are accessible.
+- [x] Tests cover loading behavior.
 
 ## Commit
 
