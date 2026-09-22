@@ -1,62 +1,294 @@
-import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 
 import { JobDetailNotesPanel } from './JobDetailNotesPanel';
 import { renderWithProviders } from '../../../test/renderWithProviders';
-import { mockJobDetails } from '../../../data/mockJobDetails';
+import { MOCK_JOB_IDS } from '../../../test/mockJobs';
+import { MOCK_NOTE_IDS, createMockNoteResponse } from '../../../test/mockNotes';
+import { server } from '../../../test/server';
+
+const mockNotesEndpoint = `/api/jobs/${MOCK_JOB_IDS.celonis}/notes`;
+const mockNoteEndpoint = `${mockNotesEndpoint}/${MOCK_NOTE_IDS.primary}`;
 
 describe('JobDetailNotesPanel', () => {
-  it('renders saved notes with localized dates', () => {
-    renderWithProviders(<JobDetailNotesPanel job={mockJobDetails[0]} />);
+  it('renders saved notes with localized dates', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json([
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.primary,
+            body: 'Saved the role because Celonis has a strong fit.',
+            createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+        ]),
+      ),
+    );
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
 
-    expect(screen.getByRole('heading', { name: 'Notes' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Notes' })).toBeInTheDocument();
     expect(screen.getByText(/Saved the role because Celonis/)).toBeInTheDocument();
-    expect(screen.getByText(/Preparation focus/)).toBeInTheDocument();
     expect(screen.getByText('May 10, 2026')).toBeInTheDocument();
-    expect(screen.queryByLabelText('New note')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Edit note from May 10, 2026')).toHaveAttribute('readonly');
-    expect(screen.queryByRole('button', { name: 'Save note from May 10, 2026' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Delete note from May 10, 2026' })).toBeNull();
+    expect(screen.getByLabelText('Edit note from May 10, 2026')).not.toBeDisabled();
   });
 
-  it('creates, updates, and deletes notes', async () => {
-    const user = userEvent.setup();
-    const onCreateNote = vi.fn();
-    const onDeleteNote = vi.fn();
-    const onUpdateNote = vi.fn();
-    renderWithProviders(
-      <JobDetailNotesPanel
-        job={mockJobDetails[0]}
-        onCreateNote={onCreateNote}
-        onDeleteNote={onDeleteNote}
-        onUpdateNote={onUpdateNote}
-      />,
-    );
+  it('renders the loading state while the request is in flight', () => {
+    server.use(http.get(mockNotesEndpoint, () => new Promise(() => {})));
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
 
-    await user.type(screen.getByLabelText('New note'), 'Ask about team rituals');
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByText('Loading notes')).toBeInTheDocument();
+  });
+
+  it('renders the load error state with a working retry', async () => {
+    let callCount = 0;
+    server.use(
+      http.get(mockNotesEndpoint, () => {
+        callCount += 1;
+
+        return callCount === 1
+          ? HttpResponse.json({ message: 'boom' }, { status: 500 })
+          : HttpResponse.json([]);
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Notes could not be loaded')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByRole('heading', { name: 'Notes' })).toBeInTheDocument();
+  });
+
+  it('creates a note and reloads the list', async () => {
+    let callCount = 0;
+    server.use(
+      http.get(mockNotesEndpoint, () => {
+        callCount += 1;
+
+        return callCount === 1
+          ? HttpResponse.json([])
+          : HttpResponse.json([
+              createMockNoteResponse({
+                id: MOCK_NOTE_IDS.primary,
+                body: 'Ask about team rituals',
+              }),
+            ]);
+      }),
+      http.post(mockNotesEndpoint, () =>
+        HttpResponse.json(
+          createMockNoteResponse({ id: MOCK_NOTE_IDS.primary, body: 'Ask about team rituals' }),
+          { status: 201 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.type(await screen.findByLabelText('New note'), 'Ask about team rituals');
     await user.click(screen.getByRole('button', { name: 'Add note' }));
 
-    expect(onCreateNote).toHaveBeenCalledWith('Ask about team rituals');
-
-    await user.clear(screen.getByLabelText('Edit note from May 10, 2026'));
-    await user.type(screen.getByLabelText('Edit note from May 10, 2026'), 'Updated note body');
-    await user.click(screen.getByRole('button', { name: 'Save note from May 10, 2026' }));
-
-    expect(onUpdateNote).toHaveBeenCalledWith('job-001-note-1', 'Updated note body');
-
-    await user.click(screen.getByRole('button', { name: 'Delete note from May 10, 2026' }));
-    expect(onDeleteNote).toHaveBeenCalledWith('job-001-note-1');
+    expect(await screen.findByText('Ask about team rituals')).toBeInTheDocument();
   });
 
-  it('ignores empty note submissions', () => {
-    const onCreateNote = vi.fn();
-    renderWithProviders(
-      <JobDetailNotesPanel job={mockJobDetails[0]} onCreateNote={onCreateNote} />,
+  it('keeps the create form filled in when the create request fails', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () => HttpResponse.json([])),
+      http.post(mockNotesEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
     );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
 
-    fireEvent.submit(screen.getByLabelText('New note').closest('form')!);
+    await user.type(await screen.findByLabelText('New note'), 'Ask about team rituals');
+    await user.click(screen.getByRole('button', { name: 'Add note' }));
 
-    expect(onCreateNote).not.toHaveBeenCalled();
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByLabelText('New note')).toHaveValue('Ask about team rituals');
+  });
+
+  it('edits and saves a note', async () => {
+    let callCount = 0;
+    server.use(
+      http.get(mockNotesEndpoint, () => {
+        callCount += 1;
+
+        return callCount === 1
+          ? HttpResponse.json([
+              createMockNoteResponse({
+                id: MOCK_NOTE_IDS.primary,
+                body: 'Original body',
+                createdAt: '2026-05-10T09:00:00.123456Z',
+              }),
+            ])
+          : HttpResponse.json([
+              createMockNoteResponse({
+                id: MOCK_NOTE_IDS.primary,
+                body: 'Updated note body',
+                createdAt: '2026-05-10T09:00:00.123456Z',
+              }),
+            ]);
+      }),
+      http.put(mockNoteEndpoint, () =>
+        HttpResponse.json(
+          createMockNoteResponse({ id: MOCK_NOTE_IDS.primary, body: 'Updated note body' }),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    const textarea = await screen.findByLabelText('Edit note from May 10, 2026');
+
+    await user.clear(textarea);
+    await user.type(textarea, 'Updated note body');
+    await user.click(screen.getByRole('button', { name: 'Save note from May 10, 2026' }));
+
+    expect(await screen.findByText('Updated note body')).toBeInTheDocument();
+  });
+
+  it('deletes a note', async () => {
+    let isDeleted = false;
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json(
+          isDeleted
+            ? []
+            : [
+                createMockNoteResponse({
+                  id: MOCK_NOTE_IDS.primary,
+                  createdAt: '2026-05-10T09:00:00.123456Z',
+                }),
+              ],
+        ),
+      ),
+      http.delete(mockNoteEndpoint, () => {
+        isDeleted = true;
+
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByLabelText('Edit note from May 10, 2026');
+    await user.click(screen.getByRole('button', { name: 'Delete note from May 10, 2026' }));
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText('Edit note from May 10, 2026')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('renders a mutation failure from a failed save without losing the loaded notes', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json([
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.primary,
+            body: 'Recruiter called back',
+            createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+        ]),
+      ),
+      http.put(mockNoteEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Save note from May 10, 2026' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Recruiter called back')).toBeInTheDocument();
+  });
+
+  it('renders a mutation failure without losing the loaded notes', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json([
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.primary,
+            body: 'Recruiter called back',
+            createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+        ]),
+      ),
+      http.delete(mockNoteEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Delete note from May 10, 2026' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('Recruiter called back')).toBeInTheDocument();
+  });
+
+  it('clears a stale mutation error once a later write succeeds', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json([
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.primary,
+            body: 'Recruiter called back',
+            createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+        ]),
+      ),
+      http.post(mockNotesEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+      http.delete(mockNoteEndpoint, () => new HttpResponse(null, { status: 204 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.type(await screen.findByLabelText('New note'), 'Ask about team rituals');
+    await user.click(screen.getByRole('button', { name: 'Add note' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Delete note from May 10, 2026' }));
+
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('disables controls while a write is in flight', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json([
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.primary,
+            createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+        ]),
+      ),
+      http.delete(mockNoteEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Delete note from May 10, 2026' }));
+
+    expect(screen.getByLabelText('Edit note from May 10, 2026')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Save note from May 10, 2026' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Delete note from May 10, 2026' })).toBeDisabled();
+    expect(screen.getByLabelText('New note')).toBeDisabled();
+  });
+
+  it('ignores empty note submissions', async () => {
+    let createCallCount = 0;
+    server.use(
+      http.get(mockNotesEndpoint, () => HttpResponse.json([])),
+      http.post(mockNotesEndpoint, () => {
+        createCallCount += 1;
+
+        return HttpResponse.json(createMockNoteResponse(), { status: 201 });
+      }),
+    );
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    fireEvent.submit((await screen.findByLabelText('New note')).closest('form')!);
+
+    expect(createCallCount).toBe(0);
   });
 });

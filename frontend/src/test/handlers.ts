@@ -12,10 +12,11 @@ import type { TJobAiAnalysis } from '../types';
  */
 export const handlers = [
   // Unlike `GET /api/jobs` above, several tests open the job detail tasks
-  // tab only to assert unrelated tab-switching or page behaviour. An empty
-  // list is always a safe default for those; a test that cares what tasks
-  // render calls `server.use` with its own handler.
+  // or notes tab only to assert unrelated tab-switching or page behaviour.
+  // An empty list is always a safe default for those; a test that cares
+  // what tasks or notes render calls `server.use` with its own handler.
   http.get('/api/jobs/:jobId/tasks', () => HttpResponse.json([])),
+  http.get('/api/jobs/:jobId/notes', () => HttpResponse.json([])),
   http.post('/api/ai/analyze-job', () =>
     HttpResponse.json<TJobAiAnalysis>({
       niceToHaveSkills: ['Testing Library'],

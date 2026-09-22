@@ -14,11 +14,8 @@ export interface IJobDetailMetadataItem {
  */
 export interface IJobDetailPageActions {
   onAnalyzeJob?: (jobId: string, analysis: TJobAiAnalysis) => void;
-  onCreateNote?: (jobId: string, body: string) => void;
   onDeleteJob?: (jobId: string) => void;
-  onDeleteNote?: (jobId: string, noteId: string) => void;
   onStatusChange?: (jobId: string, status: TJobStatus) => void;
-  onUpdateNote?: (jobId: string, noteId: string, body: string) => void;
 }
 
 /**

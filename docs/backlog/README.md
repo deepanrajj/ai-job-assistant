@@ -41,8 +41,8 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 031: Connect notes tab to backend](../../tasks/roadmap/031-connect-notes-tab-to-backend.md).
+- [ ] [Task 032: Connect timeline tab to backend](../../tasks/roadmap/032-connect-timeline-tab-to-backend.md).
 
 Phase 3 is complete: job, task, note, and timeline endpoints all exist.
-Task 030 connected the tasks tab to `taskService`; task 031 follows the
-same shape for notes.
+Tasks 030 and 031 connected the tasks and notes tabs to their
+services; task 032 closes out the same shape for timeline.

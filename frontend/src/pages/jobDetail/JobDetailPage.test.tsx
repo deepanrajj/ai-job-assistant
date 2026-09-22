@@ -299,12 +299,10 @@ describe('JobDetailPage', () => {
 
     // Every one of these wrote to the localStorage store by job id, which a
     // backend id never matches, so each would have looked like it worked.
-    // The tasks tab is not one of these any more: task 030 gave it a real
-    // backend-backed write path, covered in its own test file.
+    // The tasks and notes tabs are not one of these any more: tasks 030 and
+    // 031 gave them a real backend-backed write path, each covered in its
+    // own test file.
     expect(screen.getByRole('combobox', { name: 'Job status' })).toBeDisabled();
-
-    await user.click(screen.getByRole('tab', { name: 'Notes' }));
-    expect(screen.queryByRole('button', { name: 'Add note' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'AI' }));
     expect(screen.getByRole('button', { name: 'Analyze saved job' })).toBeDisabled();

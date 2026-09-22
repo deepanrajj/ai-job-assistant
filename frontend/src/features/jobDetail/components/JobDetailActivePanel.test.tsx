@@ -5,6 +5,7 @@ import { http, HttpResponse } from 'msw';
 
 import { JobDetailActivePanel } from './JobDetailActivePanel';
 import { renderWithProviders } from '../../../test/renderWithProviders';
+import { createMockNoteResponse } from '../../../test/mockNotes';
 import { createMockTaskResponse } from '../../../test/mockTasks';
 import { server } from '../../../test/server';
 import { mockJobDetails } from '../../../data/mockJobDetails';
@@ -12,9 +13,6 @@ import { mockJobDetails } from '../../../data/mockJobDetails';
 const createActionProps = () => ({
   job: mockJobDetails[0],
   onAnalyzeJob: vi.fn(),
-  onCreateNote: vi.fn(),
-  onDeleteNote: vi.fn(),
-  onUpdateNote: vi.fn(),
 });
 
 describe('JobDetailActivePanel', () => {
@@ -42,26 +40,16 @@ describe('JobDetailActivePanel', () => {
     expect(await screen.findByText('Practice architecture')).toBeInTheDocument();
   });
 
-  it('binds the current job id to note actions', async () => {
-    const user = userEvent.setup();
-    const actionProps = createActionProps();
-
-    renderWithProviders(<JobDetailActivePanel activeTab="notes" {...actionProps} />);
-
-    await user.type(screen.getByLabelText('New note'), 'Ask about team rituals');
-    await user.click(screen.getByRole('button', { name: 'Add note' }));
-    await user.clear(screen.getByLabelText('Edit note from May 10, 2026'));
-    await user.type(screen.getByLabelText('Edit note from May 10, 2026'), 'Updated note');
-    await user.click(screen.getByRole('button', { name: 'Save note from May 10, 2026' }));
-    await user.click(screen.getByRole('button', { name: 'Delete note from May 10, 2026' }));
-
-    expect(actionProps.onCreateNote).toHaveBeenCalledWith('job-001', 'Ask about team rituals');
-    expect(actionProps.onUpdateNote).toHaveBeenCalledWith(
-      'job-001',
-      'job-001-note-1',
-      'Updated note',
+  it('passes the current job id to the notes panel', async () => {
+    server.use(
+      http.get(`/api/jobs/${mockJobDetails[0].id}/notes`, () =>
+        HttpResponse.json([createMockNoteResponse({ body: 'Ask about team rituals' })]),
+      ),
     );
-    expect(actionProps.onDeleteNote).toHaveBeenCalledWith('job-001', 'job-001-note-1');
+
+    renderWithProviders(<JobDetailActivePanel activeTab="notes" {...createActionProps()} />);
+
+    expect(await screen.findByText('Ask about team rituals')).toBeInTheDocument();
   });
 
   it('binds the current job id to the AI analysis action', async () => {

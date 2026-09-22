@@ -1,5 +1,7 @@
 # Task 031 - Connect Notes Tab To Backend
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -41,9 +43,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Notes tab uses backend APIs.
-- [ ] Existing UI behavior is preserved.
-- [ ] Tests cover note user flows.
+- [x] Notes tab uses backend APIs.
+- [x] Existing UI behavior is preserved.
+- [x] Tests cover note user flows.
 
 ## Commit
 
