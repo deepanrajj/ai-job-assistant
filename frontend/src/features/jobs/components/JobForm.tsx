@@ -12,6 +12,7 @@ import type { TJobFormValues } from '../jobFormSchema';
  * Props used by the add/edit job form.
  */
 interface IJobFormProps {
+  busySubmitLabel: string;
   error?: ReactNode;
   form: UseFormReturn<TJobFormValues>;
   isSubmitting?: boolean;
@@ -29,6 +30,7 @@ interface IJobFormProps {
  * @returns {JSX.Element} Job form card.
  */
 export const JobForm: FC<IJobFormProps> = ({
+  busySubmitLabel,
   error,
   form,
   isSubmitting = false,
@@ -110,8 +112,8 @@ export const JobForm: FC<IJobFormProps> = ({
           <Button onClick={onCancel} type="button" variant="secondary">
             {t('jobForm.cancel')}
           </Button>
-          <Button disabled={isSubmitting} type="submit">
-            {submitLabel}
+          <Button aria-busy={isSubmitting} disabled={isSubmitting} type="submit">
+            {isSubmitting ? busySubmitLabel : submitLabel}
           </Button>
         </div>
       </Form>

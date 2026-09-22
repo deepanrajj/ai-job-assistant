@@ -56,6 +56,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 030 - Connect Tasks Tab To Backend Plan](./030-connect-tasks-tab-to-backend-plan.md)
 - [Task 031 - Connect Notes Tab To Backend Plan](./031-connect-notes-tab-to-backend-plan.md)
 - [Task 032 - Connect Timeline Tab To Backend Plan](./032-connect-timeline-tab-to-backend-plan.md)
+- [Task 033 - Add Loading States For API Screens Plan](./033-add-loading-states-for-api-screens-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)

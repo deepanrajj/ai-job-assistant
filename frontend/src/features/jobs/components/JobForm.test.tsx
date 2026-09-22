@@ -43,6 +43,7 @@ const JobFormTestWrapper = ({
 
   return (
     <JobForm
+      busySubmitLabel="Creating..."
       error={error}
       form={form}
       isSubmitting={isSubmitting}
@@ -67,10 +68,14 @@ describe('JobForm', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Job could not be created');
   });
 
-  it('disables the submit button while submitting', () => {
+  it('disables the submit button and announces the busy state while submitting', () => {
     renderWithProviders(<JobFormTestWrapper isSubmitting onSubmit={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: 'Create job' })).toBeDisabled();
+    const submitButton = screen.getByRole('button', { name: 'Creating...' });
+
+    expect(submitButton).toBeDisabled();
+    expect(submitButton).toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByRole('button', { name: 'Create job' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
   });
 

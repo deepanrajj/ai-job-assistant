@@ -209,7 +209,9 @@
     "cancel": "Abbrechen",
     "actions": {
       "create": "Job erstellen",
-      "save": "Änderungen speichern"
+      "creating": "Erstelle...",
+      "save": "Änderungen speichern",
+      "saving": "Speichere..."
     },
     "fields": {
       "company": "Firma",

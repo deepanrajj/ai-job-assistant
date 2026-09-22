@@ -245,11 +245,12 @@ describe('JobDetailTasksPanel', () => {
     expect(screen.getByText('Tailor CV bullets')).toBeInTheDocument();
   });
 
-  it('disables the form and task controls while a write is in flight', async () => {
+  it('disables every task control while a write is in flight, marking only the busy one aria-busy', async () => {
     server.use(
       http.get(mockTasksEndpoint, () =>
         HttpResponse.json([
           createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+          createMockTaskResponse({ id: MOCK_TASK_IDS.secondary, title: 'Practice system design' }),
         ]),
       ),
       http.put(mockTaskEndpoint, () => new Promise(() => {})),
@@ -257,12 +258,75 @@ describe('JobDetailTasksPanel', () => {
     const user = userEvent.setup();
     renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
 
-    await user.click(await screen.findByRole('checkbox', { name: 'Tailor CV bullets' }));
+    const busyCheckbox = await screen.findByRole('checkbox', { name: 'Tailor CV bullets' });
 
-    expect(screen.getByRole('checkbox', { name: 'Tailor CV bullets' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Delete task Tailor CV bullets' })).toBeDisabled();
+    await user.click(busyCheckbox);
+
+    const idleCheckbox = screen.getByRole('checkbox', { name: 'Practice system design' });
+    const busyDeleteButton = screen.getByRole('button', { name: 'Delete task Tailor CV bullets' });
+    const idleDeleteButton = screen.getByRole('button', {
+      name: 'Delete task Practice system design',
+    });
+    const addTaskButton = screen.getByRole('button', { name: 'Add task' });
+
+    // Every control still stays disabled together - one write in flight
+    // blocks a second overlapping one - but only the row actually being
+    // written claims aria-busy. A control merely disabled by someone
+    // else's write is not itself updating.
+    expect(busyCheckbox).toBeDisabled();
+    expect(busyCheckbox).toHaveAttribute('aria-busy', 'true');
+    expect(idleCheckbox).toBeDisabled();
+    expect(idleCheckbox).not.toHaveAttribute('aria-busy', 'true');
+    expect(busyDeleteButton).toBeDisabled();
+    expect(busyDeleteButton).not.toHaveAttribute('aria-busy', 'true');
+    expect(idleDeleteButton).toBeDisabled();
+    expect(idleDeleteButton).not.toHaveAttribute('aria-busy', 'true');
+    expect(addTaskButton).not.toHaveAttribute('aria-busy', 'true');
     expect(screen.getByLabelText('Task title')).toBeDisabled();
     expect(screen.getByLabelText('Due date')).toBeDisabled();
+  });
+
+  it('marks only the task being deleted as aria-busy', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () =>
+        HttpResponse.json([
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, title: 'Tailor CV bullets' }),
+          createMockTaskResponse({ id: MOCK_TASK_IDS.secondary, title: 'Practice system design' }),
+        ]),
+      ),
+      http.delete(mockTaskEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Delete task Tailor CV bullets' }));
+
+    expect(screen.getByRole('button', { name: 'Delete task Tailor CV bullets' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(
+      screen.getByRole('button', { name: 'Delete task Practice system design' }),
+    ).not.toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('checkbox', { name: 'Tailor CV bullets' })).not.toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+  });
+
+  it('marks the add-task button aria-busy while creating', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () => HttpResponse.json([])),
+      http.post(mockTasksEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.type(await screen.findByLabelText('Task title'), 'Practice system design');
+    await user.type(screen.getByLabelText('Due date'), '2026-06-20');
+    await user.click(screen.getByRole('button', { name: 'Add task' }));
+
+    expect(screen.getByRole('button', { name: 'Add task' })).toHaveAttribute('aria-busy', 'true');
   });
 
   it('ignores empty task submissions', async () => {

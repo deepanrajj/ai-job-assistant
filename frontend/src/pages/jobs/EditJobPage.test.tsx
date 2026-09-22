@@ -223,7 +223,7 @@ describe('EditJobPage', () => {
     expect(screen.getByRole('button', { name: 'Back to jobs' })).toBeInTheDocument();
   });
 
-  it('disables the submit button while the save is in flight', async () => {
+  it('disables the submit button and announces the busy state while the save is in flight', async () => {
     const user = userEvent.setup();
     let release = () => {};
     const released = new Promise<void>((resolve) => {
@@ -244,6 +244,8 @@ describe('EditJobPage', () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(submitButton).toBeDisabled());
+    expect(submitButton).toHaveAttribute('aria-busy', 'true');
+    expect(submitButton).toHaveAccessibleName('Saving...');
 
     release();
 

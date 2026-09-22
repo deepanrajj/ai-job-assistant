@@ -17,7 +17,9 @@ interface IJobDetailNotesPanelProps {
  * Props used by one editable note item.
  */
 interface IJobDetailNoteItemProps {
+  isDeleting: boolean;
   isDisabled: boolean;
+  isSaving: boolean;
   language: TLanguage;
   note: TJobNote;
   onDeleteNote: (noteId: string) => void;
@@ -31,7 +33,9 @@ interface IJobDetailNoteItemProps {
  * @returns {JSX.Element} Job detail note row.
  */
 const JobDetailNoteItem: FC<IJobDetailNoteItemProps> = ({
+  isDeleting,
   isDisabled,
+  isSaving,
   language,
   note,
   onDeleteNote,
@@ -55,6 +59,7 @@ const JobDetailNoteItem: FC<IJobDetailNoteItemProps> = ({
       <p className="mt-3 text-xs font-medium text-app-textMuted">{createdAtLabel}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
+          aria-busy={isSaving}
           aria-label={t('jobDetail.notes.saveNoteLabel', {
             date: createdAtLabel,
           })}
@@ -65,6 +70,7 @@ const JobDetailNoteItem: FC<IJobDetailNoteItemProps> = ({
           {t('jobDetail.notes.saveNote')}
         </Button>
         <Button
+          aria-busy={isDeleting}
           aria-label={t('jobDetail.notes.deleteNoteLabel', {
             date: createdAtLabel,
           })}
@@ -93,6 +99,8 @@ const JobDetailNotesPanelComponent: FC<IJobDetailNotesPanelProps> = ({ jobId }) 
   const {
     createJobNote,
     deleteJobNote,
+    deletingNoteId,
+    isCreating,
     isLoading,
     isMutating,
     loadError,
@@ -100,6 +108,7 @@ const JobDetailNotesPanelComponent: FC<IJobDetailNotesPanelProps> = ({ jobId }) 
     notes,
     reload,
     updateJobNote,
+    updatingNoteId,
   } = useJobNotes(jobId);
   const [newNoteBody, setNewNoteBody] = useState('');
   const canCreateNote = Boolean(newNoteBody.trim() && !isMutating);
@@ -172,7 +181,7 @@ const JobDetailNotesPanelComponent: FC<IJobDetailNotesPanelProps> = ({ jobId }) 
           placeholder={t('jobDetail.notes.notePlaceholder')}
           value={newNoteBody}
         />
-        <Button disabled={!canCreateNote} type="submit">
+        <Button aria-busy={isCreating} disabled={!canCreateNote} type="submit">
           {t('jobDetail.notes.addNote')}
         </Button>
       </form>
@@ -180,7 +189,9 @@ const JobDetailNotesPanelComponent: FC<IJobDetailNotesPanelProps> = ({ jobId }) 
       <ul className="space-y-4">
         {notes.map((note) => (
           <MemoizedJobDetailNoteItem
+            isDeleting={deletingNoteId === note.id}
             isDisabled={isMutating}
+            isSaving={updatingNoteId === note.id}
             key={note.id}
             language={language}
             note={note}

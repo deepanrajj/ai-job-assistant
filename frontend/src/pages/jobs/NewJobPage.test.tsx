@@ -106,7 +106,7 @@ describe('NewJobPage', () => {
     expect(screen.queryByText('Jobs route')).not.toBeInTheDocument();
   });
 
-  it('disables the submit button while the create is in flight', async () => {
+  it('disables the submit button and announces the busy state while the create is in flight', async () => {
     const user = userEvent.setup();
     let release = () => {};
     const released = new Promise<void>((resolve) => {
@@ -129,6 +129,8 @@ describe('NewJobPage', () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(submitButton).toBeDisabled());
+    expect(submitButton).toHaveAttribute('aria-busy', 'true');
+    expect(submitButton).toHaveAccessibleName('Creating...');
 
     // A second click on a slow save would otherwise create a second job:
     // the endpoint has no idempotency key and no duplicate detection.
