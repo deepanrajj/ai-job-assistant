@@ -259,4 +259,20 @@ markup.
 
 ### Changed from the plan
 
-None. The design followed the plan's decisions as written.
+A post-PR code review (`/code-review PR 51`) found that Decision 2
+(dropping the `<h1>`) was wrong for this specific case, even though it
+correctly matched `DashboardPage`/`JobsPage`/`JobDetailPage`: those
+pages' `ErrorState`s render inside `AppShell`, which itself has no
+heading either, but `RouteErrorElement` is rendered by `errorElement`
+*in place of* `AppShell` - it is the entire page, not content inside a
+shell. Removing the old `<h1>` left a full page with zero heading
+elements, a real regression for assistive-technology heading
+navigation, a primary AT navigation pattern.
+
+Fixed by adding a visually-hidden (`sr-only`) `<h1>` carrying the same
+title text, so heading navigation finds the page while the visible
+design and the `ErrorState`-driven `role="alert"` announcement are both
+unchanged. A regression test (`getByRole('heading', { level: 1, ... })`)
+was added to the first case rather than all three, since all three
+render the same markup and the first already covers every other
+assertion for this fallback.

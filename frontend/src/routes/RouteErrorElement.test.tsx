@@ -29,6 +29,12 @@ describe('RouteErrorElement', () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
+    // This fallback replaces the whole page, so it needs its own heading
+    // for assistive-technology heading navigation, even though the same
+    // text is already inside the alert region above.
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Something went wrong' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('503')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Go to dashboard' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();

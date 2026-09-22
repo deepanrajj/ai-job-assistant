@@ -21,6 +21,15 @@ export const RouteErrorElement: FC = () => {
   return (
     <main className="flex min-h-screen items-center justify-center bg-app-bg px-4 py-12 text-app-text">
       <div className="w-full max-w-xl">
+        {/*
+          This fallback replaces the whole routed page, so it is the page's
+          only content - unlike a panel-level ErrorState, which always sits
+          inside a page that already has its own heading. Visually hidden
+          because ErrorState's own title already shows the same text; this
+          exists so heading navigation, a primary assistive-technology
+          pattern, finds something on a page that is otherwise heading-free.
+        */}
+        <h1 className="sr-only">{t('route.error.title')}</h1>
         {status && (
           <p className="mb-2 text-center text-sm font-semibold text-danger-700">{status}</p>
         )}
