@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useUpdateJob } from './useUpdateJob';
 import type { AppError } from '../../errors';
@@ -26,7 +26,12 @@ export interface IJobStatusState {
  * that call, not necessarily the job's originally loaded status: a second
  * change can start before the first one's rejection is observed, and
  * rolling all the way back to the loaded value would regress past an
- * already-successful first change.
+ * already-successful first change. The select is never disabled while a
+ * change is in flight (Decision 5), so a second change can also *resolve*
+ * before the first one does - a request-id guard makes sure only the
+ * most recently started call's failure ever rolls anything back, so an
+ * earlier call's late rejection cannot clobber a newer call's already
+ * confirmed status.
  *
  * @param {string} jobId Job identifier. Resets the optimistic status when
  * this changes, since `JobDetailPage` does not remount across a route
@@ -36,6 +41,7 @@ export interface IJobStatusState {
 export const useJobStatus = (jobId: string): IJobStatusState => {
   const { error, isSaving, saveJob } = useUpdateJob();
   const [optimisticStatus, setOptimisticStatus] = useState<TJobStatus | null>(null);
+  const requestIdRef = useRef(0);
 
   /**
    * Resets the optimistic status when `jobId` changes, adjusted during
@@ -54,7 +60,9 @@ export const useJobStatus = (jobId: string): IJobStatusState => {
   const changeStatus = useCallback(
     (job: TJobDetail, status: TJobStatus) => {
       const previousStatus = optimisticStatus;
+      const requestId = requestIdRef.current + 1;
 
+      requestIdRef.current = requestId;
       setOptimisticStatus(status);
 
       return saveJob({
@@ -72,7 +80,12 @@ export const useJobStatus = (jobId: string): IJobStatusState => {
       }).then(
         () => {},
         (caught: AppError) => {
-          setOptimisticStatus(previousStatus);
+          // A newer change already started (and may have already
+          // resolved) since this one did - restoring this call's own
+          // previous status would clobber it. Only the most recently
+          // started call's failure is allowed to roll anything back.
+          if (requestIdRef.current === requestId) setOptimisticStatus(previousStatus);
+
           throw caught;
         },
       );

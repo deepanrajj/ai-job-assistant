@@ -384,3 +384,20 @@ ever be invoked from a `<select>` that only renders after the page's own
 already inline arrows rather than null-guarded callbacks. `onStatusChange`
 is now inline at the `JobDetailHeader` call site, matching that existing
 pattern instead of introducing a new one.
+
+A third deviation, found by `/code-review PR 52`: Decision 5 (the status
+select stays enabled while a change is in flight) means a second,
+different status change can start *and resolve* before an earlier one's
+rejection is observed - not just start before it, which Decision 4
+already covered. The tasks panel has no equivalent gap, because
+`isMutating` disables every control panel-wide while any one write is in
+flight, structurally preventing a second toggle from ever starting
+before the first resolves. `useJobStatus` had no such guard, so an
+earlier call's late failure could roll `optimisticStatus` back over a
+newer call's already-confirmed status. Fixed with a `requestIdRef`
+counter, the same request-ordering shape `useAsyncMutation`,
+`useJob`, and `useJobsList` already use for their own state: only the
+most recently started call's failure is allowed to call
+`setOptimisticStatus`. A new test drives this ordering directly with a
+manually-released response, confirming the earlier call's failure is a
+no-op once a newer one has already succeeded.
