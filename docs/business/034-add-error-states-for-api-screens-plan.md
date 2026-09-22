@@ -286,6 +286,29 @@ gets told. Fixed by folding the status into `ErrorState`'s own `title`
 (`"503 — Something went wrong"` instead of a separate line above it) so
 it is announced with everything else, rather than nesting a second
 `role="alert"` region or extending `ErrorState`'s props for one caller.
-The visually-hidden `<h1>` keeps the plain, stable title text regardless
-of status, since a heading naming the page does not need the same
-per-error diagnostic detail the live-region announcement does.
+A third review round (`/code-review PR 51`, re-run again) found two
+more issues in that same fix and one lower-confidence design note:
+
+1. The `<h1>` and `ErrorState`'s title had diverged: the `<h1>` still
+   rendered the plain title while `ErrorState`'s title now included the
+   status, so heading-list navigation (VoiceOver rotor, NVDA heading
+   list) lost the status the alert region announces. The two are now
+   computed from one `title` value and always match; the `<h1>`'s
+   comment was also updated, since it claimed a "same text" fact this
+   defect had already made false.
+2. The status was spliced into the title with a hardcoded template
+   literal instead of the codebase's established `t(key, { param })`
+   interpolation (`frontend/src/i18n/utils/translation.ts`), which
+   every other dynamic-value-in-text case in the frontend uses - so a
+   locale could not express a different word order or separator for a
+   status-prefixed title. Fixed with a new `route.error.titleWithStatus`
+   key (`"{{status}} — {{title}}"`) in both locales, nesting the plain
+   title as one of its own interpolation params.
+3. (Not applied) Giving `ErrorState` itself an optional heading-level
+   prop, so a future full-page usage does not have to reinvent the
+   sr-only-`<h1>` pattern this fix introduced. Left alone: this is
+   still the only full-page `ErrorState` usage in the app, and adding
+   an API surface for a caller that does not exist yet is exactly the
+   speculative abstraction `AGENTS.md`'s "smallest change" rule and
+   this session's own working conventions rule out. Worth doing when a
+   second full-page usage actually appears.

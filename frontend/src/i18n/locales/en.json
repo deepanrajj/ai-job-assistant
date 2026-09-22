@@ -58,6 +58,7 @@
     },
     "error": {
       "title": "Something went wrong",
+      "titleWithStatus": "{{status}} — {{title}}",
       "description": "The page could not be loaded. Try again or return to the dashboard.",
       "goToDashboard": "Go to dashboard",
       "retry": "Try again"

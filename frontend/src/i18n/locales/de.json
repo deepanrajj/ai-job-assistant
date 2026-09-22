@@ -58,6 +58,7 @@
     },
     "error": {
       "title": "Etwas ist schiefgelaufen",
+      "titleWithStatus": "{{status}} — {{title}}",
       "description": "Die Seite konnte nicht geladen werden. Versuche es erneut oder kehre zum Dashboard zurück.",
       "goToDashboard": "Zum Dashboard",
       "retry": "Erneut versuchen"

@@ -17,7 +17,9 @@ export const RouteErrorElement: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const status = isRouteErrorResponse(error) ? error.status : null;
-  const title = t('route.error.title');
+  const plainTitle = t('route.error.title');
+  const title =
+    status !== null ? t('route.error.titleWithStatus', { status, title: plainTitle }) : plainTitle;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-app-bg px-4 py-12 text-app-text">
@@ -26,9 +28,10 @@ export const RouteErrorElement: FC = () => {
           This fallback replaces the whole routed page, so it is the page's
           only content - unlike a panel-level ErrorState, which always sits
           inside a page that already has its own heading. Visually hidden
-          because ErrorState's own title already shows the same text; this
-          exists so heading navigation, a primary assistive-technology
-          pattern, finds something on a page that is otherwise heading-free.
+          because ErrorState's own title already shows the same text
+          (status included), so this exists purely so heading navigation, a
+          primary assistive-technology pattern, finds something on a page
+          that is otherwise heading-free.
         */}
         <h1 className="sr-only">{title}</h1>
         <ErrorState
@@ -43,7 +46,7 @@ export const RouteErrorElement: FC = () => {
             </div>
           }
           description={t('route.error.description')}
-          title={status ? `${status} — ${title}` : title}
+          title={title}
         />
       </div>
     </main>

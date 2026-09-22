@@ -37,9 +37,10 @@ describe('RouteErrorElement', () => {
     expect(alert).toHaveTextContent('503');
     // This fallback replaces the whole page, so it needs its own heading
     // for assistive-technology heading navigation, even though the same
-    // text is already inside the alert region above.
+    // text is already inside the alert region above - including the
+    // status, so heading-list navigation does not lose it either.
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Something went wrong' }),
+      screen.getByRole('heading', { level: 1, name: '503 — Something went wrong' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Go to dashboard' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
