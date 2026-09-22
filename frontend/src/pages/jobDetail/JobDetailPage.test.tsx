@@ -297,14 +297,55 @@ describe('JobDetailPage', () => {
     const user = userEvent.setup();
     renderJobDetailPage();
 
-    // Every one of these wrote to the localStorage store by job id, which a
-    // backend id never matches, so each would have looked like it worked.
-    // The tasks and notes tabs are not one of these any more: tasks 030 and
-    // 031 gave them a real backend-backed write path, each covered in its
-    // own test file.
-    expect(screen.getByRole('combobox', { name: 'Job status' })).toBeDisabled();
-
+    // This wrote to the localStorage store by job id, which a backend id
+    // never matches, so it would have looked like it worked. The tasks and
+    // notes tabs, and the status select, are not one of these any more:
+    // tasks 030, 031, and 035 each gave it a real backend-backed write
+    // path, covered in its own test file.
     await user.click(screen.getByRole('tab', { name: 'AI' }));
     expect(screen.getByRole('button', { name: 'Analyze saved job' })).toBeDisabled();
+  });
+
+  it('changes the job status and shows it immediately', async () => {
+    const user = userEvent.setup();
+    let putBody: unknown;
+
+    server.use(
+      http.put(jobEndpoint, async ({ request }) => {
+        putBody = await request.json();
+
+        return new Promise(() => {});
+      }),
+    );
+    renderJobDetailPage();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Job status' }), 'INTERVIEW');
+
+    expect(screen.getByRole('combobox', { name: 'Job status' })).toHaveValue('INTERVIEW');
+    await waitFor(() =>
+      expect(putBody).toEqual(
+        expect.objectContaining({
+          status: 'INTERVIEW',
+        }),
+      ),
+    );
+  });
+
+  it('reverts the job status and shows a failure when the change fails', async () => {
+    const user = userEvent.setup();
+
+    server.use(http.put(jobEndpoint, () => new HttpResponse(null, { status: 500 })));
+    renderJobDetailPage();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Job status' }), 'INTERVIEW');
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert).toHaveTextContent('Job status could not be updated');
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Job status' })).toHaveValue(
+        mockJobDetail.status,
+      ),
+    );
   });
 });

@@ -137,6 +137,7 @@
     "openPosting": "Anzeige öffnen",
     "statusLabel": "Jobstatus",
     "deleteErrorTitle": "Job konnte nicht gelöscht werden",
+    "statusChangeErrorTitle": "Jobstatus konnte nicht aktualisiert werden",
     "notFoundTitle": "Job nicht gefunden",
     "notFoundDescription": "Der ausgewählte Job existiert nicht.",
     "loading": "Job wird geladen",

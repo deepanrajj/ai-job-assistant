@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, ErrorState, LoadingState } from '../../components/ui';
 import { JobDetailHeader, JobDetailTabs } from '../../features/jobDetail';
 import { ArrowLeftIcon } from '../../components/icons';
-import { isJobNotFoundError, useDeleteJob } from '../../features/jobs';
+import { isJobNotFoundError, useDeleteJob, useJobStatus } from '../../features/jobs';
 import { useTranslation } from '../../i18n';
 import { AppError } from '../../errors';
 import { APP_PATH_BUILDERS, APP_PATHS } from '../../routes/paths';
@@ -24,11 +24,10 @@ interface IJobDetailPageProps {
 /**
  * Renders one saved job loaded from the backend.
  *
- * The route owns the load and this page owns the delete, which is the one
- * write it renders a control for. The status select is still disabled and
- * the tasks, notes and timeline tabs are still read-only: those have no
- * backend behind them until tasks 030 to 032, and the page offers no
- * control it cannot complete.
+ * The route owns the load; this page owns the delete and the status
+ * change, the two writes it renders controls for. The status change is
+ * optimistic (task 035): the header shows the new status immediately, and
+ * `useJobStatus` rolls it back if the request fails.
  *
  * @param {IJobDetailPageProps} props Component props.
  * @returns {JSX.Element} Job detail page.
@@ -43,6 +42,12 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { deleteJob, error: deleteError, isDeleting } = useDeleteJob();
+  const {
+    changeStatus,
+    error: statusChangeError,
+    isChanging: isChangingStatus,
+    optimisticStatus,
+  } = useJobStatus(job?.id ?? '');
   const isDeletingRef = useRef(false);
 
   /**
@@ -90,6 +95,8 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
    */
   const hasDeleteFailure = deleteError !== null && !isJobNotFoundError(deleteError);
 
+  const hasStatusChangeFailure = statusChangeError !== null;
+
   const backToJobsButton = (
     <Button onClick={() => navigate(APP_PATHS.JOBS)}>{t('jobDetail.backToJobs')}</Button>
   );
@@ -117,10 +124,19 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
       />
     );
 
+  const displayedJob: TJobDetail = optimisticStatus ? { ...job, status: optimisticStatus } : job;
+
   return (
     <div className="space-y-6">
       {hasDeleteFailure && (
         <ErrorState description={deleteError.message} title={t('jobDetail.deleteErrorTitle')} />
+      )}
+
+      {hasStatusChangeFailure && (
+        <ErrorState
+          description={statusChangeError.message}
+          title={t('jobDetail.statusChangeErrorTitle')}
+        />
       )}
 
       <div className="space-y-3">
@@ -134,10 +150,16 @@ export const JobDetailPage: FC<IJobDetailPageProps> = ({
         </Button>
 
         <JobDetailHeader
+          isChangingStatus={isChangingStatus}
           isDeletingJob={isDeleting}
-          job={job}
+          job={displayedJob}
           onDeleteJob={() => handleDeleteJob(job.id)}
           onEditJob={() => navigate(APP_PATH_BUILDERS.jobEdit(job.id))}
+          onStatusChange={(status) =>
+            changeStatus(job, status).catch(() => {
+              // Error is already recorded in request state and rendered from it.
+            })
+          }
         />
       </div>
 

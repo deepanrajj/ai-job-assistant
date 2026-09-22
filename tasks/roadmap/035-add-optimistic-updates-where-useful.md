@@ -1,5 +1,7 @@
 # Task 035 - Add Optimistic Updates Where Useful
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -42,9 +44,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Optimistic updates exist only where useful and safe.
-- [ ] Rollback behavior is tested.
-- [ ] No new state library is introduced.
+- [x] Optimistic updates exist only where useful and safe.
+- [x] Rollback behavior is tested.
+- [x] No new state library is introduced.
 
 ## Commit
 

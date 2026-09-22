@@ -17,6 +17,9 @@ import type { IJobDetailMetadataItem } from '../jobDetail.types';
  * exists. The status select is the one control that always renders, so it is
  * disabled without `onStatusChange`: a select that silently snaps back reads
  * as a broken save rather than as a screen that cannot save yet.
+ * `isChangingStatus` is a separate, orthogonal condition - the select stays
+ * enabled while a change is in flight (see `aria-busy` below) and is only
+ * ever disabled by the handler's absence.
  *
  * `isDeletingJob` reports the delete as in flight. It dims the button, sets
  * `aria-busy` and takes it out of pointer events, but deliberately does
@@ -31,6 +34,7 @@ import type { IJobDetailMetadataItem } from '../jobDetail.types';
  * ignores it with an in-flight ref.
  */
 interface IJobDetailHeaderProps {
+  isChangingStatus?: boolean;
   isDeletingJob?: boolean;
   job: TJobDetail;
   onDeleteJob?: () => void;
@@ -67,6 +71,7 @@ const MemoizedJobDetailMetadataItem = memo(JobDetailMetadataItem);
  * @returns {JSX.Element} Job detail header.
  */
 const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
+  isChangingStatus = false,
   isDeletingJob = false,
   job,
   onDeleteJob,
@@ -90,6 +95,7 @@ const JobDetailHeaderComponent: FC<IJobDetailHeaderProps> = ({
 
           <div className="flex items-center gap-1 rounded-xl border border-app-borderSoft bg-app-surface2 p-1">
             <Select
+              aria-busy={isChangingStatus}
               aria-label={t('jobDetail.statusLabel')}
               className="!h-9 !w-auto min-w-[7.5rem] !rounded-md !border-app-borderSoft !bg-app-surface !px-2.5 !pr-8"
               containerClassName="shrink-0"
