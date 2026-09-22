@@ -401,3 +401,30 @@ most recently started call's failure is allowed to call
 `setOptimisticStatus`. A new test drives this ordering directly with a
 manually-released response, confirming the earlier call's failure is a
 no-op once a newer one has already succeeded.
+
+A fourth deviation, from a second `/code-review PR 52` pass: two more
+gaps in the same area. First, the `jobId`-change reset only cleared
+`optimisticStatus`, not `useUpdateJob`'s own `error` - since
+`JobDetailPage` does not remount across a job-to-job navigation, a
+failed change on one job would still render as the next job's failure.
+Fixed by adding `reset` to `useUpdateJob`'s returned state (a thin
+pass-through of `useAsyncMutation`'s own `reset`) and calling it
+alongside `setOptimisticStatus(null)`. Second, `requestIdRef` itself was
+never invalidated on a `jobId` change, so a request still pending for
+the previous job could still roll `optimisticStatus` back after
+navigating away. Bumping it turned out to need an effect rather than the
+render-time branch above it - `react-hooks/refs` rejects touching a ref
+in the render body itself, even through a wrapping `useCallback`, which
+the render-time state adjustments above it are exempt from because they
+call `setState`, not a ref write. The effect's one-render lag is
+harmless here, unlike the `set-state-in-effect` case earlier: nothing
+renders from `requestIdRef`, so there is no stale frame for a delayed
+write to cause.
+
+Separately, `/code-review PR 52` also found `useJobTasks`'s
+`updateJobTask` replaced a task's whole optimistic override with the
+new call's `input` instead of merging onto it - not reachable today,
+since `JobDetailTasksPanel` only ever sends `{ status }`, but a latent
+defect in the exact reuse (`title`/`dueDate`) Decision 2's own comment
+invites. Fixed by merging the new `input` onto any existing override
+instead of replacing it outright.

@@ -197,4 +197,21 @@ describe('useJobStatus', () => {
 
     expect(screen.getByText(`status=${mockJobDetail.status}`)).toBeInTheDocument();
   });
+
+  it('clears a failed change error when the job id changes', async () => {
+    const user = userEvent.setup();
+
+    server.use(http.put(jobEndpoint, () => new HttpResponse(null, { status: 500 })));
+    render(<JobStatusProbe />);
+
+    await user.click(screen.getByRole('button', { name: 'change' }));
+
+    expect(await screen.findByText(/^error:/)).toBeInTheDocument();
+
+    // `JobDetailPage` does not remount across this navigation, so without
+    // a reset the previous job's failure would still render as this job's.
+    await user.click(screen.getByRole('button', { name: 'navigate' }));
+
+    expect(screen.queryByText(/^error:/)).not.toBeInTheDocument();
+  });
 });

@@ -26,6 +26,7 @@ export interface IUpdateJobInput {
 export interface IUpdateJobState {
   error: AppError | null;
   isSaving: boolean;
+  reset: () => void;
   saveJob: (input: IUpdateJobInput) => Promise<TJob>;
 }
 
@@ -53,12 +54,12 @@ const putJobFields = ({ fields, jobId }: IUpdateJobInput): Promise<TJobResponse>
  * the handler rejects with, which surfaces as an unhandled rejection even
  * though the error renders correctly from `error`.
  *
- * @returns {IUpdateJobState} Save trigger, save error, and in-flight flag.
+ * @returns {IUpdateJobState} Save trigger, save error, in-flight flag, and a reset for callers that outlive one save's error, such as `useJobStatus`.
  */
 export const useUpdateJob = (): IUpdateJobState => {
   const {
     mutate: putJob,
-    request: { error, isLoading, setError },
+    request: { error, isLoading, reset, setError },
   } = useAsyncMutation<IUpdateJobInput, TJobResponse>(putJobFields);
 
   /**
@@ -89,6 +90,7 @@ export const useUpdateJob = (): IUpdateJobState => {
   return {
     error,
     isSaving: isLoading,
+    reset,
     saveJob,
   };
 };

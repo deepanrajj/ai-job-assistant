@@ -194,7 +194,14 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
       const previousOverride = optimisticTaskOverrides[taskId];
 
       setUpdatingTaskId(taskId);
-      setOptimisticTaskOverrides((overrides) => ({ ...overrides, [taskId]: input }));
+      // Merged onto any existing override, not replaced: `useJobTasks` only
+      // ever gets called with `{ status }` today, but `IUpdateJobTaskInput`
+      // also carries `title`/`dueDate`, and replacing outright would drop
+      // an earlier, still-unconfirmed field a second call did not touch.
+      setOptimisticTaskOverrides((overrides) => ({
+        ...overrides,
+        [taskId]: { ...overrides[taskId], ...input },
+      }));
 
       return putTask({
         jobId,
