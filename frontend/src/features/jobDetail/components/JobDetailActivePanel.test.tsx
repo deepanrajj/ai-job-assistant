@@ -7,6 +7,7 @@ import { JobDetailActivePanel } from './JobDetailActivePanel';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import { createMockNoteResponse } from '../../../test/mockNotes';
 import { createMockTaskResponse } from '../../../test/mockTasks';
+import { createMockTimelineEventResponse } from '../../../test/mockTimeline';
 import { server } from '../../../test/server';
 import { mockJobDetails } from '../../../data/mockJobDetails';
 
@@ -17,15 +18,9 @@ const createActionProps = () => ({
 
 describe('JobDetailActivePanel', () => {
   it('renders the selected read-only panel', () => {
-    const { rerender } = renderWithProviders(
-      <JobDetailActivePanel activeTab="overview" job={mockJobDetails[0]} />,
-    );
+    renderWithProviders(<JobDetailActivePanel activeTab="overview" job={mockJobDetails[0]} />);
 
     expect(screen.getByRole('heading', { name: 'Description' })).toBeInTheDocument();
-
-    rerender(<JobDetailActivePanel activeTab="timeline" job={mockJobDetails[0]} />);
-
-    expect(screen.getByRole('heading', { name: 'Timeline' })).toBeInTheDocument();
   });
 
   it('passes the current job id to the tasks panel', async () => {
@@ -50,6 +45,24 @@ describe('JobDetailActivePanel', () => {
     renderWithProviders(<JobDetailActivePanel activeTab="notes" {...createActionProps()} />);
 
     expect(await screen.findByText('Ask about team rituals')).toBeInTheDocument();
+  });
+
+  it('passes the current job id to the timeline panel', async () => {
+    server.use(
+      http.get(`/api/jobs/${mockJobDetails[0].id}/timeline`, () =>
+        HttpResponse.json([
+          createMockTimelineEventResponse({
+            description: 'Status changed from APPLIED to INTERVIEW.',
+          }),
+        ]),
+      ),
+    );
+
+    renderWithProviders(<JobDetailActivePanel activeTab="timeline" {...createActionProps()} />);
+
+    expect(
+      await screen.findByText('Status changed from APPLIED to INTERVIEW.'),
+    ).toBeInTheDocument();
   });
 
   it('binds the current job id to the AI analysis action', async () => {

@@ -41,8 +41,9 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 032: Connect timeline tab to backend](../../tasks/roadmap/032-connect-timeline-tab-to-backend.md).
+- [ ] [Task 033: Add loading states for API screens](../../tasks/roadmap/033-add-loading-states-for-api-screens.md).
 
-Phase 3 is complete: job, task, note, and timeline endpoints all exist.
-Tasks 030 and 031 connected the tasks and notes tabs to their
-services; task 032 closes out the same shape for timeline.
+Tasks 030-032 connected the tasks, notes, and timeline tabs to their
+backend services, so every job detail tab now reads real data. Task 033
+starts phase 4's follow-up work: standardizing the loading treatment
+across all of those now-connected screens.

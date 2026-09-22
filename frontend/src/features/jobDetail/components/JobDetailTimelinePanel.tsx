@@ -1,30 +1,59 @@
 import { memo, type FC } from 'react';
 
-import { Card } from '../../../components/ui';
+import { Button, Card, EmptyState, ErrorState, LoadingState } from '../../../components/ui';
+import { useJobTimeline } from '../useJobTimeline';
 import { useTranslation } from '../../../i18n';
 import { formatJobDate } from '../../jobs/jobs.utils';
-import type { TJobDetail } from '../../../types';
 
 /**
  * Props used by the job detail timeline panel.
  */
 interface IJobDetailTimelinePanelProps {
-  job: TJobDetail;
+  jobId: string;
 }
 
 /**
- * Renders chronological job activity.
+ * Renders a job's timeline events against the backend.
  *
  * @param {IJobDetailTimelinePanelProps} props Component props.
  * @returns {JSX.Element} Job timeline panel.
  */
-const JobDetailTimelinePanelComponent: FC<IJobDetailTimelinePanelProps> = ({ job }) => {
+const JobDetailTimelinePanelComponent: FC<IJobDetailTimelinePanelProps> = ({ jobId }) => {
   const { language, t } = useTranslation();
+  const { events, isLoading, loadError, reload } = useJobTimeline(jobId);
+
+  if (isLoading)
+    return (
+      <Card title={t('jobDetail.timeline.title')}>
+        <LoadingState label={t('jobDetail.timeline.loading')} />
+      </Card>
+    );
+
+  if (loadError)
+    return (
+      <Card title={t('jobDetail.timeline.title')}>
+        <ErrorState
+          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+          description={loadError.message}
+          title={t('jobDetail.timeline.loadErrorTitle')}
+        />
+      </Card>
+    );
+
+  if (events.length === 0)
+    return (
+      <Card title={t('jobDetail.timeline.title')}>
+        <EmptyState
+          description={t('jobDetail.timeline.emptyDescription')}
+          title={t('jobDetail.timeline.empty')}
+        />
+      </Card>
+    );
 
   return (
     <Card title={t('jobDetail.timeline.title')}>
       <ol className="space-y-4">
-        {job.timeline.map((event) => (
+        {events.map((event) => (
           <li className="flex gap-3" key={event.id}>
             <span
               aria-hidden="true"
