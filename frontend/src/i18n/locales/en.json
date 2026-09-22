@@ -162,6 +162,8 @@
     },
     "notes": {
       "title": "Notes",
+      "loading": "Loading notes",
+      "loadErrorTitle": "Notes could not be loaded",
       "newNote": "New note",
       "editNote": "Edit note",
       "editNoteLabel": "Edit note from {{date}}",

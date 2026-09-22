@@ -30,13 +30,7 @@ interface IJobDetailTabsProps extends Omit<
  * @param {IJobDetailTabsProps} props Component props.
  * @returns {JSX.Element} Job detail tab navigation and active panel.
  */
-export const JobDetailTabs: FC<IJobDetailTabsProps> = ({
-  job,
-  onAnalyzeJob,
-  onCreateNote,
-  onDeleteNote,
-  onUpdateNote,
-}) => {
+export const JobDetailTabs: FC<IJobDetailTabsProps> = ({ job, onAnalyzeJob }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TJobDetailTab>('overview');
 
@@ -77,14 +71,7 @@ export const JobDetailTabs: FC<IJobDetailTabsProps> = ({
         role="tabpanel"
         tabIndex={0}
       >
-        <JobDetailActivePanel
-          activeTab={activeTab}
-          job={job}
-          onAnalyzeJob={onAnalyzeJob}
-          onCreateNote={onCreateNote}
-          onDeleteNote={onDeleteNote}
-          onUpdateNote={onUpdateNote}
-        />
+        <JobDetailActivePanel activeTab={activeTab} job={job} onAnalyzeJob={onAnalyzeJob} />
       </div>
     </section>
   );

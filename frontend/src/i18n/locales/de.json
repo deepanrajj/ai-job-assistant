@@ -162,6 +162,8 @@
     },
     "notes": {
       "title": "Notizen",
+      "loading": "Notizen werden geladen",
+      "loadErrorTitle": "Notizen konnten nicht geladen werden",
       "newNote": "Neue Notiz",
       "editNote": "Notiz bearbeiten",
       "editNoteLabel": "Notiz vom {{date}} bearbeiten",
