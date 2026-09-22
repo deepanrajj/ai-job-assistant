@@ -249,6 +249,61 @@ describe('useJobTasks', () => {
     expect(getCallCount).toBe(1);
   });
 
+  it('lets a later reload replace a confirmed override instead of re-merging it', async () => {
+    let getCallCount = 0;
+    server.use(
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () => {
+        getCallCount += 1;
+
+        // Both GETs answer with the primary task at TODO - deliberately
+        // not DONE, to stand in for a change this hook did not itself
+        // make (another tab, a future feature) - the scenario a stale,
+        // never-invalidated override would otherwise survive.
+        return HttpResponse.json([
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.primary,
+            status: 'TODO',
+          }),
+          ...(getCallCount > 1
+            ? [
+                createMockTaskResponse({
+                  id: MOCK_TASK_IDS.secondary,
+                  title: 'Practice system design',
+                }),
+              ]
+            : []),
+        ]);
+      }),
+      http.put(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`, () =>
+        HttpResponse.json(createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'DONE' })),
+      ),
+      http.post(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json(
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.secondary,
+            title: 'Practice system design',
+          }),
+          { status: 201 },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    render(<JobTasksProbe />);
+
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
+    await user.click(screen.getByRole('button', { name: 'toggle' }));
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=DONE');
+
+    // An unrelated create reloads the whole list. The fresh GET's own
+    // answer for the primary task (TODO) must win, not the confirmed-but-now
+    // superseded DONE override left over from the toggle above.
+    await user.click(screen.getByRole('button', { name: 'create' }));
+
+    expect(
+      await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO'),
+    ).toBeInTheDocument();
+  });
+
   it('rolls a second failed toggle back to the first, already-successful toggle', async () => {
     let putCallCount = 0;
     server.use(

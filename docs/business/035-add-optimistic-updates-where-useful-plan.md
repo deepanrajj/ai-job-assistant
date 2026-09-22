@@ -428,3 +428,20 @@ since `JobDetailTasksPanel` only ever sends `{ status }`, but a latent
 defect in the exact reuse (`title`/`dueDate`) Decision 2's own comment
 invites. Fixed by merging the new `input` onto any existing override
 instead of replacing it outright.
+
+A third review round found a confirmed `optimisticTaskOverrides` entry
+was never cleared on success, only restored-or-deleted on failure - so
+a later `reload()` triggered for an unrelated reason
+(`createJobTask`/`deleteJobTask` succeeding, or a retry) would re-merge
+a now-possibly-stale override onto fresh `GET` data forever. Today this
+hook is the only writer of a task's status, so an override in practice
+never actually drifts from what the server holds - but nothing enforces
+that staying true, and the original doc comment's "nothing the server
+could have changed" claim was stated as a permanent invariant rather
+than a today-only one. Fixed by clearing every override once `reload`'s
+own `GET` succeeds, whatever triggered it: a fresh load is a natural
+point to stop carrying state it no longer needs, without touching the
+still-correct choice to skip a reload after `updateJobTask`'s own
+success. A new test reloads via an unrelated create and confirms the
+fresh `GET`'s answer (deliberately different from the confirmed
+override) wins.

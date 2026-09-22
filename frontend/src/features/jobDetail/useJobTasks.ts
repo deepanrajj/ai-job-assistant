@@ -91,11 +91,21 @@ const removeTaskFields = ({ jobId, taskId }: IDeleteJobTaskInput): Promise<void>
  * than patching it locally, per task 035's own exclusion of optimistic
  * create/delete. `updateJobTask` is optimistic: it shows the new status (or
  * title/due date) immediately, through `optimisticTaskOverrides`, rather
- * than waiting for the `PUT`+reload round trip. It skips the reload
- * entirely, because the override already **is** the confirmed truth once
- * the request succeeds - `buildJobTaskUpdateRequest` sends exactly the
- * fields the override represents, so there is nothing the server could
- * have changed that a reload would reveal.
+ * than waiting for the `PUT`+reload round trip. It skips the reload on its
+ * own success, because the override already **is** the confirmed truth at
+ * that point - `buildJobTaskUpdateRequest` sends exactly the fields the
+ * override represents, so there is nothing a reload right then would
+ * reveal that this hook does not already know.
+ *
+ * A reload triggered for any other reason - `createJobTask`/`deleteJobTask`
+ * succeeding, or a retry after a load error - clears every optimistic
+ * override once its fresh data lands, rather than leaving them to be
+ * re-merged onto that data indefinitely. Confirmed overrides are otherwise
+ * harmless to keep (this hook is the only writer of a task's `status` today,
+ * so an override never actually drifts from the server value it already
+ * confirmed), but nothing here should keep relying on that being permanently
+ * true, and a fresh `GET` is a natural point to let go of state a reload
+ * no longer needs.
  *
  * @param {string} jobId Job identifier the tasks belong to.
  * @returns {IJobTasksState} Loaded tasks, request state, and the three writes.
@@ -151,9 +161,12 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
   >({});
 
   const reload = useCallback(() => {
-    loadTasks(jobId).catch(() => {
-      // Error is already recorded in request state and rendered from it.
-    });
+    loadTasks(jobId).then(
+      () => setOptimisticTaskOverrides({}),
+      () => {
+        // Error is already recorded in request state and rendered from it.
+      },
+    );
   }, [jobId, loadTasks]);
 
   useEffect(() => {
