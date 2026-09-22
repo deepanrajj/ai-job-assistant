@@ -41,9 +41,12 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 034: Add error states for API screens](../../tasks/roadmap/034-add-error-states-for-api-screens.md).
+- [ ] [Task 035: Add optimistic updates where useful](../../tasks/roadmap/035-add-optimistic-updates-where-useful.md).
 
-Task 033 found every named screen already had a loading/error state
-from tasks 024-032, and closed the one real gap: several write buttons
-had no `aria-busy`. Task 034 should start with the same kind of audit
-before assuming there is missing `ErrorState` coverage to add.
+Task 034 found every named screen's API error handling already
+accessible (`ErrorState`/`Alert`, both `role="alert"`) and closed the
+one real gap: the router's `errorElement` fallback did not reuse
+`ErrorState` and had no `role="alert"`, unlike every other error
+screen. Task 035 closes out phase 4 by adding optimistic updates to
+low-risk mutations (task status, note edits, job status) with tested
+rollback on failure.

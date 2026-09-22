@@ -1,5 +1,7 @@
 # Task 034 - Add Error States For API Screens
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md`
@@ -40,9 +42,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] API screens have consistent error states.
-- [ ] Error states are accessible.
-- [ ] Tests cover error behavior.
+- [x] API screens have consistent error states.
+- [x] Error states are accessible.
+- [x] Tests cover error behavior.
 
 ## Commit
 

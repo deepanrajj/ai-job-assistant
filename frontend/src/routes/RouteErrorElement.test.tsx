@@ -28,9 +28,7 @@ describe('RouteErrorElement', () => {
 
     renderWithProviders(<RouterProvider router={router} />);
 
-    expect(
-      await screen.findByRole('heading', { name: 'Something went wrong' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
     expect(screen.getByText('503')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Go to dashboard' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
@@ -61,9 +59,7 @@ describe('RouteErrorElement', () => {
 
     renderWithProviders(<RouterProvider router={router} />);
 
-    expect(
-      await screen.findByRole('heading', { name: 'Something went wrong' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
     expect(screen.queryByText('503')).not.toBeInTheDocument();
 
     try {
@@ -75,5 +71,32 @@ describe('RouteErrorElement', () => {
     await user.click(screen.getByRole('button', { name: 'Go to dashboard' }));
 
     expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
+  });
+
+  it('catches a render exception, not just a loader error', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const BrokenComponent = () => {
+      throw new Error('Broken render');
+    };
+    const router = createMemoryRouter(
+      [
+        {
+          element: <BrokenComponent />,
+          errorElement: <RouteErrorElement />,
+          path: '/',
+        },
+      ],
+      {
+        initialEntries: ['/'],
+      },
+    );
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    try {
+      expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 });
