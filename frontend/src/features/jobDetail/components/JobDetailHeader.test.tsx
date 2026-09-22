@@ -71,6 +71,17 @@ describe('JobDetailHeader', () => {
     expect(deleteButton).toBeEnabled();
   });
 
+  it('marks the status select busy without disabling it while a change is in flight', () => {
+    renderWithProviders(
+      <JobDetailHeader isChangingStatus job={mockJobDetails[0]} onStatusChange={vi.fn()} />,
+    );
+
+    const statusSelect = screen.getByRole('combobox', { name: 'Job status' });
+
+    expect(statusSelect).toHaveAttribute('aria-busy', 'true');
+    expect(statusSelect).toBeEnabled();
+  });
+
   it('omits optional job actions when handlers are not provided', () => {
     renderWithProviders(<JobDetailHeader job={mockJobDetails[0]} />);
 

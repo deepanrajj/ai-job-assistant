@@ -41,12 +41,10 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 035: Add optimistic updates where useful](../../tasks/roadmap/035-add-optimistic-updates-where-useful.md).
+- [ ] [Task 036: Add final navigation structure](../../tasks/roadmap/036-add-final-navigation-structure.md).
 
-Task 034 found every named screen's API error handling already
-accessible (`ErrorState`/`Alert`, both `role="alert"`) and closed the
-one real gap: the router's `errorElement` fallback did not reuse
-`ErrorState` and had no `role="alert"`, unlike every other error
-screen. Task 035 closes out phase 4 by adding optimistic updates to
-low-risk mutations (task status, note edits, job status) with tested
-rollback on failure.
+Phase 4 is complete: every job detail tab reads and writes real backend
+data, with consistent loading/error states and optimistic updates for
+task toggling and job status changes (task edits stayed request-driven,
+since they already read as instant). Task 036 starts phase 5, which
+builds out the rest of the non-AI job-search workspace.

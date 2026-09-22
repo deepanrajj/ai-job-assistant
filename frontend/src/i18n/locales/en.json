@@ -137,6 +137,7 @@
     "openPosting": "Open posting",
     "statusLabel": "Job status",
     "deleteErrorTitle": "Job could not be deleted",
+    "statusChangeErrorTitle": "Job status could not be updated",
     "notFoundTitle": "Job not found",
     "notFoundDescription": "The selected job does not exist.",
     "loading": "Loading job",

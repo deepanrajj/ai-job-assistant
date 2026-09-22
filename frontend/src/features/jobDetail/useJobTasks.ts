@@ -87,9 +87,15 @@ const removeTaskFields = ({ jobId, taskId }: IDeleteJobTaskInput): Promise<void>
  * Loads a job's tasks from the backend and offers create, update, and
  * delete against the same job.
  *
- * Every write reloads the list from the server rather than patching it
- * locally, so the rendered tasks are always what the last `GET` returned.
- * Optimistic local updates are task 035's concern.
+ * `createJobTask`/`deleteJobTask` reload the list from the server rather
+ * than patching it locally, per task 035's own exclusion of optimistic
+ * create/delete. `updateJobTask` is optimistic: it shows the new status (or
+ * title/due date) immediately, through `optimisticTaskOverrides`, rather
+ * than waiting for the `PUT`+reload round trip. It skips the reload
+ * entirely, because the override already **is** the confirmed truth once
+ * the request succeeds - `buildJobTaskUpdateRequest` sends exactly the
+ * fields the override represents, so there is nothing the server could
+ * have changed that a reload would reveal.
  *
  * @param {string} jobId Job identifier the tasks belong to.
  * @returns {IJobTasksState} Loaded tasks, request state, and the three writes.
@@ -132,6 +138,18 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
+  /**
+   * Optimistic patches for `updateJobTask`, keyed by task id. Restored to
+   * whatever it held before a given call - not deleted outright - on
+   * failure, because a second toggle can start before the first's
+   * rejection is observed; deleting the key would fall back to the
+   * original, now-stale server value instead of the first call's already
+   * successful result.
+   */
+  const [optimisticTaskOverrides, setOptimisticTaskOverrides] = useState<
+    Record<string, IUpdateJobTaskInput>
+  >({});
+
   const reload = useCallback(() => {
     loadTasks(jobId).catch(() => {
       // Error is already recorded in request state and rendered from it.
@@ -142,10 +160,15 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
     reload();
   }, [reload]);
 
-  const tasks = useMemo(
-    () => (Array.isArray(data) ? data.map(mapTaskResponseToJobTask) : []),
-    [data],
-  );
+  const tasks = useMemo(() => {
+    const loadedTasks = Array.isArray(data) ? data.map(mapTaskResponseToJobTask) : [];
+
+    return loadedTasks.map((task) => {
+      const override = optimisticTaskOverrides[task.id];
+
+      return override ? { ...task, ...override } : task;
+    });
+  }, [data, optimisticTaskOverrides]);
 
   const createJobTask = useCallback(
     (title: string, dueDate: string) =>
@@ -168,7 +191,10 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
 
       if (!currentTask) return Promise.resolve();
 
+      const previousOverride = optimisticTaskOverrides[taskId];
+
       setUpdatingTaskId(taskId);
+      setOptimisticTaskOverrides((overrides) => ({ ...overrides, [taskId]: input }));
 
       return putTask({
         jobId,
@@ -178,16 +204,23 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
         .then(
           () => {
             setMutationError(null);
-            reload();
           },
           (error: AppError) => {
+            setOptimisticTaskOverrides((overrides) => {
+              const next = { ...overrides };
+
+              if (previousOverride) next[taskId] = previousOverride;
+              else delete next[taskId];
+
+              return next;
+            });
             setMutationError(error);
             throw error;
           },
         )
         .finally(() => setUpdatingTaskId(null));
     },
-    [jobId, putTask, reload, tasks],
+    [jobId, optimisticTaskOverrides, putTask, tasks],
   );
 
   const deleteJobTask = useCallback(

@@ -35,7 +35,7 @@ const JobTasksProbe = () => {
       <ul>
         {tasks.map((task) => (
           <li key={task.id}>
-            {task.title}=[{task.dueDate}]
+            {task.title}=[{task.dueDate}] status={task.status}
           </li>
         ))}
       </ul>
@@ -88,7 +88,7 @@ describe('useJobTasks', () => {
     );
     render(<JobTasksProbe />);
 
-    expect(await screen.findByText('Tailor CV bullets=[]')).toBeInTheDocument();
+    expect(await screen.findByText('Tailor CV bullets=[] status=TODO')).toBeInTheDocument();
   });
 
   it('records a load error and retries', async () => {
@@ -109,7 +109,9 @@ describe('useJobTasks', () => {
 
     await user.click(screen.getByRole('button', { name: 'retry' }));
 
-    expect(await screen.findByText('Tailor CV bullets=[2026-05-10]')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO'),
+    ).toBeInTheDocument();
   });
 
   it('reloads the list after a successful create', async () => {
@@ -139,7 +141,7 @@ describe('useJobTasks', () => {
     await screen.findByRole('button', { name: 'create' });
     await user.click(screen.getByRole('button', { name: 'create' }));
 
-    expect(await screen.findByText('New task=[2026-05-10]')).toBeInTheDocument();
+    expect(await screen.findByText('New task=[2026-05-10] status=TODO')).toBeInTheDocument();
   });
 
   it('records a mutation error and does not reload on a failed create', async () => {
@@ -155,7 +157,7 @@ describe('useJobTasks', () => {
     await user.click(await screen.findByRole('button', { name: 'create' }));
 
     expect(await screen.findByText(/mutation-error:/)).toBeInTheDocument();
-    expect(screen.queryByText('New task=[2026-05-10]')).not.toBeInTheDocument();
+    expect(screen.queryByText('New task=[2026-05-10] status=TODO')).not.toBeInTheDocument();
   });
 
   it('sends the full replacement body, merged from the loaded task, on update', async () => {
@@ -188,7 +190,7 @@ describe('useJobTasks', () => {
     const user = userEvent.setup();
     render(<JobTasksProbe />);
 
-    await screen.findByText('Tailor CV bullets=[2026-05-10]');
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
     await user.click(screen.getByRole('button', { name: 'toggle' }));
 
     await waitFor(() =>
@@ -200,6 +202,84 @@ describe('useJobTasks', () => {
     );
   });
 
+  it('shows the new status immediately, before the update request resolves', async () => {
+    server.use(
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'TODO' })]),
+      ),
+      http.put(
+        `/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`,
+        () => new Promise(() => {}),
+      ),
+    );
+    const user = userEvent.setup();
+    render(<JobTasksProbe />);
+
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
+    await user.click(screen.getByRole('button', { name: 'toggle' }));
+
+    expect(
+      await screen.findByText('Tailor CV bullets=[2026-05-10] status=DONE'),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the new status after a successful update, with no second list fetch', async () => {
+    let getCallCount = 0;
+    server.use(
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () => {
+        getCallCount += 1;
+
+        return HttpResponse.json([
+          createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'TODO' }),
+        ]);
+      }),
+      http.put(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`, () =>
+        HttpResponse.json(createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'DONE' })),
+      ),
+    );
+    const user = userEvent.setup();
+    render(<JobTasksProbe />);
+
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
+    await user.click(screen.getByRole('button', { name: 'toggle' }));
+
+    expect(
+      await screen.findByText('Tailor CV bullets=[2026-05-10] status=DONE'),
+    ).toBeInTheDocument();
+    expect(getCallCount).toBe(1);
+  });
+
+  it('rolls a second failed toggle back to the first, already-successful toggle', async () => {
+    let putCallCount = 0;
+    server.use(
+      http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
+        HttpResponse.json([createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'TODO' })]),
+      ),
+      http.put(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks/${MOCK_TASK_IDS.primary}`, () => {
+        putCallCount += 1;
+
+        return putCallCount === 1
+          ? HttpResponse.json(createMockTaskResponse({ id: MOCK_TASK_IDS.primary, status: 'DONE' }))
+          : HttpResponse.json({ message: 'boom' }, { status: 500 });
+      }),
+    );
+    const user = userEvent.setup();
+    render(<JobTasksProbe />);
+
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
+    // First toggle succeeds and is never reloaded from the server.
+    await user.click(screen.getByRole('button', { name: 'toggle' }));
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=DONE');
+
+    // The second toggle (still to DONE, since the probe's button always
+    // sends the same status) fails; rolling back must land on the first
+    // toggle's result, not the original TODO the list was loaded with.
+    await user.click(screen.getByRole('button', { name: 'toggle' }));
+
+    expect(await screen.findByText(/mutation-error:/)).toBeInTheDocument();
+    expect(screen.getByText('Tailor CV bullets=[2026-05-10] status=DONE')).toBeInTheDocument();
+  });
+
   it('does nothing when asked to update a task that is not in the loaded list', async () => {
     server.use(
       http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}/tasks`, () =>
@@ -209,13 +289,13 @@ describe('useJobTasks', () => {
     const user = userEvent.setup();
     render(<JobTasksProbe />);
 
-    await screen.findByText('Tailor CV bullets=[2026-05-10]');
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
 
     // No PUT handler is registered for this job, so a request here would
     // fail the test under `setupTests.ts`'s `onUnhandledRequest: 'error'`.
     await user.click(screen.getByRole('button', { name: 'toggle-missing' }));
 
-    expect(screen.getByText('Tailor CV bullets=[2026-05-10]')).toBeInTheDocument();
+    expect(screen.getByText('Tailor CV bullets=[2026-05-10] status=TODO')).toBeInTheDocument();
   });
 
   it('records a mutation error and does not reload on a failed update', async () => {
@@ -230,11 +310,11 @@ describe('useJobTasks', () => {
     const user = userEvent.setup();
     render(<JobTasksProbe />);
 
-    await screen.findByText('Tailor CV bullets=[2026-05-10]');
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
     await user.click(screen.getByRole('button', { name: 'toggle' }));
 
     expect(await screen.findByText(/mutation-error:/)).toBeInTheDocument();
-    expect(screen.getByText('Tailor CV bullets=[2026-05-10]')).toBeInTheDocument();
+    expect(screen.getByText('Tailor CV bullets=[2026-05-10] status=TODO')).toBeInTheDocument();
   });
 
   it('reloads the list after a successful delete', async () => {
@@ -255,11 +335,13 @@ describe('useJobTasks', () => {
     const user = userEvent.setup();
     render(<JobTasksProbe />);
 
-    await screen.findByText('Tailor CV bullets=[2026-05-10]');
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
     await user.click(screen.getByRole('button', { name: 'delete' }));
 
     await waitFor(() =>
-      expect(screen.queryByText('Tailor CV bullets=[2026-05-10]')).not.toBeInTheDocument(),
+      expect(
+        screen.queryByText('Tailor CV bullets=[2026-05-10] status=TODO'),
+      ).not.toBeInTheDocument(),
     );
   });
 
@@ -275,10 +357,10 @@ describe('useJobTasks', () => {
     const user = userEvent.setup();
     render(<JobTasksProbe />);
 
-    await screen.findByText('Tailor CV bullets=[2026-05-10]');
+    await screen.findByText('Tailor CV bullets=[2026-05-10] status=TODO');
     await user.click(screen.getByRole('button', { name: 'delete' }));
 
     expect(await screen.findByText(/mutation-error:/)).toBeInTheDocument();
-    expect(screen.getByText('Tailor CV bullets=[2026-05-10]')).toBeInTheDocument();
+    expect(screen.getByText('Tailor CV bullets=[2026-05-10] status=TODO')).toBeInTheDocument();
   });
 });

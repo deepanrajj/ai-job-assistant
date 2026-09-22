@@ -245,6 +245,55 @@ describe('JobDetailTasksPanel', () => {
     expect(screen.getByText('Tailor CV bullets')).toBeInTheDocument();
   });
 
+  it('checks a task immediately, before the update request resolves', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () =>
+        HttpResponse.json([
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.primary,
+            title: 'Tailor CV bullets',
+            status: 'TODO',
+          }),
+        ]),
+      ),
+      http.put(mockTaskEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    const checkbox = await screen.findByRole('checkbox', { name: 'Tailor CV bullets' });
+
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+  });
+
+  it('unchecks a task back when the update request fails', async () => {
+    server.use(
+      http.get(mockTasksEndpoint, () =>
+        HttpResponse.json([
+          createMockTaskResponse({
+            id: MOCK_TASK_IDS.primary,
+            title: 'Tailor CV bullets',
+            status: 'TODO',
+          }),
+        ]),
+      ),
+      http.put(mockTaskEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailTasksPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    const checkbox = await screen.findByRole('checkbox', { name: 'Tailor CV bullets' });
+
+    await user.click(checkbox);
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+  });
+
   it('disables every task control while a write is in flight, marking only the busy one aria-busy', async () => {
     server.use(
       http.get(mockTasksEndpoint, () =>

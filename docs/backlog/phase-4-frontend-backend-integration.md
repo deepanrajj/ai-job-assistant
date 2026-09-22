@@ -19,7 +19,7 @@ Goal: replace mock/local data with real API data.
 - [x] [Connect timeline tab to backend](../../tasks/roadmap/032-connect-timeline-tab-to-backend.md).
 - [x] [Add loading states for API screens](../../tasks/roadmap/033-add-loading-states-for-api-screens.md).
 - [x] [Add error states for API screens](../../tasks/roadmap/034-add-error-states-for-api-screens.md).
-- [ ] [Add optimistic updates where useful](../../tasks/roadmap/035-add-optimistic-updates-where-useful.md).
+- [x] [Add optimistic updates where useful](../../tasks/roadmap/035-add-optimistic-updates-where-useful.md).
 
 ## Acceptance Criteria
 
