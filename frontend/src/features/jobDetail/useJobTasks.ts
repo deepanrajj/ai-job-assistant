@@ -53,6 +53,8 @@ interface IDeleteJobTaskInput {
 export interface IJobTasksState {
   createJobTask: (title: string, dueDate: string) => Promise<void>;
   deleteJobTask: (taskId: string) => Promise<void>;
+  deletingTaskId: string | null;
+  isCreating: boolean;
   isLoading: boolean;
   isMutating: boolean;
   loadError: AppError | null;
@@ -60,6 +62,7 @@ export interface IJobTasksState {
   reload: () => void;
   tasks: TJobTask[];
   updateJobTask: (taskId: string, input: IUpdateJobTaskInput) => Promise<void>;
+  updatingTaskId: string | null;
 }
 
 /**
@@ -118,6 +121,17 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
    */
   const [mutationError, setMutationError] = useState<AppError | null>(null);
 
+  /**
+   * Tracks which row's update/delete is in flight, so `aria-busy` on a task
+   * row can name that row specifically instead of every row sharing
+   * `isMutating`. `disabled` still uses the shared flag deliberately - every
+   * control stays inert while any one write is in flight, unchanged from
+   * before - but `aria-busy` is a stronger claim ("this is updating") that a
+   * row not actually being written should not make.
+   */
+  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+
   const reload = useCallback(() => {
     loadTasks(jobId).catch(() => {
       // Error is already recorded in request state and rendered from it.
@@ -154,42 +168,53 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
 
       if (!currentTask) return Promise.resolve();
 
+      setUpdatingTaskId(taskId);
+
       return putTask({
         jobId,
         payload: buildJobTaskUpdateRequest(currentTask, input),
         taskId,
-      }).then(
-        () => {
-          setMutationError(null);
-          reload();
-        },
-        (error: AppError) => {
-          setMutationError(error);
-          throw error;
-        },
-      );
+      })
+        .then(
+          () => {
+            setMutationError(null);
+            reload();
+          },
+          (error: AppError) => {
+            setMutationError(error);
+            throw error;
+          },
+        )
+        .finally(() => setUpdatingTaskId(null));
     },
     [jobId, putTask, reload, tasks],
   );
 
   const deleteJobTask = useCallback(
-    (taskId: string) =>
-      removeTask({ jobId, taskId }).then(
-        () => {
-          setMutationError(null);
-          reload();
-        },
-        (error: AppError) => {
-          setMutationError(error);
-          throw error;
-        },
-      ),
-    [jobId, removeTask, reload],
+    (taskId: string) => {
+      setDeletingTaskId(taskId);
+
+      return removeTask({ jobId, taskId })
+        .then(
+          () => {
+            setMutationError(null);
+            reload();
+          },
+          (error: AppError) => {
+            setMutationError(error);
+            throw error;
+          },
+        )
+        .finally(() => setDeletingTaskId(null));
+    },
+    [jobId, reload, removeTask],
   );
 
   return {
     createJobTask,
     deleteJobTask,
+    deletingTaskId,
+    isCreating,
     isLoading: isIdle || isLoading,
     isMutating: isCreating || isUpdating || isDeleting,
     loadError,
@@ -197,5 +222,6 @@ export const useJobTasks = (jobId: string): IJobTasksState => {
     reload,
     tasks,
     updateJobTask,
+    updatingTaskId,
   };
 };

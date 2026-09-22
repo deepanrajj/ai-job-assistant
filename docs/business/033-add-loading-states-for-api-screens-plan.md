@@ -274,13 +274,14 @@ After `npm run frontend:verify` passes:
 Built as planned, following the decisions above exactly.
 
 `npm run frontend:verify` passes: ESLint clean, Prettier clean, 122 test
-files and 379 tests, 100 percent of lines (1024/1024) and functions
-(405/405), production build fine. Branch coverage is 98.97 percent
-(577/583, up from 575/581 - two new branches added by the busy/not-busy
-label ternary, both covered); the same four pre-existing files below it
-(`jobFormSchema.ts`, `JobDetailPage.tsx`, `EditJobForm.tsx`,
-`NewJobPage.tsx`) remain the only ones below full branch coverage,
-confirmed from the per-file report - no new gap.
+files and 383 tests (four added by the post-review fix below), 100
+percent of lines (1036/1036) and functions (409/409), production build
+fine. Branch coverage is 98.97 percent (577/583, up from 575/581 - two
+new branches added by the busy/not-busy label ternary, both covered);
+the same four pre-existing files below it (`jobFormSchema.ts`,
+`JobDetailPage.tsx`, `EditJobForm.tsx`, `NewJobPage.tsx`) remain the
+only ones below full branch coverage, confirmed from the per-file
+report - no new gap.
 
 ### What was built
 
@@ -305,7 +306,29 @@ step 4, confirming both callers were found and no third caller exists.
 
 ### Changed from the plan
 
-None. The design followed the plan's decisions as written, including
-the scope the user chose explicitly (job form plus tasks/notes
-mutation buttons, not job form alone) when asked before this plan was
-written.
+A post-PR code review (`/code-review PR 50`) found that Decision 2's
+shared-flag `aria-busy` was a false-positive risk: every row in a panel
+shared one `isMutating`/`isDisabled` flag, so deleting note A also
+marked note B's Save/Delete buttons and the Add-note button
+`aria-busy="true"`, even though only note A was updating.
+`aria-busy` makes a stronger claim than `disabled` ("this is updating"
+vs. "this is inert"), so reusing the disabled-state flag for it was
+wrong in a way reusing it for `disabled` itself is not.
+
+Fixed by giving `useJobTasks`/`useJobNotes` per-row mutation tracking
+(`updatingTaskId`/`deletingTaskId`, `updatingNoteId`/`deletingNoteId`,
+plus a standalone `isCreating`) instead of the one shared `isMutating`
+boolean, and wiring each button's `aria-busy` to the specific row/action
+it represents. `disabled` still uses the shared flag unchanged - the
+existing "every control blocks while any one write is in flight"
+behavior and its tests were not touched. This also meant revisiting
+Decision 3 (no `aria-busy` on non-buttons): the task checkbox is the
+tasks panel's only trigger for an update (there is no separate "save"
+button like notes has), so leaving it without `aria-busy` would have
+left task updates with no busy signal anywhere. It now gets
+`aria-busy={isToggling}`, scoped to its own row.
+
+Regression tests were added asserting the negative case directly (an
+unrelated row's buttons do *not* get `aria-busy="true"` while another
+row's write is in flight), rather than only the positive case, so this
+defect could not reappear unnoticed.

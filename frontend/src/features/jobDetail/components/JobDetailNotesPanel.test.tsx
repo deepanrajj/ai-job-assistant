@@ -252,13 +252,17 @@ describe('JobDetailNotesPanel', () => {
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 
-  it('disables controls while a write is in flight', async () => {
+  it('disables every note control while a write is in flight, marking only the busy one aria-busy', async () => {
     server.use(
       http.get(mockNotesEndpoint, () =>
         HttpResponse.json([
           createMockNoteResponse({
             id: MOCK_NOTE_IDS.primary,
             createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.secondary,
+            createdAt: '2026-05-12T09:00:00.123456Z',
           }),
         ]),
       ),
@@ -269,17 +273,68 @@ describe('JobDetailNotesPanel', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Delete note from May 10, 2026' }));
 
-    const saveButton = screen.getByRole('button', { name: 'Save note from May 10, 2026' });
-    const deleteButton = screen.getByRole('button', { name: 'Delete note from May 10, 2026' });
+    const busySaveButton = screen.getByRole('button', { name: 'Save note from May 10, 2026' });
+    const busyDeleteButton = screen.getByRole('button', { name: 'Delete note from May 10, 2026' });
+    const idleSaveButton = screen.getByRole('button', { name: 'Save note from May 12, 2026' });
+    const idleDeleteButton = screen.getByRole('button', { name: 'Delete note from May 12, 2026' });
     const addNoteButton = screen.getByRole('button', { name: 'Add note' });
 
+    // Every control stays disabled together - one write in flight blocks a
+    // second overlapping one - but only the exact operation and row in
+    // flight claims aria-busy. This note's own save button is disabled but
+    // not itself updating, and the same goes for the other note's controls.
     expect(screen.getByLabelText('Edit note from May 10, 2026')).toBeDisabled();
-    expect(saveButton).toBeDisabled();
-    expect(saveButton).toHaveAttribute('aria-busy', 'true');
-    expect(deleteButton).toBeDisabled();
-    expect(deleteButton).toHaveAttribute('aria-busy', 'true');
-    expect(addNoteButton).toHaveAttribute('aria-busy', 'true');
+    expect(busySaveButton).toBeDisabled();
+    expect(busySaveButton).not.toHaveAttribute('aria-busy', 'true');
+    expect(busyDeleteButton).toBeDisabled();
+    expect(busyDeleteButton).toHaveAttribute('aria-busy', 'true');
+    expect(idleSaveButton).toBeDisabled();
+    expect(idleSaveButton).not.toHaveAttribute('aria-busy', 'true');
+    expect(idleDeleteButton).toBeDisabled();
+    expect(idleDeleteButton).not.toHaveAttribute('aria-busy', 'true');
+    expect(addNoteButton).not.toHaveAttribute('aria-busy', 'true');
     expect(screen.getByLabelText('New note')).toBeDisabled();
+  });
+
+  it('marks only the note being saved as aria-busy', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () =>
+        HttpResponse.json([
+          createMockNoteResponse({
+            id: MOCK_NOTE_IDS.primary,
+            createdAt: '2026-05-10T09:00:00.123456Z',
+          }),
+        ]),
+      ),
+      http.put(mockNoteEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByLabelText('Edit note from May 10, 2026');
+    await user.click(screen.getByRole('button', { name: 'Save note from May 10, 2026' }));
+
+    expect(screen.getByRole('button', { name: 'Save note from May 10, 2026' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(
+      screen.getByRole('button', { name: 'Delete note from May 10, 2026' }),
+    ).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('marks the add-note button aria-busy while creating', async () => {
+    server.use(
+      http.get(mockNotesEndpoint, () => HttpResponse.json([])),
+      http.post(mockNotesEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailNotesPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await user.type(await screen.findByLabelText('New note'), 'Ask about team rituals');
+    await user.click(screen.getByRole('button', { name: 'Add note' }));
+
+    expect(screen.getByRole('button', { name: 'Add note' })).toHaveAttribute('aria-busy', 'true');
   });
 
   it('ignores empty note submissions', async () => {

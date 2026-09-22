@@ -23,7 +23,9 @@ interface IJobDetailTasksPanelProps {
 interface IJobDetailTaskItemProps {
   dueLabel: string;
   isComplete: boolean;
+  isDeleting: boolean;
   isDisabled: boolean;
+  isToggling: boolean;
   onDeleteTask: (taskId: string) => void;
   onToggleTask: (task: TJobTask) => void;
   task: TJobTask;
@@ -38,7 +40,9 @@ interface IJobDetailTaskItemProps {
 const JobDetailTaskItem: FC<IJobDetailTaskItemProps> = ({
   dueLabel,
   isComplete,
+  isDeleting,
   isDisabled,
+  isToggling,
   onDeleteTask,
   onToggleTask,
   task,
@@ -48,6 +52,7 @@ const JobDetailTaskItem: FC<IJobDetailTaskItemProps> = ({
   return (
     <li className="flex items-start gap-3 rounded-lg border border-app-borderSoft bg-app-surface2 p-4">
       <input
+        aria-busy={isToggling}
         aria-label={task.title}
         checked={isComplete}
         className="mt-1 h-4 w-4 rounded border-app-border text-primary-600"
@@ -60,7 +65,7 @@ const JobDetailTaskItem: FC<IJobDetailTaskItemProps> = ({
         <p className="mt-1 text-xs text-app-textMuted">{dueLabel}</p>
       </div>
       <Button
-        aria-busy={isDisabled}
+        aria-busy={isDeleting}
         aria-label={t('jobDetail.tasks.deleteTaskLabel', {
           title: task.title,
         })}
@@ -88,6 +93,8 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
   const {
     createJobTask,
     deleteJobTask,
+    deletingTaskId,
+    isCreating,
     isLoading,
     isMutating,
     loadError,
@@ -95,6 +102,7 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
     reload,
     tasks,
     updateJobTask,
+    updatingTaskId,
   } = useJobTasks(jobId);
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -183,7 +191,7 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
           type="date"
           value={newTaskDueDate}
         />
-        <Button aria-busy={isMutating} className="self-end" disabled={!canCreateTask} type="submit">
+        <Button aria-busy={isCreating} className="self-end" disabled={!canCreateTask} type="submit">
           {t('jobDetail.tasks.addTask')}
         </Button>
       </form>
@@ -193,7 +201,9 @@ const JobDetailTasksPanelComponent: FC<IJobDetailTasksPanelProps> = ({ jobId }) 
           <MemoizedJobDetailTaskItem
             dueLabel={getJobTaskDueLabel(task, language, t)}
             isComplete={isJobTaskComplete(task)}
+            isDeleting={deletingTaskId === task.id}
             isDisabled={isMutating}
+            isToggling={updatingTaskId === task.id}
             key={task.id}
             onDeleteTask={handleDeleteTask}
             onToggleTask={handleToggleTask}

@@ -51,6 +51,8 @@ interface IDeleteJobNoteInput {
 export interface IJobNotesState {
   createJobNote: (body: string) => Promise<void>;
   deleteJobNote: (noteId: string) => Promise<void>;
+  deletingNoteId: string | null;
+  isCreating: boolean;
   isLoading: boolean;
   isMutating: boolean;
   loadError: AppError | null;
@@ -58,6 +60,7 @@ export interface IJobNotesState {
   notes: TJobNote[];
   reload: () => void;
   updateJobNote: (noteId: string, body: string) => Promise<void>;
+  updatingNoteId: string | null;
 }
 
 /**
@@ -116,6 +119,17 @@ export const useJobNotes = (jobId: string): IJobNotesState => {
    */
   const [mutationError, setMutationError] = useState<AppError | null>(null);
 
+  /**
+   * Tracks which note's update/delete is in flight, so `aria-busy` on a note
+   * row can name that row specifically instead of every row sharing
+   * `isMutating`. `disabled` still uses the shared flag deliberately - every
+   * control stays inert while any one write is in flight, unchanged from
+   * before - but `aria-busy` is a stronger claim ("this is updating") that a
+   * row not actually being written should not make.
+   */
+  const [updatingNoteId, setUpdatingNoteId] = useState<string | null>(null);
+  const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
+
   const reload = useCallback(() => {
     loadNotes(jobId).catch(() => {
       // Error is already recorded in request state and rendered from it.
@@ -147,38 +161,50 @@ export const useJobNotes = (jobId: string): IJobNotesState => {
   );
 
   const updateJobNote = useCallback(
-    (noteId: string, body: string) =>
-      putNote({ jobId, noteId, payload: { body } }).then(
-        () => {
-          setMutationError(null);
-          reload();
-        },
-        (error: AppError) => {
-          setMutationError(error);
-          throw error;
-        },
-      ),
+    (noteId: string, body: string) => {
+      setUpdatingNoteId(noteId);
+
+      return putNote({ jobId, noteId, payload: { body } })
+        .then(
+          () => {
+            setMutationError(null);
+            reload();
+          },
+          (error: AppError) => {
+            setMutationError(error);
+            throw error;
+          },
+        )
+        .finally(() => setUpdatingNoteId(null));
+    },
     [jobId, putNote, reload],
   );
 
   const deleteJobNote = useCallback(
-    (noteId: string) =>
-      removeNote({ jobId, noteId }).then(
-        () => {
-          setMutationError(null);
-          reload();
-        },
-        (error: AppError) => {
-          setMutationError(error);
-          throw error;
-        },
-      ),
+    (noteId: string) => {
+      setDeletingNoteId(noteId);
+
+      return removeNote({ jobId, noteId })
+        .then(
+          () => {
+            setMutationError(null);
+            reload();
+          },
+          (error: AppError) => {
+            setMutationError(error);
+            throw error;
+          },
+        )
+        .finally(() => setDeletingNoteId(null));
+    },
     [jobId, removeNote, reload],
   );
 
   return {
     createJobNote,
     deleteJobNote,
+    deletingNoteId,
+    isCreating,
     isLoading: isIdle || isLoading,
     isMutating: isCreating || isUpdating || isDeleting,
     loadError,
@@ -186,5 +212,6 @@ export const useJobNotes = (jobId: string): IJobNotesState => {
     notes,
     reload,
     updateJobNote,
+    updatingNoteId,
   };
 };
