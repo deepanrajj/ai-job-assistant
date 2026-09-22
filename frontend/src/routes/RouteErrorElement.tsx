@@ -17,6 +17,7 @@ export const RouteErrorElement: FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const status = isRouteErrorResponse(error) ? error.status : null;
+  const title = t('route.error.title');
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-app-bg px-4 py-12 text-app-text">
@@ -29,10 +30,7 @@ export const RouteErrorElement: FC = () => {
           exists so heading navigation, a primary assistive-technology
           pattern, finds something on a page that is otherwise heading-free.
         */}
-        <h1 className="sr-only">{t('route.error.title')}</h1>
-        {status && (
-          <p className="mb-2 text-center text-sm font-semibold text-danger-700">{status}</p>
-        )}
+        <h1 className="sr-only">{title}</h1>
         <ErrorState
           action={
             <div className="flex flex-wrap justify-center gap-3">
@@ -45,7 +43,7 @@ export const RouteErrorElement: FC = () => {
             </div>
           }
           description={t('route.error.description')}
-          title={t('route.error.title')}
+          title={status ? `${status} — ${title}` : title}
         />
       </div>
     </main>

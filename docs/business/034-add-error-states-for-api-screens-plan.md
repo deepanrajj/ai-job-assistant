@@ -276,3 +276,16 @@ unchanged. A regression test (`getByRole('heading', { level: 1, ... })`)
 was added to the first case rather than all three, since all three
 render the same markup and the first already covers every other
 assertion for this fallback.
+
+A second review round on the same PR (`/code-review PR 51`, re-run)
+found the HTTP status paragraph was a sibling rendered *before*
+`ErrorState`, not inside it - so the one piece of dynamic diagnostic
+detail this page shows was never actually inside the `role="alert"`
+region this task added, and was never part of what assistive technology
+gets told. Fixed by folding the status into `ErrorState`'s own `title`
+(`"503 — Something went wrong"` instead of a separate line above it) so
+it is announced with everything else, rather than nesting a second
+`role="alert"` region or extending `ErrorState`'s props for one caller.
+The visually-hidden `<h1>` keeps the plain, stable title text regardless
+of status, since a heading naming the page does not need the same
+per-error diagnostic detail the live-region announcement does.
