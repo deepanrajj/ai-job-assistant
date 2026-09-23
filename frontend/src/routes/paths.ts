@@ -3,11 +3,15 @@
  */
 export const APP_PATHS = {
   AI_ASSISTANT: '/ai-assistant',
+  APPLICATIONS: '/applications',
+  CALENDAR: '/calendar',
   DASHBOARD: '/dashboard',
+  DISCOVER: '/discover',
   JOB_DETAIL: '/jobs/:jobId',
   JOB_EDIT: '/jobs/:jobId/edit',
   JOB_NEW: '/jobs/new',
   JOBS: '/jobs',
+  PROFILE: '/profile',
 } as const;
 
 /**

@@ -20,7 +20,10 @@
   "nav": {
     "dashboard": "Dashboard",
     "jobs": "Jobs",
-    "aiAssistant": "AI Assistant",
+    "discover": "Discover",
+    "applications": "Applications",
+    "calendar": "Calendar",
+    "profile": "Profile",
     "main": "Main navigation",
     "mobile": "Mobile navigation"
   },
@@ -32,6 +35,26 @@
     "jobs": {
       "title": "Jobs",
       "subtitle": "Review your saved opportunities and keep the pipeline moving."
+    },
+    "discover": {
+      "title": "Discover",
+      "subtitle": "Find and import job opportunities from across the web."
+    },
+    "applications": {
+      "title": "Applications",
+      "subtitle": "Track submitted applications and their materials."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "subtitle": "See upcoming interviews, deadlines, and reminders."
+    },
+    "profile": {
+      "title": "Profile",
+      "subtitle": "Manage your resume library, skills, and job preferences."
+    },
+    "comingSoon": {
+      "title": "Coming soon",
+      "description": "This section is not built yet. Check back in a future update."
     },
     "jobDetail": {
       "title": "Job detail",

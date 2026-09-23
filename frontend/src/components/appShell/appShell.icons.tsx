@@ -56,19 +56,64 @@ export const JobsIcon: FC = () => (
 );
 
 /**
- * Renders the AI assistant navigation icon.
+ * Renders the Discover navigation icon.
  *
- * @returns {JSX.Element} Decorative AI assistant icon.
+ * @returns {JSX.Element} Decorative Discover icon.
  */
-export const AiAssistantIcon: FC = () => (
+export const DiscoverIcon: FC = () => (
+  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
+    <circle cx="10.5" cy="10.5" r="5.5" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M18.5 18.5 15 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+/**
+ * Renders the Applications navigation icon.
+ *
+ * @returns {JSX.Element} Decorative Applications icon.
+ */
+export const ApplicationsIcon: FC = () => (
   <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
     <path
-      d="M12 3l1.25 4.25L17.5 8.5l-4.25 1.25L12 14l-1.25-4.25L6.5 8.5l4.25-1.25L12 3Z"
-      fill="currentColor"
+      d="M7 3.75h7.25L18 7.5V19a1.25 1.25 0 0 1-1.25 1.25h-9.5A1.25 1.25 0 0 1 6 19V5A1.25 1.25 0 0 1 7 3.75Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
     />
+    <path d="M9 12h6M9 15.5h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+/**
+ * Renders the Calendar navigation icon.
+ *
+ * @returns {JSX.Element} Decorative Calendar icon.
+ */
+export const CalendarIcon: FC = () => (
+  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
     <path
-      d="M18.5 13l.75 2.25L21.5 16l-2.25.75L18.5 19l-.75-2.25L15.5 16l2.25-.75L18.5 13Z"
-      fill="currentColor"
+      d="M5 9.5h14M7.5 4v3M16.5 4v3M6.25 6h11.5A1.75 1.75 0 0 1 19.5 7.75v10.5A1.75 1.75 0 0 1 17.75 20H6.25a1.75 1.75 0 0 1-1.75-1.75V7.75A1.75 1.75 0 0 1 6.25 6Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/**
+ * Renders the Profile navigation icon.
+ *
+ * @returns {JSX.Element} Decorative Profile icon.
+ */
+export const ProfileIcon: FC = () => (
+  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
+    <circle cx="12" cy="8.5" r="3.25" stroke="currentColor" strokeWidth="1.8" />
+    <path
+      d="M5.5 19.25a6.5 6.5 0 0 1 13 0"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
     />
   </svg>
 );

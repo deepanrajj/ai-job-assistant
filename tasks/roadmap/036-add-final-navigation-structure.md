@@ -1,5 +1,7 @@
 # Task 036 - Add Final Navigation Structure
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -40,9 +42,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Final navigation shape is visible.
-- [ ] `AI Assistant` is not a final top-level nav item.
-- [ ] Route tests cover the new navigation.
+- [x] Final navigation shape is visible.
+- [x] `AI Assistant` is not a final top-level nav item.
+- [x] Route tests cover the new navigation.
 
 ## Commit
 

@@ -41,10 +41,11 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 036: Add final navigation structure](../../tasks/roadmap/036-add-final-navigation-structure.md).
+- [ ] [Task 037: Add Kanban pipeline view](../../tasks/roadmap/037-add-kanban-pipeline-view.md).
 
-Phase 4 is complete: every job detail tab reads and writes real backend
-data, with consistent loading/error states and optimistic updates for
-task toggling and job status changes (task edits stayed request-driven,
-since they already read as instant). Task 036 starts phase 5, which
-builds out the rest of the non-AI job-search workspace.
+Task 036 moved navigation to its final shape (Dashboard, Jobs,
+Discover, Applications, Calendar, Profile), with accessible
+placeholder pages for the four sections with no workflow yet and `AI
+Assistant` dropped from the nav (its route stays reachable directly).
+Task 037 starts building out the Jobs section itself with a Kanban
+pipeline view.

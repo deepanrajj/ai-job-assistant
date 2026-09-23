@@ -20,7 +20,10 @@
   "nav": {
     "dashboard": "Dashboard",
     "jobs": "Jobs",
-    "aiAssistant": "KI-Assistent",
+    "discover": "Entdecken",
+    "applications": "Bewerbungen",
+    "calendar": "Kalender",
+    "profile": "Profil",
     "main": "Hauptnavigation",
     "mobile": "Mobile Navigation"
   },
@@ -32,6 +35,26 @@
     "jobs": {
       "title": "Jobs",
       "subtitle": "Prüfe deine gespeicherten Chancen und halte deine Pipeline in Bewegung."
+    },
+    "discover": {
+      "title": "Entdecken",
+      "subtitle": "Finde und importiere Stellenangebote aus dem gesamten Web."
+    },
+    "applications": {
+      "title": "Bewerbungen",
+      "subtitle": "Verfolge eingereichte Bewerbungen und ihre Unterlagen."
+    },
+    "calendar": {
+      "title": "Kalender",
+      "subtitle": "Sieh anstehende Interviews, Fristen und Erinnerungen."
+    },
+    "profile": {
+      "title": "Profil",
+      "subtitle": "Verwalte deine Lebenslauf-Bibliothek, Fähigkeiten und Jobpräferenzen."
+    },
+    "comingSoon": {
+      "title": "Demnächst verfügbar",
+      "description": "Dieser Bereich ist noch nicht fertiggestellt. Schau in einem zukünftigen Update wieder vorbei."
     },
     "jobDetail": {
       "title": "Job-Details",
