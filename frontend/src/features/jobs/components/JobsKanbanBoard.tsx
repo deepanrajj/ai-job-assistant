@@ -25,7 +25,7 @@ const groupJobsByStatus = (jobs: TJob[]): Record<TJobStatus, TJob[]> => {
   );
 
   jobs.forEach((job) => {
-    jobsByStatus[job.status].push(job);
+    jobsByStatus[job.status]?.push(job);
   });
 
   return jobsByStatus;

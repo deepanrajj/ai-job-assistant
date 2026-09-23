@@ -4,6 +4,7 @@ import { screen, within } from '@testing-library/react';
 import { JobsKanbanBoard } from './JobsKanbanBoard';
 import { renderWithRouter } from '../../../test/renderWithRouter';
 import { createMockJob } from '../../../test/mockJobs';
+import type { TJob } from '../../../types';
 
 describe('JobsKanbanBoard', () => {
   it('groups jobs by status into their own column', () => {
@@ -42,6 +43,21 @@ describe('JobsKanbanBoard', () => {
 
     expect(within(wishlistColumn).getByText('No jobs in this status')).toBeInTheDocument();
     expect(within(wishlistColumn).getByText('0 opportunities')).toBeInTheDocument();
+  });
+
+  it('does not crash on a status outside the known six, and omits that job', () => {
+    const jobs = [
+      createMockJob({ company: 'Known Co', id: 'job-known', status: 'APPLIED' }),
+      createMockJob({
+        company: 'Unknown Co',
+        id: 'job-unknown',
+        status: 'ARCHIVED' as TJob['status'],
+      }),
+    ];
+
+    expect(() => renderWithRouter(<JobsKanbanBoard jobs={jobs} />)).not.toThrow();
+    expect(screen.getByText('Known Co')).toBeInTheDocument();
+    expect(screen.queryByText('Unknown Co')).not.toBeInTheDocument();
   });
 
   it('links a card to the correct job detail page', () => {

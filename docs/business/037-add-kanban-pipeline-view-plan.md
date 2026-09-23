@@ -381,3 +381,22 @@ server used for this manual check were both torn down afterward
 
 Only the `groupJobsByStatus` implementation (see above); every
 decision, file list, and test list in this plan was built as written.
+
+### Post-merge-review fix
+
+A `/code-review` pass on the PR flagged that `groupJobsByStatus`
+indexed `jobsByStatus[job.status]` and called `.push` on the result
+without checking it existed. `job.status` comes from the API response
+with no runtime enum validation (`jobs.utils.ts`'s mapper assigns
+`status: response.status` directly), so a status value outside the
+six known `TJobStatus` literals - a backend rename, a status added
+backend-first, or malformed data - would read `undefined` and throw,
+crashing the whole Jobs page rather than degrading the way
+`StatusPill`'s analogous lookup already does. Fixed with optional
+chaining (`jobsByStatus[job.status]?.push(job)`): a job with an
+unrecognized status is silently omitted from the board instead of
+throwing. Added a regression test asserting a mixed known/unknown
+status list renders the known job and does not throw.
+`npm run frontend:verify` re-run afterward: 132 test files, 419 tests
+(1 added), 100 percent lines, unchanged 99.01 percent branch coverage,
+build succeeds.
