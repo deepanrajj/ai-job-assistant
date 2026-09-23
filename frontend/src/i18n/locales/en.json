@@ -124,6 +124,11 @@
     "loading": "Loading saved jobs",
     "loadErrorTitle": "Saved jobs could not be loaded",
     "loadErrorRetry": "Try again",
+    "viewToggleLabel": "Jobs view",
+    "tableView": "Table",
+    "kanbanView": "Pipeline",
+    "kanbanColumnCount": "{{count}} opportunities",
+    "kanbanColumnEmpty": "No jobs in this status",
     "fallbackError": {
       "listJobs": "Failed to load jobs",
       "getJob": "Failed to load job",

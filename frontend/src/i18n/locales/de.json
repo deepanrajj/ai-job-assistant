@@ -124,6 +124,11 @@
     "loading": "Gespeicherte Jobs werden geladen",
     "loadErrorTitle": "Gespeicherte Jobs konnten nicht geladen werden",
     "loadErrorRetry": "Erneut versuchen",
+    "viewToggleLabel": "Jobs-Ansicht",
+    "tableView": "Tabelle",
+    "kanbanView": "Pipeline",
+    "kanbanColumnCount": "{{count}} Chancen",
+    "kanbanColumnEmpty": "Keine Jobs in diesem Status",
     "fallbackError": {
       "listJobs": "Laden der Jobs fehlgeschlagen",
       "getJob": "Laden des Jobs fehlgeschlagen",

@@ -1,5 +1,7 @@
 # Task 037 - Add Kanban Pipeline View
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -40,9 +42,9 @@ Run `npm run frontend:verify`.
 
 ## Acceptance Criteria
 
-- [ ] Kanban view exists for saved jobs.
-- [ ] All statuses are represented.
-- [ ] Keyboard users can navigate job cards.
+- [x] Kanban view exists for saved jobs.
+- [x] All statuses are represented.
+- [x] Keyboard users can navigate job cards.
 
 ## Commit
 

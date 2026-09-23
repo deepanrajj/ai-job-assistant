@@ -6,6 +6,7 @@ import {
   createJobsColumns,
   createJobsFilters,
   createJobsSearchConfig,
+  createJobsViewToggle,
 } from './jobs.config';
 import { renderWithRouter } from '../../test/renderWithRouter';
 import {
@@ -149,5 +150,21 @@ describe('jobs config', () => {
     expect(handleAddJob).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('combobox', { name: 'Status' })).toHaveValue('ALL');
     expect(screen.getByRole('option', { name: 'All statuses' })).toBeInTheDocument();
+  });
+
+  it('creates a view toggle marking the active view and switching on click', () => {
+    const handleViewModeChange = vi.fn();
+    render(createJobsViewToggle({ onViewModeChange: handleViewModeChange, t, viewMode: 'table' }));
+
+    const tableButton = screen.getByRole('button', { name: 'Table' });
+    const kanbanButton = screen.getByRole('button', { name: 'Pipeline' });
+
+    expect(tableButton).toHaveAttribute('aria-pressed', 'true');
+    expect(kanbanButton).toHaveAttribute('aria-pressed', 'false');
+
+    kanbanButton.click();
+
+    expect(handleViewModeChange).toHaveBeenCalledTimes(1);
+    expect(handleViewModeChange).toHaveBeenCalledWith('kanban');
   });
 });

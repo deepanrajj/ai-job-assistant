@@ -41,11 +41,9 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 037: Add Kanban pipeline view](../../tasks/roadmap/037-add-kanban-pipeline-view.md).
+- [ ] [Task 038: Add job source tracking](../../tasks/roadmap/038-add-job-source-tracking.md).
 
-Task 036 moved navigation to its final shape (Dashboard, Jobs,
-Discover, Applications, Calendar, Profile), with accessible
-placeholder pages for the four sections with no workflow yet and `AI
-Assistant` dropped from the nav (its route stays reachable directly).
-Task 037 starts building out the Jobs section itself with a Kanban
-pipeline view.
+Task 037 added a Kanban pipeline view to the Jobs page: a Table/
+Pipeline toggle next to the existing search-and-filter table, and a
+status-grouped board of read-only cards linking to job detail. Task
+038 continues building out the Jobs section with source tracking.
