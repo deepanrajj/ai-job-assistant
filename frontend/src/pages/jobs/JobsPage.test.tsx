@@ -153,4 +153,65 @@ describe('JobsPage', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
+
+  it('defaults to the table view', () => {
+    renderJobsPage();
+
+    expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Table' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('switches to the Kanban pipeline view and back', async () => {
+    const user = userEvent.setup();
+    renderJobsPage();
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Saved jobs' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Interview' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Table' }));
+
+    expect(screen.getByRole('table')).toBeInTheDocument();
+  });
+
+  it('renders every status column in the Kanban view, including empty ones', async () => {
+    const user = userEvent.setup();
+    renderJobsPage();
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    ['Wishlist', 'Applied', 'Interview', 'Offer', 'Rejected', 'Withdrawn'].forEach((status) => {
+      expect(screen.getByRole('region', { name: status })).toBeInTheDocument();
+    });
+  });
+
+  it('links a Kanban card to the correct job detail page', async () => {
+    const user = userEvent.setup();
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/jobs',
+          element: (
+            <JobsPage error={null} isLoading={false} jobs={createMockJobs()} onRetry={() => {}} />
+          ),
+        },
+        {
+          path: '/jobs/:jobId',
+          element: <p>Job detail route</p>,
+        },
+      ],
+      {
+        initialEntries: ['/jobs'],
+      },
+    );
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+    await user.click(screen.getByRole('link', { name: 'View details for Personio' }));
+
+    expect(await screen.findByText('Job detail route')).toBeInTheDocument();
+  });
 });

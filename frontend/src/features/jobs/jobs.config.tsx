@@ -4,14 +4,14 @@ import { Button, Select } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
 import { StatusPill } from './components/StatusPill';
-import { PlusIcon } from '../../components/icons';
+import { KanbanIcon, PlusIcon, TableIcon } from '../../components/icons';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
 import { formatJobDate, formatJobSalary } from './jobs.utils';
 import { APP_PATH_BUILDERS } from '../../routes/paths';
 import { statusOptions } from './jobs.constants';
 import { JOB_STATUS_TRANSLATION_KEYS, type TJob } from '../../types';
 import type { IDataTableColumn, IDataTableSearchConfig } from '../../components/dataTable';
-import type { TStatusFilter } from './jobs.types';
+import type { TJobsViewMode, TStatusFilter } from './jobs.types';
 
 /**
  * Params used to create localized jobs table columns.
@@ -36,6 +36,15 @@ interface ICreateJobsFiltersParams {
 interface ICreateJobsActionsParams {
   onAddJob: () => void;
   t: TTranslationContextValue['t'];
+}
+
+/**
+ * Params used to create the jobs view toggle.
+ */
+interface ICreateJobsViewToggleParams {
+  onViewModeChange: (viewMode: TJobsViewMode) => void;
+  t: TTranslationContextValue['t'];
+  viewMode: TJobsViewMode;
 }
 
 /**
@@ -137,6 +146,39 @@ export const createJobsActions = ({ onAddJob, t }: ICreateJobsActionsParams): Re
   <Button leftIcon={<PlusIcon />} onClick={onAddJob}>
     {t('jobs.addJob')}
   </Button>
+);
+
+/**
+ * Creates the jobs page view toggle, switching between the table and Kanban layouts.
+ *
+ * @param {ICreateJobsViewToggleParams} params View toggle config params.
+ * @returns {ReactNode} Jobs view toggle.
+ */
+export const createJobsViewToggle = ({
+  onViewModeChange,
+  t,
+  viewMode,
+}: ICreateJobsViewToggleParams): ReactNode => (
+  <div aria-label={t('jobs.viewToggleLabel')} className="flex gap-1" role="group">
+    <Button
+      aria-pressed={viewMode === 'table'}
+      leftIcon={<TableIcon />}
+      onClick={() => onViewModeChange('table')}
+      size="sm"
+      variant={viewMode === 'table' ? 'primary' : 'secondary'}
+    >
+      {t('jobs.tableView')}
+    </Button>
+    <Button
+      aria-pressed={viewMode === 'kanban'}
+      leftIcon={<KanbanIcon />}
+      onClick={() => onViewModeChange('kanban')}
+      size="sm"
+      variant={viewMode === 'kanban' ? 'primary' : 'secondary'}
+    >
+      {t('jobs.kanbanView')}
+    </Button>
+  </div>
 );
 
 /**

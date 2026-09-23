@@ -7,17 +7,19 @@ import {
   type TDataTableSortState,
 } from '../../components/dataTable';
 import { Button, ErrorState, LoadingState } from '../../components/ui';
+import { JobsKanbanBoard } from '../../features/jobs/components/JobsKanbanBoard';
 import {
   createJobsActions,
   createJobsColumns,
   createJobsFilters,
   createJobsSearchConfig,
+  createJobsViewToggle,
 } from '../../features/jobs/jobs.config';
 import { useTranslation } from '../../i18n';
 import type { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
-import type { TStatusFilter } from '../../features/jobs/jobs.types';
+import type { TJobsViewMode, TStatusFilter } from '../../features/jobs/jobs.types';
 
 /**
  * Props used by the jobs page.
@@ -39,6 +41,7 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
   const navigate = useNavigate();
   const { language, t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
+  const [viewMode, setViewMode] = useState<TJobsViewMode>('table');
 
   const jobsInitialSort = useMemo<TDataTableSortState>(
     () => ({
@@ -70,8 +73,13 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
   const searchConfig = useMemo(() => createJobsSearchConfig(t), [t]);
   const columns = useMemo(() => createJobsColumns({ language, t }), [language, t]);
   const actions = useMemo(
-    () => createJobsActions({ onAddJob: handleAddJob, t }),
-    [handleAddJob, t],
+    () => (
+      <div className="flex items-center gap-3">
+        {createJobsViewToggle({ onViewModeChange: setViewMode, t, viewMode })}
+        {createJobsActions({ onAddJob: handleAddJob, t })}
+      </div>
+    ),
+    [handleAddJob, t, viewMode],
   );
   const filters = useMemo(
     () =>
@@ -92,6 +100,17 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
         description={error.message}
         title={t('jobs.loadErrorTitle')}
       />
+    );
+
+  if (viewMode === 'kanban')
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold text-app-text">{t('jobs.savedJobs')}</h2>
+          {actions}
+        </div>
+        <JobsKanbanBoard jobs={jobs} />
+      </div>
     );
 
   return (
