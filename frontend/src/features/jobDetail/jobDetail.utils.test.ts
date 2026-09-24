@@ -25,6 +25,11 @@ describe('jobDetail.utils', () => {
         value: 'Munich / Hybrid',
       },
       {
+        id: 'source',
+        label: 'Source',
+        value: 'Not set',
+      },
+      {
         id: 'salary',
         label: 'Salary',
         value: 'EUR 76k - EUR 92k',
@@ -38,7 +43,7 @@ describe('jobDetail.utils', () => {
   });
 
   it('uses fallback metadata when optional values are blank', () => {
-    const [locationItem, salaryItem] = createJobDetailMetadataItems(
+    const [locationItem, sourceItem, salaryItem] = createJobDetailMetadataItems(
       {
         ...mockJobDetails[0],
         location: '',
@@ -50,7 +55,16 @@ describe('jobDetail.utils', () => {
     );
 
     expect(locationItem.value).toBe('Not set');
+    expect(sourceItem.value).toBe('Not set');
     expect(salaryItem.value).toBe('Not set');
+  });
+
+  it('shows the translated source of a job that has one', () => {
+    const sourceItem = (source: 'XING' | 'COMPANY_WEBSITE') =>
+      createJobDetailMetadataItems({ ...mockJobDetails[0], source }, 'en', t)[1];
+
+    expect(sourceItem('XING')).toEqual({ id: 'source', label: 'Source', value: 'Xing' });
+    expect(sourceItem('COMPANY_WEBSITE').value).toBe('Company website');
   });
 
   it('builds stable tab and panel ids', () => {

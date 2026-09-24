@@ -26,6 +26,7 @@ class JobRepositoryTest {
             updatedAt = updatedAt,
             createdAt = updatedAt,
             status = JobStatus.OFFER,
+            source = null,
             roleTitle = "Fullstack Engineer",
             location = null,
             description = null,

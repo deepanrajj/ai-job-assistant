@@ -17,6 +17,7 @@ export const createJobFormDefaultValues = (job?: TJob): TJobFormValues => ({
   roleTitle: job?.roleTitle ?? '',
   salaryMax: job?.salaryMax !== undefined ? String(job.salaryMax) : '',
   salaryMin: job?.salaryMin !== undefined ? String(job.salaryMin) : '',
+  source: job?.source ?? '',
   status: job?.status ?? 'WISHLIST',
 });
 
@@ -62,6 +63,7 @@ export const createJobFormFields = (values: TJobFormValues): TJobFormPayload => 
   roleTitle: values.roleTitle,
   salaryMax: getOptionalSalary(values.salaryMax),
   salaryMin: getOptionalSalary(values.salaryMin),
+  source: values.source || undefined,
   status: values.status,
 });
 

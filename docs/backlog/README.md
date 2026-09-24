@@ -41,9 +41,11 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 038: Add job source tracking](../../tasks/roadmap/038-add-job-source-tracking.md).
+- [ ] [Task 039: Add job contacts](../../tasks/roadmap/039-add-job-contacts.md).
 
-Task 037 added a Kanban pipeline view to the Jobs page: a Table/
-Pipeline toggle next to the existing search-and-filter table, and a
-status-grouped board of read-only cards linking to job detail. Task
-038 continues building out the Jobs section with source tracking.
+Task 038 added an optional source to saved jobs (LinkedIn, Indeed,
+Xing, company website, AI search, referral, or other): a nullable
+`jobs.source` column, a select on the add/edit job form, and a Source
+item on the job detail header. Jobs saved before it keep an empty
+source and show "Not set". Task 039 continues building out the Jobs
+section with job contacts.

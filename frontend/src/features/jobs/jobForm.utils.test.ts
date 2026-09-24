@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createJobFormDefaultValues, createJobFormPayload } from './jobForm.utils';
+import {
+  createJobFormDefaultValues,
+  createJobFormFields,
+  createJobFormPayload,
+} from './jobForm.utils';
 import { createMockJob } from '../../test/mockJobs';
 import type { TJobFormValues } from './jobFormSchema';
 
@@ -12,6 +16,7 @@ const formValues: TJobFormValues = {
   roleTitle: 'Frontend Engineer',
   salaryMax: '90000',
   salaryMin: '70000',
+  source: '',
   status: 'APPLIED',
 };
 
@@ -29,6 +34,7 @@ describe('job form utils', () => {
       roleTitle: '',
       salaryMax: '',
       salaryMin: '',
+      source: '',
       status: 'WISHLIST',
     });
   });
@@ -42,8 +48,18 @@ describe('job form utils', () => {
       roleTitle: 'Frontend Engineer',
       salaryMax: '90000',
       salaryMin: '70000',
+      source: '',
       status: 'APPLIED',
     });
+  });
+
+  it('prefills the saved source when editing a job', () => {
+    expect(createJobFormDefaultValues(createMockJob({ source: 'XING' })).source).toBe('XING');
+  });
+
+  it('carries a chosen source into the payload and drops an empty one', () => {
+    expect(createJobFormFields({ ...formValues, source: 'REFERRAL' }).source).toBe('REFERRAL');
+    expect(createJobFormFields({ ...formValues, source: '' }).source).toBeUndefined();
   });
 
   it('creates a normalized new job payload', () => {

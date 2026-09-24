@@ -65,6 +65,7 @@ describe('useCreateJob', () => {
         roleTitle: 'Platform Engineer',
         salaryMax: null,
         salaryMin: null,
+        source: null,
         status: 'WISHLIST',
       }),
     );

@@ -91,6 +91,7 @@ export const useJobStatus = (jobId: string): IJobStatusState => {
           roleTitle: job.roleTitle,
           salaryMax: job.salaryMax,
           salaryMin: job.salaryMin,
+          source: job.source,
           status,
         },
         jobId: job.id,

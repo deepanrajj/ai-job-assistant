@@ -54,6 +54,7 @@ class JobServiceTest {
                 roleTitle = "Seeded Engineer",
                 location = "Berlin",
                 status = JobStatus.APPLIED,
+                source = null,
                 jobUrl = "https://example.com/jobs/seeded",
                 salaryMin = BigDecimal("50000.00"),
                 salaryMax = BigDecimal("70000.00"),
@@ -103,6 +104,7 @@ class JobServiceTest {
         assertThat(created.company).isEqualTo("Acme Corp")
         assertThat(created.roleTitle).isEqualTo("Backend Engineer")
         assertThat(created.status).isEqualTo(JobStatus.WISHLIST)
+        assertThat(created.source).isNull()
         assertThat(created.userId).isNull()
         assertThat(created.location).isNull()
         assertThat(created.jobUrl).isNull()
@@ -122,6 +124,7 @@ class JobServiceTest {
                     company = "Acme Corp",
                     roleTitle = "Backend Engineer",
                     status = JobStatus.INTERVIEW,
+                    source = JobSource.XING,
                     location = "Remote",
                     jobUrl = "https://example.com/jobs/1",
                     salaryMin = BigDecimal("90000.00"),
@@ -131,6 +134,7 @@ class JobServiceTest {
             )
 
         assertThat(created.status).isEqualTo(JobStatus.INTERVIEW)
+        assertThat(created.source).isEqualTo(JobSource.XING)
         assertThat(created.location).isEqualTo("Remote")
         assertThat(created.jobUrl).isEqualTo("https://example.com/jobs/1")
         assertThat(created.salaryMin).isEqualByComparingTo("90000.00")
@@ -159,6 +163,7 @@ class JobServiceTest {
                     company = "New Corp",
                     roleTitle = "Staff Engineer",
                     status = JobStatus.OFFER,
+                    source = JobSource.REFERRAL,
                     location = null,
                     jobUrl = null,
                     salaryMin = null,
@@ -173,6 +178,7 @@ class JobServiceTest {
         assertThat(updated.company).isEqualTo("New Corp")
         assertThat(updated.roleTitle).isEqualTo("Staff Engineer")
         assertThat(updated.status).isEqualTo(JobStatus.OFFER)
+        assertThat(updated.source).isEqualTo(JobSource.REFERRAL)
         assertThat(updated.location).isNull()
         assertThat(updated.jobUrl).isNull()
         assertThat(updated.salaryMin).isNull()
@@ -191,6 +197,7 @@ class JobServiceTest {
                 company = seeded.company,
                 roleTitle = seeded.roleTitle,
                 status = JobStatus.INTERVIEW,
+                source = seeded.source,
                 location = seeded.location,
                 jobUrl = seeded.jobUrl,
                 salaryMin = seeded.salaryMin,
@@ -218,6 +225,7 @@ class JobServiceTest {
                 company = "New Corp",
                 roleTitle = seeded.roleTitle,
                 status = seeded.status,
+                source = seeded.source,
                 location = seeded.location,
                 jobUrl = seeded.jobUrl,
                 salaryMin = seeded.salaryMin,
@@ -236,6 +244,7 @@ class JobServiceTest {
                 company = "New Corp",
                 roleTitle = "Staff Engineer",
                 status = JobStatus.OFFER,
+                source = null,
                 location = null,
                 jobUrl = null,
                 salaryMin = null,

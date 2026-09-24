@@ -2,6 +2,7 @@ package com.smartjobtracker.testsupport.jobs
 
 import com.smartjobtracker.jobs.Job
 import com.smartjobtracker.jobs.JobService
+import com.smartjobtracker.jobs.JobSource
 import com.smartjobtracker.jobs.JobStatus
 import com.smartjobtracker.jobs.command.CreateJobCommand
 import com.smartjobtracker.jobs.command.UpdateJobCommand
@@ -19,6 +20,7 @@ fun createJobEntity(
     roleTitle: String = "Backend Engineer",
     location: String? = "Remote",
     status: JobStatus = JobStatus.WISHLIST,
+    source: JobSource? = null,
     jobUrl: String? = "https://example.com/jobs/1",
     salaryMin: BigDecimal? = BigDecimal("90000.00"),
     salaryMax: BigDecimal? = BigDecimal("120000.00"),
@@ -33,6 +35,7 @@ fun createJobEntity(
         roleTitle = roleTitle,
         location = location,
         status = status,
+        source = source,
         jobUrl = jobUrl,
         salaryMin = salaryMin,
         salaryMax = salaryMax,

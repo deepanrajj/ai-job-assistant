@@ -1,4 +1,4 @@
-import type { TJob, TJobStatus } from '../../types';
+import type { TJob, TJobSource, TJobStatus } from '../../types';
 
 /**
  * Translation keys used for job service fallback errors.
@@ -38,6 +38,7 @@ export type TJobResponse = {
   roleTitle: string;
   location: string | null;
   status: TJobStatus;
+  source: TJobSource | null;
   jobUrl: string | null;
   salaryMin: number | null;
   salaryMax: number | null;
@@ -57,6 +58,7 @@ export type TCreateJobRequest = {
   roleTitle: string;
   location?: string | null;
   status?: TJobStatus;
+  source?: TJobSource | null;
   jobUrl?: string | null;
   salaryMin?: number | null;
   salaryMax?: number | null;
@@ -76,6 +78,7 @@ export type TUpdateJobRequest = {
   roleTitle: string;
   location: string | null;
   status: TJobStatus;
+  source: TJobSource | null;
   jobUrl: string | null;
   salaryMin: number | null;
   salaryMax: number | null;

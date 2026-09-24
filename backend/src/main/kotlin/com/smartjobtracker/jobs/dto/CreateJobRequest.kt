@@ -1,5 +1,6 @@
 package com.smartjobtracker.jobs.dto
 
+import com.smartjobtracker.jobs.JobSource
 import com.smartjobtracker.jobs.JobStatus
 import com.smartjobtracker.jobs.command.CreateJobCommand
 import jakarta.validation.constraints.Digits
@@ -21,6 +22,7 @@ data class CreateJobRequest(
     @field:Size(max = MAX_SHORT_TEXT_LENGTH, message = "Location must be at most 255 characters")
     val location: String? = null,
     val status: JobStatus? = null,
+    val source: JobSource? = null,
     @field:Size(max = MAX_URL_LENGTH, message = "Job URL must be at most 2048 characters")
     val jobUrl: String? = null,
     @field:Digits(
@@ -43,6 +45,7 @@ fun CreateJobRequest.toCommand(): CreateJobCommand =
         company = company,
         roleTitle = roleTitle,
         status = status ?: JobStatus.WISHLIST,
+        source = source,
         location = location,
         jobUrl = jobUrl,
         salaryMin = salaryMin,

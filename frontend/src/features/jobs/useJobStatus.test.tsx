@@ -89,8 +89,28 @@ describe('useJobStatus', () => {
       roleTitle: mockJobDetail.roleTitle,
       salaryMax: mockJobDetail.salaryMax,
       salaryMin: mockJobDetail.salaryMin,
+      source: null,
       status: 'INTERVIEW',
     });
+  });
+
+  it('keeps the saved source when only the status changes', async () => {
+    const user = userEvent.setup();
+    let body: { source?: unknown } = {};
+
+    server.use(
+      http.put(jobEndpoint, async ({ request }) => {
+        body = (await request.json()) as { source?: unknown };
+
+        return HttpResponse.json(createMockJobResponse({ id: MOCK_JOB_IDS.celonis }));
+      }),
+    );
+    render(<JobStatusProbe job={{ ...mockJobDetail, source: 'XING' }} />);
+
+    await user.click(screen.getByRole('button', { name: 'change' }));
+
+    expect(await screen.findByText('changing=false')).toBeInTheDocument();
+    expect(body.source).toBe('XING');
   });
 
   it('rolls back to the previous status on a failed change', async () => {

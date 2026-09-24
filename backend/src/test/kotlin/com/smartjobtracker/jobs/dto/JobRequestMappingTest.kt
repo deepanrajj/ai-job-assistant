@@ -12,6 +12,7 @@ class JobRequestMappingTest {
                 roleTitle = "Backend Engineer",
                 location = null,
                 status = null,
+                source = null,
                 jobUrl = null,
                 salaryMin = null,
                 salaryMax = null,

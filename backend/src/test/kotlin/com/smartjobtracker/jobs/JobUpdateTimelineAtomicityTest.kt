@@ -56,6 +56,7 @@ class JobUpdateTimelineAtomicityTest {
                     company = seeded.company,
                     roleTitle = seeded.roleTitle,
                     status = JobStatus.INTERVIEW,
+                    source = seeded.source,
                     location = seeded.location,
                     jobUrl = seeded.jobUrl,
                     salaryMin = seeded.salaryMin,

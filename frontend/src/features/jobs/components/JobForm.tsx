@@ -4,8 +4,8 @@ import type { SubmitHandler, UseFormReturn } from 'react-hook-form';
 import { Form, FormFields, type TFormFieldConfig } from '../../../components/form';
 import { Button, Card } from '../../../components/ui';
 import { useTranslation } from '../../../i18n';
-import { jobStatusOptions } from '../jobs.constants';
-import { JOB_STATUS_TRANSLATION_KEYS } from '../../../types';
+import { jobSourceOptions, jobStatusOptions } from '../jobs.constants';
+import { JOB_SOURCE_TRANSLATION_KEYS, JOB_STATUS_TRANSLATION_KEYS } from '../../../types';
 import type { TJobFormValues } from '../jobFormSchema';
 
 /**
@@ -68,6 +68,18 @@ export const JobForm: FC<IJobFormProps> = ({
       label: t('jobForm.fields.location'),
       placeholder: t('jobForm.placeholders.location'),
       type: 'input',
+    },
+    {
+      name: 'source',
+      label: t('jobForm.fields.source'),
+      options: [
+        { label: t('jobs.notSet'), value: '' },
+        ...jobSourceOptions.map((source) => ({
+          label: t(JOB_SOURCE_TRANSLATION_KEYS[source]),
+          value: source,
+        })),
+      ],
+      type: 'select',
     },
     {
       containerClassName: 'md:col-span-2',

@@ -32,6 +32,8 @@ class Job(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: JobStatus,
+    @Enumerated(EnumType.STRING)
+    var source: JobSource?,
     @Column(name = "job_url")
     var jobUrl: String?,
     @Column(name = "salary_min")
@@ -52,4 +54,14 @@ enum class JobStatus {
     OFFER,
     REJECTED,
     WITHDRAWN,
+}
+
+enum class JobSource {
+    LINKEDIN,
+    INDEED,
+    XING,
+    COMPANY_WEBSITE,
+    AI_SEARCH,
+    REFERRAL,
+    OTHER,
 }

@@ -50,6 +50,7 @@ export const mapJobResponseToJob = (response: TJobResponse): TJob => ({
   roleTitle: response.roleTitle,
   salaryMax: toOptional(response.salaryMax),
   salaryMin: toOptional(response.salaryMin),
+  source: toOptional(response.source),
   status: response.status,
   updatedAt: response.updatedAt,
 });
@@ -73,6 +74,7 @@ const createJobRequestFields = (job: TJobFormPayload): TUpdateJobRequest => ({
   roleTitle: job.roleTitle,
   salaryMax: toNullable(job.salaryMax),
   salaryMin: toNullable(job.salaryMin),
+  source: toNullable(job.source),
   status: job.status,
 });
 

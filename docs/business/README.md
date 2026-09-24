@@ -61,6 +61,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 035 - Add Optimistic Updates Where Useful Plan](./035-add-optimistic-updates-where-useful-plan.md)
 - [Task 036 - Add Final Navigation Structure Plan](./036-add-final-navigation-structure-plan.md)
 - [Task 037 - Add Kanban Pipeline View Plan](./037-add-kanban-pipeline-view-plan.md)
+- [Task 038 - Add Job Source Tracking Plan](./038-add-job-source-tracking-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)

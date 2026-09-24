@@ -14,6 +14,7 @@ const populatedResponse: TJobResponse = {
   roleTitle: 'Frontend Engineer',
   location: 'Berlin',
   status: 'APPLIED',
+  source: 'REFERRAL',
   jobUrl: 'https://example.com/jobs/1',
   salaryMin: 70000,
   salaryMax: 90000,
@@ -25,6 +26,7 @@ const populatedResponse: TJobResponse = {
 const clearedResponse: TJobResponse = {
   ...populatedResponse,
   location: null,
+  source: null,
   jobUrl: null,
   salaryMin: null,
   salaryMax: null,
@@ -36,6 +38,7 @@ const populatedPayload: TJobFormPayload = {
   roleTitle: 'Frontend Engineer',
   location: 'Berlin',
   status: 'APPLIED',
+  source: 'REFERRAL',
   jobUrl: 'https://example.com/jobs/1',
   salaryMin: 70000,
   salaryMax: 90000,
@@ -57,6 +60,7 @@ const requestKeys = [
   'roleTitle',
   'salaryMax',
   'salaryMin',
+  'source',
   'status',
 ];
 
@@ -76,6 +80,7 @@ describe('job service utils', () => {
       roleTitle: 'Frontend Engineer',
       salaryMax: 90000,
       salaryMin: 70000,
+      source: 'REFERRAL',
       status: 'APPLIED',
       updatedAt: '2026-01-02T09:00:00.000Z',
     });
@@ -84,6 +89,7 @@ describe('job service utils', () => {
   it('converts every cleared wire null into undefined', () => {
     const job = mapJobResponseToJob(clearedResponse);
 
+    expect(job.source).toBeUndefined();
     expect(job.location).toBeUndefined();
     expect(job.jobUrl).toBeUndefined();
     expect(job.salaryMin).toBeUndefined();
@@ -111,6 +117,7 @@ describe('job service utils', () => {
       'roleTitle',
       'salaryMax',
       'salaryMin',
+      'source',
       'status',
       'updatedAt',
     ]);
@@ -125,6 +132,7 @@ describe('job service utils', () => {
       roleTitle: 'Frontend Engineer',
       salaryMax: 90000,
       salaryMin: 70000,
+      source: 'REFERRAL',
       status: 'APPLIED',
     });
   });
@@ -138,6 +146,7 @@ describe('job service utils', () => {
       roleTitle: 'Frontend Engineer',
       salaryMax: 90000,
       salaryMin: 70000,
+      source: 'REFERRAL',
       status: 'APPLIED',
     });
   });
@@ -151,6 +160,7 @@ describe('job service utils', () => {
       roleTitle: 'Frontend Engineer',
       salaryMax: null,
       salaryMin: null,
+      source: null,
       status: 'APPLIED',
     });
   });
@@ -164,6 +174,7 @@ describe('job service utils', () => {
       roleTitle: 'Frontend Engineer',
       salaryMax: null,
       salaryMin: null,
+      source: null,
       status: 'APPLIED',
     });
   });

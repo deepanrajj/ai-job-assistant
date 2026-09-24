@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { jobSourceOptions } from './jobs.constants';
 import { createJobFormSchema } from './jobFormSchema';
 
 const schema = createJobFormSchema({
@@ -20,6 +21,7 @@ const validJobFormValues = {
   roleTitle: 'Frontend Engineer',
   salaryMax: '90000',
   salaryMin: '70000',
+  source: '',
   status: 'APPLIED',
 };
 
@@ -58,6 +60,17 @@ describe('job form schema', () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it('accepts every job source and an empty source', () => {
+    jobSourceOptions.forEach((source) => {
+      expect(schema.safeParse({ ...validJobFormValues, source }).success).toBe(true);
+    });
+    expect(schema.safeParse({ ...validJobFormValues, source: '' }).success).toBe(true);
+  });
+
+  it('rejects a source that is not one of the supported sources', () => {
+    expect(schema.safeParse({ ...validJobFormValues, source: 'MONSTER' }).success).toBe(false);
   });
 
   it('rejects invalid URL and salary values', () => {

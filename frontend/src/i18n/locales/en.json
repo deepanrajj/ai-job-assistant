@@ -112,6 +112,7 @@
     "company": "Company",
     "role": "Role",
     "location": "Location",
+    "source": "Source",
     "salary": "Salary",
     "updated": "Updated",
     "actions": "Actions",
@@ -248,6 +249,7 @@
       "roleTitle": "Role",
       "status": "Status",
       "location": "Location",
+      "source": "Source",
       "jobUrl": "Job URL",
       "salaryMin": "Minimum salary",
       "salaryMax": "Maximum salary",
@@ -293,6 +295,15 @@
     "offer": "Offer",
     "rejected": "Rejected",
     "withdrawn": "Withdrawn"
+  },
+  "jobSource": {
+    "linkedin": "LinkedIn",
+    "indeed": "Indeed",
+    "xing": "Xing",
+    "companyWebsite": "Company website",
+    "aiSearch": "AI search",
+    "referral": "Referral",
+    "other": "Other"
   },
   "ai": {
     "inputTitle": "Job Description Input",

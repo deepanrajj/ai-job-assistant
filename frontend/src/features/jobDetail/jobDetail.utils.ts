@@ -1,6 +1,11 @@
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
 import { formatJobDate, formatJobSalary } from '../jobs/jobs.utils';
-import type { TJobDetail, TJobDetailTab, TJobTask } from '../../types';
+import {
+  JOB_SOURCE_TRANSLATION_KEYS,
+  type TJobDetail,
+  type TJobDetailTab,
+  type TJobTask,
+} from '../../types';
 import type { IJobDetailMetadataItem, IUpdateJobTaskInput } from './jobDetail.types';
 import type { TUpdateTaskRequest } from '../../services';
 
@@ -21,6 +26,11 @@ export const createJobDetailMetadataItems = (
     id: 'location',
     label: t('jobs.location'),
     value: job.location.trim() || t('jobs.notSet'),
+  },
+  {
+    id: 'source',
+    label: t('jobs.source'),
+    value: job.source ? t(JOB_SOURCE_TRANSLATION_KEYS[job.source]) : t('jobs.notSet'),
   },
   {
     id: 'salary',

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { createRequiredTrimmedTextSchema } from '../formSchema.utils';
-import { jobStatusOptions } from './jobs.constants';
+import { jobSourceOptions, jobStatusOptions } from './jobs.constants';
 
 /**
  * Validation messages used by the job form schema.
@@ -146,6 +146,7 @@ export const createJobFormSchema = ({
       salaryMin: z.string().trim().refine(isOptionalPositiveNumber, {
         message: invalidSalary,
       }),
+      source: z.union([z.enum(jobSourceOptions), z.literal('')]),
       status: z.enum(jobStatusOptions),
     })
     .refine(

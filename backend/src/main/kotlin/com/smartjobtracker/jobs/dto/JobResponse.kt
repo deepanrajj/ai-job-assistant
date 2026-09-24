@@ -1,6 +1,7 @@
 package com.smartjobtracker.jobs.dto
 
 import com.smartjobtracker.jobs.Job
+import com.smartjobtracker.jobs.JobSource
 import com.smartjobtracker.jobs.JobStatus
 import java.math.BigDecimal
 import java.time.OffsetDateTime
@@ -16,6 +17,7 @@ data class JobResponse(
     val roleTitle: String,
     val location: String?,
     val status: JobStatus,
+    val source: JobSource?,
     val jobUrl: String?,
     val salaryMin: BigDecimal?,
     val salaryMax: BigDecimal?,
@@ -31,6 +33,7 @@ fun Job.toResponse(): JobResponse =
         roleTitle = roleTitle,
         location = location,
         status = status,
+        source = source,
         jobUrl = jobUrl,
         salaryMin = salaryMin,
         salaryMax = salaryMax,
