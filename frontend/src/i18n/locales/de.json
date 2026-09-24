@@ -112,6 +112,7 @@
     "company": "Firma",
     "role": "Rolle",
     "location": "Standort",
+    "source": "Quelle",
     "salary": "Gehalt",
     "updated": "Aktualisiert",
     "actions": "Aktionen",
@@ -248,6 +249,7 @@
       "roleTitle": "Rolle",
       "status": "Status",
       "location": "Standort",
+      "source": "Quelle",
       "jobUrl": "Job-URL",
       "salaryMin": "Mindestgehalt",
       "salaryMax": "Maximalgehalt",
@@ -293,6 +295,15 @@
     "offer": "Angebot",
     "rejected": "Abgelehnt",
     "withdrawn": "Zurückgezogen"
+  },
+  "jobSource": {
+    "linkedin": "LinkedIn",
+    "indeed": "Indeed",
+    "xing": "Xing",
+    "companyWebsite": "Unternehmenswebsite",
+    "aiSearch": "KI-Suche",
+    "referral": "Empfehlung",
+    "other": "Sonstiges"
   },
   "ai": {
     "inputTitle": "Stellenbeschreibung",

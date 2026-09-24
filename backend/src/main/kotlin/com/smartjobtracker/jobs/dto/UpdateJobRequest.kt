@@ -1,5 +1,6 @@
 package com.smartjobtracker.jobs.dto
 
+import com.smartjobtracker.jobs.JobSource
 import com.smartjobtracker.jobs.JobStatus
 import com.smartjobtracker.jobs.command.UpdateJobCommand
 import jakarta.validation.constraints.Digits
@@ -24,6 +25,7 @@ data class UpdateJobRequest(
     val location: String?,
     @field:NotNull("Status must not be null")
     val status: JobStatus?,
+    val source: JobSource?,
     @field:Size(max = MAX_URL_LENGTH, message = "Job URL must be at most 2048 characters")
     val jobUrl: String?,
     @field:Digits(
@@ -47,6 +49,7 @@ fun UpdateJobRequest.toCommand(): UpdateJobCommand =
         roleTitle = roleTitle,
         location = location,
         status = requireNotNull(status) { "Status must not be null" },
+        source = source,
         jobUrl = jobUrl,
         salaryMin = salaryMin,
         salaryMax = salaryMax,

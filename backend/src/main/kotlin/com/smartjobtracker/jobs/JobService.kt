@@ -51,6 +51,7 @@ class DefaultJobService(
                 company = command.company,
                 roleTitle = command.roleTitle,
                 status = command.status,
+                source = command.source,
                 jobUrl = command.jobUrl,
                 location = command.location,
                 description = command.description,
@@ -86,6 +87,7 @@ class DefaultJobService(
         job.company = command.company
         job.roleTitle = command.roleTitle
         job.status = command.status
+        job.source = command.source
         job.jobUrl = command.jobUrl
         job.location = command.location
         job.description = command.description

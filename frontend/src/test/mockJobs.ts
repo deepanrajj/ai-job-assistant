@@ -43,6 +43,7 @@ export const createMockJobResponse = (overrides: Partial<TJobResponse> = {}): TJ
   roleTitle: 'Frontend Engineer',
   salaryMax: 90000,
   salaryMin: 70000,
+  source: null,
   status: 'APPLIED',
   updatedAt: '2026-01-02T09:00:00.123456Z',
   ...overrides,

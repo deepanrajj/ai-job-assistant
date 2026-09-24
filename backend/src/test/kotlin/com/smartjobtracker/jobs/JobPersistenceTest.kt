@@ -1,5 +1,6 @@
 package com.smartjobtracker.jobs
 
+import com.smartjobtracker.testsupport.jobs.createJobEntity
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.assertj.core.api.Assertions.assertThat
@@ -28,6 +29,7 @@ class JobPersistenceTest {
                 roleTitle = "Backend Engineer",
                 location = "Remote",
                 status = JobStatus.APPLIED,
+                source = JobSource.LINKEDIN,
                 jobUrl = "https://example.com/jobs/1",
                 salaryMin = BigDecimal("90000.00"),
                 salaryMax = BigDecimal("120000.00"),
@@ -49,12 +51,24 @@ class JobPersistenceTest {
         assertThat(loaded.roleTitle).isEqualTo("Backend Engineer")
         assertThat(loaded.location).isEqualTo("Remote")
         assertThat(loaded.status).isEqualTo(JobStatus.APPLIED)
+        assertThat(loaded.source).isEqualTo(JobSource.LINKEDIN)
         assertThat(loaded.jobUrl).isEqualTo("https://example.com/jobs/1")
         assertThat(loaded.salaryMin).isEqualByComparingTo("90000.00")
         assertThat(loaded.salaryMax).isEqualByComparingTo("120000.00")
         assertThat(loaded.description).isEqualTo("Build and maintain backend services.")
         assertThat(loaded.createdAt.toInstant()).isEqualTo(timestamp.toInstant())
         assertThat(loaded.updatedAt.toInstant()).isEqualTo(timestamp.toInstant())
+    }
+
+    @Test
+    fun `a job without a source reads back with a null source`() {
+        val job = createJobEntity(source = null)
+
+        entityManager.persist(job)
+        entityManager.flush()
+        entityManager.clear()
+
+        assertThat(entityManager.find(Job::class.java, job.id).source).isNull()
     }
 
     @Test

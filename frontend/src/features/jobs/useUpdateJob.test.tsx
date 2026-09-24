@@ -74,6 +74,7 @@ describe('useUpdateJob', () => {
         roleTitle: 'Platform Engineer',
         salaryMax: null,
         salaryMin: null,
+        source: null,
         status: 'APPLIED',
       }),
     );

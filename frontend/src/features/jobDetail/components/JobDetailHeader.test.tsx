@@ -14,13 +14,21 @@ describe('JobDetailHeader', () => {
           ...mockJobDetails[0],
           salaryMax: 0,
           salaryMin: 0,
+          source: 'LINKEDIN',
         }}
       />,
     );
 
     expect(screen.getByRole('heading', { name: 'Senior Frontend Engineer' })).toBeInTheDocument();
     expect(screen.getByText('Not set')).toBeInTheDocument();
+    expect(screen.getByText('LinkedIn')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Open posting' })).toBeInTheDocument();
+  });
+
+  it('renders the source fallback for a job saved without one', () => {
+    renderWithProviders(<JobDetailHeader job={mockJobDetails[0]} />);
+
+    expect(screen.getByText('Source').nextElementSibling).toHaveTextContent('Not set');
   });
 
   it('renders optional job actions when handlers are provided', async () => {

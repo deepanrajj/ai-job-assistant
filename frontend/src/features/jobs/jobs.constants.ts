@@ -1,4 +1,4 @@
-import type { TJobStatus } from '../../types';
+import type { TJobSource, TJobStatus } from '../../types';
 import type { TStatusFilter } from './jobs.types';
 
 /**
@@ -12,6 +12,19 @@ export const jobStatusOptions = [
   'REJECTED',
   'WITHDRAWN',
 ] as const satisfies readonly TJobStatus[];
+
+/**
+ * Source options available when creating or editing a job.
+ */
+export const jobSourceOptions = [
+  'LINKEDIN',
+  'INDEED',
+  'XING',
+  'COMPANY_WEBSITE',
+  'AI_SEARCH',
+  'REFERRAL',
+  'OTHER',
+] as const satisfies readonly TJobSource[];
 
 /**
  * Status options shown in the jobs filter dropdown.

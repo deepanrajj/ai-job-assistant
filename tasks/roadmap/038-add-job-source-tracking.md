@@ -1,5 +1,7 @@
 # Task 038 - Add Job Source Tracking
 
+Status: Completed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -40,9 +42,9 @@ Run verification for touched frontend/backend layers.
 
 ## Acceptance Criteria
 
-- [ ] Jobs can store a source.
-- [ ] Source is visible in the UI.
-- [ ] No existing job data breaks.
+- [x] Jobs can store a source.
+- [x] Source is visible in the UI.
+- [x] No existing job data breaks.
 
 ## Commit
 

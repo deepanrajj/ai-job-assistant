@@ -123,6 +123,37 @@ describe('JobForm', () => {
     );
   });
 
+  it('offers every source plus an unset choice, and submits the chosen source', async () => {
+    const onSubmit = vi.fn();
+    renderWithProviders(<JobFormTestWrapper onSubmit={onSubmit} />);
+
+    const sourceSelect = screen.getByRole('combobox', { name: 'Source' });
+
+    expect(Array.from((sourceSelect as HTMLSelectElement).options).map((o) => o.text)).toEqual([
+      'Not set',
+      'LinkedIn',
+      'Indeed',
+      'Xing',
+      'Company website',
+      'AI search',
+      'Referral',
+      'Other',
+    ]);
+    expect(sourceSelect).toHaveValue('');
+
+    fireEvent.change(screen.getByLabelText('Company'), { target: { value: 'Acme GmbH' } });
+    fireEvent.change(screen.getByLabelText('Role'), { target: { value: 'Frontend Engineer' } });
+    fireEvent.change(sourceSelect, { target: { value: 'XING' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create job' }));
+
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ source: 'XING' }),
+        expect.anything(),
+      ),
+    );
+  });
+
   it('shows validation errors and calls cancel', async () => {
     const user = userEvent.setup();
     const onCancel = vi.fn();

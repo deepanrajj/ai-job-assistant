@@ -99,7 +99,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"location\": \"Remote\",\n  \"status\": \"WISHLIST\",\n  \"jobUrl\": \"https://example.com/jobs/1\",\n  \"salaryMin\": 90000.00,\n  \"salaryMax\": 120000.00,\n  \"description\": \"Build and maintain backend services.\"\n}"
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"location\": \"Remote\",\n  \"status\": \"WISHLIST\",\n  \"source\": \"LINKEDIN\",\n  \"jobUrl\": \"https://example.com/jobs/1\",\n  \"salaryMin\": 90000.00,\n  \"salaryMax\": 120000.00,\n  \"description\": \"Build and maintain backend services.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/jobs",
@@ -144,6 +144,7 @@
                   "    pm.expect(job.company).to.eql('Acme Corp');",
                   "    pm.expect(job.roleTitle).to.eql('Backend Engineer');",
                   "    pm.expect(job.status).to.eql('WISHLIST');",
+                  "    pm.expect(job.source).to.eql('LINKEDIN');",
                   "});",
                   "",
                   "pm.test('does not leak userId into the HTTP contract', function () {",
@@ -241,7 +242,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"company\": \"New Corp\",\n  \"roleTitle\": \"Staff Engineer\",\n  \"location\": null,\n  \"status\": \"INTERVIEW\",\n  \"jobUrl\": null,\n  \"salaryMin\": null,\n  \"salaryMax\": null,\n  \"description\": \"Updated description.\"\n}"
+              "raw": "{\n  \"company\": \"New Corp\",\n  \"roleTitle\": \"Staff Engineer\",\n  \"location\": null,\n  \"status\": \"INTERVIEW\",\n  \"source\": null,\n  \"jobUrl\": null,\n  \"salaryMin\": null,\n  \"salaryMax\": null,\n  \"description\": \"Updated description.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/jobs/{{jobId}}",
@@ -286,6 +287,7 @@
                   "",
                   "pm.test('clears the fields sent as null', function () {",
                   "    pm.expect(job.location).to.eql(null);",
+                  "    pm.expect(job.source).to.eql(null);",
                   "    pm.expect(job.jobUrl).to.eql(null);",
                   "    pm.expect(job.salaryMin).to.eql(null);",
                   "});",

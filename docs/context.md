@@ -159,7 +159,7 @@ The planned tracker database model is:
 
 ```text
 Job
-  id, userId, company, roleTitle, location, status, jobUrl,
+  id, userId, company, roleTitle, location, status, source, jobUrl,
   salaryMin, salaryMax, description, createdAt, updatedAt
 
 Task

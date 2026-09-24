@@ -7,7 +7,7 @@ before adding paid AI workflows.
 
 - [x] [Add final navigation structure](../../tasks/roadmap/036-add-final-navigation-structure.md).
 - [x] [Add Kanban pipeline view](../../tasks/roadmap/037-add-kanban-pipeline-view.md).
-- [ ] [Add job source tracking](../../tasks/roadmap/038-add-job-source-tracking.md).
+- [x] [Add job source tracking](../../tasks/roadmap/038-add-job-source-tracking.md).
 - [ ] [Add job contacts](../../tasks/roadmap/039-add-job-contacts.md).
 - [ ] [Add reminders](../../tasks/roadmap/040-add-reminders.md).
 - [ ] [Add application documents](../../tasks/roadmap/041-add-application-documents.md).

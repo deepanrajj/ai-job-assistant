@@ -107,6 +107,80 @@ class JobControllerTest {
     }
 
     @Test
+    fun `creates a job with a source and returns it`() {
+        jobService.createHandler = { createJobEntity(source = JobSource.XING) }
+
+        mockMvc
+            .perform(
+                post("/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"company": "Acme Corp", "roleTitle": "Backend Engineer", "source": "XING"}"""),
+            ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.source").value("XING"))
+
+        assertThat(jobService.lastCreateCommand.source).isEqualTo(JobSource.XING)
+    }
+
+    @Test
+    fun `creates a job without a source leaving it null`() {
+        mockMvc
+            .perform(
+                post("/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"company": "Acme Corp", "roleTitle": "Backend Engineer"}"""),
+            ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.source").isEmpty)
+
+        assertThat(jobService.lastCreateCommand.source).isNull()
+    }
+
+    @Test
+    fun `updates a job with a source and returns it`() {
+        val id = UUID.randomUUID()
+        jobService.updateHandler = { jobId, _ -> createJobEntity(id = jobId, source = JobSource.REFERRAL) }
+
+        mockMvc
+            .perform(
+                put("/jobs/{id}", id)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "company": "Acme Corp",
+                          "roleTitle": "Backend Engineer",
+                          "status": "OFFER",
+                          "source": "REFERRAL"
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.source").value("REFERRAL"))
+
+        assertThat(jobService.lastUpdateCommand.source).isEqualTo(JobSource.REFERRAL)
+    }
+
+    @Test
+    fun `updates a job with a null source to clear it`() {
+        mockMvc
+            .perform(
+                put("/jobs/{id}", UUID.randomUUID())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "company": "Acme Corp",
+                          "roleTitle": "Backend Engineer",
+                          "status": "OFFER",
+                          "source": null
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isOk)
+
+        assertThat(jobService.lastUpdateCommand.source).isNull()
+    }
+
+    @Test
     fun `updates a job`() {
         val id = UUID.randomUUID()
         jobService.updateHandler = { jobId, _ -> createJobEntity(id = jobId, company = "New Corp") }
@@ -203,6 +277,17 @@ class JobControllerTest {
                 post("/jobs")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"company": "Acme Corp", "roleTitle": "Backend Engineer", "status": "NOT_A_STATUS"}"""),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"))
+    }
+
+    @Test
+    fun `rejects a create request with an unknown source value`() {
+        mockMvc
+            .perform(
+                post("/jobs")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"company": "Acme Corp", "roleTitle": "Backend Engineer", "source": "NOT_A_SOURCE"}"""),
             ).andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"))
     }
