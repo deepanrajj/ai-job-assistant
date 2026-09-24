@@ -409,7 +409,8 @@ one migration rename.
   failures. Create sends and echoes `LINKEDIN`; update clears it with
   `null`.
 
-**Not done.** The add/edit/detail flow was not exercised by hand in a
-browser; the form, the detail header and the fallback are covered by
-React Testing Library tests only. `npm run compose:smoke` was not run,
-because no Docker, Compose or Kubernetes file changed.
+**Manual check.** The author exercised the add, edit and detail flow
+by hand in a browser after the automated checks; the form, the detail
+header and the "Not set" fallback are also covered by React Testing
+Library tests. `npm run compose:smoke` was not run, because no Docker,
+Compose or Kubernetes file changed.
