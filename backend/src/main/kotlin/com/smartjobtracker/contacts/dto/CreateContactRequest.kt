@@ -15,22 +15,19 @@ import java.time.LocalDate
  */
 data class CreateContactRequest(
     val type: ContactType,
-    @field:NotBlank(message = "Name must not be blank")
-    @field:Size(max = MAX_NAME_LENGTH, message = "Name must be at most 255 characters")
+    @field:NotBlank(message = NAME_BLANK_MESSAGE)
+    @field:Size(max = MAX_NAME_LENGTH, message = NAME_SIZE_MESSAGE)
     val name: String,
-    @field:Email(message = "Email must be a valid address")
-    @field:Size(max = MAX_EMAIL_LENGTH, message = "Email must be at most 255 characters")
+    @field:Email(message = EMAIL_FORMAT_MESSAGE)
+    @field:Size(max = MAX_EMAIL_LENGTH, message = EMAIL_SIZE_MESSAGE)
     val email: String? = null,
-    @field:Size(max = MAX_PHONE_LENGTH, message = "Phone must be at most 50 characters")
+    @field:Size(max = MAX_PHONE_LENGTH, message = PHONE_SIZE_MESSAGE)
     val phone: String? = null,
-    @field:Pattern(
-        regexp = PROFILE_URL_PATTERN,
-        message = "Profile URL must start with http:// or https://",
-    )
-    @field:Size(max = MAX_PROFILE_URL_LENGTH, message = "Profile URL must be at most 2048 characters")
+    @field:Pattern(regexp = PROFILE_URL_PATTERN, message = PROFILE_URL_SCHEME_MESSAGE)
+    @field:Size(max = MAX_PROFILE_URL_LENGTH, message = PROFILE_URL_SIZE_MESSAGE)
     val profileUrl: String? = null,
     val lastContactedAt: LocalDate? = null,
-    @field:Size(max = MAX_NOTES_LENGTH, message = "Notes must be at most 5000 characters")
+    @field:Size(max = MAX_NOTES_LENGTH, message = NOTES_SIZE_MESSAGE)
     val notes: String? = null,
 )
 

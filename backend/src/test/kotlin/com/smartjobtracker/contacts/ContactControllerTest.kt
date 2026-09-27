@@ -107,7 +107,10 @@ class ContactControllerTest {
      * `email` is sent as exactly `""`, not whitespace: Bean Validation's
      * `@Email` only skips its format check for a truly empty string, so a
      * whitespace-only value like `"   "` would be rejected as a malformed
-     * address before `toCommand()` ever gets to blank it out.
+     * address before `toCommand()` ever gets to blank it out. `profileUrl`
+     * has no such gap - `PROFILE_URL_PATTERN` treats whitespace-only the
+     * same as empty - so it is sent as whitespace here on purpose, to
+     * prove that branch.
      */
     @Test
     fun `trims text fields and stores blank optional fields as null`() {
@@ -125,7 +128,7 @@ class ContactControllerTest {
                           "name": "  Someone  ",
                           "email": "",
                           "phone": "  ",
-                          "profileUrl": "",
+                          "profileUrl": "   ",
                           "notes": "   "
                         }
                         """.trimIndent(),

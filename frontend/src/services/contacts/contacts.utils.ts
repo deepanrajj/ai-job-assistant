@@ -48,6 +48,13 @@ export const toNullableTrimmed = (value: string): string | null => {
  * accept a scheme such as `javascript:`, so this is checked on the
  * frontend form in addition to the backend that already rejects it.
  *
+ * Whitespace-only counts as blank on both sides, on purpose:
+ * `PROFILE_URL_PATTERN` matches `^\s*$` for exactly that reason. Nothing
+ * outside these two hand-kept-in-sync places enforces the match; a
+ * change to either regex should be checked against the other, and
+ * against `contacts.utils.test.ts` and `ContactControllerTest.kt`, whose
+ * example URLs are meant to agree between the two languages.
+ *
  * @param {string} value Raw profile URL form field text.
  * @returns {boolean} True when the value is blank or starts with http(s).
  */

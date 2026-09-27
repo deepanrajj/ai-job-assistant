@@ -146,9 +146,21 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     [data],
   );
 
-  const createJobContact = useCallback(
-    (values: IContactFormValues) =>
-      postContact({ jobId, values }).then(
+  /**
+   * Applies the success/error contract every one of the three writes
+   * shares: clear the previous mutation error and reload on success, or
+   * record the new error and re-throw on failure. Extracted so that
+   * shared contract lives in exactly one place instead of being repeated
+   * once per write, where a future change to it (or a slip while making
+   * one) could silently leave the three writes disagreeing about what
+   * they promise.
+   *
+   * @param {Promise<unknown>} request The in-flight create/update/delete request.
+   * @returns {Promise<void>} Resolves on success; rejects with the same error on failure.
+   */
+  const settleMutation = useCallback(
+    (request: Promise<unknown>): Promise<void> =>
+      request.then(
         () => {
           setMutationError(null);
           reload();
@@ -158,47 +170,34 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
           throw error;
         },
       ),
-    [jobId, postContact, reload],
+    [reload],
+  );
+
+  const createJobContact = useCallback(
+    (values: IContactFormValues) => settleMutation(postContact({ jobId, values })),
+    [jobId, postContact, settleMutation],
   );
 
   const updateJobContact = useCallback(
     (contactId: string, values: IContactFormValues) => {
       setUpdatingContactId(contactId);
 
-      return putContact({ contactId, jobId, values })
-        .then(
-          () => {
-            setMutationError(null);
-            reload();
-          },
-          (error: AppError) => {
-            setMutationError(error);
-            throw error;
-          },
-        )
-        .finally(() => setUpdatingContactId(null));
+      return settleMutation(putContact({ contactId, jobId, values })).finally(() =>
+        setUpdatingContactId(null),
+      );
     },
-    [jobId, putContact, reload],
+    [jobId, putContact, settleMutation],
   );
 
   const deleteJobContact = useCallback(
     (contactId: string) => {
       setDeletingContactId(contactId);
 
-      return removeContact({ contactId, jobId })
-        .then(
-          () => {
-            setMutationError(null);
-            reload();
-          },
-          (error: AppError) => {
-            setMutationError(error);
-            throw error;
-          },
-        )
-        .finally(() => setDeletingContactId(null));
+      return settleMutation(removeContact({ contactId, jobId })).finally(() =>
+        setDeletingContactId(null),
+      );
     },
-    [jobId, reload, removeContact],
+    [jobId, removeContact, settleMutation],
   );
 
   return {

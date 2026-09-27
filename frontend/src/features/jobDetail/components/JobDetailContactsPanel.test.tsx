@@ -286,6 +286,62 @@ describe('JobDetailContactsPanel', () => {
     expect(await screen.findByText('Updated Name')).toBeInTheDocument();
   });
 
+  it('keeps the row open with the typed edits when saving fails', async () => {
+    server.use(
+      http.get(mockContactsEndpoint, () =>
+        HttpResponse.json([
+          createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'Original Name' }),
+        ]),
+      ),
+      http.put(mockContactEndpoint, () => HttpResponse.json({ message: 'boom' }, { status: 500 })),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('Original Name');
+    await user.click(screen.getByRole('button', { name: 'Edit contact Original Name' }));
+
+    const nameInputs = screen.getAllByLabelText('Name');
+    const editNameInput = nameInputs[nameInputs.length - 1];
+
+    await user.clear(editNameInput);
+    await user.type(editNameInput, 'Edited But Failed');
+    await user.click(screen.getByRole('button', { name: 'Save contact' }));
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    // Still in edit mode, with the typed value intact, not discarded back
+    // to the stale "Original Name" read view.
+    expect(editNameInput).toHaveValue('Edited But Failed');
+    expect(screen.queryByText('Original Name')).not.toBeInTheDocument();
+  });
+
+  it('does not block editing an unaffected contact while another one is saving', async () => {
+    const otherContactId = MOCK_CONTACT_IDS.secondary;
+    server.use(
+      http.get(mockContactsEndpoint, () =>
+        HttpResponse.json([
+          createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'First Contact' }),
+          createMockContactResponse({ id: otherContactId, name: 'Second Contact' }),
+        ]),
+      ),
+      http.put(mockContactEndpoint, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('First Contact');
+    await user.click(screen.getByRole('button', { name: 'Edit contact First Contact' }));
+
+    const nameInputs = screen.getAllByLabelText('Name');
+    await user.type(nameInputs[nameInputs.length - 1], ' Edited');
+    await user.click(screen.getByRole('button', { name: 'Save contact' }));
+
+    // The first contact's save is still in flight (the PUT above never
+    // resolves), but the second contact's own controls stay enabled: a
+    // write in flight for one contact does not lock every other row.
+    expect(screen.getByRole('button', { name: 'Edit contact Second Contact' })).not.toBeDisabled();
+  });
+
   it('deletes a contact', async () => {
     let isDeleted = false;
     server.use(

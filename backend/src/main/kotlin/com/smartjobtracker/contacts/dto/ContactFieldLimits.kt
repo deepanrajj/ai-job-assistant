@@ -22,9 +22,40 @@ internal const val MAX_PROFILE_URL_LENGTH = 2048
 internal const val MAX_NOTES_LENGTH = 5000
 
 /**
- * A profile URL must be blank (not set) or start with `http://` or
- * `https://`. It is rendered as a link on the frontend, and a bare `URL`
- * parse there would accept schemes such as `javascript:`, so the scheme
- * is checked here rather than trusting that parse alone.
+ * A profile URL must be blank (not set, including whitespace-only) or
+ * start with `http://` or `https://`. It is rendered as a link on the
+ * frontend, and a bare `URL` parse there would accept schemes such as
+ * `javascript:`, so the scheme is checked here rather than trusting that
+ * parse alone.
+ *
+ * `^\s*$` (rather than `^$`) treats a whitespace-only value the same as
+ * an empty one, matching `toCommand()`'s own blank-to-null handling and
+ * the frontend's `isValidProfileUrl()` in `contacts.utils.ts` - without
+ * it, a caller sending whitespace (any client that skips this app's own
+ * pre-trim) got a confusing "must start with http(s)" error for a value
+ * that was really just unset.
  */
-internal const val PROFILE_URL_PATTERN = "^$|^https?://.*"
+internal const val PROFILE_URL_PATTERN = "^\\s*$|^https?://.*"
+
+/**
+ * Validation messages shared between `CreateContactRequest` and
+ * `UpdateContactRequest`, so a wording or limit change made to one
+ * cannot silently drift from the other - the two DTOs otherwise
+ * duplicate every field and annotation by hand, since a create and an
+ * update payload are still distinct types.
+ */
+internal const val NAME_BLANK_MESSAGE = "Name must not be blank"
+
+internal const val NAME_SIZE_MESSAGE = "Name must be at most 255 characters"
+
+internal const val EMAIL_FORMAT_MESSAGE = "Email must be a valid address"
+
+internal const val EMAIL_SIZE_MESSAGE = "Email must be at most 255 characters"
+
+internal const val PHONE_SIZE_MESSAGE = "Phone must be at most 50 characters"
+
+internal const val PROFILE_URL_SCHEME_MESSAGE = "Profile URL must start with http:// or https://"
+
+internal const val PROFILE_URL_SIZE_MESSAGE = "Profile URL must be at most 2048 characters"
+
+internal const val NOTES_SIZE_MESSAGE = "Notes must be at most 5000 characters"

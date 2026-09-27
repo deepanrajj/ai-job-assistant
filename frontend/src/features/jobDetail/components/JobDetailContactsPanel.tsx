@@ -158,7 +158,7 @@ interface IJobDetailContactItemProps {
   isDisabled: boolean;
   isSaving: boolean;
   onDeleteContact: (contactId: string) => void;
-  onSaveContact: (contactId: string, values: IContactFormValues) => void;
+  onSaveContact: (contactId: string, values: IContactFormValues) => Promise<void>;
 }
 
 /**
@@ -185,9 +185,21 @@ const JobDetailContactItem: FC<IJobDetailContactItemProps> = ({
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    onSaveContact(contact.id, values);
-    setIsEditing(false);
+  /**
+   * The row only leaves edit mode once the save actually succeeds, the
+   * same reason the create form waits (see `handleCreateContact`):
+   * closing it beforehand on a failed request would silently discard the
+   * user's typed changes back to the stale, pre-edit `contact` prop, with
+   * nothing left to retry but retyping them. `mutationError` still
+   * surfaces the failure via the panel's own alert.
+   */
+  const handleSave = async () => {
+    try {
+      await onSaveContact(contact.id, values);
+      setIsEditing(false);
+    } catch {
+      // Error is already recorded in request state and rendered from it.
+    }
   };
 
   if (isEditing)
@@ -324,12 +336,14 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
     }
   };
 
+  /**
+   * Returns the update promise unswallowed, unlike `handleDeleteContact`:
+   * `JobDetailContactItem.handleSave` needs to await it to know whether
+   * to leave the row in edit mode, so the "error is already recorded and
+   * rendered" catch belongs there, next to the state it decides.
+   */
   const handleSaveContact = useCallback(
-    (contactId: string, values: IContactFormValues) => {
-      updateJobContact(contactId, values).catch(() => {
-        // Error is already recorded in request state and rendered from it.
-      });
-    },
+    (contactId: string, values: IContactFormValues) => updateJobContact(contactId, values),
     [updateJobContact],
   );
 
@@ -376,17 +390,22 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
       </form>
 
       <ul className="space-y-4">
-        {contacts.map((contact) => (
-          <MemoizedJobDetailContactItem
-            contact={contact}
-            isDeleting={deletingContactId === contact.id}
-            isDisabled={isMutating}
-            isSaving={updatingContactId === contact.id}
-            key={contact.id}
-            onDeleteContact={handleDeleteContact}
-            onSaveContact={handleSaveContact}
-          />
-        ))}
+        {contacts.map((contact) => {
+          const isRowMutating =
+            updatingContactId === contact.id || deletingContactId === contact.id;
+
+          return (
+            <MemoizedJobDetailContactItem
+              contact={contact}
+              isDeleting={deletingContactId === contact.id}
+              isDisabled={isRowMutating}
+              isSaving={updatingContactId === contact.id}
+              key={contact.id}
+              onDeleteContact={handleDeleteContact}
+              onSaveContact={handleSaveContact}
+            />
+          );
+        })}
       </ul>
     </Card>
   );
