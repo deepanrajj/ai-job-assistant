@@ -10,6 +10,7 @@ import {
   Select,
   Textarea,
 } from '../../../components/ui';
+import { isValidProfileUrl, type IContactFormValues } from '../../../services';
 import { useJobContacts } from '../useJobContacts';
 import { useTranslation } from '../../../i18n';
 import { formatJobDate } from '../../jobs/jobs.utils';
@@ -18,7 +19,6 @@ import {
   type TJobContact,
   type TJobContactType,
 } from '../../../types';
-import type { IContactFormValues } from '../../../services';
 
 /**
  * Props used by the job detail contacts panel.
@@ -122,6 +122,11 @@ const ContactFields: FC<IContactFieldsProps> = ({ disabled, onChange, values }) 
       />
       <Input
         disabled={disabled}
+        error={
+          isValidProfileUrl(values.profileUrl)
+            ? undefined
+            : t('jobDetail.contacts.invalidProfileUrl')
+        }
         label={t('jobDetail.contacts.fields.profileUrl')}
         onChange={(event) => onChange({ ...values, profileUrl: event.target.value })}
         value={values.profileUrl}
@@ -192,7 +197,7 @@ const JobDetailContactItem: FC<IJobDetailContactItemProps> = ({
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
             aria-busy={isSaving}
-            disabled={isDisabled || !values.name.trim()}
+            disabled={isDisabled || !values.name.trim() || !isValidProfileUrl(values.profileUrl)}
             onClick={handleSave}
             size="sm"
           >
@@ -296,7 +301,9 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
   } = useJobContacts(jobId);
   const [newContactValues, setNewContactValues] =
     useState<IContactFormValues>(emptyContactFormValues);
-  const canCreateContact = Boolean(newContactValues.name.trim() && !isMutating);
+  const canCreateContact = Boolean(
+    newContactValues.name.trim() && !isMutating && isValidProfileUrl(newContactValues.profileUrl),
+  );
 
   /**
    * The form is only reset once the create request actually succeeds, the

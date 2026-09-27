@@ -41,6 +41,20 @@ export const toNullableTrimmed = (value: string): string | null => {
 };
 
 /**
+ * Checks whether a profile URL field is blank or starts with `http://`
+ * or `https://`, mirroring the backend's `@Pattern` on `profileUrl`
+ * (`PROFILE_URL_PATTERN` in `ContactFieldLimits.kt`). Rendered as a
+ * link, a bare scheme-less value would either fail to open or, worse,
+ * accept a scheme such as `javascript:`, so this is checked on the
+ * frontend form in addition to the backend that already rejects it.
+ *
+ * @param {string} value Raw profile URL form field text.
+ * @returns {boolean} True when the value is blank or starts with http(s).
+ */
+export const isValidProfileUrl = (value: string): boolean =>
+  !value.trim() || /^https?:\/\//i.test(value.trim());
+
+/**
  * Converts a contact API response into the contact model the UI renders.
  *
  * @param {TContactResponse} response Contact exactly as `/api/jobs/{jobId}/contacts` returned it.

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildContactRequestPayload,
+  isValidProfileUrl,
   mapContactResponseToJobContact,
   toNullableTrimmed,
 } from './contacts.utils';
@@ -106,4 +107,25 @@ describe('buildContactRequestPayload', () => {
       notes: null,
     });
   });
+});
+
+describe('isValidProfileUrl', () => {
+  it.each(['', '   '])('accepts a blank value (%j)', (value) => {
+    expect(isValidProfileUrl(value)).toBe(true);
+  });
+
+  it.each([
+    'https://www.linkedin.com/in/jane-recruiter',
+    'http://example.com',
+    '  https://example.com  ',
+  ])('accepts %j', (value) => {
+    expect(isValidProfileUrl(value)).toBe(true);
+  });
+
+  it.each(['javascript:alert(1)', 'ftp://example.com', 'www.example.com', 'example.com'])(
+    'rejects %j',
+    (value) => {
+      expect(isValidProfileUrl(value)).toBe(false);
+    },
+  );
 });

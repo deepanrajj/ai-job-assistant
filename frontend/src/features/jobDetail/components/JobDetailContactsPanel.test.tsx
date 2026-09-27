@@ -209,6 +209,22 @@ describe('JobDetailContactsPanel', () => {
     expect(within(form).getByLabelText('Name')).toHaveValue('New Contact');
   });
 
+  it('rejects a non-http(s) profile url and blocks submission', async () => {
+    server.use(http.get(mockContactsEndpoint, () => HttpResponse.json([])));
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    const form = await getAddContactForm();
+
+    await user.type(within(form).getByLabelText('Name'), 'New Contact');
+    await user.type(within(form).getByLabelText('Profile URL'), 'javascript:alert(1)');
+
+    expect(
+      within(form).getByText('Profile URL must start with http:// or https://'),
+    ).toBeInTheDocument();
+    expect(within(form).getByRole('button', { name: 'Add contact' })).toBeDisabled();
+  });
+
   it('cancels editing without saving', async () => {
     server.use(
       http.get(mockContactsEndpoint, () =>

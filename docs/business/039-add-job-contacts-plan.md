@@ -341,15 +341,12 @@ implementation:
   beside `notes`, both with the user's explicit sign-off (D2, D5).
   `docs/context.md`'s `Contact` model and API list are updated to
   match.
-- **D4's frontend half of the `profileUrl` scheme check was not
-  built.** D4 says the `http(s)`-only check happens "on the backend
-  (and in the frontend form)"; only the backend `@Pattern` was
-  implemented. `JobDetailContactsPanel` renders `profileUrl` as a link
-  with no client-side scheme validation, relying entirely on the
-  backend rejecting a non-`http(s)` value at submit time. Low risk in
-  this same-origin app with no untrusted contact-data import path yet,
-  but it should be closed alongside whichever future task imports
-  contact data from an external source.
+- **D4's frontend half of the `profileUrl` scheme check** ("on the
+  backend (and in the frontend form)") was added after the fact:
+  `isValidProfileUrl()` in `contacts.utils.ts` mirrors the backend's
+  `PROFILE_URL_PATTERN`, `ContactFields` shows an inline error on the
+  field, and both the create and save buttons are disabled while it
+  fails. Blank is still valid, matching the backend.
 - **A `@Email` edge case surfaced while writing
   `ContactControllerTest`.** Bean Validation's `@Email` only skips its
   format check for a truly *empty* string, not a whitespace-only one,
