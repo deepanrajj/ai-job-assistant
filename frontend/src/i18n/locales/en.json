@@ -238,6 +238,7 @@
         "lastContactedAt": "Last contacted",
         "notes": "Notes"
       },
+      "invalidEmail": "Enter a valid email address",
       "invalidProfileUrl": "Profile URL must start with http:// or https://",
       "addContact": "Add contact",
       "saveContact": "Save contact",

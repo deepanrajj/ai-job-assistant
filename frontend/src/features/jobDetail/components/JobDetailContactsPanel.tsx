@@ -10,7 +10,12 @@ import {
   Select,
   Textarea,
 } from '../../../components/ui';
-import { isValidProfileUrl, type IContactFormValues } from '../../../services';
+import {
+  isContactFormValid,
+  isValidEmail,
+  isValidProfileUrl,
+  type IContactFormValues,
+} from '../../../services';
 import { useJobContacts } from '../useJobContacts';
 import { useTranslation } from '../../../i18n';
 import { formatJobDate } from '../../jobs/jobs.utils';
@@ -109,6 +114,7 @@ const ContactFields: FC<IContactFieldsProps> = ({ disabled, onChange, values }) 
       />
       <Input
         disabled={disabled}
+        error={isValidEmail(values.email) ? undefined : t('jobDetail.contacts.invalidEmail')}
         label={t('jobDetail.contacts.fields.email')}
         onChange={(event) => onChange({ ...values, email: event.target.value })}
         type="email"
@@ -209,7 +215,7 @@ const JobDetailContactItem: FC<IJobDetailContactItemProps> = ({
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
             aria-busy={isSaving}
-            disabled={isDisabled || !values.name.trim() || !isValidProfileUrl(values.profileUrl)}
+            disabled={isDisabled || !isContactFormValid(values)}
             onClick={handleSave}
             size="sm"
           >
@@ -313,9 +319,7 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
   } = useJobContacts(jobId);
   const [newContactValues, setNewContactValues] =
     useState<IContactFormValues>(emptyContactFormValues);
-  const canCreateContact = Boolean(
-    newContactValues.name.trim() && !isMutating && isValidProfileUrl(newContactValues.profileUrl),
-  );
+  const canCreateContact = !isMutating && isContactFormValid(newContactValues);
 
   /**
    * The form is only reset once the create request actually succeeds, the

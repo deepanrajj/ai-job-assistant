@@ -1,3 +1,4 @@
+import { toNullable, toOptional } from '../api';
 import { translate } from '../../i18n';
 import type { TJob } from '../../types';
 import {
@@ -17,22 +18,6 @@ import {
  */
 export const getJobFallbackErrorMessage = (key: TJobFallbackErrorKey): string =>
   translate(JOB_FALLBACK_ERROR_TRANSLATION_KEYS[key]);
-
-/**
- * Converts a wire null into the undefined the UI model uses.
- *
- * @param {TValue | null} value Wire value that may be null.
- * @returns {TValue | undefined} Undefined when the value was null.
- */
-const toOptional = <TValue>(value: TValue | null): TValue | undefined => value ?? undefined;
-
-/**
- * Converts an omitted UI value into the explicit null the backend expects.
- *
- * @param {TValue | undefined} value UI value that may be undefined.
- * @returns {TValue | null} Null when the value was undefined.
- */
-const toNullable = <TValue>(value: TValue | undefined): TValue | null => value ?? null;
 
 /**
  * Converts a job API response into the job model the UI renders.

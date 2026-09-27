@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildContactRequestPayload,
+  isContactFormValid,
+  isValidEmail,
   isValidProfileUrl,
   mapContactResponseToJobContact,
   toNullableTrimmed,
+  type IContactFormValues,
 } from './contacts.utils';
 import type { TContactResponse } from './contacts.types';
 
@@ -128,4 +131,62 @@ describe('isValidProfileUrl', () => {
       expect(isValidProfileUrl(value)).toBe(false);
     },
   );
+
+  it('rejects a value with an embedded newline after a valid-looking scheme', () => {
+    // A prefix-only check would accept this; the backend's @Pattern
+    // requires the whole trimmed string to match, and `.` does not match
+    // `\n`, so a value like this fails there. Anchoring with `$` here
+    // keeps the two in agreement instead of the UI showing it as valid
+    // right up until the submit gets a 400 back.
+    expect(isValidProfileUrl('https://example.com\njavascript:alert(1)')).toBe(false);
+  });
+});
+
+describe('isValidEmail', () => {
+  it.each(['', '   '])('accepts a blank value (%j)', (value) => {
+    expect(isValidEmail(value)).toBe(true);
+  });
+
+  it.each(['jane@example.com', '  jane@example.com  ', 'jane.doe+recruiter@example.co.uk'])(
+    'accepts %j',
+    (value) => {
+      expect(isValidEmail(value)).toBe(true);
+    },
+  );
+
+  it.each(['not-an-email', 'jane@', '@example.com', 'jane example.com'])('rejects %j', (value) => {
+    expect(isValidEmail(value)).toBe(false);
+  });
+});
+
+describe('isContactFormValid', () => {
+  const validValues: IContactFormValues = {
+    email: 'jane@example.com',
+    lastContactedAt: '',
+    name: 'Jane Recruiter',
+    notes: '',
+    phone: '',
+    profileUrl: 'https://www.linkedin.com/in/jane-recruiter',
+    type: 'RECRUITER',
+  };
+
+  it('accepts a form with a name and well-formed optional fields', () => {
+    expect(isContactFormValid(validValues)).toBe(true);
+  });
+
+  it('accepts a form with every optional field blank', () => {
+    expect(isContactFormValid({ ...validValues, email: '', profileUrl: '' })).toBe(true);
+  });
+
+  it('rejects a blank name even when every other field is valid', () => {
+    expect(isContactFormValid({ ...validValues, name: '   ' })).toBe(false);
+  });
+
+  it('rejects a malformed email', () => {
+    expect(isContactFormValid({ ...validValues, email: 'not-an-email' })).toBe(false);
+  });
+
+  it('rejects a non-http(s) profile url', () => {
+    expect(isContactFormValid({ ...validValues, profileUrl: 'javascript:alert(1)' })).toBe(false);
+  });
 });

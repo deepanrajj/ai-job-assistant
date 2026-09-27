@@ -238,6 +238,7 @@
         "lastContactedAt": "Zuletzt kontaktiert",
         "notes": "Notizen"
       },
+      "invalidEmail": "Bitte eine gültige E-Mail-Adresse eingeben",
       "invalidProfileUrl": "Profil-URL muss mit http:// oder https:// beginnen",
       "addContact": "Kontakt hinzufügen",
       "saveContact": "Kontakt speichern",

@@ -225,6 +225,20 @@ describe('JobDetailContactsPanel', () => {
     expect(within(form).getByRole('button', { name: 'Add contact' })).toBeDisabled();
   });
 
+  it('rejects a malformed email and blocks submission', async () => {
+    server.use(http.get(mockContactsEndpoint, () => HttpResponse.json([])));
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    const form = await getAddContactForm();
+
+    await user.type(within(form).getByLabelText('Name'), 'New Contact');
+    await user.type(within(form).getByLabelText('Email'), 'not-an-email');
+
+    expect(within(form).getByText('Enter a valid email address')).toBeInTheDocument();
+    expect(within(form).getByRole('button', { name: 'Add contact' })).toBeDisabled();
+  });
+
   it('cancels editing without saving', async () => {
     server.use(
       http.get(mockContactsEndpoint, () =>
