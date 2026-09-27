@@ -41,11 +41,11 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 039: Add job contacts](../../tasks/roadmap/039-add-job-contacts.md).
+- [ ] [Task 040: Add reminders](../../tasks/roadmap/040-add-reminders.md).
 
-Task 038 added an optional source to saved jobs (LinkedIn, Indeed,
-Xing, company website, AI search, referral, or other): a nullable
-`jobs.source` column, a select on the add/edit job form, and a Source
-item on the job detail header. Jobs saved before it keep an empty
-source and show "Not set". Task 039 continues building out the Jobs
-section with job contacts.
+Task 039 added job contacts: a recruiter, hiring manager, referral, or
+other contact per job, with type, name, email, phone, profile URL, an
+optional last-contacted date, and notes. A new `contacts` table backs
+`/jobs/{jobId}/contacts`, and a Contacts tab on job detail lets a user
+add, edit, and delete them. Task 040 continues building out the Jobs
+section with reminders.

@@ -88,6 +88,7 @@ export const mapJobToJobDetail = (job: TJob): TJobDetail => ({
     strengths: [],
     gaps: [],
   },
+  contacts: [],
   notes: [],
   tasks: [],
   timeline: [],

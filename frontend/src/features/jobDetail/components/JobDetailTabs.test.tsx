@@ -35,6 +35,9 @@ describe('JobDetailTabs', () => {
     await user.click(within(tabList).getByRole('tab', { name: 'Notes' }));
     expect(screen.getByRole('heading', { name: 'Notes' })).toBeInTheDocument();
 
+    await user.click(within(tabList).getByRole('tab', { name: 'Contacts' }));
+    expect(screen.getByRole('heading', { name: 'Contacts' })).toBeInTheDocument();
+
     await user.click(within(tabList).getByRole('tab', { name: 'Timeline' }));
     expect(screen.getByRole('heading', { name: 'Timeline' })).toBeInTheDocument();
 

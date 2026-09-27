@@ -146,6 +146,20 @@
       "deleteNote": "Löschen der Notiz fehlgeschlagen"
     }
   },
+  "contacts": {
+    "fallbackError": {
+      "listContacts": "Laden der Kontakte fehlgeschlagen",
+      "createContact": "Erstellen des Kontakts fehlgeschlagen",
+      "updateContact": "Aktualisieren des Kontakts fehlgeschlagen",
+      "deleteContact": "Löschen des Kontakts fehlgeschlagen"
+    }
+  },
+  "contactType": {
+    "recruiter": "Recruiter",
+    "hiringManager": "Personalverantwortliche Person",
+    "referral": "Empfehlung",
+    "other": "Sonstiges"
+  },
   "tasks": {
     "fallbackError": {
       "listTasks": "Laden der Aufgaben fehlgeschlagen",
@@ -176,6 +190,7 @@
       "overview": "Übersicht",
       "tasks": "Aufgaben",
       "notes": "Notizen",
+      "contacts": "Kontakte",
       "timeline": "Verlauf",
       "ai": "KI"
     },
@@ -209,6 +224,29 @@
       "saveNoteLabel": "Notiz vom {{date}} speichern",
       "deleteNote": "Löschen",
       "deleteNoteLabel": "Notiz vom {{date}} löschen"
+    },
+    "contacts": {
+      "title": "Kontakte",
+      "loading": "Kontakte werden geladen",
+      "loadErrorTitle": "Kontakte konnten nicht geladen werden",
+      "fields": {
+        "type": "Typ",
+        "name": "Name",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "profileUrl": "Profil-URL",
+        "lastContactedAt": "Zuletzt kontaktiert",
+        "notes": "Notizen"
+      },
+      "addContact": "Kontakt hinzufügen",
+      "saveContact": "Kontakt speichern",
+      "cancel": "Abbrechen",
+      "editContact": "Bearbeiten",
+      "editContactLabel": "Kontakt {{name}} bearbeiten",
+      "deleteContact": "Löschen",
+      "deleteContactLabel": "Kontakt {{name}} löschen",
+      "lastContactedLabel": "Zuletzt kontaktiert am {{date}}",
+      "notContactedYet": "Noch nicht kontaktiert"
     },
     "timeline": {
       "title": "Verlauf",

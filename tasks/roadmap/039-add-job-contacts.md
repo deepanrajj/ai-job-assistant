@@ -40,9 +40,9 @@ Run verification for touched frontend/backend layers.
 
 ## Acceptance Criteria
 
-- [ ] Users can manage contacts per job.
-- [ ] Contact history can be captured.
-- [ ] Tests cover contact behavior.
+- [x] Users can manage contacts per job.
+- [x] Contact history can be captured.
+- [x] Tests cover contact behavior.
 
 ## Commit
 

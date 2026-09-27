@@ -175,7 +175,8 @@ AiOutput
   id, jobId, userId, type, contentJson, createdAt
 
 Contact
-  id, jobId, type, name, emailOrUrl, notes, createdAt, updatedAt
+  id, jobId, type, name, email, phone, profileUrl, lastContactedAt,
+  notes, createdAt, updatedAt
 
 Reminder
   id, jobId, type, title, dueDate, completedAt, createdAt, updatedAt
@@ -234,6 +235,10 @@ Current API:
   for dashboard-style reads; `page` defaults to `0`, `size` to `20`
   clamped to `[1, 100]`; response is `{ content, page, size,
   totalElements, totalPages }`
+- `GET /api/jobs/{jobId}/contacts`
+- `POST /api/jobs/{jobId}/contacts`
+- `PUT /api/jobs/{jobId}/contacts/{contactId}`
+- `DELETE /api/jobs/{jobId}/contacts/{contactId}`
 - Swagger UI at `/api/swagger-ui.html`
 - OpenAPI docs at `/api/v3/api-docs`
 
@@ -243,7 +248,6 @@ Planned API areas:
 - job tasks CRUD
 - job notes CRUD
 - timeline event reads
-- job contacts
 - reminders and calendar events
 - application documents and submitted application metadata
 - saved searches and imported job candidates
