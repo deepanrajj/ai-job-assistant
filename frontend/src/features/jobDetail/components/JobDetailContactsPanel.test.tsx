@@ -359,14 +359,14 @@ describe('JobDetailContactsPanel', () => {
   it("keeps another row's unsaved edits when a different contact is deleted", async () => {
     const otherContactId = MOCK_CONTACT_IDS.secondary;
     let isOtherDeleted = false;
-    let finishReload: () => void = () => undefined;
+    const pendingReloads: (() => void)[] = [];
     server.use(
       http.get(mockContactsEndpoint, async () => {
         // Holds the post-delete reload open, so the assertions below run
         // while it is in flight rather than after it has already landed.
         if (isOtherDeleted)
           await new Promise<void>((resolve) => {
-            finishReload = resolve;
+            pendingReloads.push(resolve);
           });
 
         return HttpResponse.json([
@@ -397,15 +397,11 @@ describe('JobDetailContactsPanel', () => {
     // The delete's reload must not unmount the rows, neither while it is in
     // flight nor once it lands: the first contact stays open for editing
     // with the typed value intact.
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: 'Delete contact Second Contact' }),
-      ).not.toHaveAttribute('aria-busy', 'true'),
-    );
+    await waitFor(() => expect(pendingReloads).toHaveLength(1));
     expect(screen.queryByText('Loading contacts')).not.toBeInTheDocument();
     expect(editNameInput).toBeInTheDocument();
 
-    finishReload();
+    pendingReloads[0]();
 
     await waitFor(() => expect(screen.queryByText('Second Contact')).not.toBeInTheDocument());
     expect(editNameInput).toBeInTheDocument();
@@ -463,6 +459,107 @@ describe('JobDetailContactsPanel', () => {
     expect(remainingSaveButton).toBe(secondSaveButton);
     expect(remainingSaveButton).toBeDisabled();
     expect(remainingSaveButton).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('keeps the list and reports inline when the refresh after a successful write fails', async () => {
+    let getCount = 0;
+    server.use(
+      http.get(mockContactsEndpoint, () => {
+        getCount += 1;
+
+        // The initial load and the retry succeed; the reload after the
+        // delete fails.
+        if (getCount === 1)
+          return HttpResponse.json([
+            createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'First Contact' }),
+            createMockContactResponse({ id: MOCK_CONTACT_IDS.secondary, name: 'Second Contact' }),
+          ]);
+
+        return getCount === 2
+          ? HttpResponse.json({ message: 'Refresh failed' }, { status: 500 })
+          : HttpResponse.json([
+              createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'First Contact' }),
+            ]);
+      }),
+      http.delete(
+        `${mockContactsEndpoint}/${MOCK_CONTACT_IDS.secondary}`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('First Contact');
+    await user.click(screen.getByRole('button', { name: 'Edit contact First Contact' }));
+    const nameInputs = screen.getAllByLabelText('Name');
+    const editNameInput = nameInputs[nameInputs.length - 1];
+    await user.clear(editNameInput);
+    await user.type(editNameInput, 'Typed But Unsaved');
+
+    await user.click(screen.getByRole('button', { name: 'Delete contact Second Contact' }));
+
+    // The failed refresh is reported inline; the full load error state
+    // never replaces the list, and the open edit keeps its typed value.
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.queryByText('Contacts could not be loaded')).not.toBeInTheDocument();
+    expect(editNameInput).toBeInTheDocument();
+    expect(editNameInput).toHaveValue('Typed But Unsaved');
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() => expect(screen.queryByText('Second Contact')).not.toBeInTheDocument());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(editNameInput).toHaveValue('Typed But Unsaved');
+  });
+
+  it('keeps a saved row open until the refreshed contact arrives', async () => {
+    let isUpdated = false;
+    let finishReload: () => void = () => undefined;
+    server.use(
+      http.get(mockContactsEndpoint, async () => {
+        if (isUpdated)
+          await new Promise<void>((resolve) => {
+            finishReload = resolve;
+          });
+
+        return HttpResponse.json([
+          createMockContactResponse({
+            id: MOCK_CONTACT_IDS.primary,
+            name: isUpdated ? 'Jane Manager' : 'Jane Recruiter',
+          }),
+        ]);
+      }),
+      http.put(mockContactEndpoint, () => {
+        isUpdated = true;
+
+        return HttpResponse.json(
+          createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'Jane Manager' }),
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('Jane Recruiter');
+    await user.click(screen.getByRole('button', { name: 'Edit contact Jane Recruiter' }));
+    const nameInputs = screen.getAllByLabelText('Name');
+    await user.clear(nameInputs[nameInputs.length - 1]);
+    await user.type(nameInputs[nameInputs.length - 1], 'Jane Manager');
+    await user.click(screen.getByRole('button', { name: 'Save contact' }));
+
+    // While the refresh is in flight the row stays open and busy, rather
+    // than closing onto the stale "Jane Recruiter" read view.
+    await waitFor(() => expect(isUpdated).toBe(true));
+    expect(screen.getByRole('button', { name: 'Save contact' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    expect(screen.queryByText('Jane Recruiter')).not.toBeInTheDocument();
+
+    finishReload();
+
+    expect(await screen.findByText('Jane Manager')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save contact' })).not.toBeInTheDocument();
   });
 
   it('does not fall back to a stale list when overlapping reloads land out of order', async () => {

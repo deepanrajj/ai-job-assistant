@@ -38,13 +38,15 @@ export const createLocalId = (
  *
  * @param {Date} date Date to format.
  * @param {TLanguage} language Active app language.
+ * @param {string} [timeZone] Time zone to format in; the user's own when omitted.
  * @returns {string} Localized display date.
  */
-const formatLocalizedDate = (date: Date, language: TLanguage): string =>
+const formatLocalizedDate = (date: Date, language: TLanguage, timeZone?: string): string =>
   new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone,
   }).format(date);
 
 /**
@@ -61,20 +63,18 @@ export const formatJobDate = (date: string, language: TLanguage): string =>
  * Formats a date-only value (`YYYY-MM-DD`, such as a contact's
  * `lastContactedAt`) for the active app language.
  *
- * Unlike `formatJobDate`, this does not pass the value to `new Date(...)`:
- * a date-only string parses as midnight UTC, which every timezone behind
- * UTC renders as the previous day. Building the date from its parts keeps
- * it on the same calendar day wherever the user is.
+ * A date-only string parses as midnight UTC, which every timezone behind
+ * UTC renders as the previous day, so unlike `formatJobDate` this formats
+ * in UTC to keep the same calendar day wherever the user is. Parsing the
+ * string itself, rather than `new Date(year, month - 1, day)`, also keeps
+ * years 0-99 as written instead of mapping them to 1900-1999.
  *
  * @param {string} date Date-only string in `YYYY-MM-DD` form.
  * @param {TLanguage} language Active app language.
  * @returns {string} Localized display date.
  */
-export const formatCalendarDate = (date: string, language: TLanguage): string => {
-  const [year, month, day] = date.split('-').map(Number);
-
-  return formatLocalizedDate(new Date(year, month - 1, day), language);
-};
+export const formatCalendarDate = (date: string, language: TLanguage): string =>
+  formatLocalizedDate(new Date(date), language, 'UTC');
 
 /**
  * Formats a job salary range in thousands of euros.

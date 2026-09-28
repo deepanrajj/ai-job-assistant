@@ -53,6 +53,11 @@ export interface IJobContactsState {
   createJobContact: (values: IContactFormValues) => Promise<void>;
   deleteJobContact: (contactId: string) => Promise<void>;
   deletingContactIds: ReadonlySet<string>;
+  /**
+   * True once this job has a list to show, even when the latest reload
+   * failed, so a failed refresh can be reported without hiding the list.
+   */
+  hasLoadedContacts: boolean;
   isCreating: boolean;
   isLoading: boolean;
   isMutating: boolean;
@@ -180,11 +185,16 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
    */
   const latestReloadIdRef = useRef(0);
 
-  const reload = useCallback(() => {
+  /**
+   * Reloads the list and resolves once the reload has settled. It never
+   * rejects: a failed reload is recorded in `loadError` and rendered from
+   * there, so a write that awaits it still counts as successful.
+   */
+  const refreshContacts = useCallback((): Promise<void> => {
     latestReloadIdRef.current += 1;
     const reloadId = latestReloadIdRef.current;
 
-    loadContacts(jobId).then(
+    return loadContacts(jobId).then(
       (contacts) => {
         if (reloadId === latestReloadIdRef.current) setLastLoaded({ contacts, jobId });
       },
@@ -194,14 +204,18 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     );
   }, [jobId, loadContacts]);
 
+  const reload = useCallback(() => {
+    void refreshContacts();
+  }, [refreshContacts]);
+
   useEffect(() => {
     reload();
   }, [reload]);
 
   /**
    * Prefers the request's own `data`, which `useAsyncMutation` guards
-   * against stale responses, and only falls back to the last loaded list
-   * while a reload is in flight.
+   * against stale responses, and falls back to the last loaded list while
+   * a reload is in flight or after one has failed.
    */
   const loadedContacts = Array.isArray(data)
     ? data
@@ -217,7 +231,10 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
   /**
    * Applies the success/error contract every one of the three writes
    * shares: clear the previous mutation error and reload on success, or
-   * record the new error and re-throw on failure. Extracted so that
+   * record the new error and re-throw on failure. A successful write
+   * resolves only once its reload has settled, so a caller that closes an
+   * edit row or resets a form on success never shows the pre-write list
+   * in the meantime. Extracted so that
    * shared contract lives in exactly one place instead of being repeated
    * once per write, where a future change to it (or a slip while making
    * one) could silently leave the three writes disagreeing about what
@@ -231,14 +248,15 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
       request.then(
         () => {
           setMutationError(null);
-          reload();
+
+          return refreshContacts();
         },
         (error: AppError) => {
           setMutationError(error);
           throw error;
         },
       ),
-    [reload],
+    [refreshContacts],
   );
 
   const createJobContact = useCallback(
@@ -273,6 +291,7 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     createJobContact,
     deleteJobContact,
     deletingContactIds,
+    hasLoadedContacts: loadedContacts !== null,
     isCreating,
     isLoading: (isIdle || isLoading) && !loadedContacts,
     isMutating: isCreating || isUpdating || isDeleting,

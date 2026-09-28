@@ -308,6 +308,7 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
     createJobContact,
     deleteJobContact,
     deletingContactIds,
+    hasLoadedContacts,
     isCreating,
     isLoading,
     isMutating,
@@ -367,7 +368,13 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
       </Card>
     );
 
-  if (loadError)
+  /**
+   * The full error state is only for a list that never loaded. A failed
+   * refresh after one has loaded, such as the reload that follows a
+   * successful write, is reported inline instead, so the rows (and any
+   * edit open in one of them) stay on screen.
+   */
+  if (loadError && !hasLoadedContacts)
     return (
       <Card title={t('jobDetail.contacts.title')}>
         <ErrorState
@@ -381,6 +388,14 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
   return (
     <Card title={t('jobDetail.contacts.title')}>
       {mutationError && <Alert className="mb-4">{mutationError.message}</Alert>}
+      {loadError && (
+        <Alert className="mb-4">
+          <p>{loadError.message}</p>
+          <Button className="mt-2" onClick={reload} size="sm">
+            {t('jobs.loadErrorRetry')}
+          </Button>
+        </Alert>
+      )}
 
       <form className="mb-4 space-y-3" onSubmit={handleCreateContact}>
         <ContactFields

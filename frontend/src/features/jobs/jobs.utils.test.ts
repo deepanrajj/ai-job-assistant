@@ -51,6 +51,10 @@ describe('formatCalendarDate', () => {
 
     expect(formatCalendarDate('2026-07-01', 'en')).toBe('Jul 1, 2026');
   });
+
+  it('keeps a year below 100 as written instead of moving it to the 1900s', () => {
+    expect(formatCalendarDate('0025-07-01', 'en')).toBe('Jul 1, 25');
+  });
 });
 
 describe('formatJobSalary', () => {
