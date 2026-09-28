@@ -275,9 +275,17 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     [jobId, refreshContacts],
   );
 
+  /**
+   * Drops any entry with the created contact's id before appending it: a
+   * reload started by another write can land first and already include
+   * the new contact, and appending it again would list it twice.
+   */
   const createJobContact = useCallback(
     (values: IContactFormValues) =>
-      settleMutation(postContact({ jobId, values }), (contacts, created) => [...contacts, created]),
+      settleMutation(postContact({ jobId, values }), (contacts, created) => [
+        ...contacts.filter((contact) => contact.id !== created.id),
+        created,
+      ]),
     [jobId, postContact, settleMutation],
   );
 

@@ -597,6 +597,63 @@ describe('JobDetailContactsPanel', () => {
     expect(screen.queryByRole('button', { name: 'Save contact' })).not.toBeInTheDocument();
   });
 
+  it("lists a created contact once when another write's reload already includes it", async () => {
+    const first = createMockContactResponse({
+      id: MOCK_CONTACT_IDS.primary,
+      name: 'First Contact',
+    });
+    const second = createMockContactResponse({
+      id: MOCK_CONTACT_IDS.secondary,
+      name: 'Second Contact',
+    });
+    const created = createMockContactResponse({
+      id: 'c4444444-4444-4444-8444-444444444444',
+      name: 'New Contact',
+    });
+    let finishCreate: () => void = () => undefined;
+    let getCount = 0;
+    server.use(
+      http.get(mockContactsEndpoint, async () => {
+        getCount += 1;
+
+        if (getCount === 1) return HttpResponse.json([first, second]);
+        // The delete's reload runs after the create was saved, so it
+        // already includes the new contact.
+        if (getCount === 2) return HttpResponse.json([first, created]);
+
+        // The create's own reload stays in flight, so the panel shows the
+        // cached list the create was applied to.
+        return new Promise<never>(() => {});
+      }),
+      http.post(
+        mockContactsEndpoint,
+        () =>
+          new Promise<Response>((resolve) => {
+            finishCreate = () => resolve(HttpResponse.json(created, { status: 201 }));
+          }),
+      ),
+      http.delete(
+        `${mockContactsEndpoint}/${MOCK_CONTACT_IDS.secondary}`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('Second Contact');
+    const addContactForm = await getAddContactForm();
+    await user.type(within(addContactForm).getByLabelText('Name'), 'New Contact');
+    await user.click(within(addContactForm).getByRole('button', { name: 'Add contact' }));
+    await user.click(screen.getByRole('button', { name: 'Delete contact Second Contact' }));
+    await waitFor(() => expect(getCount).toBe(2));
+    await screen.findByRole('button', { name: 'Edit contact New Contact' });
+
+    finishCreate();
+
+    await waitFor(() => expect(getCount).toBe(3));
+    expect(screen.getAllByRole('button', { name: 'Edit contact New Contact' })).toHaveLength(1);
+  });
+
   it('does not fall back to a stale list when overlapping reloads land out of order', async () => {
     const secondId = MOCK_CONTACT_IDS.secondary;
     const thirdId = 'a3333333-3333-4333-8333-333333333333';
@@ -626,7 +683,13 @@ describe('JobDetailContactsPanel', () => {
         () => new HttpResponse(null, { status: 204 }),
       ),
       http.post(mockContactsEndpoint, () =>
-        HttpResponse.json(createMockContactResponse({ name: 'New Contact' }), { status: 201 }),
+        HttpResponse.json(
+          createMockContactResponse({
+            id: 'c4444444-4444-4444-8444-444444444444',
+            name: 'New Contact',
+          }),
+          { status: 201 },
+        ),
       ),
     );
     const user = userEvent.setup();
