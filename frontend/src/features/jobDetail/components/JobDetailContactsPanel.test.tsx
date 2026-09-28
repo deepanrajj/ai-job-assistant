@@ -499,9 +499,11 @@ describe('JobDetailContactsPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Delete contact Second Contact' }));
 
     // The failed refresh is reported inline; the full load error state
-    // never replaces the list, and the open edit keeps its typed value.
+    // never replaces the list, the confirmed delete is already applied to
+    // it, and the open edit keeps its typed value.
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.queryByText('Contacts could not be loaded')).not.toBeInTheDocument();
+    expect(screen.queryByText('Second Contact')).not.toBeInTheDocument();
     expect(editNameInput).toBeInTheDocument();
     expect(editNameInput).toHaveValue('Typed But Unsaved');
 
@@ -510,6 +512,39 @@ describe('JobDetailContactsPanel', () => {
     await waitFor(() => expect(screen.queryByText('Second Contact')).not.toBeInTheDocument());
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(editNameInput).toHaveValue('Typed But Unsaved');
+  });
+
+  it('shows the saved values when the refresh after an update fails', async () => {
+    let isUpdated = false;
+    server.use(
+      http.get(mockContactsEndpoint, () =>
+        isUpdated
+          ? HttpResponse.json({ message: 'Refresh failed' }, { status: 500 })
+          : HttpResponse.json([createMockContactResponse({ id: MOCK_CONTACT_IDS.primary })]),
+      ),
+      http.put(mockContactEndpoint, () => {
+        isUpdated = true;
+
+        return HttpResponse.json(
+          createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'Jane Manager' }),
+        );
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('Jane Recruiter');
+    await user.click(screen.getByRole('button', { name: 'Edit contact Jane Recruiter' }));
+    const nameInputs = screen.getAllByLabelText('Name');
+    await user.clear(nameInputs[nameInputs.length - 1]);
+    await user.type(nameInputs[nameInputs.length - 1], 'Jane Manager');
+    await user.click(screen.getByRole('button', { name: 'Save contact' }));
+
+    // The save succeeded, so the row shows the server's updated contact
+    // even though the refresh after it failed.
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(await screen.findByText('Jane Manager')).toBeInTheDocument();
+    expect(screen.queryByText('Jane Recruiter')).not.toBeInTheDocument();
   });
 
   it('keeps a saved row open until the refreshed contact arrives', async () => {

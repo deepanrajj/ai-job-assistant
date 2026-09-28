@@ -66,11 +66,22 @@ export const isValidProfileUrl = (value: string): boolean => {
 };
 
 /**
+ * Matches an address whose local part and domain labels are dot-separated
+ * and non-empty, and whose domain labels do not start or end with a
+ * hyphen. Those are the rules the backend's `@Email` (Hibernate
+ * Validator) rejects most often in practice - `jane..doe@example.com`,
+ * `jane@-example.com`, `jane@example.com.` - so checking them here keeps
+ * the form from showing such a value as valid right up until a 400.
+ */
+const EMAIL_PATTERN =
+  /^[^\s@.]+(?:\.[^\s@.]+)*@[^\s@.-](?:[^\s@.]*[^\s@.-])?(?:\.[^\s@.-](?:[^\s@.]*[^\s@.-])?)+$/;
+
+/**
  * Checks whether an email field is blank or a plausible address, mirroring
- * the backend's `@Email` on `email`. It is intentionally looser than a
- * fully RFC-compliant check - like Bean Validation's own `@Email`, this
- * only needs to catch the obviously malformed case before a round trip to
- * the server, not police every edge case an address format allows.
+ * the backend's `@Email` on `email` closely enough that common malformed
+ * values are caught before a round trip to the server (see
+ * `EMAIL_PATTERN`). It is still not a full copy of that validator; the
+ * backend remains the final check.
  *
  * @param {string} value Raw email form field text.
  * @returns {boolean} True when the value is blank or looks like an email address.
@@ -78,7 +89,7 @@ export const isValidProfileUrl = (value: string): boolean => {
 export const isValidEmail = (value: string): boolean => {
   const trimmed = value.trim();
 
-  return !trimmed || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+  return !trimmed || EMAIL_PATTERN.test(trimmed);
 };
 
 /**

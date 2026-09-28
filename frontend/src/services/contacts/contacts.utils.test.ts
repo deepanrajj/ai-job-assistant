@@ -148,14 +148,28 @@ describe('isValidEmail', () => {
     expect(isValidEmail(value)).toBe(true);
   });
 
-  it.each(['jane@example.com', '  jane@example.com  ', 'jane.doe+recruiter@example.co.uk'])(
-    'accepts %j',
-    (value) => {
-      expect(isValidEmail(value)).toBe(true);
-    },
-  );
+  it.each([
+    'jane@example.com',
+    '  jane@example.com  ',
+    'jane.doe+recruiter@example.co.uk',
+    'jane@my-company.example.com',
+  ])('accepts %j', (value) => {
+    expect(isValidEmail(value)).toBe(true);
+  });
 
-  it.each(['not-an-email', 'jane@', '@example.com', 'jane example.com'])('rejects %j', (value) => {
+  it.each([
+    'not-an-email',
+    'jane@',
+    '@example.com',
+    'jane example.com',
+    'jane..doe@example.com',
+    '.jane@example.com',
+    'jane.@example.com',
+    'jane@-example.com',
+    'jane@example-.com',
+    'jane@example..com',
+    'jane@example.com.',
+  ])('rejects %j', (value) => {
     expect(isValidEmail(value)).toBe(false);
   });
 });

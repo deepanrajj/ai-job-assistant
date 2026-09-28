@@ -234,20 +234,36 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
    * record the new error and re-throw on failure. A successful write
    * resolves only once its reload has settled, so a caller that closes an
    * edit row or resets a form on success never shows the pre-write list
-   * in the meantime. Extracted so that
+   * in the meantime.
+   *
+   * Before that refresh starts, the confirmed write is applied to the
+   * cached list through `applyToList`, so the list the panel falls back
+   * to - during the refresh, or after it fails - already reflects it. A
+   * failed refresh otherwise left a deleted contact on screen with
+   * working buttons, or a saved row showing its old values. Extracted so that
    * shared contract lives in exactly one place instead of being repeated
    * once per write, where a future change to it (or a slip while making
    * one) could silently leave the three writes disagreeing about what
    * they promise.
    *
-   * @param {Promise<unknown>} request The in-flight create/update/delete request.
+   * @param {Promise<T>} request The in-flight create/update/delete request.
+   * @param {(contacts: TContactResponse[], result: T) => TContactResponse[]} applyToList
+   *   Applies the write's confirmed result to the cached list.
    * @returns {Promise<void>} Resolves on success; rejects with the same error on failure.
    */
   const settleMutation = useCallback(
-    (request: Promise<unknown>): Promise<void> =>
+    <T>(
+      request: Promise<T>,
+      applyToList: (contacts: TContactResponse[], result: T) => TContactResponse[],
+    ): Promise<void> =>
       request.then(
-        () => {
+        (result) => {
           setMutationError(null);
+          setLastLoaded((current) =>
+            current?.jobId === jobId
+              ? { contacts: applyToList(current.contacts, result), jobId }
+              : current,
+          );
 
           return refreshContacts();
         },
@@ -256,11 +272,12 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
           throw error;
         },
       ),
-    [refreshContacts],
+    [jobId, refreshContacts],
   );
 
   const createJobContact = useCallback(
-    (values: IContactFormValues) => settleMutation(postContact({ jobId, values })),
+    (values: IContactFormValues) =>
+      settleMutation(postContact({ jobId, values }), (contacts, created) => [...contacts, created]),
     [jobId, postContact, settleMutation],
   );
 
@@ -268,9 +285,9 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     (contactId: string, values: IContactFormValues) => {
       setUpdatingContactIds((ids) => toggleContactId(ids, contactId, true));
 
-      return settleMutation(putContact({ contactId, jobId, values })).finally(() =>
-        setUpdatingContactIds((ids) => toggleContactId(ids, contactId, false)),
-      );
+      return settleMutation(putContact({ contactId, jobId, values }), (contacts, updated) =>
+        contacts.map((contact) => (contact.id === updated.id ? updated : contact)),
+      ).finally(() => setUpdatingContactIds((ids) => toggleContactId(ids, contactId, false)));
     },
     [jobId, putContact, settleMutation],
   );
@@ -279,9 +296,9 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     (contactId: string) => {
       setDeletingContactIds((ids) => toggleContactId(ids, contactId, true));
 
-      return settleMutation(removeContact({ contactId, jobId })).finally(() =>
-        setDeletingContactIds((ids) => toggleContactId(ids, contactId, false)),
-      );
+      return settleMutation(removeContact({ contactId, jobId }), (contacts) =>
+        contacts.filter((contact) => contact.id !== contactId),
+      ).finally(() => setDeletingContactIds((ids) => toggleContactId(ids, contactId, false)));
     },
     [jobId, removeContact, settleMutation],
   );
