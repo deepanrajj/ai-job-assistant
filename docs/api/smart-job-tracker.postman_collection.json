@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Smart Job Tracker",
-    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks', 'Notes', or 'Timeline' folder the same way for a job's tasks, notes, or timeline; each seeds its own job rather than depending on the 'Jobs' folder having run first.",
+    "description": "Hand-maintained happy-path and error flows for the Smart Job Tracker backend.\n\nThis collection is deliberately NOT an exhaustive endpoint list. The generated OpenAPI document at {{baseUrl}}/v3/api-docs is the exhaustive list, and it cannot drift from the controllers. Import that when you want every endpoint with every field.\n\nWhat lives here instead is the part a spec cannot express: ordered flows that chain one response into the next request, and assertions that pin the API contract.\n\nSelect the 'Smart Job Tracker - Local' environment before running. Run the 'Jobs' folder with the Collection Runner to execute the full create-read-update-delete cycle in order. Run the 'Tasks', 'Notes', 'Contacts', or 'Timeline' folder the same way for a job's tasks, notes, contacts, or timeline; each seeds its own job rather than depending on the 'Jobs' folder having run first.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -34,6 +34,18 @@
       "value": "",
       "type": "string",
       "description": "Set by 'Create note'. Later requests in the Notes folder read it."
+    },
+    {
+      "key": "contactJobId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create job for contacts'. Every later request in the Contacts folder reads it. Separate from every other folder's job id so the Contacts folder does not depend on any other folder having run first."
+    },
+    {
+      "key": "contactId",
+      "value": "",
+      "type": "string",
+      "description": "Set by 'Create contact'. Later requests in the Contacts folder read it."
     },
     {
       "key": "timelineJobId",
@@ -1232,6 +1244,409 @@
               "raw": "{{baseUrl}}/jobs/{{$guid}}/notes",
               "host": ["{{baseUrl}}"],
               "path": ["jobs", "{{$guid}}", "notes"]
+            },
+            "description": "{{$guid}} generates a well-formed but unused UUID, so this is a genuine 'job does not exist' case rather than a malformed id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the JOB_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('JOB_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "description": "Run this folder in order. 'Create job for contacts' stores a fresh job id in the contactJobId collection variable, separate from every other folder's job id, so this folder is a self-contained CRUD flow that does not depend on the Jobs, Tasks, or Notes folder having run first.",
+      "item": [
+        {
+          "name": "Create job for contacts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"Acme Corp\",\n  \"roleTitle\": \"Backend Engineer\",\n  \"status\": \"WISHLIST\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"]
+            },
+            "description": "Every contact route is nested under a job, so this folder needs one of its own rather than reusing another folder's job id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('contactJobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"RECRUITER\",\n  \"name\": \"Jane Recruiter\",\n  \"email\": \"jane@example.com\",\n  \"phone\": \"+49 170 1234567\",\n  \"profileUrl\": \"https://www.linkedin.com/in/jane-recruiter\",\n  \"lastContactedAt\": \"2026-07-01\",\n  \"notes\": \"Reached out on LinkedIn.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{contactJobId}}/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{contactJobId}}", "contacts"]
+            },
+            "description": "type and name are the only required fields; every other field here is optional."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "const contact = pm.response.json();",
+                  "",
+                  "pm.test('returns a server-assigned id', function () {",
+                  "    pm.expect(contact.id).to.be.a('string').and.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('echoes the submitted fields', function () {",
+                  "    pm.expect(contact.type).to.eql('RECRUITER');",
+                  "    pm.expect(contact.name).to.eql('Jane Recruiter');",
+                  "    pm.expect(contact.email).to.eql('jane@example.com');",
+                  "    pm.expect(contact.lastContactedAt).to.eql('2026-07-01');",
+                  "});",
+                  "",
+                  "pm.test('does not leak jobId into the HTTP contract', function () {",
+                  "    pm.expect(contact).to.not.have.property('jobId');",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set('contactId', contact.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List contacts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{contactJobId}}/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{contactJobId}}", "contacts"]
+            },
+            "description": "Returns the job's contacts in creation order. There is no single-contact GET, so this is how the collection proves a contact was created."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const contacts = pm.response.json();",
+                  "",
+                  "pm.test('includes the contact created by this run', function () {",
+                  "    const ids = contacts.map(function (contact) { return contact.id; });",
+                  "    pm.expect(ids).to.include(pm.collectionVariables.get('contactId'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update contact",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"HIRING_MANAGER\",\n  \"name\": \"Jane Manager\",\n  \"email\": null,\n  \"phone\": null,\n  \"profileUrl\": null,\n  \"lastContactedAt\": null,\n  \"notes\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{contactJobId}}/contacts/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{contactJobId}}", "contacts", "{{contactId}}"]
+            },
+            "description": "PUT replaces every field, so type and name are present and every optional field is sent explicitly, here as null to prove they can be cleared."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "const contact = pm.response.json();",
+                  "",
+                  "pm.test('applies the new type and name', function () {",
+                  "    pm.expect(contact.type).to.eql('HIRING_MANAGER');",
+                  "    pm.expect(contact.name).to.eql('Jane Manager');",
+                  "});",
+                  "",
+                  "pm.test('clears every optional field sent as null', function () {",
+                  "    pm.expect(contact.email).to.be.null;",
+                  "    pm.expect(contact.phone).to.be.null;",
+                  "    pm.expect(contact.profileUrl).to.be.null;",
+                  "    pm.expect(contact.lastContactedAt).to.be.null;",
+                  "    pm.expect(contact.notes).to.be.null;",
+                  "});",
+                  "",
+                  "pm.test('preserves identity and creation time', function () {",
+                  "    pm.expect(contact.id).to.eql(pm.collectionVariables.get('contactId'));",
+                  "    pm.expect(Date.parse(contact.updatedAt)).to.be.at.least(Date.parse(contact.createdAt));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete contact",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}",
+                "description": "Browsers attach Origin to every non-GET request, same-origin ones included. Newman does not, so without this line no run here can see a CORS mapping refusing the app's own writes."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{contactJobId}}/contacts/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{contactJobId}}", "contacts", "{{contactId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('the backend applied no CORS processing', function () {",
+                  "    pm.expect(",
+                  "        pm.response.code,",
+                  "        'a 403 here means a CORS mapping is refusing the origin the app is served '",
+                  "        + 'from, so every browser write fails while reads keep working. See '",
+                  "        + 'docs/engineering/same-origin-api-boundary.md.',",
+                  "    ).to.not.eql(403);",
+                  "",
+                  "    pm.expect(",
+                  "        pm.response.headers.has('Access-Control-Allow-Origin'),",
+                  "        'an allow-origin header means a CORS mapping exists. Allowing this origin '",
+                  "        + 'explicitly, or allowing every origin, both answer the symptom instead of '",
+                  "        + 'removing the check, and the second opens the API to any site.',",
+                  "    ).to.eql(false);",
+                  "});",
+                  "",
+                  "pm.test('returns an empty body', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete deleted contact returns 404",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Origin",
+                "value": "{{appOrigin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{contactJobId}}/contacts/{{contactId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{contactJobId}}", "contacts", "{{contactId}}"]
+            },
+            "description": "Runs immediately after Delete contact. Proves the delete actually removed the row: deleting the same id again is now a missing contact, not a missing job."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('uses the CONTACT_NOT_FOUND error code', function () {",
+                  "    pm.expect(pm.response.json().code).to.eql('CONTACT_NOT_FOUND');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create contact with blank name returns 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"RECRUITER\",\n  \"name\": \" \"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{contactJobId}}/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{contactJobId}}", "contacts"]
+            },
+            "description": "Bean Validation rejects the blank name before the service runs. The response carries per-field detail in fieldErrors."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const error = pm.response.json();",
+                  "",
+                  "pm.test('uses the VALIDATION_FAILED error code', function () {",
+                  "    pm.expect(error.code).to.eql('VALIDATION_FAILED');",
+                  "});",
+                  "",
+                  "pm.test('names the offending field', function () {",
+                  "    const fields = error.fieldErrors.map(function (fieldError) { return fieldError.field; });",
+                  "    pm.expect(fields).to.include('name');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create contact for missing job returns 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"RECRUITER\",\n  \"name\": \"Jane Recruiter\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{$guid}}/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{$guid}}", "contacts"]
             },
             "description": "{{$guid}} generates a well-formed but unused UUID, so this is a genuine 'job does not exist' case rather than a malformed id."
           },

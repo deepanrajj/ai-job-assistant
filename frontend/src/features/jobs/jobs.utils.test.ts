@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createLocalId, formatJobDate, formatJobSalary, mapJobToJobDetail } from './jobs.utils';
+import {
+  createLocalId,
+  formatCalendarDate,
+  formatJobDate,
+  formatJobSalary,
+  mapJobToJobDetail,
+} from './jobs.utils';
 import { createMockJob } from '../../test/mockJobs';
 
 describe('createLocalId', () => {
@@ -25,6 +31,36 @@ describe('formatJobDate', () => {
   it('formats job dates for English and German', () => {
     expect(formatJobDate('2026-05-09T15:20:00.000Z', 'en')).toBe('May 9, 2026');
     expect(formatJobDate('2026-05-09T15:20:00.000Z', 'de')).toBe('9. Mai 2026');
+  });
+});
+
+describe('formatCalendarDate', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('formats date-only values for English and German', () => {
+    expect(formatCalendarDate('2026-07-01', 'en')).toBe('Jul 1, 2026');
+    expect(formatCalendarDate('2026-07-01', 'de')).toBe('1. Juli 2026');
+  });
+
+  it('keeps the same calendar day in a timezone behind UTC', () => {
+    // `new Date('2026-07-01')` is midnight UTC, which is still June 30 in
+    // New York; a date-only value must not shift to the previous day.
+    vi.stubEnv('TZ', 'America/New_York');
+
+    expect(formatCalendarDate('2026-07-01', 'en')).toBe('Jul 1, 2026');
+  });
+
+  it('keeps a year below 100 as written instead of moving it to the 1900s', () => {
+    expect(formatCalendarDate('0025-07-01', 'en')).toBe('Jul 1, 25');
+  });
+
+  it('returns a value it cannot parse as-is instead of throwing', () => {
+    // Whether a signed year like "+10000-01-01" parses depends on the
+    // browser (V8 accepts it, the spec does not), so an input no engine
+    // parses stands in for it here.
+    expect(formatCalendarDate('not-a-date', 'en')).toBe('not-a-date');
   });
 });
 

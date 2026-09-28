@@ -3,7 +3,7 @@ import type { TJob } from './job.types';
 /**
  * Supported tab ids for the job detail page.
  */
-export type TJobDetailTab = 'overview' | 'tasks' | 'notes' | 'timeline' | 'ai';
+export type TJobDetailTab = 'overview' | 'tasks' | 'notes' | 'contacts' | 'timeline' | 'ai';
 
 /**
  * Translation keys used by job detail tab labels.
@@ -43,6 +43,39 @@ export type TJobNote = {
 };
 
 /**
+ * Supported roles a contact can play for a saved job.
+ */
+export type TJobContactType = 'RECRUITER' | 'HIRING_MANAGER' | 'REFERRAL' | 'OTHER';
+
+/**
+ * Maps each contact type to its translation resource key.
+ */
+export const CONTACT_TYPE_TRANSLATION_KEYS: Record<TJobContactType, string> = {
+  RECRUITER: 'contactType.recruiter',
+  HIRING_MANAGER: 'contactType.hiringManager',
+  REFERRAL: 'contactType.referral',
+  OTHER: 'contactType.other',
+};
+
+/**
+ * Represents a contact attached to a saved job: a recruiter, hiring
+ * manager, referral, or anyone else connected to the job. `email`,
+ * `phone`, `profileUrl`, `lastContactedAt`, and `notes` are optional;
+ * `lastContactedAt` being unset means the contact has not been reached
+ * yet.
+ */
+export type TJobContact = {
+  id: string;
+  type: TJobContactType;
+  name: string;
+  email?: string;
+  phone?: string;
+  profileUrl?: string;
+  lastContactedAt?: string;
+  notes?: string;
+};
+
+/**
  * Represents a timeline event for a saved job.
  */
 export type TJobTimelineEvent = {
@@ -74,6 +107,7 @@ export type TJobDetail = Omit<
   salaryMax: number;
   salaryMin: number;
   aiInsights: TJobAiInsights;
+  contacts: TJobContact[];
   notes: TJobNote[];
   tasks: TJobTask[];
   timeline: TJobTimelineEvent[];

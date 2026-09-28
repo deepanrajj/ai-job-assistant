@@ -34,6 +34,22 @@ export const createLocalId = (
 ): string => `${prefix}-${randomId() ?? createFallbackId()}`;
 
 /**
+ * Formats a date in the short month/day/year style every job screen uses.
+ *
+ * @param {Date} date Date to format.
+ * @param {TLanguage} language Active app language.
+ * @param {string} [timeZone] Time zone to format in; the user's own when omitted.
+ * @returns {string} Localized display date.
+ */
+const formatLocalizedDate = (date: Date, language: TLanguage, timeZone?: string): string =>
+  new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone,
+  }).format(date);
+
+/**
  * Formats a job update date for the active app language.
  *
  * @param {string} date ISO date string to format.
@@ -41,11 +57,31 @@ export const createLocalId = (
  * @returns {string} Localized display date.
  */
 export const formatJobDate = (date: string, language: TLanguage): string =>
-  new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(date));
+  formatLocalizedDate(new Date(date), language);
+
+/**
+ * Formats a date-only value (`YYYY-MM-DD`, such as a contact's
+ * `lastContactedAt`) for the active app language.
+ *
+ * A date-only string parses as midnight UTC, which every timezone behind
+ * UTC renders as the previous day, so unlike `formatJobDate` this formats
+ * in UTC to keep the same calendar day wherever the user is. Parsing the
+ * string itself, rather than `new Date(year, month - 1, day)`, also keeps
+ * years 0-99 as written instead of mapping them to 1900-1999.
+ *
+ * A value `new Date(...)` cannot parse, such as a signed year like
+ * `"+10000-01-01"`, is returned as-is: formatting an invalid date throws,
+ * and one bad stored value must not stop a whole panel from rendering.
+ *
+ * @param {string} date Date-only string in `YYYY-MM-DD` form.
+ * @param {TLanguage} language Active app language.
+ * @returns {string} Localized display date, or the raw value when it cannot be parsed.
+ */
+export const formatCalendarDate = (date: string, language: TLanguage): string => {
+  const parsed = new Date(date);
+
+  return Number.isNaN(parsed.getTime()) ? date : formatLocalizedDate(parsed, language, 'UTC');
+};
 
 /**
  * Formats a job salary range in thousands of euros.
@@ -88,6 +124,7 @@ export const mapJobToJobDetail = (job: TJob): TJobDetail => ({
     strengths: [],
     gaps: [],
   },
+  contacts: [],
   notes: [],
   tasks: [],
   timeline: [],

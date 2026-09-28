@@ -34,7 +34,11 @@ roadmap tasks live in `../README.md`.
 
 ## Open
 
-None.
+- [ ] [Bug 006: job URL accepts a non-http(s) scheme](./bug-006-job-url-accepts-non-http-scheme.md)
+      — nit, found while reviewing the task 039 (job contacts) branch.
+      Pre-existing since task 006; task 039 added the equivalent scheme
+      check for contacts' `profileUrl` but did not extend it to this
+      older, unrelated field.
 
 ## Retired
 

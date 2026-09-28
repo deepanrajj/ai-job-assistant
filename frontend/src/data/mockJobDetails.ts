@@ -55,6 +55,16 @@ const createMockJobDetail = (job: TJob, date: string): TJobDetail => ({
       status: 'TODO',
     },
   ],
+  contacts: [
+    {
+      id: `${job.id}-contact-1`,
+      type: 'RECRUITER',
+      name: `${job.company} Recruiter`,
+      email: `recruiter@${job.company.toLowerCase().replace(/\s+/g, '')}.example.com`,
+      lastContactedAt: job.updatedAt.slice(0, 10),
+      notes: `Reached out about the ${job.roleTitle} role.`,
+    },
+  ],
   timeline: [
     {
       id: `${job.id}-timeline-1`,

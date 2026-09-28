@@ -146,6 +146,20 @@
       "deleteNote": "Failed to delete note"
     }
   },
+  "contacts": {
+    "fallbackError": {
+      "listContacts": "Failed to load contacts",
+      "createContact": "Failed to create contact",
+      "updateContact": "Failed to update contact",
+      "deleteContact": "Failed to delete contact"
+    }
+  },
+  "contactType": {
+    "recruiter": "Recruiter",
+    "hiringManager": "Hiring manager",
+    "referral": "Referral",
+    "other": "Other"
+  },
   "tasks": {
     "fallbackError": {
       "listTasks": "Failed to load tasks",
@@ -176,6 +190,7 @@
       "overview": "Overview",
       "tasks": "Tasks",
       "notes": "Notes",
+      "contacts": "Contacts",
       "timeline": "Timeline",
       "ai": "AI"
     },
@@ -209,6 +224,31 @@
       "saveNoteLabel": "Save note from {{date}}",
       "deleteNote": "Delete",
       "deleteNoteLabel": "Delete note from {{date}}"
+    },
+    "contacts": {
+      "title": "Contacts",
+      "loading": "Loading contacts",
+      "loadErrorTitle": "Contacts could not be loaded",
+      "fields": {
+        "type": "Type",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "profileUrl": "Profile URL",
+        "lastContactedAt": "Last contacted",
+        "notes": "Notes"
+      },
+      "invalidEmail": "Enter a valid email address",
+      "invalidProfileUrl": "Profile URL must start with http:// or https://",
+      "addContact": "Add contact",
+      "saveContact": "Save contact",
+      "cancel": "Cancel",
+      "editContact": "Edit",
+      "editContactLabel": "Edit contact {{name}}",
+      "deleteContact": "Delete",
+      "deleteContactLabel": "Delete contact {{name}}",
+      "lastContactedLabel": "Last contacted {{date}}",
+      "notContactedYet": "Not contacted yet"
     },
     "timeline": {
       "title": "Timeline",

@@ -104,3 +104,23 @@ export const parseJsonResponse = async <TResponse>(response: Response): Promise<
 
   return (await response.json()) as TResponse;
 };
+
+/**
+ * Converts a wire null into the undefined the UI model uses. Shared across
+ * every domain's response mapper, since the backend sends `null` rather
+ * than omitting an empty field, and every UI model uses `undefined` for
+ * "not set" instead.
+ *
+ * @param {TValue | null} value Wire value that may be null.
+ * @returns {TValue | undefined} Undefined when the value was null.
+ */
+export const toOptional = <TValue>(value: TValue | null): TValue | undefined => value ?? undefined;
+
+/**
+ * Converts an omitted UI value into the explicit null the backend expects.
+ * The inverse of `toOptional`, used when building a request body.
+ *
+ * @param {TValue | undefined} value UI value that may be undefined.
+ * @returns {TValue | null} Null when the value was undefined.
+ */
+export const toNullable = <TValue>(value: TValue | undefined): TValue | null => value ?? null;
