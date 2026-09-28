@@ -62,3 +62,5 @@ internal const val PROFILE_URL_SCHEME_MESSAGE = "Profile URL must start with htt
 internal const val PROFILE_URL_SIZE_MESSAGE = "Profile URL must be at most 2048 characters"
 
 internal const val NOTES_SIZE_MESSAGE = "Notes must be at most 5000 characters"
+
+internal const val LAST_CONTACTED_AT_YEAR_MESSAGE = "Last contacted date must have a year between 0 and 9999"

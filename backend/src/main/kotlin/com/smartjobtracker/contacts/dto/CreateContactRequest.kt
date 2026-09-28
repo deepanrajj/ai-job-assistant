@@ -17,6 +17,7 @@ import java.time.LocalDate
  */
 data class CreateContactRequest(
     val type: ContactType,
+    @JsonDeserialize(using = TrimStringDeserializer::class)
     @field:NotBlank(message = NAME_BLANK_MESSAGE)
     @field:Size(max = MAX_NAME_LENGTH, message = NAME_SIZE_MESSAGE)
     val name: String,
@@ -31,6 +32,7 @@ data class CreateContactRequest(
     @field:Pattern(regexp = PROFILE_URL_PATTERN, message = PROFILE_URL_SCHEME_MESSAGE)
     @field:Size(max = MAX_PROFILE_URL_LENGTH, message = PROFILE_URL_SIZE_MESSAGE)
     val profileUrl: String? = null,
+    @field:FourDigitYear(message = LAST_CONTACTED_AT_YEAR_MESSAGE)
     val lastContactedAt: LocalDate? = null,
     @JsonDeserialize(using = TrimToNullStringDeserializer::class)
     @field:Size(max = MAX_NOTES_LENGTH, message = NOTES_SIZE_MESSAGE)

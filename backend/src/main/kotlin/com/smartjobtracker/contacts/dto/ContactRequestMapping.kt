@@ -37,3 +37,18 @@ internal class TrimToNullStringDeserializer : StdScalarDeserializer<String>(Stri
         ctxt: DeserializationContext,
     ): String? = ctxt.readValue(p, String::class.java).trimToNullIfBlank()
 }
+
+/**
+ * Trims a required text field while the request body is being read, so
+ * `@Size` checks the value `toCommand()` stores rather than the padded
+ * one. Unlike `TrimToNullStringDeserializer`, a blank result stays `""`
+ * instead of becoming null, so `@NotBlank` still rejects it with its own
+ * message. As with `TrimToNullStringDeserializer`, a JSON `null` never
+ * reaches it, so the value read here is never null.
+ */
+internal class TrimStringDeserializer : StdScalarDeserializer<String>(String::class.java) {
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext,
+    ): String = ctxt.readValue(p, String::class.java).trim()
+}

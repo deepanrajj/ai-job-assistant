@@ -3,6 +3,7 @@ package com.smartjobtracker.contacts
 import com.smartjobtracker.api.error.ApiErrorCode
 import com.smartjobtracker.api.error.ApiException
 import com.smartjobtracker.api.error.ApiExceptionHandler
+import com.smartjobtracker.contacts.dto.MAX_NAME_LENGTH
 import com.smartjobtracker.testsupport.contacts.FakeContactService
 import com.smartjobtracker.testsupport.contacts.createContactEntity
 import org.assertj.core.api.Assertions.assertThat
@@ -286,6 +287,50 @@ class ContactControllerTest {
 
         assertThat(contactService.lastCreateCommand.profileUrl)
             .isEqualTo("HTTPS://www.linkedin.com/in/jane-recruiter")
+    }
+
+    @Test
+    fun `accepts a maximum-length name padded with whitespace and stores it trimmed`() {
+        val jobId = UUID.randomUUID()
+        val name = "a".repeat(MAX_NAME_LENGTH)
+        contactService.createHandler = { j, _ -> createContactEntity(jobId = j) }
+
+        mockMvc
+            .perform(
+                post("/jobs/{jobId}/contacts", jobId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"type": "OTHER", "name": " $name "}"""),
+            ).andExpect(status().isCreated)
+
+        assertThat(contactService.lastCreateCommand.name).isEqualTo(name)
+    }
+
+    @Test
+    fun `rejects a last contacted date with a year outside four digits`() {
+        listOf("+10000-01-01", "-0001-01-01").forEach { lastContactedAt ->
+            mockMvc
+                .perform(
+                    post("/jobs/{jobId}/contacts", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """{"type": "OTHER", "name": "Someone", "lastContactedAt": "$lastContactedAt"}""",
+                        ),
+                ).andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("lastContactedAt"))
+        }
+    }
+
+    @Test
+    fun `rejects an update with a last contacted date beyond year 9999`() {
+        mockMvc
+            .perform(
+                put("/jobs/{jobId}/contacts/{contactId}", UUID.randomUUID(), UUID.randomUUID())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(VALID_CREATE_BODY.replace("2026-07-01", "+10000-01-01")),
+            ).andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("lastContactedAt"))
     }
 
     @Test

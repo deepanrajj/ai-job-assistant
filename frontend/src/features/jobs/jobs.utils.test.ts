@@ -55,6 +55,13 @@ describe('formatCalendarDate', () => {
   it('keeps a year below 100 as written instead of moving it to the 1900s', () => {
     expect(formatCalendarDate('0025-07-01', 'en')).toBe('Jul 1, 25');
   });
+
+  it('returns a value it cannot parse as-is instead of throwing', () => {
+    // Whether a signed year like "+10000-01-01" parses depends on the
+    // browser (V8 accepts it, the spec does not), so an input no engine
+    // parses stands in for it here.
+    expect(formatCalendarDate('not-a-date', 'en')).toBe('not-a-date');
+  });
 });
 
 describe('formatJobSalary', () => {

@@ -69,12 +69,19 @@ export const formatJobDate = (date: string, language: TLanguage): string =>
  * string itself, rather than `new Date(year, month - 1, day)`, also keeps
  * years 0-99 as written instead of mapping them to 1900-1999.
  *
+ * A value `new Date(...)` cannot parse, such as a signed year like
+ * `"+10000-01-01"`, is returned as-is: formatting an invalid date throws,
+ * and one bad stored value must not stop a whole panel from rendering.
+ *
  * @param {string} date Date-only string in `YYYY-MM-DD` form.
  * @param {TLanguage} language Active app language.
- * @returns {string} Localized display date.
+ * @returns {string} Localized display date, or the raw value when it cannot be parsed.
  */
-export const formatCalendarDate = (date: string, language: TLanguage): string =>
-  formatLocalizedDate(new Date(date), language, 'UTC');
+export const formatCalendarDate = (date: string, language: TLanguage): string => {
+  const parsed = new Date(date);
+
+  return Number.isNaN(parsed.getTime()) ? date : formatLocalizedDate(parsed, language, 'UTC');
+};
 
 /**
  * Formats a job salary range in thousands of euros.
