@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   buildContactRequestPayload,
@@ -171,9 +171,23 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     jobId: string;
   } | null>(null);
 
+  /**
+   * Numbers each reload so only the latest one may replace `lastLoaded`.
+   * `useAsyncMutation` already ignores a stale response for its own
+   * `data`, but still resolves the caller's promise with it; without this
+   * check, two overlapping reloads landing out of order would cache the
+   * older list, which the panel then falls back to during the next reload.
+   */
+  const latestReloadIdRef = useRef(0);
+
   const reload = useCallback(() => {
+    latestReloadIdRef.current += 1;
+    const reloadId = latestReloadIdRef.current;
+
     loadContacts(jobId).then(
-      (contacts) => setLastLoaded({ contacts, jobId }),
+      (contacts) => {
+        if (reloadId === latestReloadIdRef.current) setLastLoaded({ contacts, jobId });
+      },
       () => {
         // Error is already recorded in request state and rendered from it.
       },

@@ -465,6 +465,64 @@ describe('JobDetailContactsPanel', () => {
     expect(remainingSaveButton).toHaveAttribute('aria-busy', 'true');
   });
 
+  it('does not fall back to a stale list when overlapping reloads land out of order', async () => {
+    const secondId = MOCK_CONTACT_IDS.secondary;
+    const thirdId = 'a3333333-3333-4333-8333-333333333333';
+    const first = createMockContactResponse({
+      id: MOCK_CONTACT_IDS.primary,
+      name: 'First Contact',
+    });
+    const second = createMockContactResponse({ id: secondId, name: 'Second Contact' });
+    const third = createMockContactResponse({ id: thirdId, name: 'Third Contact' });
+    const pendingReloads: ((contacts: unknown[]) => void)[] = [];
+    let getCount = 0;
+    server.use(
+      http.get(mockContactsEndpoint, async () => {
+        getCount += 1;
+
+        if (getCount === 1) return HttpResponse.json([first, second, third]);
+
+        // Every reload after the first is held until the test resolves it.
+        const contacts = await new Promise<unknown[]>((resolve) => {
+          pendingReloads.push(resolve);
+        });
+
+        return HttpResponse.json(contacts);
+      }),
+      http.delete(
+        `${mockContactsEndpoint}/:contactId`,
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+      http.post(mockContactsEndpoint, () =>
+        HttpResponse.json(createMockContactResponse({ name: 'New Contact' }), { status: 201 }),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('Third Contact');
+    await user.click(screen.getByRole('button', { name: 'Delete contact Second Contact' }));
+    await waitFor(() => expect(pendingReloads).toHaveLength(1));
+    await user.click(screen.getByRole('button', { name: 'Delete contact Third Contact' }));
+    await waitFor(() => expect(pendingReloads).toHaveLength(2));
+
+    // The newer reload lands first, then the older one arrives late with
+    // a list that still has the third contact.
+    pendingReloads[1]([first]);
+    await waitFor(() => expect(screen.queryByText('Third Contact')).not.toBeInTheDocument());
+    pendingReloads[0]([first, third]);
+
+    // A later write starts another reload; while it is in flight the
+    // panel must show the newest list, not the late-arriving stale one.
+    const addContactForm = await getAddContactForm();
+    await user.type(within(addContactForm).getByLabelText('Name'), 'New Contact');
+    await user.click(within(addContactForm).getByRole('button', { name: 'Add contact' }));
+    await waitFor(() => expect(pendingReloads).toHaveLength(3));
+
+    expect(screen.getByText('First Contact')).toBeInTheDocument();
+    expect(screen.queryByText('Third Contact')).not.toBeInTheDocument();
+  });
+
   it('deletes a contact', async () => {
     let isDeleted = false;
     server.use(
