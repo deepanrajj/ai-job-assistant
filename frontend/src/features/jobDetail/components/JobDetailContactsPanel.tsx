@@ -18,7 +18,7 @@ import {
 } from '../../../services';
 import { useJobContacts } from '../useJobContacts';
 import { useTranslation } from '../../../i18n';
-import { formatJobDate } from '../../jobs/jobs.utils';
+import { formatCalendarDate } from '../../jobs/jobs.utils';
 import {
   CONTACT_TYPE_TRANSLATION_KEYS,
   type TJobContact,
@@ -235,7 +235,7 @@ const JobDetailContactItem: FC<IJobDetailContactItemProps> = ({
 
   const lastContactedLabel = contact.lastContactedAt
     ? t('jobDetail.contacts.lastContactedLabel', {
-        date: formatJobDate(contact.lastContactedAt, language),
+        date: formatCalendarDate(contact.lastContactedAt, language),
       })
     : t('jobDetail.contacts.notContactedYet');
 
@@ -307,7 +307,7 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
     contacts,
     createJobContact,
     deleteJobContact,
-    deletingContactId,
+    deletingContactIds,
     isCreating,
     isLoading,
     isMutating,
@@ -315,7 +315,7 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
     mutationError,
     reload,
     updateJobContact,
-    updatingContactId,
+    updatingContactIds,
   } = useJobContacts(jobId);
   const [newContactValues, setNewContactValues] =
     useState<IContactFormValues>(emptyContactFormValues);
@@ -395,15 +395,15 @@ const JobDetailContactsPanelComponent: FC<IJobDetailContactsPanelProps> = ({ job
 
       <ul className="space-y-4">
         {contacts.map((contact) => {
-          const isRowMutating =
-            updatingContactId === contact.id || deletingContactId === contact.id;
+          const isDeleting = deletingContactIds.has(contact.id);
+          const isSaving = updatingContactIds.has(contact.id);
 
           return (
             <MemoizedJobDetailContactItem
               contact={contact}
-              isDeleting={deletingContactId === contact.id}
-              isDisabled={isRowMutating}
-              isSaving={updatingContactId === contact.id}
+              isDeleting={isDeleting}
+              isDisabled={isSaving || isDeleting}
+              isSaving={isSaving}
               key={contact.id}
               onDeleteContact={handleDeleteContact}
               onSaveContact={handleSaveContact}

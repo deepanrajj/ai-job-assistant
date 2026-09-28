@@ -34,6 +34,20 @@ export const createLocalId = (
 ): string => `${prefix}-${randomId() ?? createFallbackId()}`;
 
 /**
+ * Formats a date in the short month/day/year style every job screen uses.
+ *
+ * @param {Date} date Date to format.
+ * @param {TLanguage} language Active app language.
+ * @returns {string} Localized display date.
+ */
+const formatLocalizedDate = (date: Date, language: TLanguage): string =>
+  new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+
+/**
  * Formats a job update date for the active app language.
  *
  * @param {string} date ISO date string to format.
@@ -41,11 +55,26 @@ export const createLocalId = (
  * @returns {string} Localized display date.
  */
 export const formatJobDate = (date: string, language: TLanguage): string =>
-  new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(date));
+  formatLocalizedDate(new Date(date), language);
+
+/**
+ * Formats a date-only value (`YYYY-MM-DD`, such as a contact's
+ * `lastContactedAt`) for the active app language.
+ *
+ * Unlike `formatJobDate`, this does not pass the value to `new Date(...)`:
+ * a date-only string parses as midnight UTC, which every timezone behind
+ * UTC renders as the previous day. Building the date from its parts keeps
+ * it on the same calendar day wherever the user is.
+ *
+ * @param {string} date Date-only string in `YYYY-MM-DD` form.
+ * @param {TLanguage} language Active app language.
+ * @returns {string} Localized display date.
+ */
+export const formatCalendarDate = (date: string, language: TLanguage): string => {
+  const [year, month, day] = date.split('-').map(Number);
+
+  return formatLocalizedDate(new Date(year, month - 1, day), language);
+};
 
 /**
  * Formats a job salary range in thousands of euros.

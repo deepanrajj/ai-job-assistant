@@ -104,13 +104,10 @@ class ContactControllerTest {
     }
 
     /**
-     * `email` is sent as exactly `""`, not whitespace: Bean Validation's
-     * `@Email` only skips its format check for a truly empty string, so a
-     * whitespace-only value like `"   "` would be rejected as a malformed
-     * address before `toCommand()` ever gets to blank it out. `profileUrl`
-     * has no such gap - `PROFILE_URL_PATTERN` treats whitespace-only the
-     * same as empty - so it is sent as whitespace here on purpose, to
-     * prove that branch.
+     * `email` is sent whitespace-only on purpose: Bean Validation's
+     * `@Email` would reject `"   "` as a malformed address if it saw the
+     * raw value, so this proves the field is trimmed to null before
+     * validation runs, not only afterwards in `toCommand()`.
      */
     @Test
     fun `trims text fields and stores blank optional fields as null`() {
@@ -126,7 +123,7 @@ class ContactControllerTest {
                         {
                           "type": "OTHER",
                           "name": "  Someone  ",
-                          "email": "",
+                          "email": "   ",
                           "phone": "  ",
                           "profileUrl": "   ",
                           "notes": "   "
@@ -161,6 +158,36 @@ class ContactControllerTest {
         assertThat(contactService.lastUpdateJobId).isEqualTo(jobId)
         assertThat(contactService.lastUpdateContactId).isEqualTo(contactId)
         assertThat(contactService.lastUpdateCommand.name).isEqualTo("Updated Name")
+    }
+
+    @Test
+    fun `trims optional fields on update before validating them`() {
+        val jobId = UUID.randomUUID()
+        val contactId = UUID.randomUUID()
+        contactService.updateHandler = { jId, cId, _ -> createContactEntity(jobId = jId, id = cId) }
+
+        mockMvc
+            .perform(
+                put("/jobs/{jobId}/contacts/{contactId}", jobId, contactId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "type": "OTHER",
+                          "name": "Someone",
+                          "email": "   ",
+                          "phone": null,
+                          "profileUrl": " https://www.linkedin.com/in/jane-recruiter ",
+                          "lastContactedAt": null,
+                          "notes": null
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isOk)
+
+        assertThat(contactService.lastUpdateCommand.email).isNull()
+        assertThat(contactService.lastUpdateCommand.profileUrl)
+            .isEqualTo("https://www.linkedin.com/in/jane-recruiter")
     }
 
     @Test
@@ -209,6 +236,56 @@ class ContactControllerTest {
             ).andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
             .andExpect(jsonPath("$.fieldErrors[0].field").value("name"))
+    }
+
+    @Test
+    fun `accepts padded email and profile url values and stores them trimmed`() {
+        val jobId = UUID.randomUUID()
+        contactService.createHandler = { j, _ -> createContactEntity(jobId = j) }
+
+        mockMvc
+            .perform(
+                post("/jobs/{jobId}/contacts", jobId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "type": "OTHER",
+                          "name": "Someone",
+                          "email": " jane@example.com ",
+                          "profileUrl": " https://www.linkedin.com/in/jane-recruiter "
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isCreated)
+
+        assertThat(contactService.lastCreateCommand.email).isEqualTo("jane@example.com")
+        assertThat(contactService.lastCreateCommand.profileUrl)
+            .isEqualTo("https://www.linkedin.com/in/jane-recruiter")
+    }
+
+    @Test
+    fun `accepts a profile url with an upper-case scheme`() {
+        val jobId = UUID.randomUUID()
+        contactService.createHandler = { j, _ -> createContactEntity(jobId = j) }
+
+        mockMvc
+            .perform(
+                post("/jobs/{jobId}/contacts", jobId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "type": "OTHER",
+                          "name": "Someone",
+                          "profileUrl": "HTTPS://www.linkedin.com/in/jane-recruiter"
+                        }
+                        """.trimIndent(),
+                    ),
+            ).andExpect(status().isCreated)
+
+        assertThat(contactService.lastCreateCommand.profileUrl)
+            .isEqualTo("HTTPS://www.linkedin.com/in/jane-recruiter")
     }
 
     @Test

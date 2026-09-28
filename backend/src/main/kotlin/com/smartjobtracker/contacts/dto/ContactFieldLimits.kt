@@ -28,14 +28,17 @@ internal const val MAX_NOTES_LENGTH = 5000
  * `javascript:`, so the scheme is checked here rather than trusting that
  * parse alone.
  *
+ * The scheme is matched case-insensitively (`(?i:...)`), as URL schemes
+ * are, and as the frontend's `isValidProfileUrl()` in `contacts.utils.ts`
+ * already does with its `/i` flag - otherwise a pasted
+ * `HTTPS://www.linkedin.com/...` passed the form and then failed here.
+ *
  * `^\s*$` (rather than `^$`) treats a whitespace-only value the same as
- * an empty one, matching `toCommand()`'s own blank-to-null handling and
- * the frontend's `isValidProfileUrl()` in `contacts.utils.ts` - without
- * it, a caller sending whitespace (any client that skips this app's own
- * pre-trim) got a confusing "must start with http(s)" error for a value
- * that was really just unset.
+ * an empty one. `TrimToNullStringDeserializer` normally turns such a value
+ * into null before validation runs, so this is a second line of defense
+ * for any path that binds the DTO without it.
  */
-internal const val PROFILE_URL_PATTERN = "^\\s*$|^https?://.*"
+internal const val PROFILE_URL_PATTERN = "^\\s*$|^(?i:https?)://.*"
 
 /**
  * Validation messages shared between `CreateContactRequest` and

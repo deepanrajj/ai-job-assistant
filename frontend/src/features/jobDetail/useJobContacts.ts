@@ -52,7 +52,7 @@ export interface IJobContactsState {
   contacts: TJobContact[];
   createJobContact: (values: IContactFormValues) => Promise<void>;
   deleteJobContact: (contactId: string) => Promise<void>;
-  deletingContactId: string | null;
+  deletingContactIds: ReadonlySet<string>;
   isCreating: boolean;
   isLoading: boolean;
   isMutating: boolean;
@@ -60,7 +60,7 @@ export interface IJobContactsState {
   mutationError: AppError | null;
   reload: () => void;
   updateJobContact: (contactId: string, values: IContactFormValues) => Promise<void>;
-  updatingContactId: string | null;
+  updatingContactIds: ReadonlySet<string>;
 }
 
 /**
@@ -81,6 +81,30 @@ const putContactFields = ({
 
 const removeContactFields = ({ contactId, jobId }: IDeleteJobContactInput): Promise<void> =>
   deleteContact(jobId, contactId);
+
+/**
+ * Returns a copy of `ids` with `id` added or removed, for use as a state
+ * updater so overlapping writes each change only their own entry.
+ *
+ * @param {ReadonlySet<string>} ids Current set of busy contact ids.
+ * @param {string} id Contact id to add or remove.
+ * @param {boolean} isBusy Whether the id should be in the result.
+ * @returns {ReadonlySet<string>} Updated set of busy contact ids.
+ */
+const toggleContactId = (
+  ids: ReadonlySet<string>,
+  id: string,
+  isBusy: boolean,
+): ReadonlySet<string> => {
+  const next = new Set(ids);
+
+  if (isBusy) next.add(id);
+  else next.delete(id);
+
+  return next;
+};
+
+const noContactIds: ReadonlySet<string> = new Set();
 
 /**
  * Loads a job's contacts from the backend and offers create, update, and
@@ -124,26 +148,56 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
   const [mutationError, setMutationError] = useState<AppError | null>(null);
 
   /**
-   * Tracks which contact's update/delete is in flight, so `aria-busy` on a
-   * contact row can name that row specifically instead of every row sharing
-   * `isMutating`.
+   * Tracks which contacts' updates/deletes are in flight, so `aria-busy` on
+   * a contact row can name that row specifically instead of every row
+   * sharing `isMutating`. A set rather than a single id: rows other than
+   * the busy one stay enabled, so two rows can be saving at once, and a
+   * single id would let the first one to finish clear the other's marker
+   * while it is still in flight.
    */
-  const [updatingContactId, setUpdatingContactId] = useState<string | null>(null);
-  const [deletingContactId, setDeletingContactId] = useState<string | null>(null);
+  const [updatingContactIds, setUpdatingContactIds] = useState(noContactIds);
+  const [deletingContactIds, setDeletingContactIds] = useState(noContactIds);
+
+  /**
+   * The last list this job loaded successfully. `useAsyncMutation` clears
+   * `data` the moment a reload starts, so without this every write's
+   * reload would briefly empty the list and swap the panel to its loading
+   * state, unmounting every row and discarding any edit the user has open
+   * in a row other than the one that was written. Keyed by job so a
+   * different job never shows this one's contacts.
+   */
+  const [lastLoaded, setLastLoaded] = useState<{
+    contacts: TContactResponse[];
+    jobId: string;
+  } | null>(null);
 
   const reload = useCallback(() => {
-    loadContacts(jobId).catch(() => {
-      // Error is already recorded in request state and rendered from it.
-    });
+    loadContacts(jobId).then(
+      (contacts) => setLastLoaded({ contacts, jobId }),
+      () => {
+        // Error is already recorded in request state and rendered from it.
+      },
+    );
   }, [jobId, loadContacts]);
 
   useEffect(() => {
     reload();
   }, [reload]);
 
+  /**
+   * Prefers the request's own `data`, which `useAsyncMutation` guards
+   * against stale responses, and only falls back to the last loaded list
+   * while a reload is in flight.
+   */
+  const loadedContacts = Array.isArray(data)
+    ? data
+    : lastLoaded?.jobId === jobId
+      ? lastLoaded.contacts
+      : null;
+
   const contacts = useMemo(
-    () => (Array.isArray(data) ? data.map(mapContactResponseToJobContact) : []),
-    [data],
+    () => (loadedContacts ? loadedContacts.map(mapContactResponseToJobContact) : []),
+    [loadedContacts],
   );
 
   /**
@@ -180,10 +234,10 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
 
   const updateJobContact = useCallback(
     (contactId: string, values: IContactFormValues) => {
-      setUpdatingContactId(contactId);
+      setUpdatingContactIds((ids) => toggleContactId(ids, contactId, true));
 
       return settleMutation(putContact({ contactId, jobId, values })).finally(() =>
-        setUpdatingContactId(null),
+        setUpdatingContactIds((ids) => toggleContactId(ids, contactId, false)),
       );
     },
     [jobId, putContact, settleMutation],
@@ -191,10 +245,10 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
 
   const deleteJobContact = useCallback(
     (contactId: string) => {
-      setDeletingContactId(contactId);
+      setDeletingContactIds((ids) => toggleContactId(ids, contactId, true));
 
       return settleMutation(removeContact({ contactId, jobId })).finally(() =>
-        setDeletingContactId(null),
+        setDeletingContactIds((ids) => toggleContactId(ids, contactId, false)),
       );
     },
     [jobId, removeContact, settleMutation],
@@ -204,14 +258,14 @@ export const useJobContacts = (jobId: string): IJobContactsState => {
     contacts,
     createJobContact,
     deleteJobContact,
-    deletingContactId,
+    deletingContactIds,
     isCreating,
-    isLoading: isIdle || isLoading,
+    isLoading: (isIdle || isLoading) && !loadedContacts,
     isMutating: isCreating || isUpdating || isDeleting,
     loadError,
     mutationError,
     reload,
     updateJobContact,
-    updatingContactId,
+    updatingContactIds,
   };
 };

@@ -121,6 +121,7 @@ describe('isValidProfileUrl', () => {
     'https://www.linkedin.com/in/jane-recruiter',
     'http://example.com',
     '  https://example.com  ',
+    'HTTPS://www.linkedin.com/in/jane-recruiter',
   ])('accepts %j', (value) => {
     expect(isValidProfileUrl(value)).toBe(true);
   });

@@ -356,6 +356,115 @@ describe('JobDetailContactsPanel', () => {
     expect(screen.getByRole('button', { name: 'Edit contact Second Contact' })).not.toBeDisabled();
   });
 
+  it("keeps another row's unsaved edits when a different contact is deleted", async () => {
+    const otherContactId = MOCK_CONTACT_IDS.secondary;
+    let isOtherDeleted = false;
+    let finishReload: () => void = () => undefined;
+    server.use(
+      http.get(mockContactsEndpoint, async () => {
+        // Holds the post-delete reload open, so the assertions below run
+        // while it is in flight rather than after it has already landed.
+        if (isOtherDeleted)
+          await new Promise<void>((resolve) => {
+            finishReload = resolve;
+          });
+
+        return HttpResponse.json([
+          createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'First Contact' }),
+          ...(isOtherDeleted
+            ? []
+            : [createMockContactResponse({ id: otherContactId, name: 'Second Contact' })]),
+        ]);
+      }),
+      http.delete(`${mockContactsEndpoint}/${otherContactId}`, () => {
+        isOtherDeleted = true;
+
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('First Contact');
+    await user.click(screen.getByRole('button', { name: 'Edit contact First Contact' }));
+    const nameInputs = screen.getAllByLabelText('Name');
+    const editNameInput = nameInputs[nameInputs.length - 1];
+    await user.clear(editNameInput);
+    await user.type(editNameInput, 'Typed But Unsaved');
+
+    await user.click(screen.getByRole('button', { name: 'Delete contact Second Contact' }));
+
+    // The delete's reload must not unmount the rows, neither while it is in
+    // flight nor once it lands: the first contact stays open for editing
+    // with the typed value intact.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Delete contact Second Contact' }),
+      ).not.toHaveAttribute('aria-busy', 'true'),
+    );
+    expect(screen.queryByText('Loading contacts')).not.toBeInTheDocument();
+    expect(editNameInput).toBeInTheDocument();
+
+    finishReload();
+
+    await waitFor(() => expect(screen.queryByText('Second Contact')).not.toBeInTheDocument());
+    expect(editNameInput).toBeInTheDocument();
+    expect(editNameInput).toHaveValue('Typed But Unsaved');
+  });
+
+  it("keeps a row busy while its save is in flight after another row's save finishes", async () => {
+    const otherContactId = MOCK_CONTACT_IDS.secondary;
+    let resolveFirstSave: () => void = () => undefined;
+    server.use(
+      http.get(mockContactsEndpoint, () =>
+        HttpResponse.json([
+          createMockContactResponse({ id: MOCK_CONTACT_IDS.primary, name: 'First Contact' }),
+          createMockContactResponse({ id: otherContactId, name: 'Second Contact' }),
+        ]),
+      ),
+      http.put(
+        mockContactEndpoint,
+        () =>
+          new Promise<Response>((resolve) => {
+            resolveFirstSave = () =>
+              resolve(
+                HttpResponse.json(
+                  createMockContactResponse({
+                    id: MOCK_CONTACT_IDS.primary,
+                    name: 'First Contact',
+                  }),
+                ),
+              );
+          }),
+      ),
+      http.put(`${mockContactsEndpoint}/${otherContactId}`, () => new Promise(() => {})),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<JobDetailContactsPanel jobId={MOCK_JOB_IDS.celonis} />);
+
+    await screen.findByText('First Contact');
+    await user.click(screen.getByRole('button', { name: 'Edit contact First Contact' }));
+    await user.click(screen.getByRole('button', { name: 'Edit contact Second Contact' }));
+
+    const [firstSaveButton, secondSaveButton] = screen.getAllByRole('button', {
+      name: 'Save contact',
+    });
+    await user.click(firstSaveButton);
+    await user.click(secondSaveButton);
+
+    resolveFirstSave();
+
+    // The first row closes once its save lands; the second row's save is
+    // still in flight, so it must stay busy and disabled.
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: 'Save contact' })).toHaveLength(1),
+    );
+    const [remainingSaveButton] = screen.getAllByRole('button', { name: 'Save contact' });
+    expect(remainingSaveButton).toBe(secondSaveButton);
+    expect(remainingSaveButton).toBeDisabled();
+    expect(remainingSaveButton).toHaveAttribute('aria-busy', 'true');
+  });
+
   it('deletes a contact', async () => {
     let isDeleted = false;
     server.use(
