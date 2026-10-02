@@ -21,6 +21,10 @@ export const jobDetailTabs = [
     labelKey: 'jobDetail.tabs.contacts',
   },
   {
+    id: 'reminders',
+    labelKey: 'jobDetail.tabs.reminders',
+  },
+  {
     id: 'timeline',
     labelKey: 'jobDetail.tabs.timeline',
   },

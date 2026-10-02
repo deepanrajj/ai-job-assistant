@@ -2,8 +2,10 @@ import { useMemo, type FC } from 'react';
 
 import { Button, ErrorState, LoadingState } from '../../components/ui';
 import { DashboardMetrics } from '../../features/dashboard/components/DashboardMetrics';
+import { DashboardNextReminders } from '../../features/dashboard/components/DashboardNextReminders';
 import { DashboardRecentActivity } from '../../features/dashboard/components/DashboardRecentActivity';
 import { DashboardStatusOverview } from '../../features/dashboard/components/DashboardStatusOverview';
+import type { INextRemindersState } from '../../features/dashboard/useNextReminders';
 import { useTranslation } from '../../i18n';
 import { getDashboardData } from '../../features/dashboard/dashboard.utils';
 import type { AppError } from '../../errors';
@@ -16,16 +18,28 @@ interface IDashboardPageProps {
   error: AppError | null;
   isLoading: boolean;
   jobs: TJob[];
+  /**
+   * Loaded separately from `jobs`, so its own loading and error states
+   * render inside the reminders card and never replace the page.
+   */
+  nextReminders: INextRemindersState;
   onRetry: () => void;
 }
 
 /**
- * Renders dashboard metrics, status distribution, and recent job activity.
+ * Renders dashboard metrics, the next reminders, status distribution, and
+ * recent job activity.
  *
  * @param {IDashboardPageProps} props Component props.
  * @returns {JSX.Element} Smart job tracker dashboard.
  */
-export const DashboardPage: FC<IDashboardPageProps> = ({ error, isLoading, jobs, onRetry }) => {
+export const DashboardPage: FC<IDashboardPageProps> = ({
+  error,
+  isLoading,
+  jobs,
+  nextReminders,
+  onRetry,
+}) => {
   const { t } = useTranslation();
   const { activeJobCount, recentJobs, statusCounts, totalJobCount } = useMemo(
     () => getDashboardData(jobs),
@@ -49,6 +63,14 @@ export const DashboardPage: FC<IDashboardPageProps> = ({ error, isLoading, jobs,
         activeJobCount={activeJobCount}
         statusCounts={statusCounts}
         totalJobCount={totalJobCount}
+      />
+
+      <DashboardNextReminders
+        error={nextReminders.error}
+        isLoading={nextReminders.isLoading}
+        jobs={jobs}
+        onRetry={nextReminders.reload}
+        reminders={nextReminders.reminders}
       />
 
       <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
