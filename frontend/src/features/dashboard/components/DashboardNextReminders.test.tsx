@@ -54,7 +54,7 @@ describe('DashboardNextReminders', () => {
     expect(
       within(links[0]).getByText(/Follow-up · Celonis - Senior Frontend Engineer/),
     ).toBeInTheDocument();
-    expect(within(links[0]).getByText(/^Overdue since/)).toBeInTheDocument();
+    expect(within(links[0]).getByText(/^Overdue · was due/)).toBeInTheDocument();
     expect(within(links[1]).getByText(/^Task · Personio/)).toBeInTheDocument();
     expect(within(links[1]).getByText('Due today')).toBeInTheDocument();
   });

@@ -62,7 +62,7 @@ describe('JobDetailRemindersPanel', () => {
     renderPanel();
 
     expect(await screen.findByText('Overdue follow-up')).toBeInTheDocument();
-    expect(within(getRow('Overdue follow-up')).getByText(/^Overdue since/)).toBeInTheDocument();
+    expect(within(getRow('Overdue follow-up')).getByText(/^Overdue · was due/)).toBeInTheDocument();
     expect(within(getRow('Deadline today')).getByText('Due today')).toBeInTheDocument();
     expect(within(getRow('Deadline today')).getByText('Application deadline')).toBeInTheDocument();
     expect(within(getRow('Prepare interview')).getByText('Due May 10, 2999')).toBeInTheDocument();

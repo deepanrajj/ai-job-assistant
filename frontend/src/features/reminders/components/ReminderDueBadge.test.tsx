@@ -5,10 +5,10 @@ import { ReminderDueBadge } from './ReminderDueBadge';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 
 describe('ReminderDueBadge', () => {
-  it('says how long an overdue reminder has been due, in the danger colour', () => {
+  it('says when an overdue reminder was due, in the danger colour', () => {
     renderWithProviders(<ReminderDueBadge dueDate="2026-05-10" dueState="overdue" />);
 
-    expect(screen.getByText('Overdue since May 10, 2026')).toHaveClass('bg-danger-50');
+    expect(screen.getByText('Overdue · was due May 10, 2026')).toHaveClass('bg-danger-50');
   });
 
   it('says a reminder is due today, in the warning colour', () => {

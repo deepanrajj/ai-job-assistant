@@ -169,7 +169,7 @@
       "deleteReminder": "Failed to delete reminder",
       "listNextReminders": "Failed to load upcoming reminders"
     },
-    "overdue": "Overdue since {{date}}",
+    "overdue": "Overdue · was due {{date}}",
     "dueToday": "Due today",
     "dueOn": "Due {{date}}"
   },

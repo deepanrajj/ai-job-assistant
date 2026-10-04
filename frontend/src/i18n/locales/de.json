@@ -169,7 +169,7 @@
       "deleteReminder": "Erinnerung konnte nicht gelöscht werden",
       "listNextReminders": "Anstehende Erinnerungen konnten nicht geladen werden"
     },
-    "overdue": "Überfällig seit {{date}}",
+    "overdue": "Überfällig · fällig am {{date}}",
     "dueToday": "Heute fällig",
     "dueOn": "Fällig am {{date}}"
   },
