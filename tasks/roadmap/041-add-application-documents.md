@@ -1,5 +1,17 @@
 # Task 041 - Add Application Documents
 
+Status: In progress - frontend complete behind a feature flag, backend pending
+
+Progress is tracked in the
+[plan](../../docs/business/041-add-application-documents-plan.md#progress).
+
+- [ ] **Remove the temporary document mock and feature flag once the
+  backend lands.** Delete `frontend/src/services/documents/documents.mock.ts`
+  and its test, the `USE_MOCK_DOCUMENTS` branches and import in
+  `documents.service.ts`, and `DOCUMENTS_FEATURE_ENABLED` with the places
+  that read it. Until then built images hide the documents UI, and the
+  mock runs only in the Vite dev server.
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.

@@ -2,6 +2,7 @@ import type { FC } from 'react';
 
 import { JobDetailAiPanel } from './JobDetailAiPanel';
 import { JobDetailContactsPanel } from './JobDetailContactsPanel';
+import { JobDetailDocumentsPanel } from './JobDetailDocumentsPanel';
 import { JobDetailNotesPanel } from './JobDetailNotesPanel';
 import { JobDetailOverviewPanel } from './JobDetailOverviewPanel';
 import { JobDetailRemindersPanel } from './JobDetailRemindersPanel';
@@ -43,6 +44,8 @@ export const JobDetailActivePanel: FC<IJobDetailActivePanelProps> = ({
   if (activeTab === 'notes') return <JobDetailNotesPanel jobId={job.id} key={job.id} />;
 
   if (activeTab === 'contacts') return <JobDetailContactsPanel jobId={job.id} key={job.id} />;
+
+  if (activeTab === 'documents') return <JobDetailDocumentsPanel jobId={job.id} key={job.id} />;
 
   if (activeTab === 'reminders') return <JobDetailRemindersPanel jobId={job.id} key={job.id} />;
 

@@ -129,6 +129,16 @@
       "responseRateUnavailable": "Needs recorded employer responses, which the tracker does not capture yet. A rejection or withdrawal alone is not counted as a response."
     }
   },
+  "applications": {
+    "title": "Applications",
+    "loading": "Loading applications",
+    "loadErrorTitle": "Applications could not be loaded",
+    "emptyTitle": "No application documents yet",
+    "emptyDescription": "Open a job and use its Documents tab to record what you sent with each application.",
+    "openJob": "Open job",
+    "openLink": "Open link",
+    "documentsFor": "Documents for {{company}}"
+  },
   "jobs": {
     "savedJobs": "Saved jobs",
     "countSummary": "{{shown}} of {{total}} opportunities shown",
@@ -183,6 +193,15 @@
       "deleteContact": "Failed to delete contact"
     }
   },
+  "documents": {
+    "fallbackError": {
+      "listDocuments": "Failed to load documents",
+      "createDocument": "Failed to create document",
+      "updateDocument": "Failed to update document",
+      "deleteDocument": "Failed to delete document",
+      "listAllDocuments": "Failed to load application documents"
+    }
+  },
   "reminders": {
     "fallbackError": {
       "listReminders": "Failed to load reminders",
@@ -199,6 +218,12 @@
     "recruiter": "Recruiter",
     "hiringManager": "Hiring manager",
     "referral": "Referral",
+    "other": "Other"
+  },
+  "documentType": {
+    "cv": "CV",
+    "coverLetter": "Cover letter",
+    "portfolio": "Portfolio",
     "other": "Other"
   },
   "reminderType": {
@@ -239,6 +264,7 @@
       "tasks": "Tasks",
       "notes": "Notes",
       "contacts": "Contacts",
+      "documents": "Documents",
       "reminders": "Reminders",
       "timeline": "Timeline",
       "ai": "AI"
@@ -298,6 +324,33 @@
       "deleteContactLabel": "Delete contact {{name}}",
       "lastContactedLabel": "Last contacted {{date}}",
       "notContactedYet": "Not contacted yet"
+    },
+    "documents": {
+      "title": "Documents",
+      "subtitle": "What you sent with this application. Links and notes only; no files are uploaded.",
+      "loading": "Loading documents",
+      "loadErrorTitle": "Documents could not be loaded",
+      "fields": {
+        "type": "Type",
+        "title": "Version label",
+        "url": "Link",
+        "submittedAt": "Submitted on",
+        "notes": "Notes"
+      },
+      "titlePlaceholder": "CV - backend v3",
+      "invalidUrl": "Link must start with http:// or https://",
+      "addDocument": "Add document",
+      "saveDocument": "Save document",
+      "cancel": "Cancel",
+      "editDocument": "Edit",
+      "editDocumentLabel": "Edit document {{title}}",
+      "deleteDocument": "Delete",
+      "deleteDocumentLabel": "Delete document {{title}}",
+      "submittedOn": "Submitted {{date}}",
+      "notSentYet": "Not sent yet",
+      "listLabel": "Documents for this job",
+      "emptyTitle": "No documents yet",
+      "emptyDescription": "Record which CV, cover letter, or portfolio link you sent, and when."
     },
     "reminders": {
       "title": "Reminders",
