@@ -1,3 +1,4 @@
+import { MOCK_JOB_IDS } from './mockJobs';
 import type { TTimelineEventResponse } from '../services';
 
 /**
@@ -20,6 +21,7 @@ export const createMockTimelineEventResponse = (
   overrides: Partial<TTimelineEventResponse> = {},
 ): TTimelineEventResponse => ({
   id: MOCK_TIMELINE_EVENT_IDS.primary,
+  jobId: MOCK_JOB_IDS.celonis,
   type: 'STATUS_CHANGE',
   description: 'Status changed from APPLIED to INTERVIEW.',
   previousStatus: 'APPLIED',

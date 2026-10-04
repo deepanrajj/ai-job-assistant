@@ -12,7 +12,7 @@ before adding paid AI workflows.
 - [ ] [Add reminders](../../tasks/roadmap/040-add-reminders.md).
 - [ ] [Add application documents](../../tasks/roadmap/041-add-application-documents.md).
 - [ ] [Add calendar view](../../tasks/roadmap/042-add-calendar-view.md).
-- [ ] [Add dashboard insights](../../tasks/roadmap/043-add-dashboard-insights.md).
+- [x] [Add dashboard insights](../../tasks/roadmap/043-add-dashboard-insights.md).
 - [ ] [Add profile and resume library](../../tasks/roadmap/044-add-profile-resume-library.md).
 - [ ] [Add skills inventory and job preferences](../../tasks/roadmap/045-add-skills-inventory-and-preferences.md).
 - [ ] [Add Discover saved searches](../../tasks/roadmap/046-add-discover-saved-searches.md).

@@ -1,6 +1,6 @@
 # Task 043 - Add Dashboard Insights
 
-Status: Not started
+Status: Completed
 
 Related plan: [Product improvements - analytics history](../../docs/business/product-improvements-and-recommendations-plan.md#analytics-must-use-history).
 
@@ -75,11 +75,11 @@ Run the affected Vitest files, `npm run frontend:verify`, then
 
 ## Acceptance Criteria
 
-- [ ] Dashboard shows meaningful tracker insights.
-- [ ] Calculations are tested.
-- [ ] Metrics use structured history and display their period and counts.
-- [ ] Missing evidence produces an explained unavailable state.
-- [ ] No AI is required.
+- [x] Dashboard shows meaningful tracker insights.
+- [x] Calculations are tested.
+- [x] Metrics use structured history and display their period and counts.
+- [x] Missing evidence produces an explained unavailable state.
+- [x] No AI is required.
 
 ## Commit
 

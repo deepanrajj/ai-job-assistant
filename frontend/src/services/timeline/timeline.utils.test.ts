@@ -8,6 +8,7 @@ describe('timeline.utils', () => {
     it('maps a status-change response and drops previousStatus/nextStatus', () => {
       const response: TTimelineEventResponse = {
         id: 'a3f1c9d2-8b4e-4f6a-9c2d-1e5f7a8b9c0d',
+        jobId: '6d58e422-3f47-4fd3-b08c-84b3a75347fc',
         type: 'STATUS_CHANGE',
         description: 'Status changed from APPLIED to INTERVIEW.',
         previousStatus: 'APPLIED',

@@ -16,13 +16,19 @@ export const handlers = [
   // tab-switching or page behaviour. An empty list is always a safe default
   // for those; a test that cares what tasks, notes, contacts, reminders, or
   // timeline events render calls `server.use` with its own handler. The
-  // same holds for the dashboard's next reminders, which any test rendering
-  // the dashboard route requests alongside its own `GET /api/jobs`.
+  // same holds for the dashboard's next reminders and status history, which
+  // any test rendering the dashboard route requests alongside its own
+  // `GET /api/jobs`.
   http.get('/api/jobs/:jobId/tasks', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/notes', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/contacts', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/reminders', () => HttpResponse.json([])),
   http.get('/api/reminders/next', () => HttpResponse.json([])),
+  // The dashboard's status history: one empty page. A test that cares what
+  // history the insights see calls `server.use` with its own pages.
+  http.get('/api/timeline-events', () =>
+    HttpResponse.json({ content: [], page: 0, size: 100, totalElements: 0, totalPages: 0 }),
+  ),
   http.get('/api/jobs/:jobId/timeline', () => HttpResponse.json([])),
   http.post('/api/ai/analyze-job', () =>
     HttpResponse.json<TJobAiAnalysis>({

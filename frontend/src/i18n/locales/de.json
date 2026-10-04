@@ -105,7 +105,29 @@
     "noReminders": "Nichts fällig",
     "noRemindersDescription": "Erinnerungen und Aufgaben mit Datum aus deinen Jobs erscheinen hier.",
     "viewJobReminders": "{{company}} für Erinnerung {{title}} öffnen",
-    "unknownJob": "Unbekannter Job"
+    "unknownJob": "Unbekannter Job",
+    "insights": {
+      "title": "Einblicke in deine Jobsuche",
+      "loading": "Einblicke werden geladen",
+      "loadErrorTitle": "Einblicke konnten nicht geladen werden",
+      "loadErrorDescription": "Einblicke brauchen den vollständigen Statusverlauf, deshalb wird aus einem Teil davon nichts angezeigt.",
+      "applicationsThisWeek": "Bewerbungen diese Woche",
+      "weekRange": "{{start}} - {{end}}",
+      "unknownDatesExcluded": "Nicht gezählt, ohne erfasstes Bewerbungsdatum: {{count}}",
+      "interviewRate": "Interviewquote",
+      "interviewRateDetail": "{{interviewed}} von {{total}} erfassten Bewerbungen führten zu einem Interview",
+      "interviewRateUnavailable": "Noch keine Bewerbung hat ein erfasstes Datum. Setze einen Job auf Beworben, um zu beginnen.",
+      "notEnoughData": "Zu wenig Daten",
+      "agingApplications": "Warten auf Antwort",
+      "agingDetail": "Jobs noch im Status Beworben, älteste Bewerbung zuerst",
+      "agingUnknown": "Im Status Beworben ohne erfasstes Datum: {{count}}",
+      "agingListLabel": "Älteste Bewerbungen",
+      "ageDay": "{{count}} Tag",
+      "ageDays": "{{count}} Tage",
+      "responseRate": "Antwortquote",
+      "unavailable": "Nicht verfügbar",
+      "responseRateUnavailable": "Braucht erfasste Antworten von Arbeitgebern, die der Tracker noch nicht speichert. Eine Absage oder ein Rückzug allein zählt nicht als Antwort."
+    }
   },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
@@ -195,7 +217,8 @@
   },
   "timeline": {
     "fallbackError": {
-      "listTimeline": "Laden des Verlaufs fehlgeschlagen"
+      "listTimeline": "Laden des Verlaufs fehlgeschlagen",
+      "listAllTimeline": "Statusverlauf konnte nicht geladen werden"
     }
   },
   "jobDetail": {

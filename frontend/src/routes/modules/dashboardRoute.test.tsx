@@ -10,6 +10,7 @@ import {
 import { renderWithRouter } from '../../test/renderWithRouter';
 import { MOCK_JOB_IDS, createMockJobResponses } from '../../test/mockJobs';
 import { createMockNextReminderResponse } from '../../test/mockReminders';
+import { createMockTimelineEventResponse } from '../../test/mockTimeline';
 import { server } from '../../test/server';
 
 describe('dashboardRoute', () => {
@@ -76,5 +77,38 @@ describe('dashboardRoute', () => {
     expect(await screen.findByText('Celonis')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Next reminders' })).not.toBeInTheDocument();
     expect(reminderRequests).toBe(0);
+  });
+
+  it('computes the insights from the status history the backend returns', async () => {
+    server.use(
+      http.get('/api/timeline-events', () =>
+        HttpResponse.json({
+          content: [
+            createMockTimelineEventResponse({
+              createdAt: '2026-01-05T09:00:00Z',
+              id: 'applied',
+              jobId: MOCK_JOB_IDS.celonis,
+              nextStatus: 'APPLIED',
+            }),
+            createMockTimelineEventResponse({
+              createdAt: '2026-01-12T09:00:00Z',
+              id: 'interview',
+              jobId: MOCK_JOB_IDS.celonis,
+              nextStatus: 'INTERVIEW',
+            }),
+          ],
+          page: 0,
+          size: 100,
+          totalElements: 2,
+          totalPages: 1,
+        }),
+      ),
+    );
+    renderWithRouter(<DashboardRoute />);
+
+    expect(
+      await screen.findByText('1 of 1 recorded applications reached an interview'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('100%')).toBeInTheDocument();
   });
 });

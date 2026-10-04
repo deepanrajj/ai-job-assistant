@@ -2,11 +2,13 @@ import type { FC } from 'react';
 
 import { DashboardPage } from '../../pages/dashboard/DashboardPage';
 import { useNextReminders } from '../../features/dashboard/useNextReminders';
+import { useStatusHistory } from '../../features/dashboard/useStatusHistory';
 import { useJobsList } from '../../features/jobs';
 import { REMINDERS_FEATURE_ENABLED } from '../../features/reminders/reminders.constants';
 
 /**
- * Renders the dashboard with saved jobs and the next reminders.
+ * Renders the dashboard with saved jobs, status history, and the next
+ * reminders.
  *
  * The route owns the requests, as `jobsRoute` does, because `DashboardPage`
  * derives its metrics from the job list and owns no state of its own. That
@@ -19,6 +21,7 @@ import { REMINDERS_FEATURE_ENABLED } from '../../features/reminders/reminders.co
 export const DashboardRouteWithReminders: FC = () => {
   const { error, isLoading, jobs, reload } = useJobsList();
   const nextReminders = useNextReminders();
+  const statusHistory = useStatusHistory();
 
   return (
     <DashboardPage
@@ -27,19 +30,30 @@ export const DashboardRouteWithReminders: FC = () => {
       jobs={jobs}
       nextReminders={nextReminders}
       onRetry={reload}
+      statusHistory={statusHistory}
     />
   );
 };
 
 /**
  * Renders the dashboard without reminders, making no reminder request.
+ * Status history still loads: the insights do not depend on reminders.
  *
  * @returns {JSX.Element} Dashboard route content.
  */
 export const DashboardRouteWithoutReminders: FC = () => {
   const { error, isLoading, jobs, reload } = useJobsList();
+  const statusHistory = useStatusHistory();
 
-  return <DashboardPage error={error} isLoading={isLoading} jobs={jobs} onRetry={reload} />;
+  return (
+    <DashboardPage
+      error={error}
+      isLoading={isLoading}
+      jobs={jobs}
+      onRetry={reload}
+      statusHistory={statusHistory}
+    />
+  );
 };
 
 /**
