@@ -1,6 +1,7 @@
 export * from './ai';
 export * from './api';
 export * from './contacts';
+export * from './documents';
 export * from './jobs';
 export * from './notes';
 export * from './reminders';

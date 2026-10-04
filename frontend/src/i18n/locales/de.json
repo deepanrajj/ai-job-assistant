@@ -129,6 +129,16 @@
       "responseRateUnavailable": "Braucht erfasste Antworten von Arbeitgebern, die der Tracker noch nicht speichert. Eine Absage oder ein Rückzug allein zählt nicht als Antwort."
     }
   },
+  "applications": {
+    "title": "Bewerbungen",
+    "loading": "Bewerbungen werden geladen",
+    "loadErrorTitle": "Bewerbungen konnten nicht geladen werden",
+    "emptyTitle": "Noch keine Bewerbungsunterlagen",
+    "emptyDescription": "Öffne einen Job und halte im Tab Unterlagen fest, was du mit jeder Bewerbung verschickt hast.",
+    "openJob": "Job öffnen",
+    "openLink": "Link öffnen",
+    "documentsFor": "Unterlagen für {{company}}"
+  },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
     "countSummary": "{{shown}} von {{total}} Chancen angezeigt",
@@ -183,6 +193,15 @@
       "deleteContact": "Löschen des Kontakts fehlgeschlagen"
     }
   },
+  "documents": {
+    "fallbackError": {
+      "listDocuments": "Dokumente konnten nicht geladen werden",
+      "createDocument": "Dokument konnte nicht erstellt werden",
+      "updateDocument": "Dokument konnte nicht aktualisiert werden",
+      "deleteDocument": "Dokument konnte nicht gelöscht werden",
+      "listAllDocuments": "Bewerbungsunterlagen konnten nicht geladen werden"
+    }
+  },
   "reminders": {
     "fallbackError": {
       "listReminders": "Erinnerungen konnten nicht geladen werden",
@@ -199,6 +218,12 @@
     "recruiter": "Recruiter",
     "hiringManager": "Personalverantwortliche Person",
     "referral": "Empfehlung",
+    "other": "Sonstiges"
+  },
+  "documentType": {
+    "cv": "Lebenslauf",
+    "coverLetter": "Anschreiben",
+    "portfolio": "Portfolio",
     "other": "Sonstiges"
   },
   "reminderType": {
@@ -239,6 +264,7 @@
       "tasks": "Aufgaben",
       "notes": "Notizen",
       "contacts": "Kontakte",
+      "documents": "Unterlagen",
       "reminders": "Erinnerungen",
       "timeline": "Verlauf",
       "ai": "KI"
@@ -298,6 +324,33 @@
       "deleteContactLabel": "Kontakt {{name}} löschen",
       "lastContactedLabel": "Zuletzt kontaktiert am {{date}}",
       "notContactedYet": "Noch nicht kontaktiert"
+    },
+    "documents": {
+      "title": "Unterlagen",
+      "subtitle": "Was du mit dieser Bewerbung verschickt hast. Nur Links und Notizen; es werden keine Dateien hochgeladen.",
+      "loading": "Unterlagen werden geladen",
+      "loadErrorTitle": "Unterlagen konnten nicht geladen werden",
+      "fields": {
+        "type": "Typ",
+        "title": "Versionsbezeichnung",
+        "url": "Link",
+        "submittedAt": "Verschickt am",
+        "notes": "Notizen"
+      },
+      "titlePlaceholder": "Lebenslauf - Backend v3",
+      "invalidUrl": "Der Link muss mit http:// oder https:// beginnen",
+      "addDocument": "Dokument hinzufügen",
+      "saveDocument": "Dokument speichern",
+      "cancel": "Abbrechen",
+      "editDocument": "Bearbeiten",
+      "editDocumentLabel": "Dokument {{title}} bearbeiten",
+      "deleteDocument": "Löschen",
+      "deleteDocumentLabel": "Dokument {{title}} löschen",
+      "submittedOn": "Verschickt am {{date}}",
+      "notSentYet": "Noch nicht verschickt",
+      "listLabel": "Unterlagen zu diesem Job",
+      "emptyTitle": "Noch keine Unterlagen",
+      "emptyDescription": "Halte fest, welchen Lebenslauf, welches Anschreiben oder welchen Portfolio-Link du wann verschickt hast."
     },
     "reminders": {
       "title": "Erinnerungen",

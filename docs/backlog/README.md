@@ -44,6 +44,8 @@ numbered task before implementation.
 - [ ] [Task 040: Add reminders](../../tasks/roadmap/040-add-reminders.md),
   backend steps 1-6.
 - [ ] [Task 041: Add application documents](../../tasks/roadmap/041-add-application-documents.md),
+  backend steps 1-6; its frontend is behind `DOCUMENTS_FEATURE_ENABLED`.
+- [ ] [Task 042: Add calendar view](../../tasks/roadmap/042-add-calendar-view.md),
   the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,

@@ -8,6 +8,7 @@ export type TJobDetailTab =
   | 'tasks'
   | 'notes'
   | 'contacts'
+  | 'documents'
   | 'reminders'
   | 'timeline'
   | 'ai';
@@ -79,6 +80,37 @@ export type TJobContact = {
   phone?: string;
   profileUrl?: string;
   lastContactedAt?: string;
+  notes?: string;
+};
+
+/**
+ * Supported kinds of application document.
+ */
+export type TJobDocumentType = 'CV' | 'COVER_LETTER' | 'PORTFOLIO' | 'OTHER';
+
+/**
+ * Maps each document type to its translation resource key.
+ */
+export const DOCUMENT_TYPE_TRANSLATION_KEYS: Record<TJobDocumentType, string> = {
+  CV: 'documentType.cv',
+  COVER_LETTER: 'documentType.coverLetter',
+  PORTFOLIO: 'documentType.portfolio',
+  OTHER: 'documentType.other',
+};
+
+/**
+ * Represents one application document's metadata: which CV, cover letter,
+ * or portfolio piece went with a job, and when. `title` is the version
+ * label. `url`, `submittedAt` (a `YYYY-MM-DD` date), and `notes` are
+ * optional; an unset `submittedAt` means the document has not been sent.
+ * No file content is stored.
+ */
+export type TJobDocument = {
+  id: string;
+  type: TJobDocumentType;
+  title: string;
+  url?: string;
+  submittedAt?: string;
   notes?: string;
 };
 
