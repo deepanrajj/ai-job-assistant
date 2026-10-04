@@ -68,6 +68,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)
 - [Task 079 - Run The API Collection In CI Plan](./079-run-api-collection-in-ci-plan.md)
+- [Task 080 - Add Playwright Harness And First Journey Plan](./080-add-playwright-harness-and-first-journey-plan.md)
 
 ## Bug Plans
 

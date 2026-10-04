@@ -38,3 +38,8 @@ ble.sh/
 # unanchored "reports/" would also swallow a docs/reports/ or
 # frontend/reports/ that somebody meant to commit.
 /reports/
+
+# Playwright output from npm run e2e:test: traces, screenshots, and the
+# HTML report. CI uploads them as artifacts instead.
+/e2e/test-results/
+/e2e/playwright-report/

@@ -1,0 +1,86 @@
+name: Browser E2E
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HUSKY: 0
+
+jobs:
+  # Deliberately not a required check: the "Protect main" ruleset names
+  # Frontend Verify, Backend Verify, and Docker Build only, so a failure
+  # here shows red on the pull request without blocking the merge. Make
+  # it required in the ruleset once it has been stable for a run of pull
+  # requests. Its own job, rather than steps in Docker Build, because
+  # that job is required and a step there would gate merges.
+  e2e:
+    name: Browser E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Install E2E dependencies
+        run: npm ci --prefix e2e
+
+      # --with-deps also installs the system libraries Chromium needs on
+      # the runner, which the plain install leaves out.
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Build Docker images
+        run: npm run docker:build
+
+      # --wait blocks until every service reports healthy. Compose
+      # publishes the app on 30080, the suite's default "cluster"
+      # target, so no target variable is needed.
+      - name: Start the compose stack
+        run: docker compose -f infra/docker/compose.yaml up -d --wait
+
+      - name: Run browser journeys
+        run: npm run e2e:test
+
+      # Traces are recorded on the first retry, so a failure that
+      # retried has one here; open it with `npx playwright show-trace`.
+      - name: Upload Playwright traces and report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            e2e/test-results
+            e2e/playwright-report
+          retention-days: 7
+
+      - name: Compose logs
+        if: failure()
+        run: docker compose -f infra/docker/compose.yaml logs --no-color
+
+      - name: Stop the compose stack
+        if: always()
+        run: docker compose -f infra/docker/compose.yaml down -v

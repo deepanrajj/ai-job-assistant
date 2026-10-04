@@ -87,6 +87,26 @@ Steps 3 to 8 need Docker Compose on the runner, which `ubuntu-latest`
 provides. Step 5 fetches a pinned Newman with `npx`; it is not a
 project dependency.
 
+### Browser E2E
+
+File:
+
+```text
+.github/workflows/e2e.yml
+```
+
+Job `Browser E2E` runs the Playwright journeys in `e2e/` against the
+compose stack: install the E2E package and Chromium, build the images,
+start compose with `--wait`, run `npm run e2e:test`, and tear the stack
+down. On failure it uploads `playwright-results` (traces and the HTML
+report) and prints the compose logs. See [`e2e/README.md`](../../e2e/README.md).
+
+It is **not** a required status check, on purpose: a new browser suite
+needs a run of pull requests to show it is stable before it may block
+a merge. It is a separate job rather than steps inside `Docker Build`
+because that job is required. It builds the images a second time as
+the price of that separation.
+
 ## Branch Protection
 
 Branch protection is configured in GitHub repository settings, not in a
@@ -102,6 +122,7 @@ Recommended settings for `main`:
   - `Frontend Verify`
   - `Backend Verify`
   - `Docker Build`
+- Do not require `Browser E2E` yet; see its section above.
 - Require conversation resolution before merging.
 - Block force pushes.
 - Block deletions.
