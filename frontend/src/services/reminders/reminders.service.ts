@@ -1,5 +1,15 @@
 import { deleteJson, getJson, postJson, putJson } from '../api';
 import { getReminderFallbackErrorMessage } from './reminders.utils';
+// TEMPORARY: remove this import and every USE_MOCK_REMINDERS branch below
+// when the task 040 backend lands. See reminders.mock.ts.
+import {
+  USE_MOCK_REMINDERS,
+  mockCreateReminder,
+  mockDeleteReminder,
+  mockGetNextReminders,
+  mockGetReminders,
+  mockUpdateReminder,
+} from './reminders.mock';
 import { APP_ERROR_CODES } from '../../types';
 import type {
   TCreateReminderRequest,
@@ -38,10 +48,12 @@ const getReminderEndpoint = (jobId: string, reminderId: string): string =>
  * @returns {Promise<TReminderResponse[]>} Reminders as the API returns them.
  */
 export const getReminders = (jobId: string): Promise<TReminderResponse[]> =>
-  getJson<TReminderResponse[]>(getRemindersEndpoint(jobId), {
-    errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
-    fallbackErrorMessage: getReminderFallbackErrorMessage('listReminders'),
-  });
+  USE_MOCK_REMINDERS
+    ? mockGetReminders(jobId)
+    : getJson<TReminderResponse[]>(getRemindersEndpoint(jobId), {
+        errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
+        fallbackErrorMessage: getReminderFallbackErrorMessage('listReminders'),
+      });
 
 /**
  * Creates a reminder under a job.
@@ -54,10 +66,12 @@ export const createReminder = (
   jobId: string,
   payload: TCreateReminderRequest,
 ): Promise<TReminderResponse> =>
-  postJson<TReminderResponse, TCreateReminderRequest>(getRemindersEndpoint(jobId), payload, {
-    errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
-    fallbackErrorMessage: getReminderFallbackErrorMessage('createReminder'),
-  });
+  USE_MOCK_REMINDERS
+    ? mockCreateReminder(jobId, payload)
+    : postJson<TReminderResponse, TCreateReminderRequest>(getRemindersEndpoint(jobId), payload, {
+        errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
+        fallbackErrorMessage: getReminderFallbackErrorMessage('createReminder'),
+      });
 
 /**
  * Replaces every editable field of a reminder, including whether it is
@@ -73,14 +87,16 @@ export const updateReminder = (
   reminderId: string,
   payload: TUpdateReminderRequest,
 ): Promise<TReminderResponse> =>
-  putJson<TReminderResponse, TUpdateReminderRequest>(
-    getReminderEndpoint(jobId, reminderId),
-    payload,
-    {
-      errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
-      fallbackErrorMessage: getReminderFallbackErrorMessage('updateReminder'),
-    },
-  );
+  USE_MOCK_REMINDERS
+    ? mockUpdateReminder(jobId, reminderId, payload)
+    : putJson<TReminderResponse, TUpdateReminderRequest>(
+        getReminderEndpoint(jobId, reminderId),
+        payload,
+        {
+          errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
+          fallbackErrorMessage: getReminderFallbackErrorMessage('updateReminder'),
+        },
+      );
 
 /**
  * Deletes a reminder.
@@ -92,10 +108,12 @@ export const updateReminder = (
  * @returns {Promise<void>} Resolves once the reminder is deleted.
  */
 export const deleteReminder = (jobId: string, reminderId: string): Promise<void> =>
-  deleteJson<void>(getReminderEndpoint(jobId, reminderId), {
-    errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
-    fallbackErrorMessage: getReminderFallbackErrorMessage('deleteReminder'),
-  });
+  USE_MOCK_REMINDERS
+    ? mockDeleteReminder(jobId, reminderId)
+    : deleteJson<void>(getReminderEndpoint(jobId, reminderId), {
+        errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
+        fallbackErrorMessage: getReminderFallbackErrorMessage('deleteReminder'),
+      });
 
 /**
  * Fetches the earliest open reminders across every job, stored and
@@ -105,7 +123,9 @@ export const deleteReminder = (jobId: string, reminderId: string): Promise<void>
  * @returns {Promise<TNextReminderResponse[]>} Items as the API returns them.
  */
 export const getNextReminders = (limit: number): Promise<TNextReminderResponse[]> =>
-  getJson<TNextReminderResponse[]>(`/api/reminders/next?limit=${limit}`, {
-    errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
-    fallbackErrorMessage: getReminderFallbackErrorMessage('listNextReminders'),
-  });
+  USE_MOCK_REMINDERS
+    ? mockGetNextReminders(limit)
+    : getJson<TNextReminderResponse[]>(`/api/reminders/next?limit=${limit}`, {
+        errorCode: APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
+        fallbackErrorMessage: getReminderFallbackErrorMessage('listNextReminders'),
+      });

@@ -14,15 +14,35 @@ email notifications, no external calendar sync, and no recurrence.
 
 | Steps | Layer | State |
 | --- | --- | --- |
-| 1-6 | Backend | Step 1 (move validation helpers) started: both files moved and `FourDigitYear.kt`'s package updated; `RequestTrimming.kt`'s package, the two KDoc rewordings, and the contact imports remain. Steps 2-6 not started |
+| 1-6 | Backend | Step 1 (move validation helpers) started and stashed as `task-040 backend step 1 in progress`: both files moved and `FourDigitYear.kt`'s package updated; `RequestTrimming.kt`'s package, the two KDoc rewordings, and the contact imports remain. Steps 2-6 not started |
 | 7 | Postman folder and `api:test` allowlist | Not started |
 | 8-10 | Frontend | Done in `f256ea4`; `npm run frontend:verify` passed (582 tests) |
 | 11 | Manual browser check | Blocked until the backend endpoints exist |
 | 12 | Close-out docs | Not started |
+| - | **Remove the temporary mock** | Required before merge, once steps 1-6 land |
 
-The frontend calls endpoints that do not exist yet, so the Reminders tab
-and the dashboard card show their load errors against a real backend
-until steps 1-6 land. The branch must not merge before then.
+### Temporary reminder mock
+
+Added at the user's request so the UI can be seen before the backend
+exists. `frontend/src/services/reminders/reminders.mock.ts` fakes the
+five reminder endpoints in browser memory: four seeded reminders per job
+(overdue, due today, upcoming, completed), full create, edit, complete,
+reopen, and delete, and `GET /api/reminders/next` built from the real
+jobs and tasks. Jobs and tasks are never mocked, so task reminders and
+their completion are real. Mock reminders reset on every page reload.
+
+It is on in the dev server and in built images
+(`import.meta.env.MODE !== 'test'`) and off under Vitest, so every
+existing test still exercises the real request path (verified: Vitest
+reports `MODE` as `test`).
+
+**The branch must not merge with the mock in it.** Removal, as the
+file's header also says:
+
+1. Delete `reminders.mock.ts` and `reminders.mock.test.ts`.
+2. Delete the `USE_MOCK_REMINDERS` branches and the `./reminders.mock`
+   import in `reminders.service.ts`.
+3. Run the browser check (step 11) against the real endpoints.
 
 ## Authoritative References
 
