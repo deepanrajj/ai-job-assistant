@@ -1,0 +1,15 @@
+{
+  "name": "smart-job-tracker-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Browser end-to-end journeys for Smart Job Tracker, run with Playwright against a running stack.",
+  "scripts": {
+    "test": "playwright test",
+    "install:browsers": "playwright install chromium",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.19.1"
+  }
+}
