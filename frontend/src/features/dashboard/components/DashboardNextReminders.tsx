@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { Button, Card, EmptyState, ErrorState, LoadingState } from '../../../components/ui';
 import { ReminderDueBadge } from '../../reminders/components/ReminderDueBadge';
+import { useLocalToday } from '../../../hooks';
 import { useTranslation } from '../../../i18n';
 import { getLocalIsoDate, getReminderDueState } from '../../reminders/reminders.utils';
 import type { AppError } from '../../../errors';
@@ -41,7 +42,7 @@ const DashboardNextRemindersComponent: FC<IDashboardNextRemindersProps> = ({
 }) => {
   const { t } = useTranslation();
   const jobsById = useMemo(() => new Map(jobs.map((job) => [job.id, job])), [jobs]);
-  const today = getLocalIsoDate(new Date());
+  const today = getLocalIsoDate(useLocalToday());
   const title = t('dashboard.nextReminders');
 
   if (isLoading)

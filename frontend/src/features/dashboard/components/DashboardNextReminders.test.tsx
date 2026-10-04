@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
@@ -98,5 +98,24 @@ describe('DashboardNextReminders', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it('shows a reminder due tomorrow as due today once local midnight passes', () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+
+    try {
+      vi.setSystemTime(new Date(2026, 9, 4, 23, 59, 30));
+      renderCard({ reminders: [{ ...overdueReminder, dueDate: '2026-10-05' }] });
+
+      expect(screen.getByText('Due Oct 5, 2026')).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(31 * 1000);
+      });
+
+      expect(screen.getByText('Due today')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

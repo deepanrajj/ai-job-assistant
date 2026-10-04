@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
@@ -149,5 +149,28 @@ describe('DashboardInsights', () => {
     renderInsights();
 
     expect(screen.getByRole('region', { name: 'Job search insights' })).toBeInTheDocument();
+  });
+
+  it('ages applications by another day just after local midnight, without new data', () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+
+    try {
+      vi.setSystemTime(new Date(2026, 9, 4, 23, 59, 30));
+      renderInsights({
+        events: [statusEvent('celonis', 'APPLIED', new Date(2026, 9, 4, 9, 0).toISOString())],
+      });
+
+      const card = getCard('Waiting for a reply');
+
+      expect(within(card).getByText('0 days')).toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(31 * 1000);
+      });
+
+      expect(within(card).getByText('1 day')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

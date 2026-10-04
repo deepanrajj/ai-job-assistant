@@ -12,6 +12,7 @@ import {
 } from '../../../components/ui';
 import { ReminderDueBadge } from '../../reminders/components/ReminderDueBadge';
 import { isReminderFormValid, type IReminderFormValues } from '../../../services';
+import { useLocalToday } from '../../../hooks';
 import { getReminderItemKey, useJobReminders } from '../useJobReminders';
 import { useTranslation } from '../../../i18n';
 import { classNames } from '../../../utils';
@@ -288,7 +289,7 @@ const JobDetailRemindersPanelComponent: FC<IJobDetailRemindersPanelProps> = ({ j
   const [newReminderValues, setNewReminderValues] =
     useState<IReminderFormValues>(emptyReminderFormValues);
   const canCreateReminder = !isMutating && isReminderFormValid(newReminderValues);
-  const today = getLocalIsoDate(new Date());
+  const today = getLocalIsoDate(useLocalToday());
   const openReminders = reminders.filter((item) => !item.isComplete);
   const completedReminders = reminders.filter((item) => item.isComplete);
 

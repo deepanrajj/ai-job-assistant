@@ -291,3 +291,21 @@ mismatch, and fails if that read disagrees too (D1). Three new tests
 cover a deletion between pages, growth onto an unrequested page, and
 giving up; all three fail against the previous reader and pass now.
 
+### Review fix: "today" now refreshes at local midnight
+
+A second `/code-review` noted that the insights froze "now" when the
+history loaded (`useMemo` keyed on jobs and events), so a tab left open
+across midnight showed ages a day short, and across Sunday night last
+week's count and range. Task 040's reminders card and Reminders tab had
+the same flaw in their overdue and "due today" badges.
+
+A shared `useLocalToday()` hook (`hooks/useLocalToday`) now holds the
+current moment and refreshes it, once, just after each local midnight;
+all three components read it, so their memos recompute at the new day
+and not more often. The 040 change is outside this task's file, and was
+made here at the user's request so the three agree on what "today" is.
+Hook tests use fake timers for the rollover and timer clean-up; two
+component tests show an age moving from "0 days" to "1 day" and a badge
+from a date to "Due today" just after midnight. With the frozen "now"
+restored, the insights test fails.
+
