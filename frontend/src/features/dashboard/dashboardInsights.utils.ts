@@ -98,6 +98,44 @@ export const getRecordedApplications = (
 };
 
 /**
+ * Finds jobs that are WITHDRAWN now and got there straight from WISHLIST:
+ * their latest status change is WISHLIST -> WITHDRAWN. That history is
+ * evidence the user dropped the job before applying, so it is not an
+ * application with an unknown date.
+ *
+ * Deliberately narrow. A job saved directly as WITHDRAWN has no history
+ * and may have been applied for outside the tracker, and a job that moved
+ * on again after the withdrawal is judged by its later history; both stay
+ * unknown.
+ *
+ * @param {TJob[]} jobs Saved jobs.
+ * @param {TTimelineEventResponse[]} events Status history across every job.
+ * @returns {Set<string>} Ids of jobs withdrawn straight from WISHLIST.
+ */
+export const getJobsWithdrawnFromWishlist = (
+  jobs: TJob[],
+  events: TTimelineEventResponse[],
+): Set<string> => {
+  const latestEventByJob = new Map<string, TTimelineEventResponse>();
+
+  for (const event of [...events].sort(byCreatedAtThenId)) latestEventByJob.set(event.jobId, event);
+
+  return new Set(
+    jobs
+      .filter((job) => {
+        const latest = latestEventByJob.get(job.id);
+
+        return (
+          job.status === 'WITHDRAWN' &&
+          latest?.previousStatus === 'WISHLIST' &&
+          latest.nextStatus === 'WITHDRAWN'
+        );
+      })
+      .map((job) => job.id),
+  );
+};
+
+/**
  * Derives every dashboard insight from saved jobs and their recorded status
  * history. Pure: the same inputs and `now` always give the same result.
  *
@@ -111,6 +149,9 @@ export const getRecordedApplications = (
  *
  * A job past WISHLIST with no recorded application has an unknown
  * application date; it is counted apart rather than given a guessed one.
+ * The exception is a job withdrawn straight from WISHLIST (see
+ * `getJobsWithdrawnFromWishlist`): its history says it was never applied
+ * for, so it is not an application at all.
  *
  * @param {TJob[]} jobs Saved jobs.
  * @param {TTimelineEventResponse[]} events Complete status history across every job.
@@ -124,8 +165,9 @@ export const getDashboardInsights = (
 ): IDashboardInsights => {
   const applications = getRecordedApplications(jobs, events);
   const week = getLocalWeek(now);
+  const withdrawnFromWishlist = getJobsWithdrawnFromWishlist(jobs, events);
   const isUnknownApplication = (job: TJob): boolean =>
-    job.status !== 'WISHLIST' && !applications.has(job.id);
+    job.status !== 'WISHLIST' && !applications.has(job.id) && !withdrawnFromWishlist.has(job.id);
 
   const applicationsThisWeek = [...applications.values()].filter(
     ({ appliedAt }) => appliedAt >= week.start && appliedAt < week.end,

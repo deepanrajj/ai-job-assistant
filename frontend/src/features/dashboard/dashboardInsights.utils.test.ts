@@ -274,4 +274,36 @@ describe('getDashboardInsights', () => {
       getDashboardInsights(jobs, events, local(10, 25, 23, 50)).applicationsThisWeek.count,
     ).toBe(1);
   });
+
+  it('does not count a job withdrawn straight from WISHLIST as an application with an unknown date', () => {
+    const jobs = [
+      job('dropped', 'WITHDRAWN'),
+      job('saved-as-withdrawn', 'WITHDRAWN'),
+      job('withdrew-then-reopened', 'INTERVIEW'),
+    ];
+    const events = [
+      statusEvent('dropped', 'WITHDRAWN', local(10, 6), 'WISHLIST'),
+      statusEvent('withdrew-then-reopened', 'WITHDRAWN', local(10, 1), 'WISHLIST'),
+      statusEvent('withdrew-then-reopened', 'INTERVIEW', local(10, 3), 'WITHDRAWN'),
+    ];
+
+    // dropped is excluded; saved-as-withdrawn has no history, and the
+    // reopened job moved on after the withdrawal, so both stay unknown.
+    expect(
+      getDashboardInsights(jobs, events, local(10, 7)).applicationsThisWeek.unknownDateCount,
+    ).toBe(2);
+  });
+
+  it('still counts a job withdrawn after applying as a recorded application', () => {
+    const jobs = [job('withdrew-after-applying', 'WITHDRAWN')];
+    const events = [
+      statusEvent('withdrew-after-applying', 'APPLIED', local(10, 5), 'WISHLIST'),
+      statusEvent('withdrew-after-applying', 'WITHDRAWN', local(10, 6), 'APPLIED'),
+    ];
+
+    const insights = getDashboardInsights(jobs, events, local(10, 7));
+
+    expect(insights.applicationsThisWeek).toMatchObject({ count: 1, unknownDateCount: 0 });
+    expect(insights.interviewRate.cohortSize).toBe(1);
+  });
 });

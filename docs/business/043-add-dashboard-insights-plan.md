@@ -94,6 +94,17 @@ saved straight into a later status and jobs that skipped `APPLIED`. A
 `WISHLIST` job has not applied, so it is neither known nor unknown.
 `createdAt` and `updatedAt` are never used as a substitute.
 
+One exception, added after review: a job that is `WITHDRAWN` now and
+whose latest status change is `WISHLIST -> WITHDRAWN` is not counted as
+unknown. That history is evidence the user dropped it before applying,
+and counting every abandoned wishlist job would make the "not counted"
+note meaningless. It stays narrow on purpose: a job saved directly as
+`WITHDRAWN` has no history and may have been applied for elsewhere, and
+a job that moved on after the withdrawal is judged by its later
+history, so both stay unknown. A job saved directly as `APPLIED` also
+stays unknown, as the analytics rules require; recording its real date
+is R-11.
+
 Events whose `jobId` is not in the job list (deleted jobs) are ignored.
 
 ### D3 - Applications this week: the browser's Monday-to-Monday week
@@ -308,4 +319,14 @@ Hook tests use fake timers for the rollover and timer clean-up; two
 component tests show an age moving from "0 days" to "1 day" and a badge
 from a date to "Due today" just after midnight. With the frozen "now"
 restored, the insights test fails.
+
+### Review follow-up: jobs withdrawn straight from Wishlist
+
+The fourth review noted that a job moved from Wishlist straight to
+Withdrawn was counted as an application with an unknown date. Agreed
+with the user: such jobs are now left out of that count (D2), via
+`getJobsWithdrawnFromWishlist`. Two tests cover it, including that a job
+created as Withdrawn, one reopened after withdrawing, and one withdrawn
+after applying keep their existing treatment; the exclusion test fails
+without the change.
 
