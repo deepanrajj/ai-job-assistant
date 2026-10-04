@@ -12,13 +12,17 @@ import type { TJobAiAnalysis } from '../types';
  */
 export const handlers = [
   // Unlike `GET /api/jobs` above, several tests open the job detail tasks,
-  // notes, contacts, or timeline tab only to assert unrelated tab-switching
-  // or page behaviour. An empty list is always a safe default for those; a
-  // test that cares what tasks, notes, contacts, or timeline events render
-  // calls `server.use` with its own handler.
+  // notes, contacts, reminders, or timeline tab only to assert unrelated
+  // tab-switching or page behaviour. An empty list is always a safe default
+  // for those; a test that cares what tasks, notes, contacts, reminders, or
+  // timeline events render calls `server.use` with its own handler. The
+  // same holds for the dashboard's next reminders, which any test rendering
+  // the dashboard route requests alongside its own `GET /api/jobs`.
   http.get('/api/jobs/:jobId/tasks', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/notes', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/contacts', () => HttpResponse.json([])),
+  http.get('/api/jobs/:jobId/reminders', () => HttpResponse.json([])),
+  http.get('/api/reminders/next', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/timeline', () => HttpResponse.json([])),
   http.post('/api/ai/analyze-job', () =>
     HttpResponse.json<TJobAiAnalysis>({

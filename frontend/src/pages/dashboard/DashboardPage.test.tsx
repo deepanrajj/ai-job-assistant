@@ -5,8 +5,8 @@ import type { ComponentProps } from 'react';
 
 import { DashboardPage } from './DashboardPage';
 import { AppError } from '../../errors';
-import { renderWithProviders } from '../../test/renderWithProviders';
-import { createMockJobs } from '../../test/mockJobs';
+import { renderWithRouter } from '../../test/renderWithRouter';
+import { MOCK_JOB_IDS, createMockJobs } from '../../test/mockJobs';
 import { APP_ERROR_CODES } from '../../types';
 
 const loadError = () => new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED);
@@ -19,12 +19,23 @@ const getMetricValue = (label: string): Element => {
   return valueElement;
 };
 
+/**
+ * Next reminders as `useNextReminders` reports a settled, empty load.
+ */
+const noNextReminders: ComponentProps<typeof DashboardPage>['nextReminders'] = {
+  error: null,
+  isLoading: false,
+  reload: () => {},
+  reminders: [],
+};
+
 const renderDashboardPage = (overrides: Partial<ComponentProps<typeof DashboardPage>> = {}) =>
-  renderWithProviders(
+  renderWithRouter(
     <DashboardPage
       error={null}
       isLoading={false}
       jobs={createMockJobs()}
+      nextReminders={noNextReminders}
       onRetry={() => {}}
       {...overrides}
     />,
@@ -123,5 +134,52 @@ describe('DashboardPage', () => {
 
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('renders the next reminders alongside the job metrics', () => {
+    renderDashboardPage({
+      nextReminders: {
+        ...noNextReminders,
+        reminders: [
+          {
+            dueDate: '2999-01-01',
+            id: 'reminder-1',
+            isComplete: false,
+            jobId: MOCK_JOB_IDS.celonis,
+            source: 'REMINDER',
+            title: 'Follow up with recruiter',
+            type: 'FOLLOW_UP',
+          },
+        ],
+      },
+    });
+
+    expect(screen.getByRole('heading', { name: 'Next reminders' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Open Celonis for reminder Follow up with recruiter' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the metrics on screen when only the reminders fail to load', () => {
+    renderDashboardPage({
+      nextReminders: {
+        ...noNextReminders,
+        error: new AppError(
+          'Failed to load upcoming reminders',
+          APP_ERROR_CODES.REMINDER_REQUEST_FAILED,
+        ),
+      },
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Reminders could not be loaded');
+    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
+    expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
+  });
+
+  it('leaves the reminders card out when no reminders are passed', () => {
+    renderDashboardPage({ nextReminders: undefined });
+
+    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
+    expect(screen.queryByRole('heading', { name: 'Next reminders' })).not.toBeInTheDocument();
   });
 });

@@ -3,7 +3,14 @@ import type { TJob } from './job.types';
 /**
  * Supported tab ids for the job detail page.
  */
-export type TJobDetailTab = 'overview' | 'tasks' | 'notes' | 'contacts' | 'timeline' | 'ai';
+export type TJobDetailTab =
+  | 'overview'
+  | 'tasks'
+  | 'notes'
+  | 'contacts'
+  | 'reminders'
+  | 'timeline'
+  | 'ai';
 
 /**
  * Translation keys used by job detail tab labels.
@@ -73,6 +80,44 @@ export type TJobContact = {
   profileUrl?: string;
   lastContactedAt?: string;
   notes?: string;
+};
+
+/**
+ * Supported kinds of reminder a user sets by hand. A task's due date is
+ * also a reminder, but it has no type of its own (see `TReminderItem`).
+ */
+export type TJobReminderType = 'FOLLOW_UP' | 'INTERVIEW_PREP' | 'APPLICATION_DEADLINE' | 'OTHER';
+
+/**
+ * Maps each reminder type to its translation resource key.
+ */
+export const REMINDER_TYPE_TRANSLATION_KEYS: Record<TJobReminderType, string> = {
+  FOLLOW_UP: 'reminderType.followUp',
+  INTERVIEW_PREP: 'reminderType.interviewPrep',
+  APPLICATION_DEADLINE: 'reminderType.applicationDeadline',
+  OTHER: 'reminderType.other',
+};
+
+/**
+ * Where a reminder comes from: a stored reminder the user set, or a task
+ * whose due date makes it one. Task reminders are derived on every read
+ * and never stored, so they cannot drift from the task.
+ */
+export type TReminderSource = 'REMINDER' | 'TASK';
+
+/**
+ * One reminder as every screen renders it, whichever source it came from.
+ * `type` is null for a task reminder. `dueDate` is a date-only
+ * `YYYY-MM-DD` string.
+ */
+export type TReminderItem = {
+  id: string;
+  jobId: string;
+  source: TReminderSource;
+  type: TJobReminderType | null;
+  title: string;
+  dueDate: string;
+  isComplete: boolean;
 };
 
 /**

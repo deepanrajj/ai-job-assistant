@@ -4,6 +4,7 @@ import { JobDetailAiPanel } from './JobDetailAiPanel';
 import { JobDetailContactsPanel } from './JobDetailContactsPanel';
 import { JobDetailNotesPanel } from './JobDetailNotesPanel';
 import { JobDetailOverviewPanel } from './JobDetailOverviewPanel';
+import { JobDetailRemindersPanel } from './JobDetailRemindersPanel';
 import { JobDetailTasksPanel } from './JobDetailTasksPanel';
 import { JobDetailTimelinePanel } from './JobDetailTimelinePanel';
 import type { TJobDetail, TJobDetailTab } from '../../../types';
@@ -42,6 +43,8 @@ export const JobDetailActivePanel: FC<IJobDetailActivePanelProps> = ({
   if (activeTab === 'notes') return <JobDetailNotesPanel jobId={job.id} key={job.id} />;
 
   if (activeTab === 'contacts') return <JobDetailContactsPanel jobId={job.id} key={job.id} />;
+
+  if (activeTab === 'reminders') return <JobDetailRemindersPanel jobId={job.id} key={job.id} />;
 
   if (activeTab === 'timeline') return <JobDetailTimelinePanel jobId={job.id} key={job.id} />;
 

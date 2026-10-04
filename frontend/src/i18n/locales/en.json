@@ -98,7 +98,14 @@
     "loading": "Loading dashboard",
     "loadErrorTitle": "Dashboard could not be loaded",
     "noActivityYet": "No activity yet",
-    "noActivityYetDescription": "Saved jobs appear here as soon as you add one."
+    "noActivityYetDescription": "Saved jobs appear here as soon as you add one.",
+    "nextReminders": "Next reminders",
+    "nextRemindersLoading": "Loading reminders",
+    "nextRemindersErrorTitle": "Reminders could not be loaded",
+    "noReminders": "Nothing due",
+    "noRemindersDescription": "Reminders and dated tasks you add to jobs appear here.",
+    "viewJobReminders": "Open {{company}} for reminder {{title}}",
+    "unknownJob": "Unknown job"
   },
   "jobs": {
     "savedJobs": "Saved jobs",
@@ -154,10 +161,28 @@
       "deleteContact": "Failed to delete contact"
     }
   },
+  "reminders": {
+    "fallbackError": {
+      "listReminders": "Failed to load reminders",
+      "createReminder": "Failed to create reminder",
+      "updateReminder": "Failed to update reminder",
+      "deleteReminder": "Failed to delete reminder",
+      "listNextReminders": "Failed to load upcoming reminders"
+    },
+    "overdue": "Overdue · was due {{date}}",
+    "dueToday": "Due today",
+    "dueOn": "Due {{date}}"
+  },
   "contactType": {
     "recruiter": "Recruiter",
     "hiringManager": "Hiring manager",
     "referral": "Referral",
+    "other": "Other"
+  },
+  "reminderType": {
+    "followUp": "Follow-up",
+    "interviewPrep": "Interview prep",
+    "applicationDeadline": "Application deadline",
     "other": "Other"
   },
   "tasks": {
@@ -191,6 +216,7 @@
       "tasks": "Tasks",
       "notes": "Notes",
       "contacts": "Contacts",
+      "reminders": "Reminders",
       "timeline": "Timeline",
       "ai": "AI"
     },
@@ -249,6 +275,31 @@
       "deleteContactLabel": "Delete contact {{name}}",
       "lastContactedLabel": "Last contacted {{date}}",
       "notContactedYet": "Not contacted yet"
+    },
+    "reminders": {
+      "title": "Reminders",
+      "subtitle": "Reminders you set, plus every task with a due date",
+      "loading": "Loading reminders",
+      "loadErrorTitle": "Reminders could not be loaded",
+      "fields": {
+        "type": "Type",
+        "title": "Title",
+        "dueDate": "Due date"
+      },
+      "addReminder": "Add reminder",
+      "saveReminder": "Save reminder",
+      "cancel": "Cancel",
+      "editReminder": "Edit",
+      "editReminderLabel": "Edit reminder {{title}}",
+      "deleteReminder": "Delete",
+      "deleteReminderLabel": "Delete reminder {{title}}",
+      "completeLabel": "Complete {{title}}",
+      "taskSource": "Task",
+      "completed": "Completed",
+      "openGroup": "Open reminders",
+      "completedGroup": "Completed",
+      "emptyTitle": "No reminders yet",
+      "emptyDescription": "Add a reminder, or give a task a due date."
     },
     "timeline": {
       "title": "Timeline",

@@ -98,7 +98,14 @@
     "loading": "Dashboard wird geladen",
     "loadErrorTitle": "Dashboard konnte nicht geladen werden",
     "noActivityYet": "Noch keine Aktivität",
-    "noActivityYetDescription": "Gespeicherte Jobs erscheinen hier, sobald du einen hinzufügst."
+    "noActivityYetDescription": "Gespeicherte Jobs erscheinen hier, sobald du einen hinzufügst.",
+    "nextReminders": "Nächste Erinnerungen",
+    "nextRemindersLoading": "Erinnerungen werden geladen",
+    "nextRemindersErrorTitle": "Erinnerungen konnten nicht geladen werden",
+    "noReminders": "Nichts fällig",
+    "noRemindersDescription": "Erinnerungen und Aufgaben mit Datum aus deinen Jobs erscheinen hier.",
+    "viewJobReminders": "{{company}} für Erinnerung {{title}} öffnen",
+    "unknownJob": "Unbekannter Job"
   },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
@@ -154,10 +161,28 @@
       "deleteContact": "Löschen des Kontakts fehlgeschlagen"
     }
   },
+  "reminders": {
+    "fallbackError": {
+      "listReminders": "Erinnerungen konnten nicht geladen werden",
+      "createReminder": "Erinnerung konnte nicht erstellt werden",
+      "updateReminder": "Erinnerung konnte nicht aktualisiert werden",
+      "deleteReminder": "Erinnerung konnte nicht gelöscht werden",
+      "listNextReminders": "Anstehende Erinnerungen konnten nicht geladen werden"
+    },
+    "overdue": "Überfällig · fällig am {{date}}",
+    "dueToday": "Heute fällig",
+    "dueOn": "Fällig am {{date}}"
+  },
   "contactType": {
     "recruiter": "Recruiter",
     "hiringManager": "Personalverantwortliche Person",
     "referral": "Empfehlung",
+    "other": "Sonstiges"
+  },
+  "reminderType": {
+    "followUp": "Nachfassen",
+    "interviewPrep": "Interviewvorbereitung",
+    "applicationDeadline": "Bewerbungsfrist",
     "other": "Sonstiges"
   },
   "tasks": {
@@ -191,6 +216,7 @@
       "tasks": "Aufgaben",
       "notes": "Notizen",
       "contacts": "Kontakte",
+      "reminders": "Erinnerungen",
       "timeline": "Verlauf",
       "ai": "KI"
     },
@@ -249,6 +275,31 @@
       "deleteContactLabel": "Kontakt {{name}} löschen",
       "lastContactedLabel": "Zuletzt kontaktiert am {{date}}",
       "notContactedYet": "Noch nicht kontaktiert"
+    },
+    "reminders": {
+      "title": "Erinnerungen",
+      "subtitle": "Eigene Erinnerungen und alle Aufgaben mit Fälligkeitsdatum",
+      "loading": "Erinnerungen werden geladen",
+      "loadErrorTitle": "Erinnerungen konnten nicht geladen werden",
+      "fields": {
+        "type": "Typ",
+        "title": "Titel",
+        "dueDate": "Fälligkeitsdatum"
+      },
+      "addReminder": "Erinnerung hinzufügen",
+      "saveReminder": "Erinnerung speichern",
+      "cancel": "Abbrechen",
+      "editReminder": "Bearbeiten",
+      "editReminderLabel": "Erinnerung {{title}} bearbeiten",
+      "deleteReminder": "Löschen",
+      "deleteReminderLabel": "Erinnerung {{title}} löschen",
+      "completeLabel": "{{title}} erledigen",
+      "taskSource": "Aufgabe",
+      "completed": "Erledigt",
+      "openGroup": "Offene Erinnerungen",
+      "completedGroup": "Erledigt",
+      "emptyTitle": "Noch keine Erinnerungen",
+      "emptyDescription": "Füge eine Erinnerung hinzu oder gib einer Aufgabe ein Fälligkeitsdatum."
     },
     "timeline": {
       "title": "Verlauf",
