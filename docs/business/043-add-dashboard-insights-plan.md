@@ -330,3 +330,11 @@ created as Withdrawn, one reopened after withdrawing, and one withdrawn
 after applying keep their existing treatment; the exclusion test fails
 without the change.
 
+### Review follow-up: edge rates
+
+The fifth review noted that rounding showed 1 interview in 201
+applications as "0%", and 199 in 200 as "100%". `formatInsightRate` now
+shows "<1%" and ">99%" for rates that round to an edge without being
+exactly 0 or 1, so the headline's "0%" and "100%" mean exactly none and
+exactly all. Covered by a table of rates and a card test for 1 of 201.
+

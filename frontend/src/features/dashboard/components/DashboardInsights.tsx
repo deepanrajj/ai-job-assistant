@@ -3,7 +3,7 @@ import { memo, useMemo, type FC, type ReactNode } from 'react';
 import { Button, Card, ErrorState, LoadingState } from '../../../components/ui';
 import { useLocalToday } from '../../../hooks';
 import { useTranslation, type TLanguage } from '../../../i18n';
-import { getDashboardInsights } from '../dashboardInsights.utils';
+import { formatInsightRate, getDashboardInsights } from '../dashboardInsights.utils';
 import type { AppError } from '../../../errors';
 import type { TJob } from '../../../types';
 import type { TTimelineEventResponse } from '../../../services';
@@ -154,7 +154,7 @@ const DashboardInsightsComponent: FC<IDashboardInsightsProps> = ({
           value={
             interviewRate.rate === null
               ? t('dashboard.insights.notEnoughData')
-              : `${Math.round(interviewRate.rate * 100)}%`
+              : formatInsightRate(interviewRate.rate)
           }
         />
         <InsightCard

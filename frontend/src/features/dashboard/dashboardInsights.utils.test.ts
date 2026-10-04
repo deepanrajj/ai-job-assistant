@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
   AGING_APPLICATIONS_LIMIT,
+  formatInsightRate,
   getDashboardInsights,
   getLocalCalendarDayDifference,
   getLocalWeek,
@@ -305,5 +306,20 @@ describe('getDashboardInsights', () => {
 
     expect(insights.applicationsThisWeek).toMatchObject({ count: 1, unknownDateCount: 0 });
     expect(insights.interviewRate.cohortSize).toBe(1);
+  });
+});
+
+describe('formatInsightRate', () => {
+  it.each([
+    [0, '0%'],
+    [1, '100%'],
+    [0.5, '50%'],
+    [1 / 3, '33%'],
+    [0.006, '1%'],
+    [1 / 201, '<1%'],
+    [199 / 200, '>99%'],
+    [0.994, '99%'],
+  ])('formats %s as %s', (rate, label) => {
+    expect(formatInsightRate(rate)).toBe(label);
   });
 });

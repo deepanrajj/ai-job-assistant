@@ -85,6 +85,26 @@ describe('DashboardInsights', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows a small but non-zero interview rate as under 1%, never 0%', () => {
+    const cohort = Array.from({ length: 201 }, (_, index) =>
+      createMockJob({ company: `Company ${index}`, id: `job-${index}`, status: 'APPLIED' }),
+    );
+    renderInsights({
+      events: [
+        ...cohort.map((job) => statusEvent(job.id, 'APPLIED', daysAgo(10))),
+        statusEvent('job-0', 'INTERVIEW', daysAgo(5)),
+      ],
+      jobs: cohort,
+    });
+
+    const card = getCard('Interview rate');
+
+    expect(within(card).getByText('<1%')).toBeInTheDocument();
+    expect(
+      within(card).getByText('1 of 201 recorded applications reached an interview'),
+    ).toBeInTheDocument();
+  });
+
   it('says there is not enough data, not 0%, when no application has a recorded date', () => {
     renderInsights({ events: [] });
 

@@ -215,3 +215,21 @@ export const getDashboardInsights = (
     },
   };
 };
+
+/**
+ * Formats a rate between 0 and 1 as a whole percentage, so that "0%" and
+ * "100%" only ever mean exactly none and exactly all. A rate that rounds to
+ * 0 but is above it reads "<1%", and one that rounds to 100 but is below it
+ * reads ">99%": 1 interview in 201 applications is not "0%".
+ *
+ * @param {number} rate Rate from 0 to 1.
+ * @returns {string} Percentage label.
+ */
+export const formatInsightRate = (rate: number): string => {
+  const percent = Math.round(rate * 100);
+
+  if (percent === 0 && rate > 0) return '<1%';
+  if (percent === 100 && rate < 1) return '>99%';
+
+  return `${percent}%`;
+};
