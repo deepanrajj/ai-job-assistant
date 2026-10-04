@@ -1,5 +1,8 @@
 # Task 080 - Add Playwright Harness And First Journey
 
+Status: In progress - verified locally; the two CI criteria wait for the
+first `Browser E2E` run on the pull request
+
 ## Instructions
 
 Read these files before starting:
@@ -142,16 +145,16 @@ against a started stack, and confirm the CI job passes.
 
 ## Acceptance Criteria
 
-- [ ] One journey passes against the local stack.
-- [ ] It fails if the backend is stopped, demonstrated once. A journey
+- [x] One journey passes against the local stack.
+- [x] It fails if the backend is stopped, demonstrated once. A journey
       that passes without a backend is testing `localStorage`.
-- [ ] Specs live outside `frontend/` and are not collected by Vitest.
-- [ ] Frontend coverage numbers are unchanged by this task.
-- [ ] `baseURL` comes from configuration; no host appears in a spec.
-- [ ] The test-data strategy is written down.
+- [x] Specs live outside `frontend/` and are not collected by Vitest.
+- [x] Frontend coverage numbers are unchanged by this task.
+- [x] `baseURL` comes from configuration; no host appears in a spec.
+- [x] The test-data strategy is written down.
 - [ ] Traces are uploaded on CI failure.
 - [ ] The CI job does not gate merges yet.
-- [ ] No unrelated files are changed.
+- [x] No unrelated files are changed.
 
 ## Commit
 
