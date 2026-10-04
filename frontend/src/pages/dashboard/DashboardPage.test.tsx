@@ -29,6 +29,16 @@ const noNextReminders: ComponentProps<typeof DashboardPage>['nextReminders'] = {
   reminders: [],
 };
 
+/**
+ * Status history as `useStatusHistory` reports a settled, empty load.
+ */
+const emptyStatusHistory: ComponentProps<typeof DashboardPage>['statusHistory'] = {
+  error: null,
+  events: [],
+  isLoading: false,
+  reload: () => {},
+};
+
 const renderDashboardPage = (overrides: Partial<ComponentProps<typeof DashboardPage>> = {}) =>
   renderWithRouter(
     <DashboardPage
@@ -37,6 +47,7 @@ const renderDashboardPage = (overrides: Partial<ComponentProps<typeof DashboardP
       jobs={createMockJobs()}
       nextReminders={noNextReminders}
       onRetry={() => {}}
+      statusHistory={emptyStatusHistory}
       {...overrides}
     />,
   );
@@ -181,5 +192,28 @@ describe('DashboardPage', () => {
 
     expect(getMetricValue('Total jobs')).toHaveTextContent('3');
     expect(screen.queryByRole('heading', { name: 'Next reminders' })).not.toBeInTheDocument();
+  });
+
+  it('renders the insights from the status history alongside the job metrics', () => {
+    renderDashboardPage();
+
+    expect(screen.getByRole('heading', { name: 'Job search insights' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Response rate' })).toBeInTheDocument();
+  });
+
+  it('keeps the job metrics when only the status history fails to load', () => {
+    renderDashboardPage({
+      statusHistory: {
+        ...emptyStatusHistory,
+        error: new AppError(
+          'Failed to load status history',
+          APP_ERROR_CODES.TIMELINE_REQUEST_FAILED,
+        ),
+        events: null,
+      },
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Insights could not be loaded');
+    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
   });
 });

@@ -5,6 +5,7 @@ import type { TJobStatus } from '../../types';
  */
 export const TIMELINE_FALLBACK_ERROR_TRANSLATION_KEYS = {
   listTimeline: 'timeline.fallbackError.listTimeline',
+  listAllTimeline: 'timeline.fallbackError.listAllTimeline',
 } as const;
 
 /**
@@ -27,9 +28,21 @@ export type TTimelineEventType = 'STATUS_CHANGE';
  */
 export type TTimelineEventResponse = {
   id: string;
+  jobId: string;
   type: TTimelineEventType;
   description: string;
   previousStatus: TJobStatus | null;
   nextStatus: TJobStatus | null;
   createdAt: string;
+};
+
+/**
+ * One page of `GET /api/timeline-events`, every job's events oldest first.
+ */
+export type TTimelineEventPageResponse = {
+  content: TTimelineEventResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 };

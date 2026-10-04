@@ -1,11 +1,13 @@
 import { useMemo, type FC } from 'react';
 
 import { Button, ErrorState, LoadingState } from '../../components/ui';
+import { DashboardInsights } from '../../features/dashboard/components/DashboardInsights';
 import { DashboardMetrics } from '../../features/dashboard/components/DashboardMetrics';
 import { DashboardNextReminders } from '../../features/dashboard/components/DashboardNextReminders';
 import { DashboardRecentActivity } from '../../features/dashboard/components/DashboardRecentActivity';
 import { DashboardStatusOverview } from '../../features/dashboard/components/DashboardStatusOverview';
 import type { INextRemindersState } from '../../features/dashboard/useNextReminders';
+import type { IStatusHistoryState } from '../../features/dashboard/useStatusHistory';
 import { useTranslation } from '../../i18n';
 import { getDashboardData } from '../../features/dashboard/dashboard.utils';
 import type { AppError } from '../../errors';
@@ -26,11 +28,16 @@ interface IDashboardPageProps {
    */
   nextReminders?: INextRemindersState;
   onRetry: () => void;
+  /**
+   * Loaded separately from `jobs`, so its loading and error states stay
+   * inside the insights section and never hide the job counts.
+   */
+  statusHistory: IStatusHistoryState;
 }
 
 /**
- * Renders dashboard metrics, the next reminders, status distribution, and
- * recent job activity.
+ * Renders dashboard metrics, job search insights, the next reminders,
+ * status distribution, and recent job activity.
  *
  * @param {IDashboardPageProps} props Component props.
  * @returns {JSX.Element} Smart job tracker dashboard.
@@ -41,6 +48,7 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
   jobs,
   nextReminders,
   onRetry,
+  statusHistory,
 }) => {
   const { t } = useTranslation();
   const { activeJobCount, recentJobs, statusCounts, totalJobCount } = useMemo(
@@ -65,6 +73,14 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
         activeJobCount={activeJobCount}
         statusCounts={statusCounts}
         totalJobCount={totalJobCount}
+      />
+
+      <DashboardInsights
+        error={statusHistory.error}
+        events={statusHistory.events}
+        isLoading={statusHistory.isLoading}
+        jobs={jobs}
+        onRetry={statusHistory.reload}
       />
 
       {nextReminders && (

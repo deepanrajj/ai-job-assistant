@@ -41,11 +41,15 @@ numbered task before implementation.
 
 ## Current Recommended Next Task
 
-- [ ] [Task 040: Add reminders](../../tasks/roadmap/040-add-reminders.md).
+- [ ] [Task 040: Add reminders](../../tasks/roadmap/040-add-reminders.md),
+  backend steps 1-6.
+- [ ] [Task 041: Add application documents](../../tasks/roadmap/041-add-application-documents.md),
+  the next frontend task.
 
-Task 039 added job contacts: a recruiter, hiring manager, referral, or
-other contact per job, with type, name, email, phone, profile URL, an
-optional last-contacted date, and notes. A new `contacts` table backs
-`/jobs/{jobId}/contacts`, and a Contacts tab on job detail lets a user
-add, edit, and delete them. Task 040 continues building out the Jobs
-section with reminders.
+Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,
+with a dev-server mock; its backend, then the removal of the mock and
+the flag, completes it. Task 043 added dashboard insights computed from
+recorded status history: applications this week, interview rate,
+applications waiting for a reply, and an explained unavailable response
+rate. Its next actions are 040's reminders card, so they appear in
+built images once 040's backend lands.
