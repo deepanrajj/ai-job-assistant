@@ -58,11 +58,20 @@ task, partial history must not produce a number. The insights section
 then shows an unavailable state with a retry; the job counts and recent
 activity are unaffected, because they do not need history.
 
-Oldest-first ordering makes the pages stable while new events are
-appended, since new rows land on the last page. A job deleted mid-read
-can shift rows between pages; de-duplication handles a repeat, and a
-missed row for a deleted job does not matter because events for jobs not
-in the job list are ignored (D2).
+Reading pages by number is not safe on its own while the history
+changes (corrected after review; the first version of this plan had the
+direction wrong). A deleted job takes its events with it, so later rows
+move **back** onto pages already read and are skipped, not repeated. A
+new event can push the history onto a page that was never requested.
+Either way the read would succeed with part of the history.
+
+So each read checks itself: every page must report the same
+`totalElements`, and the distinct events collected must number exactly
+that. A deletion lowers the later pages' total, an addition raises it,
+and a mismatch triggers one more read; if that also disagrees, the read
+fails and the section shows its retry. A deletion and an addition that
+cancel out within one sub-second read are not detected. Events whose
+`jobId` is not in the job list are ignored (D2).
 
 Rejected:
 
@@ -270,4 +279,15 @@ fixtures that build one were updated to match the real response.
 
 Next actions (D7) are task 040's card, which built images hide until
 040's backend lands; this task did not change it.
+
+### Review fix: changes during the history read
+
+The `/code-review` of PR #59 found that a job deleted while the pages
+were being read made later rows move back a page and be skipped, and
+that the read still succeeded, so the insights could come from partial
+history. `getAllTimelineEvents` now checks every read for a consistent
+`totalElements` and distinct-event count, reads once more on a
+mismatch, and fails if that read disagrees too (D1). Three new tests
+cover a deletion between pages, growth onto an unrequested page, and
+giving up; all three fail against the previous reader and pass now.
 
