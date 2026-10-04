@@ -5,6 +5,11 @@ Status: In progress - frontend complete (`f256ea4`), backend pending
 Progress is tracked in the
 [plan](../../docs/business/040-add-reminders-plan.md#progress).
 
+- [ ] **Remove the temporary reminder mock once the backend lands.**
+  Delete `frontend/src/services/reminders/reminders.mock.ts` and its
+  test, and the `USE_MOCK_REMINDERS` branches and import in
+  `reminders.service.ts`. It must not merge.
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.
