@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 
-import { Component as DashboardRoute } from './dashboardRoute';
+import {
+  Component as DashboardRoute,
+  DashboardRouteWithReminders,
+  DashboardRouteWithoutReminders,
+} from './dashboardRoute';
 import { renderWithRouter } from '../../test/renderWithRouter';
 import { MOCK_JOB_IDS, createMockJobResponses } from '../../test/mockJobs';
 import { createMockNextReminderResponse } from '../../test/mockReminders';
@@ -52,5 +56,25 @@ describe('dashboardRoute', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Reminders could not be loaded');
     expect(screen.getByText('Total jobs')).toBeInTheDocument();
+  });
+
+  it('uses the variant with reminders while the feature is on, as it is under test', () => {
+    expect(DashboardRoute).toBe(DashboardRouteWithReminders);
+  });
+
+  it('renders without the reminders card, and never asks for reminders, while the feature is off', async () => {
+    let reminderRequests = 0;
+    server.use(
+      http.get('/api/reminders/next', () => {
+        reminderRequests += 1;
+
+        return HttpResponse.json([]);
+      }),
+    );
+    renderWithRouter(<DashboardRouteWithoutReminders />);
+
+    expect(await screen.findByText('Celonis')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Next reminders' })).not.toBeInTheDocument();
+    expect(reminderRequests).toBe(0);
   });
 });

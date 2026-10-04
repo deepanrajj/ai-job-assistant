@@ -20,9 +20,11 @@ interface IDashboardPageProps {
   jobs: TJob[];
   /**
    * Loaded separately from `jobs`, so its own loading and error states
-   * render inside the reminders card and never replace the page.
+   * render inside the reminders card and never replace the page. Omitted
+   * while the reminders feature is switched off, which leaves the card
+   * out entirely.
    */
-  nextReminders: INextRemindersState;
+  nextReminders?: INextRemindersState;
   onRetry: () => void;
 }
 
@@ -65,13 +67,15 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
         totalJobCount={totalJobCount}
       />
 
-      <DashboardNextReminders
-        error={nextReminders.error}
-        isLoading={nextReminders.isLoading}
-        jobs={jobs}
-        onRetry={nextReminders.reload}
-        reminders={nextReminders.reminders}
-      />
+      {nextReminders && (
+        <DashboardNextReminders
+          error={nextReminders.error}
+          isLoading={nextReminders.isLoading}
+          jobs={jobs}
+          onRetry={nextReminders.reload}
+          reminders={nextReminders.reminders}
+        />
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
         <DashboardStatusOverview statusCounts={statusCounts} totalJobCount={totalJobCount} />

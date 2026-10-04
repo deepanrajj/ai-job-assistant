@@ -1,3 +1,4 @@
+import { REMINDERS_FEATURE_ENABLED } from '../reminders/reminders.constants';
 import type { IJobDetailTabConfig } from '../../types';
 
 /**
@@ -20,10 +21,16 @@ export const jobDetailTabs = [
     id: 'contacts',
     labelKey: 'jobDetail.tabs.contacts',
   },
-  {
-    id: 'reminders',
-    labelKey: 'jobDetail.tabs.reminders',
-  },
+  // TEMPORARY: unconditional once the task 040 backend lands; see
+  // REMINDERS_FEATURE_ENABLED.
+  ...(REMINDERS_FEATURE_ENABLED
+    ? [
+        {
+          id: 'reminders',
+          labelKey: 'jobDetail.tabs.reminders',
+        } as const,
+      ]
+    : []),
   {
     id: 'timeline',
     labelKey: 'jobDetail.tabs.timeline',

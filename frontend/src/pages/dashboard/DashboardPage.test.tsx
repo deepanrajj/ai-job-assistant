@@ -175,4 +175,11 @@ describe('DashboardPage', () => {
     expect(getMetricValue('Total jobs')).toHaveTextContent('3');
     expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
   });
+
+  it('leaves the reminders card out when no reminders are passed', () => {
+    renderDashboardPage({ nextReminders: undefined });
+
+    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
+    expect(screen.queryByRole('heading', { name: 'Next reminders' })).not.toBeInTheDocument();
+  });
 });

@@ -14,3 +14,14 @@ export const reminderDueBadgeClasses: Record<TReminderDueState, string> = {
  * Number of reminders the dashboard asks for.
  */
 export const NEXT_REMINDERS_LIMIT = 5;
+
+/**
+ * TEMPORARY - remove when the task 040 backend lands.
+ *
+ * False in built images (`production` mode), where the reminder
+ * endpoints do not exist yet: the Reminders tab and the dashboard card
+ * are left out, and no reminder request is made. True in the dev server,
+ * where `USE_MOCK_REMINDERS` stands in for the endpoints, and under
+ * Vitest, so the feature stays tested.
+ */
+export const REMINDERS_FEATURE_ENABLED = import.meta.env.MODE !== 'production';

@@ -13,21 +13,27 @@ import { getTasks } from '../tasks';
  * TEMPORARY MOCK - remove when the task 040 backend lands.
  *
  * Stands in for the reminder endpoints that do not exist yet, so the
- * Reminders tab and the dashboard card can be seen in the running app.
- * Jobs and tasks still come from the real backend: only stored
- * reminders are faked, in memory, so they reset on every page reload.
+ * Reminders tab and the dashboard card can be seen in the dev server
+ * (`npm run dev:frontend`). Jobs and tasks still come from the real
+ * backend: only stored reminders are faked, in memory, so they reset on
+ * every page reload.
  *
- * To remove it:
+ * To remove it, once the backend lands:
  * 1. Delete this file and `reminders.mock.test.ts`.
  * 2. Delete the `USE_MOCK_REMINDERS` branches and the
  *    `./reminders.mock` import in `reminders.service.ts`.
+ * 3. Delete `REMINDERS_FEATURE_ENABLED` in
+ *    `features/reminders/reminders.constants.ts` and the places that
+ *    read it, so built images show the reminders UI.
  */
 
 /**
- * On in the dev server and in built images, off under Vitest, so every
+ * On only in the Vite dev server (`development` mode). Off in built
+ * images (`production`), where the reminders UI is hidden instead by
+ * `REMINDERS_FEATURE_ENABLED`, and off under Vitest (`test`), so every
  * existing test still exercises the real fetch path.
  */
-export const USE_MOCK_REMINDERS = import.meta.env.MODE !== 'test';
+export const USE_MOCK_REMINDERS = import.meta.env.MODE === 'development';
 
 const MIN_NEXT_LIMIT = 1;
 const MAX_NEXT_LIMIT = 20;

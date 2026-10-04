@@ -26,7 +26,7 @@ describe('reminders.mock', () => {
     resetMockReminders();
   });
 
-  it('is off under Vitest, so the service tests still use the real requests', () => {
+  it('is off outside the dev server, including under Vitest', () => {
     expect(USE_MOCK_REMINDERS).toBe(false);
   });
 
