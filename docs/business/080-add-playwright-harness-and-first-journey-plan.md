@@ -1,6 +1,6 @@
 # Task 080 - Add Playwright Harness And First Journey Plan
 
-Status: In progress - verified locally, CI run pending
+Status: In progress - verified locally and in CI; traces-on-failure not yet exercised
 
 ## Purpose
 
@@ -235,7 +235,8 @@ verified-state section.
 - [x] Specs live in `e2e/` and Vitest's test count is unchanged.
 - [x] `baseURL` comes from configuration; no host appears in a spec.
 - [x] The test-data strategy and the host guard are documented.
-- [ ] Traces upload on CI failure, and `Browser E2E` does not gate.
+- [x] `Browser E2E` runs in CI and does not gate merges.
+- [ ] Traces upload on CI failure (wired; no failing run yet).
 
 ## Verified State
 
@@ -268,6 +269,14 @@ page one without the search) did not occur here: the compose database
 held only 3 jobs, so the new row fit on page one. The search step stays,
 because the cluster database it also targets is larger.
 
-Still open, needing the pull request's CI run: `Browser E2E` passes on
-the runner, uploads traces on a failure, and is reported without being
-required.
+### CI, pull request #58
+
+- `Browser E2E` passed on the first run (run `37192291807`, 2m36s):
+  `Running 1 test using 1 worker`, `1 passed (2.7s)`.
+- `gh pr checks 58 --required` listed only `Frontend Verify`,
+  `Backend Verify`, and `Docker Build`, so the new job is reported
+  without gating the merge.
+
+Still open: traces uploading on a failure. The upload step runs only
+`if: failure()`, and no run has failed, so it has never executed.
+Proving it needs one deliberately failing run.

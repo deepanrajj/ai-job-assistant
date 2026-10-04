@@ -348,7 +348,7 @@ component-test territory and are already covered there.
 | B | 078 | complete |
 | C | 069 | complete |
 | D | 079 | complete |
-| E | 080 | in progress: verified locally, first CI run pending |
+| E | 080 | in progress: passing locally and in CI; traces-on-failure not yet exercised |
 | F | 081 | blocked on E |
 
 Every backend-side unit in this plan has shipped. What is left is the

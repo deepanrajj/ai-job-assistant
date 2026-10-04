@@ -1,7 +1,7 @@
 # Task 080 - Add Playwright Harness And First Journey
 
-Status: In progress - verified locally; the two CI criteria wait for the
-first `Browser E2E` run on the pull request
+Status: In progress - verified locally and in CI; only "traces are
+uploaded on CI failure" is open, because no CI run has failed yet
 
 ## Instructions
 
@@ -153,7 +153,7 @@ against a started stack, and confirm the CI job passes.
 - [x] `baseURL` comes from configuration; no host appears in a spec.
 - [x] The test-data strategy is written down.
 - [ ] Traces are uploaded on CI failure.
-- [ ] The CI job does not gate merges yet.
+- [x] The CI job does not gate merges yet.
 - [x] No unrelated files are changed.
 
 ## Commit
