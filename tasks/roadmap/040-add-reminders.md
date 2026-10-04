@@ -1,14 +1,16 @@
 # Task 040 - Add Reminders
 
-Status: In progress - frontend complete (`f256ea4`), backend pending
+Status: In progress - frontend complete behind a feature flag, backend pending
 
 Progress is tracked in the
 [plan](../../docs/business/040-add-reminders-plan.md#progress).
 
-- [ ] **Remove the temporary reminder mock once the backend lands.**
-  Delete `frontend/src/services/reminders/reminders.mock.ts` and its
-  test, and the `USE_MOCK_REMINDERS` branches and import in
-  `reminders.service.ts`. It must not merge.
+- [ ] **Remove the temporary reminder mock and feature flag once the
+  backend lands.** Delete `frontend/src/services/reminders/reminders.mock.ts`
+  and its test, the `USE_MOCK_REMINDERS` branches and import in
+  `reminders.service.ts`, and `REMINDERS_FEATURE_ENABLED` with the places
+  that read it. Until then built images hide the reminders UI, and the
+  mock runs only in the Vite dev server.
 
 ## Instructions
 

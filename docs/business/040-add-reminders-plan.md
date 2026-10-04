@@ -16,33 +16,56 @@ email notifications, no external calendar sync, and no recurrence.
 | --- | --- | --- |
 | 1-6 | Backend | Step 1 (move validation helpers) started and stashed as `task-040 backend step 1 in progress`: both files moved and `FourDigitYear.kt`'s package updated; `RequestTrimming.kt`'s package, the two KDoc rewordings, and the contact imports remain. Steps 2-6 not started |
 | 7 | Postman folder and `api:test` allowlist | Not started |
-| 8-10 | Frontend | Done in `f256ea4`; `npm run frontend:verify` passed (582 tests) |
-| 11 | Manual browser check | Blocked until the backend endpoints exist |
+| 8-10 | Frontend | Done, and mergeable behind `REMINDERS_FEATURE_ENABLED`; `npm run verify` passed (593 tests) |
+| 11 | Manual browser check | Against the mock in the dev server only; the real check waits for the backend |
 | 12 | Close-out docs | Not started |
-| - | **Remove the temporary mock** | Required before merge, once steps 1-6 land |
+| - | **Remove the temporary mock and feature flag** | Required once steps 1-6 land, before the task is complete |
 
-### Temporary reminder mock
+### Temporary reminder mock and feature flag
 
-Added at the user's request so the UI can be seen before the backend
-exists. `frontend/src/services/reminders/reminders.mock.ts` fakes the
-five reminder endpoints in browser memory: four seeded reminders per job
-(overdue, due today, upcoming, completed), full create, edit, complete,
-reopen, and delete, and `GET /api/reminders/next` built from the real
-jobs and tasks. Jobs and tasks are never mocked, so task reminders and
-their completion are real. Mock reminders reset on every page reload.
+Added at the user's request so the UI can be seen, and merged, before
+the backend exists.
 
-It is on in the dev server and in built images
-(`import.meta.env.MODE !== 'test'`) and off under Vitest, so every
-existing test still exercises the real request path (verified: Vitest
-reports `MODE` as `test`).
+**The mock.** `frontend/src/services/reminders/reminders.mock.ts` fakes
+the five reminder endpoints in browser memory: four seeded reminders per
+job (overdue, due today, upcoming, completed), full create, edit,
+complete, reopen, and delete, and `GET /api/reminders/next` built from
+the real jobs and tasks. Jobs and tasks are never mocked, so task
+reminders and their completion are real. Mock reminders reset on every
+page reload. It runs only in the Vite dev server
+(`import.meta.env.MODE === 'development'`).
 
-**The branch must not merge with the mock in it.** Removal, as the
-file's header also says:
+**The flag.** `REMINDERS_FEATURE_ENABLED` in
+`features/reminders/reminders.constants.ts` is false in built images
+(`MODE === 'production'`). There the Reminders tab and the dashboard
+card are left out and no reminder request is made, so merging this
+frontend before its backend changes nothing a user of the compose or
+cluster stack sees. Under Vitest (`MODE === 'test'`) the flag is on and
+the mock is off, so the feature stays tested against the real request
+path.
+
+Verified, not assumed: Vitest reports `MODE` as `test` (probe); the
+production bundle contains no mock code (searched `dist/assets`); in the
+rebuilt compose image the job detail tabs were Overview, Tasks, Notes,
+Contacts, Timeline, AI, the dashboard had no reminders card, and the
+page made no `/api/reminders` request (one-off Playwright check). React
+Router's lazy route loader copies a route module's extra exports onto
+the route without warning (read in its source), so the two exported
+dashboard variants are safe.
+
+To see the mock: keep the compose stack up for PostgreSQL, run
+`npm run dev:local`, and open `http://localhost:5173`.
+
+Removal, once steps 1-6 land, as the mock file's header also says:
 
 1. Delete `reminders.mock.ts` and `reminders.mock.test.ts`.
 2. Delete the `USE_MOCK_REMINDERS` branches and the `./reminders.mock`
    import in `reminders.service.ts`.
-3. Run the browser check (step 11) against the real endpoints.
+3. Delete `REMINDERS_FEATURE_ENABLED`, collapse the dashboard route to
+   its with-reminders variant, make the reminders tab unconditional, and
+   delete `jobDetail.constants.test.ts` and the two flag tests in
+   `dashboardRoute.test.tsx`.
+4. Run the browser check (step 11) against the real endpoints.
 
 ## Authoritative References
 
