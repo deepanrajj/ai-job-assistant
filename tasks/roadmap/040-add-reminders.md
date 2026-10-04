@@ -1,6 +1,9 @@
 # Task 040 - Add Reminders
 
-Status: Not started
+Status: In progress - frontend complete (`f256ea4`), backend pending
+
+Progress is tracked in the
+[plan](../../docs/business/040-add-reminders-plan.md#progress).
 
 ## Instructions
 
