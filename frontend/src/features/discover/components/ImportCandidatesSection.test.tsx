@@ -6,6 +6,7 @@ import type { ComponentProps } from 'react';
 import { ImportCandidatesSection } from './ImportCandidatesSection';
 import { AppError } from '../../../errors';
 import { renderWithProviders } from '../../../test/renderWithProviders';
+import { createMockJob } from '../../../test/mockJobs';
 import { APP_ERROR_CODES } from '../../../types';
 import type { TImportCandidateResponse, TSaveImportCandidateRequest } from '../../../services';
 
@@ -40,6 +41,7 @@ const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidates
     deleteCandidate: vi.fn(async () => {}),
     isLoading: false,
     isMutating: false,
+    jobs: { error: null, isLoading: false, jobs: [] },
     loadError: null,
     mutationError: null,
     reload: vi.fn(),
@@ -67,29 +69,96 @@ describe('ImportCandidatesSection', () => {
 
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
     expect(
-      within(list).getAllByText(
-        'Berlin · Entered manually · Waiting for review · Duplicates not checked',
-      ),
+      within(list).getAllByText('Berlin · Entered manually · Waiting for review'),
     ).toHaveLength(2);
   });
 
-  it('selects candidates one by one, all at once, and clears the selection', async () => {
+  it('starts with new candidates selected, and selects and clears by hand', async () => {
     const user = userEvent.setup();
     renderSection();
 
-    expect(screen.getByText('0 of 2 selected')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Clear selection' })).toBeDisabled();
+    expect(screen.getByText('2 of 2 selected')).toBeInTheDocument();
 
     await user.click(screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' }));
     expect(screen.getByText('1 of 2 selected')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Select all' }));
-    expect(screen.getByText('2 of 2 selected')).toBeInTheDocument();
-    expect(
-      screen.getByRole('checkbox', { name: 'Select Backend Engineer at Zalando' }),
-    ).toBeChecked();
-
     await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+    expect(screen.getByText('0 of 2 selected')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Clear selection' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Select new and possible' }));
+    expect(screen.getByText('2 of 2 selected')).toBeInTheDocument();
+  });
+
+  it('classifies candidates against saved jobs and leaves likely duplicates unselected', async () => {
+    const user = userEvent.setup();
+    renderSection({
+      candidates: [
+        { ...candidate('c1', 'N26'), sourceUrl: 'https://example.com/jobs/1' },
+        candidate('c2', 'N26', { roleTitle: 'Senior Backend Engineer' }),
+        candidate('c3', 'Zalando', { roleTitle: 'Designer' }),
+      ],
+      jobs: {
+        error: null,
+        isLoading: false,
+        jobs: [
+          createMockJob({
+            company: 'N26 GmbH',
+            id: 'job-1',
+            jobUrl: 'https://www.example.com/jobs/1/',
+            roleTitle: 'Backend Engineer',
+          }),
+        ],
+      },
+    });
+
+    expect(
+      screen.getByText('Likely duplicate: same link as Backend Engineer at N26 GmbH'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Possible duplicate: similar role at the same company as Backend Engineer at N26 GmbH',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('New: no matching saved job')).toBeInTheDocument();
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: 'Select Senior Backend Engineer at N26' }),
+    ).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Select Designer at Zalando' })).toBeChecked();
+    expect(screen.getByText('2 of 3 selected')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' }));
+
+    expect(screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' })).toBeChecked();
+    expect(screen.getByText('3 of 3 selected')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Select new and possible' }));
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' }),
+    ).not.toBeChecked();
+  });
+
+  it('preselects nothing while the saved jobs load or after they fail', () => {
+    const { unmount } = renderSection({ jobs: { error: null, isLoading: true, jobs: [] } });
+
+    expect(screen.getAllByText('Checking for duplicates')).toHaveLength(2);
+    expect(screen.getByText('0 of 2 selected')).toBeInTheDocument();
+    unmount();
+
+    renderSection({
+      jobs: {
+        error: new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED),
+        isLoading: false,
+        jobs: [],
+      },
+    });
+
+    expect(screen.getAllByText('Could not check for duplicates')).toHaveLength(2);
     expect(screen.getByText('0 of 2 selected')).toBeInTheDocument();
   });
 

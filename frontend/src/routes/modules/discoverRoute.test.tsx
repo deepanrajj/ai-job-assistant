@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
 
 import {
   Component as DiscoverRoute,
@@ -7,6 +8,8 @@ import {
   DiscoverRouteWithSearches,
 } from './discoverRoute';
 import { renderWithProviders } from '../../test/renderWithProviders';
+import { createMockJobResponses } from '../../test/mockJobs';
+import { server } from '../../test/server';
 
 describe('discoverRoute', () => {
   it('uses the variant with saved searches while the feature is on, as it is under test', () => {
@@ -19,7 +22,8 @@ describe('discoverRoute', () => {
     expect(await screen.findByText('No saved searches yet')).toBeInTheDocument();
   });
 
-  it('shows the candidate review below the saved searches', async () => {
+  it('shows the candidate review below the saved searches, checked against the saved jobs', async () => {
+    server.use(http.get('/api/jobs', () => HttpResponse.json(createMockJobResponses())));
     renderWithProviders(<DiscoverRoute />);
 
     expect(await screen.findByRole('region', { name: 'Import candidates' })).toBeInTheDocument();
