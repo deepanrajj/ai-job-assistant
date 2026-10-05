@@ -278,7 +278,8 @@
       "listCandidates": "Failed to load import candidates",
       "createCandidate": "Failed to save candidate",
       "updateCandidate": "Failed to save candidate changes",
-      "deleteCandidate": "Failed to delete candidate"
+      "deleteCandidate": "Failed to delete candidate",
+      "importCandidates": "Failed to import candidates"
     },
     "title": "Import candidates",
     "subtitle": "Opportunities you collected but have not saved as jobs. Review them here; importing comes next.",
@@ -288,7 +289,8 @@
       "manual": "Entered manually"
     },
     "reviewStatus": {
-      "pending": "Waiting for review"
+      "pending": "Waiting for review",
+      "imported": "Imported as a job"
     },
     "duplicates": {
       "checking": "Checking for duplicates",
@@ -327,6 +329,21 @@
       "deleteLabel": "Delete {{candidate}}",
       "emptyTitle": "No candidates yet",
       "emptyDescription": "Paste a job description above to collect it as a candidate. It only becomes a job when you import it."
+    },
+    "import": {
+      "start": "Import selected ({{count}})",
+      "confirmTitle": "Import the selected candidates as saved jobs?",
+      "likelyDuplicateWarning": "Likely already saved as a job: {{count}}",
+      "confirm": "Import {{count}} as jobs",
+      "cancel": "Cancel",
+      "success": "Imported {{count}} as saved jobs. You can find them in Jobs.",
+      "failedTitle": "{{count}} could not be imported:",
+      "failedItem": "{{candidate}}: {{reason}}",
+      "errors": {
+        "alreadyImported": "already imported",
+        "notFound": "no longer exists",
+        "unknown": "the job could not be saved"
+      }
     }
   },
   "duplicates": {

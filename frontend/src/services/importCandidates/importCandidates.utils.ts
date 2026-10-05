@@ -1,10 +1,13 @@
 import { translate } from '../../i18n';
+import type { TJobSource } from '../../types';
 import {
   IMPORT_CANDIDATE_FALLBACK_ERROR_TRANSLATION_KEYS,
   type TImportCandidateFallbackErrorKey,
+  type TImportCandidateResponse,
   type TSaveImportCandidateRequest,
 } from './importCandidates.types';
 import { isValidProfileUrl, toNullableTrimmed } from '../contacts';
+import type { TCreateJobRequest } from '../jobs';
 
 /**
  * Resolves the localized fallback error message for an import candidate operation.
@@ -84,4 +87,54 @@ export const buildImportCandidateRequest = (
     roleTitle: values.roleTitle.trim(),
   },
   sourceUrl: toNullableTrimmed(values.sourceUrl),
+});
+
+/**
+ * Job boards whose links name them unambiguously, by host suffix. Any
+ * other host - a company careers page, an aggregator - is left unknown
+ * rather than guessed.
+ */
+const SOURCE_BY_HOST: readonly (readonly [RegExp, TJobSource])[] = [
+  [/(^|\.)linkedin\.com$/, 'LINKEDIN'],
+  [/(^|\.)indeed\.[a-z.]+$/, 'INDEED'],
+  [/(^|\.)xing\.com$/, 'XING'],
+];
+
+/**
+ * Infers a job's source from its link, only where the host says it.
+ *
+ * @param {string | null} url Candidate source link.
+ * @returns {TJobSource | null} The board, or null when it cannot be told.
+ */
+export const inferJobSourceFromUrl = (url: string | null): TJobSource | null => {
+  if (!url) return null;
+
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+
+    return SOURCE_BY_HOST.find(([pattern]) => pattern.test(host))?.[1] ?? null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * How an imported candidate becomes a job: its content, its link as the
+ * job URL, the status `WISHLIST` (saved, not applied), and the source
+ * inferred from the link. The backend's import follows the same mapping;
+ * the dev mock uses this one.
+ *
+ * @param {TImportCandidateResponse} candidate Candidate being imported.
+ * @returns {TCreateJobRequest} The job to create.
+ */
+export const mapCandidateToJobRequest = (
+  candidate: TImportCandidateResponse,
+): TCreateJobRequest => ({
+  company: candidate.content.company,
+  description: candidate.content.description,
+  jobUrl: candidate.sourceUrl,
+  location: candidate.content.location || null,
+  roleTitle: candidate.content.roleTitle,
+  source: inferJobSourceFromUrl(candidate.sourceUrl),
+  status: 'WISHLIST',
 });

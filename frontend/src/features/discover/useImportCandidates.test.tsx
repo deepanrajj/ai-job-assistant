@@ -69,4 +69,38 @@ describe('useImportCandidates', () => {
 
     expect(result.current.mutationError?.message).toBe('Failed to save candidate');
   });
+
+  it('marks imported candidates and returns every result', async () => {
+    server.use(
+      http.get(endpoint, () =>
+        HttpResponse.json([candidate('c1', 'N26'), candidate('c2', 'Zalando')]),
+      ),
+      http.post(`${endpoint}/import`, async ({ request }) => {
+        const { candidateIds } = (await request.json()) as { candidateIds: string[] };
+
+        return HttpResponse.json({
+          results: candidateIds.map((candidateId) =>
+            candidateId === 'c1'
+              ? { candidateId, errorCode: null, jobId: 'job-1', outcome: 'IMPORTED' }
+              : { candidateId, errorCode: 'X', jobId: null, outcome: 'FAILED' },
+          ),
+        });
+      }),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+
+    await waitFor(() => expect(result.current.candidates).toHaveLength(2));
+
+    let results: unknown;
+
+    await act(async () => {
+      results = await result.current.importCandidates(['c1', 'c2']);
+    });
+
+    expect(results).toHaveLength(2);
+    expect(result.current.candidates.map((item) => item.reviewStatus)).toEqual([
+      'IMPORTED',
+      'PENDING',
+    ]);
+  });
 });
