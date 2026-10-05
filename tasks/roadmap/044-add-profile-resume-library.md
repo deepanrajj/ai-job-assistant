@@ -1,6 +1,16 @@
 # Task 044 - Add Profile Resume Library
 
-Status: Not started
+Status: In progress - frontend complete behind a feature flag, backend pending
+
+Progress is tracked in the
+[plan](../../docs/business/044-add-profile-resume-library-plan.md#progress).
+
+- [ ] **Remove the temporary profile mock and feature flag once the
+  backend lands.** Delete `frontend/src/services/profiles/profiles.mock.ts`
+  and its test, the `USE_MOCK_PROFILES` branches and import in
+  `profiles.service.ts`, and `PROFILES_FEATURE_ENABLED` with the places
+  that read it. Until then built images keep Profile on "coming soon",
+  and the mock runs only in the Vite dev server.
 
 ## Instructions
 
