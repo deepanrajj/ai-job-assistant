@@ -278,7 +278,8 @@
       "listCandidates": "Import-Kandidaten konnten nicht geladen werden",
       "createCandidate": "Kandidat konnte nicht gespeichert werden",
       "updateCandidate": "Änderungen am Kandidaten konnten nicht gespeichert werden",
-      "deleteCandidate": "Kandidat konnte nicht gelöscht werden"
+      "deleteCandidate": "Kandidat konnte nicht gelöscht werden",
+      "importCandidates": "Kandidaten konnten nicht importiert werden"
     },
     "title": "Import-Kandidaten",
     "subtitle": "Gesammelte Stellen, die noch nicht als Jobs gespeichert sind. Prüfe sie hier; der Import folgt als Nächstes.",
@@ -288,7 +289,8 @@
       "manual": "Manuell eingegeben"
     },
     "reviewStatus": {
-      "pending": "Wartet auf Prüfung"
+      "pending": "Wartet auf Prüfung",
+      "imported": "Als Job importiert"
     },
     "duplicates": {
       "checking": "Duplikate werden geprüft",
@@ -327,6 +329,21 @@
       "deleteLabel": "{{candidate}} löschen",
       "emptyTitle": "Noch keine Kandidaten",
       "emptyDescription": "Füge oben eine Stellenbeschreibung ein, um sie als Kandidat zu sammeln. Sie wird erst durch den Import zum Job."
+    },
+    "import": {
+      "start": "Auswahl importieren ({{count}})",
+      "confirmTitle": "Die ausgewählten Kandidaten als gespeicherte Jobs importieren?",
+      "likelyDuplicateWarning": "Wahrscheinlich bereits als Job gespeichert: {{count}}",
+      "confirm": "{{count}} als Jobs importieren",
+      "cancel": "Abbrechen",
+      "success": "{{count}} als gespeicherte Jobs importiert. Du findest sie unter Jobs.",
+      "failedTitle": "{{count}} konnten nicht importiert werden:",
+      "failedItem": "{{candidate}}: {{reason}}",
+      "errors": {
+        "alreadyImported": "bereits importiert",
+        "notFound": "existiert nicht mehr",
+        "unknown": "der Job konnte nicht gespeichert werden"
+      }
     }
   },
   "duplicates": {

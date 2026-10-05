@@ -4,8 +4,10 @@ import {
   createImportCandidate,
   deleteImportCandidate,
   getImportCandidates,
+  importCandidatesAsJobs,
   updateImportCandidate,
   type TImportCandidateResponse,
+  type TImportCandidateResult,
   type TSaveImportCandidateRequest,
 } from '../../services';
 import { useAsyncMutation } from '../../hooks';
@@ -18,6 +20,12 @@ import type { AppError } from '../../errors';
  * after recording it in `mutationError`, as the job detail hooks do.
  */
 export interface IImportCandidatesState {
+  /**
+   * Imports the given candidates as jobs and resolves with each outcome.
+   * Candidates reported imported are marked so in the list. Rejects only
+   * when the request itself fails, after recording `mutationError`.
+   */
+  importCandidates: (candidateIds: string[]) => Promise<TImportCandidateResult[]>;
   createCandidate: (payload: TSaveImportCandidateRequest) => Promise<TImportCandidateResponse>;
   deleteCandidate: (candidateId: string) => Promise<void>;
   isLoading: boolean;
@@ -113,6 +121,27 @@ export const useImportCandidates = (): IImportCandidatesState => {
     [runWrite],
   );
 
+  const importCandidates = useCallback(
+    (candidateIds: string[]) =>
+      runWrite(
+        () => importCandidatesAsJobs(candidateIds).then((response) => response.results),
+        (results) => {
+          const imported = new Set(
+            results
+              .filter((result) => result.outcome === 'IMPORTED')
+              .map((result) => result.candidateId),
+          );
+
+          setCandidates((current) =>
+            current.map((candidate) =>
+              imported.has(candidate.id) ? { ...candidate, reviewStatus: 'IMPORTED' } : candidate,
+            ),
+          );
+        },
+      ),
+    [runWrite],
+  );
+
   const deleteCandidate = useCallback(
     (candidateId: string) =>
       runWrite(
@@ -126,6 +155,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
   return {
     createCandidate,
     deleteCandidate,
+    importCandidates,
     isLoading: isIdle || isLoading,
     isMutating: pendingWrites > 0,
     loadError,

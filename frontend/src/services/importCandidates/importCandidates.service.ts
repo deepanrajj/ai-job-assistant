@@ -7,11 +7,14 @@ import {
   mockCreateImportCandidate,
   mockDeleteImportCandidate,
   mockGetImportCandidates,
+  mockImportCandidatesAsJobs,
   mockUpdateImportCandidate,
 } from './importCandidates.mock';
 import { APP_ERROR_CODES } from '../../types';
 import type {
   TImportCandidateResponse,
+  TImportCandidatesRequest,
+  TImportCandidatesResponse,
   TSaveImportCandidateRequest,
 } from './importCandidates.types';
 
@@ -96,3 +99,26 @@ export const deleteImportCandidate = (candidateId: string): Promise<void> =>
         errorCode: APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
         fallbackErrorMessage: getImportCandidateFallbackErrorMessage('deleteCandidate'),
       });
+
+/**
+ * Imports the selected, confirmed candidates as saved jobs. The server
+ * creates each job through its normal job creation and marks the
+ * candidate imported in the same transaction, one candidate at a time,
+ * and reports each outcome.
+ *
+ * @param {string[]} candidateIds Candidates to import.
+ * @returns {Promise<TImportCandidatesResponse>} One result per candidate.
+ */
+export const importCandidatesAsJobs = (
+  candidateIds: string[],
+): Promise<TImportCandidatesResponse> =>
+  USE_MOCK_IMPORT_CANDIDATES
+    ? mockImportCandidatesAsJobs(candidateIds)
+    : postJson<TImportCandidatesResponse, TImportCandidatesRequest>(
+        `${IMPORT_CANDIDATES_ENDPOINT}/import`,
+        { candidateIds },
+        {
+          errorCode: APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
+          fallbackErrorMessage: getImportCandidateFallbackErrorMessage('importCandidates'),
+        },
+      );
