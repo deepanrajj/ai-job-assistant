@@ -142,21 +142,29 @@ const classifyAgainstJob = (input: IDuplicateCheckInput, job: TJob): IDuplicateR
 };
 
 /**
+ * Finds every saved job that something may duplicate: likely duplicates
+ * before possible ones, and saved order among equals. Deterministic, so
+ * the same inputs always give the same answer and the reasons can be
+ * shown.
+ *
+ * @param {IDuplicateCheckInput} input What is being checked: a candidate, or a job form.
+ * @param {TJob[]} jobs Saved jobs.
+ * @returns {IDuplicateResult[]} Every match, strongest first; empty when none.
+ */
+export const findDuplicates = (input: IDuplicateCheckInput, jobs: TJob[]): IDuplicateResult[] =>
+  jobs
+    .map((job) => classifyAgainstJob(input, job))
+    .filter((result) => result.classification !== 'NEW')
+    .sort((left, right) => RANK[right.classification] - RANK[left.classification]);
+
+/**
  * Classifies something against every saved job and returns the strongest
  * match: a likely duplicate over a possible one, and the first saved job
- * among equals. Deterministic, so the same inputs always give the same
- * answer and the reason can be shown.
+ * among equals.
  *
  * @param {IDuplicateCheckInput} input What is being checked: a candidate, or a job form.
  * @param {TJob[]} jobs Saved jobs.
  * @returns {IDuplicateResult} The strongest match, or NEW.
  */
 export const classifyDuplicate = (input: IDuplicateCheckInput, jobs: TJob[]): IDuplicateResult =>
-  jobs.reduce<IDuplicateResult>(
-    (best, job) => {
-      const result = classifyAgainstJob(input, job);
-
-      return RANK[result.classification] > RANK[best.classification] ? result : best;
-    },
-    { classification: 'NEW' },
-  );
+  findDuplicates(input, jobs)[0] ?? { classification: 'NEW' };

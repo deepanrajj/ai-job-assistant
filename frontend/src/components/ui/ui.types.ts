@@ -8,7 +8,7 @@ import type {
 /**
  * Supported visual variants for inline alerts.
  */
-export type TAlertVariant = 'error' | 'info' | 'success';
+export type TAlertVariant = 'error' | 'info' | 'success' | 'warning';
 
 /**
  * Supported visual variants for buttons.

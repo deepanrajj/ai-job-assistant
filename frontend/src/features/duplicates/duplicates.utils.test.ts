@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   classifyDuplicate,
+  findDuplicates,
   normalizeCompany,
   normalizeDuplicateText,
   normalizeJobUrl,
@@ -129,5 +130,43 @@ describe('classifyDuplicate', () => {
     ).toEqual({
       classification: 'NEW',
     });
+  });
+});
+
+describe('findDuplicates', () => {
+  it('returns every match, likely ones first and saved order among equals', () => {
+    const similar = createMockJob({
+      company: 'N26',
+      id: 'similar',
+      roleTitle: 'Senior Backend Engineer',
+    });
+    const unrelated = createMockJob({ company: 'Zalando', id: 'unrelated', roleTitle: 'Designer' });
+    const sameRole = createMockJob({
+      company: 'N26 SE',
+      id: 'same',
+      roleTitle: 'Backend Engineer',
+    });
+    const alsoSimilar = createMockJob({
+      company: 'n26',
+      id: 'also',
+      roleTitle: 'Backend Engineer II',
+    });
+
+    expect(
+      findDuplicates(candidate({ company: 'N26', roleTitle: 'Backend Engineer' }), [
+        similar,
+        unrelated,
+        sameRole,
+        alsoSimilar,
+      ]).map(({ classification, job, reason }) => [classification, job?.id, reason]),
+    ).toEqual([
+      ['LIKELY_DUPLICATE', 'same', 'SAME_COMPANY_AND_ROLE'],
+      ['POSSIBLE_DUPLICATE', 'similar', 'SIMILAR_ROLE_SAME_COMPANY'],
+      ['POSSIBLE_DUPLICATE', 'also', 'SIMILAR_ROLE_SAME_COMPANY'],
+    ]);
+  });
+
+  it('returns nothing without a match', () => {
+    expect(findDuplicates(candidate(), [savedJob])).toEqual([]);
   });
 });
