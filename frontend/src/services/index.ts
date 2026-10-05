@@ -3,6 +3,7 @@ export * from './calendar';
 export * from './api';
 export * from './contacts';
 export * from './documents';
+export * from './importCandidates';
 export * from './jobs';
 export * from './notes';
 export * from './preferences';

@@ -1,6 +1,17 @@
 # Task 047 - Add Import Candidate Review Workflow
 
-Status: Not started
+Status: In progress - frontend complete behind a feature flag, backend pending
+
+Progress is tracked in the
+[plan](../../docs/business/047-add-import-candidate-review-workflow-plan.md#progress).
+
+- [ ] **Remove the temporary candidate mock and feature flag once the
+  backend lands.** Delete `frontend/src/services/importCandidates/importCandidates.mock.ts`
+  and its test block, the `USE_MOCK_IMPORT_CANDIDATES` branches and
+  import in `importCandidates.service.ts`, and
+  `IMPORT_CANDIDATES_FEATURE_ENABLED` with the places that read it.
+  Until then built images hide the section, and the mock runs only in
+  the Vite dev server.
 
 Related plan: [Product improvements - candidate intake](../../docs/business/product-improvements-and-recommendations-plan.md#non-ai-import-needs-an-intake).
 
