@@ -670,6 +670,14 @@
       "tooLongText": "Use at most 255 characters.",
       "tooLongUrl": "Use at most 2048 characters.",
       "invalidSalaryRange": "Maximum salary must be greater than or equal to minimum salary."
+    },
+    "duplicates": {
+      "title": "You may have saved this job already",
+      "jobLabel": "{{roleTitle}} at {{company}}",
+      "opensInNewTab": "(opens in a new tab)",
+      "likely": "(likely duplicate: {{reason}})",
+      "possible": "(possible duplicate: {{reason}})",
+      "canStillSave": "You can still save it."
     }
   },
   "dataTable": {

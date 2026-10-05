@@ -670,6 +670,14 @@
       "tooLongText": "Verwende höchstens 255 Zeichen.",
       "tooLongUrl": "Verwende höchstens 2048 Zeichen.",
       "invalidSalaryRange": "Das Maximalgehalt muss größer oder gleich dem Mindestgehalt sein."
+    },
+    "duplicates": {
+      "title": "Diesen Job hast du vielleicht schon gespeichert",
+      "jobLabel": "{{roleTitle}} bei {{company}}",
+      "opensInNewTab": "(öffnet in einem neuen Tab)",
+      "likely": "(wahrscheinliches Duplikat: {{reason}})",
+      "possible": "(mögliches Duplikat: {{reason}})",
+      "canStillSave": "Du kannst ihn trotzdem speichern."
     }
   },
   "dataTable": {

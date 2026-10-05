@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
@@ -68,6 +68,11 @@ const renderEditJobPage = ({
 };
 
 describe('EditJobPage', () => {
+  // The form loads the saved jobs for its duplicate warning (task 050).
+  beforeEach(() => {
+    server.use(http.get('/api/jobs', () => HttpResponse.json([])));
+  });
+
   it('prefills the form with the loaded job values', () => {
     renderEditJobPage();
 
@@ -119,6 +124,48 @@ describe('EditJobPage', () => {
         status: 'INTERVIEW',
       }),
     );
+    expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
+  });
+
+  it('warns about another similar saved job, not the job itself, and still saves', async () => {
+    const user = userEvent.setup();
+    let body: unknown;
+
+    server.use(
+      http.get('/api/jobs', () =>
+        HttpResponse.json([
+          createMockJobResponse({
+            company: 'Celonis',
+            id: MOCK_JOB_IDS.celonis,
+            jobUrl: null,
+            roleTitle: 'Senior Frontend Engineer',
+          }),
+          createMockJobResponse({
+            company: 'Celonis SE',
+            id: 'other',
+            jobUrl: null,
+            roleTitle: 'Frontend Engineer',
+          }),
+        ]),
+      ),
+      http.put(jobEndpoint, async ({ request }) => {
+        body = await request.json();
+
+        return HttpResponse.json(createMockJobResponse({ id: MOCK_JOB_IDS.celonis }));
+      }),
+    );
+    renderEditJobPage();
+
+    const warning = await screen.findByRole('status');
+
+    expect(within(warning).getAllByRole('listitem')).toHaveLength(1);
+    expect(warning).toHaveTextContent(
+      'Frontend Engineer at Celonis SE (opens in a new tab) (possible duplicate: similar role at the same company)',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    await waitFor(() => expect(body).toMatchObject({ company: 'Celonis' }));
     expect(await screen.findByText(JOBS_ROUTE_TEXT)).toBeInTheDocument();
   });
 
