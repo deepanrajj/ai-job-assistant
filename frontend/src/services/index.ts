@@ -1,4 +1,5 @@
 export * from './ai';
+export * from './calendar';
 export * from './api';
 export * from './contacts';
 export * from './documents';

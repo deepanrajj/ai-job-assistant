@@ -46,6 +46,9 @@ numbered task before implementation.
 - [ ] [Task 041: Add application documents](../../tasks/roadmap/041-add-application-documents.md),
   backend steps 1-6; its frontend is behind `DOCUMENTS_FEATURE_ENABLED`.
 - [ ] [Task 042: Add calendar view](../../tasks/roadmap/042-add-calendar-view.md),
+  backend `GET /api/calendar-items` after 040's and 041's; its frontend
+  is behind `CALENDAR_FEATURE_ENABLED`.
+- [ ] [Task 044: Add profile and resume library](../../tasks/roadmap/044-add-profile-resume-library.md),
   the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,

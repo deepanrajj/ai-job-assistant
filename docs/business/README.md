@@ -65,6 +65,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 039 - Add Job Contacts Plan](./039-add-job-contacts-plan.md)
 - [Task 040 - Add Reminders Plan](./040-add-reminders-plan.md)
 - [Task 041 - Add Application Documents Plan](./041-add-application-documents-plan.md)
+- [Task 042 - Add Calendar View Plan](./042-add-calendar-view-plan.md)
 - [Task 043 - Add Dashboard Insights Plan](./043-add-dashboard-insights-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
