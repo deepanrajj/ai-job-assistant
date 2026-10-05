@@ -290,8 +290,12 @@
     "reviewStatus": {
       "pending": "Waiting for review"
     },
-    "duplicateStatus": {
-      "unchecked": "Duplicates not checked"
+    "duplicates": {
+      "checking": "Checking for duplicates",
+      "unavailable": "Could not check for duplicates",
+      "new": "New: no matching saved job",
+      "likely": "Likely duplicate: {{reason}} as {{job}}",
+      "possible": "Possible duplicate: {{reason}} as {{job}}"
     },
     "form": {
       "newTitle": "Add a candidate",
@@ -313,7 +317,7 @@
       "candidateLabel": "{{roleTitle}} at {{company}}",
       "select": "Select {{candidate}}",
       "selectedCount": "{{count}} of {{total}} selected",
-      "selectAll": "Select all",
+      "selectDefault": "Select new and possible",
       "clearSelection": "Clear selection",
       "noLocation": "No location",
       "description": "Description",
@@ -323,6 +327,14 @@
       "deleteLabel": "Delete {{candidate}}",
       "emptyTitle": "No candidates yet",
       "emptyDescription": "Paste a job description above to collect it as a candidate. It only becomes a job when you import it."
+    }
+  },
+  "duplicates": {
+    "reason": {
+      "sameUrl": "same link",
+      "sameCompanyAndRole": "same company and role",
+      "similarRoleSameCompany": "similar role at the same company",
+      "sameRoleAndLocation": "same role and location"
     }
   },
   "jobs": {

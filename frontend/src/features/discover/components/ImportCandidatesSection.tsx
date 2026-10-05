@@ -1,4 +1,4 @@
-import { useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { useMemo, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
 
 import {
   Alert,
@@ -18,7 +18,13 @@ import {
   type TImportCandidateResponse,
 } from '../../../services';
 import type { IImportCandidatesState } from '../useImportCandidates';
-import { useTranslation } from '../../../i18n';
+import { useTranslation, type TTranslationContextValue } from '../../../i18n';
+import { classNames } from '../../../utils';
+import { classifyDuplicate } from '../../duplicates/duplicates.utils';
+import type { AppError } from '../../../errors';
+import { DUPLICATE_REASON_TRANSLATION_KEYS } from '../../duplicates/duplicates.constants';
+import type { TJob } from '../../../types';
+import type { IDuplicateResult } from '../../duplicates/duplicates.types';
 
 /**
  * Converts a saved candidate into intake form values for correcting it.
@@ -154,10 +160,112 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
 };
 
 /**
+ * A candidate's duplicate state for display: the classification once the
+ * saved jobs are known, or why it is not known yet.
+ */
+type TCandidateDuplicateState = IDuplicateResult | 'checking' | 'unavailable';
+
+/**
+ * The jobs the candidates are checked against, as the route loads them.
+ */
+interface IDuplicateCheckJobs {
+  error: AppError | null;
+  isLoading: boolean;
+  jobs: TJob[];
+}
+
+/**
+ * Props used by the candidate review section.
+ */
+type TImportCandidatesSectionProps = IImportCandidatesState & {
+  jobs: IDuplicateCheckJobs;
+};
+
+/**
+ * Classifies one candidate against the saved jobs, or says why it cannot.
+ *
+ * @param {TImportCandidateResponse} candidate Candidate to check.
+ * @param {IDuplicateCheckJobs} jobs Saved jobs and their load state.
+ * @returns {TCandidateDuplicateState} Its duplicate state.
+ */
+const getCandidateDuplicateState = (
+  candidate: TImportCandidateResponse,
+  { error, isLoading, jobs }: IDuplicateCheckJobs,
+): TCandidateDuplicateState => {
+  if (isLoading) return 'checking';
+  if (error) return 'unavailable';
+
+  return classifyDuplicate(
+    {
+      company: candidate.content.company,
+      location: candidate.content.location,
+      roleTitle: candidate.content.roleTitle,
+      url: candidate.sourceUrl,
+    },
+    jobs,
+  );
+};
+
+/**
+ * New and possible duplicates start selected. Likely duplicates start
+ * unselected, and so does everything while duplicates are unknown, since
+ * a likely duplicate could not be told apart.
+ *
+ * @param {TCandidateDuplicateState | undefined} duplicate Candidate's duplicate state.
+ * @returns {boolean} Whether it is selected by default.
+ */
+const isSelectedByDefault = (duplicate: TCandidateDuplicateState | undefined): boolean =>
+  typeof duplicate === 'object' && duplicate.classification !== 'LIKELY_DUPLICATE';
+
+/**
+ * Tailwind text colour for a duplicate state.
+ *
+ * @param {TCandidateDuplicateState} duplicate Candidate's duplicate state.
+ * @returns {string} Text colour classes.
+ */
+const duplicateToneClasses = (duplicate: TCandidateDuplicateState): string => {
+  if (typeof duplicate !== 'object') return 'text-app-textMuted';
+  if (duplicate.classification === 'LIKELY_DUPLICATE') return 'text-danger-700';
+  if (duplicate.classification === 'POSSIBLE_DUPLICATE') return 'text-warning-800';
+
+  return 'text-success-700';
+};
+
+/**
+ * Says what a duplicate state means, naming the matching job and rule.
+ *
+ * @param {TCandidateDuplicateState} duplicate Candidate's duplicate state.
+ * @param {TTranslationContextValue['t']} t Translation function.
+ * @returns {string} Localized description.
+ */
+const describeDuplicate = (
+  duplicate: TCandidateDuplicateState,
+  t: TTranslationContextValue['t'],
+): string => {
+  if (duplicate === 'checking') return t('importCandidates.duplicates.checking');
+  if (duplicate === 'unavailable') return t('importCandidates.duplicates.unavailable');
+  if (!duplicate.job || !duplicate.reason) return t('importCandidates.duplicates.new');
+
+  return t(
+    duplicate.classification === 'LIKELY_DUPLICATE'
+      ? 'importCandidates.duplicates.likely'
+      : 'importCandidates.duplicates.possible',
+    {
+      job: t('importCandidates.list.candidateLabel', {
+        company: duplicate.job.company,
+        roleTitle: duplicate.job.roleTitle,
+      }),
+      reason: t(DUPLICATE_REASON_TRANSLATION_KEYS[duplicate.reason]),
+    },
+  );
+};
+
+/**
  * Props used by one candidate row.
  */
 interface ICandidateRowProps {
   candidate: TImportCandidateResponse;
+  duplicate: TCandidateDuplicateState;
   isDisabled: boolean;
   isSelected: boolean;
   onDelete: (candidate: TImportCandidateResponse) => void;
@@ -167,14 +275,16 @@ interface ICandidateRowProps {
 
 /**
  * Shows one candidate for review: selection checkbox, company and role,
- * location, where it came from, its review and duplicate state, the source
- * link (shown, never fetched), and the pasted description as plain text.
+ * location, where it came from, its review state, its duplicate
+ * classification with the reason, the source link (shown, never fetched),
+ * and the pasted description as plain text.
  *
  * @param {ICandidateRowProps} props Component props.
  * @returns {JSX.Element} Candidate row.
  */
 const CandidateRow: FC<ICandidateRowProps> = ({
   candidate,
+  duplicate,
   isDisabled,
   isSelected,
   onDelete,
@@ -202,8 +312,10 @@ const CandidateRow: FC<ICandidateRowProps> = ({
               location || t('importCandidates.list.noLocation'),
               t('importCandidates.source.manual'),
               t('importCandidates.reviewStatus.pending'),
-              t('importCandidates.duplicateStatus.unchecked'),
             ].join(' · ')}
+          </p>
+          <p className={classNames('mt-1 text-sm', duplicateToneClasses(duplicate))}>
+            {describeDuplicate(duplicate, t)}
           </p>
           {candidate.sourceUrl && (
             <a
@@ -252,36 +364,47 @@ const CandidateRow: FC<ICandidateRowProps> = ({
  * Candidate review on Discover: a manual intake that saves opportunities
  * as candidates, and the list of candidates to review and select. A
  * candidate is not a job; nothing here creates one. Importing the selected
- * candidates is task 049's action.
+ * candidates is task 049's action. Each candidate is classified against
+ * the saved jobs (task 048), and likely duplicates start unselected.
  *
- * @param {IImportCandidatesState} props Candidates state from the route.
+ * @param {TImportCandidatesSectionProps} props Candidates and saved jobs from the route.
  * @returns {JSX.Element} Candidate review section.
  */
-export const ImportCandidatesSection: FC<IImportCandidatesState> = ({
+export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   candidates,
   createCandidate,
   deleteCandidate,
   isLoading,
   isMutating,
+  jobs,
   loadError,
   mutationError,
   reload,
   updateCandidate,
 }) => {
   const { t } = useTranslation();
-  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
+  const [selectionOverrides, setSelectionOverrides] = useState<ReadonlyMap<string, boolean>>(
+    new Map(),
+  );
   const [editing, setEditing] = useState<TImportCandidateResponse | null>(null);
-  const selectedCount = candidates.filter((candidate) => selectedIds.has(candidate.id)).length;
+  const duplicates = useMemo(
+    () =>
+      new Map(
+        candidates.map((candidate) => [candidate.id, getCandidateDuplicateState(candidate, jobs)]),
+      ),
+    [candidates, jobs],
+  );
+
+  /**
+   * A candidate is selected by default unless it is a likely duplicate, or
+   * duplicates are not known yet; the user's own choices override that.
+   */
+  const isSelected = (candidateId: string): boolean =>
+    selectionOverrides.get(candidateId) ?? isSelectedByDefault(duplicates.get(candidateId));
+  const selectedCount = candidates.filter((candidate) => isSelected(candidate.id)).length;
 
   const toggle = (candidateId: string) =>
-    setSelectedIds((current) => {
-      const next = new Set(current);
-
-      if (next.has(candidateId)) next.delete(candidateId);
-      else next.add(candidateId);
-
-      return next;
-    });
+    setSelectionOverrides((current) => new Map(current).set(candidateId, !isSelected(candidateId)));
 
   const handleSave = async (values: IImportCandidateFormValues) => {
     const payload = buildImportCandidateRequest(values);
@@ -327,16 +450,14 @@ export const ImportCandidatesSection: FC<IImportCandidatesState> = ({
               total: candidates.length,
             })}
           </p>
-          <Button
-            onClick={() => setSelectedIds(new Set(candidates.map((candidate) => candidate.id)))}
-            size="sm"
-            variant="ghost"
-          >
-            {t('importCandidates.list.selectAll')}
+          <Button onClick={() => setSelectionOverrides(new Map())} size="sm" variant="ghost">
+            {t('importCandidates.list.selectDefault')}
           </Button>
           <Button
             disabled={selectedCount === 0}
-            onClick={() => setSelectedIds(new Set())}
+            onClick={() =>
+              setSelectionOverrides(new Map(candidates.map((candidate) => [candidate.id, false])))
+            }
             size="sm"
             variant="ghost"
           >
@@ -347,8 +468,9 @@ export const ImportCandidatesSection: FC<IImportCandidatesState> = ({
           {candidates.map((candidate) => (
             <CandidateRow
               candidate={candidate}
+              duplicate={duplicates.get(candidate.id) ?? 'checking'}
               isDisabled={isMutating}
-              isSelected={selectedIds.has(candidate.id)}
+              isSelected={isSelected(candidate.id)}
               key={candidate.id}
               onDelete={handleDelete}
               onEdit={setEditing}

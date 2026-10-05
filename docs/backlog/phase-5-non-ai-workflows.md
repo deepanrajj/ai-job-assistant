@@ -17,7 +17,7 @@ before adding paid AI workflows.
 - [ ] [Add skills inventory and job preferences](../../tasks/roadmap/045-add-skills-inventory-and-preferences.md).
 - [ ] [Add Discover saved searches](../../tasks/roadmap/046-add-discover-saved-searches.md).
 - [ ] [Add import candidate review workflow](../../tasks/roadmap/047-add-import-candidate-review-workflow.md).
-- [ ] [Add import duplicate detection](../../tasks/roadmap/048-add-import-duplicate-detection.md).
+- [x] [Add import duplicate detection](../../tasks/roadmap/048-add-import-duplicate-detection.md).
 - [ ] [Add bulk import selected jobs](../../tasks/roadmap/049-add-bulk-import-selected-jobs.md).
 - [ ] [Add manual duplicate warning](../../tasks/roadmap/050-add-manual-duplicate-warning.md).
 - [ ] [Add application snapshots](../../tasks/roadmap/082-add-application-snapshots.md).
