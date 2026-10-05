@@ -210,6 +210,41 @@
       "cancel": "Cancel"
     }
   },
+  "preferences": {
+    "fallbackError": {
+      "getPreferences": "Failed to load skills and preferences",
+      "savePreferences": "Failed to save skills and preferences"
+    },
+    "title": "Skills and job preferences",
+    "subtitle": "What you can do and what you are looking for. Discover and later AI matching read this.",
+    "loading": "Loading skills and preferences",
+    "loadErrorTitle": "Skills and preferences could not be loaded",
+    "skills": "Skills",
+    "roles": "Target roles",
+    "locations": "Locations",
+    "keywords": "Keywords",
+    "workModes": "Work mode",
+    "seniorityLabel": "Seniority",
+    "workMode": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    },
+    "seniority": {
+      "junior": "Junior",
+      "mid": "Mid-level",
+      "senior": "Senior",
+      "lead": "Lead"
+    },
+    "add": "Add",
+    "addValue": "Add to {{list}}",
+    "removeValue": "Remove {{value}}",
+    "noneYet": "None yet",
+    "save": "Save preferences",
+    "savedOn": "Saved {{date}}",
+    "notSavedYet": "Not saved yet",
+    "listLabel": "{{list}} added"
+  },
   "jobs": {
     "savedJobs": "Saved jobs",
     "countSummary": "{{shown}} of {{total}} opportunities shown",

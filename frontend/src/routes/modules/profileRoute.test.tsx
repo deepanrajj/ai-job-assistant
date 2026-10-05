@@ -19,6 +19,15 @@ describe('profileRoute', () => {
     expect(await screen.findByText('No resume profiles yet')).toBeInTheDocument();
   });
 
+  it('shows the skills and preferences section below the profiles', async () => {
+    renderWithProviders(<ProfileRoute />);
+
+    expect(
+      await screen.findByRole('region', { name: 'Skills and job preferences' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Not saved yet')).toBeInTheDocument();
+  });
+
   it('keeps the coming soon placeholder, making no request, while the feature is off', () => {
     renderWithProviders(<ProfileRouteComingSoon />);
 
