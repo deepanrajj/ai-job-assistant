@@ -159,6 +159,57 @@
     "moreItems": "+{{count}} more",
     "itemLinkLabel": "{{kind}}: {{title}}, {{company}}"
   },
+  "profile": {
+    "loading": "Loading resume profiles",
+    "loadErrorTitle": "Resume profiles could not be loaded",
+    "targetRole": {
+      "base": "Base",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullStack": "Full-stack",
+      "other": "Other"
+    },
+    "list": {
+      "title": "Resume profiles",
+      "subtitle": "Reusable versions of your experience for different target roles.",
+      "newProfile": "New profile",
+      "edit": "Edit",
+      "editLabel": "Edit profile {{name}}",
+      "delete": "Delete",
+      "deleteLabel": "Delete profile {{name}}",
+      "counts": "Highlights: {{highlights}} · Education: {{education}} · Links: {{links}}",
+      "emptyTitle": "No resume profiles yet",
+      "emptyDescription": "Create a base profile, then versions aimed at frontend, backend, or full-stack roles."
+    },
+    "editor": {
+      "newTitle": "New resume profile",
+      "editTitle": "Edit resume profile",
+      "name": "Profile name",
+      "targetRole": "Target role",
+      "summary": "Summary",
+      "highlights": "Experience highlights",
+      "highlightLabel": "Highlight {{position}}",
+      "addHighlight": "Add highlight",
+      "education": "Education",
+      "educationLabel": "Education {{position}}",
+      "addEducation": "Add education",
+      "links": "Links",
+      "linkLabel": "Link {{position}}",
+      "linkName": "{{entry}} label",
+      "linkUrl": "{{entry}} URL",
+      "addLink": "Add link",
+      "invalidUrl": "URL must start with http:// or https://",
+      "notes": "Notes",
+      "up": "Up",
+      "down": "Down",
+      "removeShort": "Remove",
+      "moveUp": "Move {{entry}} up",
+      "moveDown": "Move {{entry}} down",
+      "remove": "Remove {{entry}}",
+      "save": "Save profile",
+      "cancel": "Cancel"
+    }
+  },
   "jobs": {
     "savedJobs": "Saved jobs",
     "countSummary": "{{shown}} of {{total}} opportunities shown",
@@ -220,6 +271,14 @@
       "updateDocument": "Failed to update document",
       "deleteDocument": "Failed to delete document",
       "listAllDocuments": "Failed to load application documents"
+    }
+  },
+  "profiles": {
+    "fallbackError": {
+      "listProfiles": "Failed to load resume profiles",
+      "createProfile": "Failed to create resume profile",
+      "updateProfile": "Failed to save resume profile",
+      "deleteProfile": "Failed to delete resume profile"
     }
   },
   "reminders": {
