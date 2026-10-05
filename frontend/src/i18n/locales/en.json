@@ -245,6 +245,34 @@
     "notSavedYet": "Not saved yet",
     "listLabel": "{{list}} added"
   },
+  "discover": {
+    "loading": "Loading saved searches",
+    "loadErrorTitle": "Saved searches could not be loaded",
+    "list": {
+      "title": "Saved searches",
+      "subtitle": "Reusable criteria for finding and importing jobs later. Nothing is searched automatically yet.",
+      "newSearch": "New search",
+      "edit": "Edit",
+      "editLabel": "Edit search {{name}}",
+      "delete": "Delete",
+      "deleteLabel": "Delete search {{name}}",
+      "anyRoleOrLocation": "Any role, any location",
+      "skillsLabel": "Skills for {{name}}",
+      "emptyTitle": "No saved searches yet",
+      "emptyDescription": "Save the role, location, seniority, skills, and work mode you are looking for, so later import and discovery can start from them."
+    },
+    "editor": {
+      "newTitle": "New saved search",
+      "editTitle": "Edit saved search",
+      "name": "Search name",
+      "namePlaceholder": "Senior backend in Berlin",
+      "role": "Role",
+      "location": "Location",
+      "notes": "Notes",
+      "save": "Save search",
+      "cancel": "Cancel"
+    }
+  },
   "jobs": {
     "savedJobs": "Saved jobs",
     "countSummary": "{{shown}} of {{total}} opportunities shown",
@@ -314,6 +342,14 @@
       "createProfile": "Failed to create resume profile",
       "updateProfile": "Failed to save resume profile",
       "deleteProfile": "Failed to delete resume profile"
+    }
+  },
+  "savedSearches": {
+    "fallbackError": {
+      "listSearches": "Failed to load saved searches",
+      "createSearch": "Failed to create saved search",
+      "updateSearch": "Failed to save search",
+      "deleteSearch": "Failed to delete saved search"
     }
   },
   "reminders": {
