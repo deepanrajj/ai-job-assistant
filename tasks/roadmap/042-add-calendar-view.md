@@ -1,6 +1,16 @@
 # Task 042 - Add Calendar View
 
-Status: Not started
+Status: In progress - frontend complete behind a feature flag, backend pending
+
+Progress is tracked in the
+[plan](../../docs/business/042-add-calendar-view-plan.md#progress).
+
+- [ ] **Remove the temporary calendar mock and feature flag once the
+  backend lands.** Delete `frontend/src/services/calendar/calendar.mock.ts`
+  and its test, the `USE_MOCK_CALENDAR` branch and import in
+  `calendar.service.ts`, and `CALENDAR_FEATURE_ENABLED` with the places
+  that read it. Until then built images keep Calendar on "coming soon",
+  and the mock runs only in the Vite dev server.
 
 ## Instructions
 

@@ -139,6 +139,26 @@
     "openLink": "Open link",
     "documentsFor": "Documents for {{company}}"
   },
+  "calendar": {
+    "fallbackError": {
+      "listCalendarItems": "Failed to load the calendar"
+    },
+    "loading": "Loading calendar",
+    "loadErrorTitle": "The calendar could not be loaded",
+    "previousMonth": "Previous month",
+    "thisMonth": "Today",
+    "nextMonth": "Next month",
+    "listLabel": "Dated items in {{month}}",
+    "today": "Today",
+    "emptyTitle": "Nothing dated in {{month}}",
+    "emptyDescription": "Reminders, task due dates, and submitted documents appear here on their date.",
+    "taskKind": "Task",
+    "submittedKind": "Submitted · {{type}}",
+    "completed": "Done",
+    "unknownJob": "Unknown job",
+    "moreItems": "+{{count}} more",
+    "itemLinkLabel": "{{kind}}: {{title}}, {{company}}"
+  },
   "jobs": {
     "savedJobs": "Saved jobs",
     "countSummary": "{{shown}} of {{total}} opportunities shown",

@@ -139,6 +139,26 @@
     "openLink": "Link öffnen",
     "documentsFor": "Unterlagen für {{company}}"
   },
+  "calendar": {
+    "fallbackError": {
+      "listCalendarItems": "Der Kalender konnte nicht geladen werden"
+    },
+    "loading": "Kalender wird geladen",
+    "loadErrorTitle": "Der Kalender konnte nicht geladen werden",
+    "previousMonth": "Vorheriger Monat",
+    "thisMonth": "Heute",
+    "nextMonth": "Nächster Monat",
+    "listLabel": "Einträge mit Datum im {{month}}",
+    "today": "Heute",
+    "emptyTitle": "Keine Einträge im {{month}}",
+    "emptyDescription": "Erinnerungen, Fälligkeiten von Aufgaben und verschickte Unterlagen erscheinen hier an ihrem Datum.",
+    "taskKind": "Aufgabe",
+    "submittedKind": "Verschickt · {{type}}",
+    "completed": "Erledigt",
+    "unknownJob": "Unbekannter Job",
+    "moreItems": "+{{count}} weitere",
+    "itemLinkLabel": "{{kind}}: {{title}}, {{company}}"
+  },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
     "countSummary": "{{shown}} von {{total}} Chancen angezeigt",
