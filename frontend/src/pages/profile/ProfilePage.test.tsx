@@ -29,6 +29,7 @@ const baseProfile: TResumeProfileResponse = {
 
 const renderPage = (overrides: Partial<ComponentProps<typeof ProfilePage>> = {}) => {
   const props: ComponentProps<typeof ProfilePage> = {
+    clearMutationError: vi.fn(),
     createProfile: vi.fn(async (payload: TSaveResumeProfileRequest) => ({
       ...baseProfile,
       ...payload,
@@ -191,6 +192,66 @@ describe('ProfilePage', () => {
     });
 
     expect(screen.getByRole('alert')).toHaveTextContent('Failed to delete resume profile');
+  });
+
+  it('clears a write error when the editor opens and when it closes', async () => {
+    const user = userEvent.setup();
+    const { props } = renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'New profile' }));
+
+    expect(props.clearMutationError).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(props.clearMutationError).toHaveBeenCalledTimes(2);
+  });
+
+  it('says why a profile cannot be saved: a missing name or half a link', async () => {
+    const user = userEvent.setup();
+    renderPage({ profiles: [] });
+
+    await user.click(screen.getByRole('button', { name: 'New profile' }));
+
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Profile name'));
+    await user.tab();
+
+    expect(screen.getByLabelText('Profile name')).toHaveAccessibleDescription('Required');
+
+    await user.type(screen.getByLabelText('Profile name'), 'Base');
+    await user.click(screen.getByRole('button', { name: 'Add link' }));
+
+    expect(screen.queryByText('Required')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save profile' })).toBeEnabled();
+
+    await user.type(screen.getByLabelText('Link 1 URL'), 'https://github.com/example');
+
+    expect(screen.getByLabelText('Link 1 label')).toHaveAccessibleDescription('Required');
+    expect(screen.getByRole('button', { name: 'Save profile' })).toBeDisabled();
+
+    await user.clear(screen.getByLabelText('Link 1 URL'));
+    await user.type(screen.getByLabelText('Link 1 label'), 'GitHub');
+
+    expect(screen.getByLabelText('Link 1 URL')).toHaveAccessibleDescription('Required');
+  });
+
+  it('drops entries and links left empty when saving', async () => {
+    const user = userEvent.setup();
+    const { props } = renderPage({ profiles: [] });
+
+    await user.click(screen.getByRole('button', { name: 'New profile' }));
+    await user.type(screen.getByLabelText('Profile name'), 'Base');
+    await user.click(screen.getByRole('button', { name: 'Add highlight' }));
+    await user.type(screen.getByLabelText('Highlight 1'), '   ');
+    await user.click(screen.getByRole('button', { name: 'Add education' }));
+    await user.click(screen.getByRole('button', { name: 'Add link' }));
+    await user.click(screen.getByRole('button', { name: 'Save profile' }));
+
+    const payload = vi.mocked(props.createProfile).mock.calls[0]?.[0] as TSaveResumeProfileRequest;
+
+    expect(payload.profile).toMatchObject({ education: [], highlights: [], links: [] });
   });
 
   it('shows loading and a retryable load error', async () => {

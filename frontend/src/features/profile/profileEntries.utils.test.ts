@@ -82,9 +82,29 @@ describe('isResumeProfileValid', () => {
       }),
     ).toBe(false);
   });
+
+  it('ignores a link left entirely blank, which is not saved', () => {
+    expect(
+      isResumeProfileValid('Base', { ...content, links: [{ id: 'l', label: ' ', url: '' }] }),
+    ).toBe(true);
+  });
 });
 
 describe('normalizeProfileContent', () => {
+  it('drops entries and links left empty', () => {
+    expect(
+      normalizeProfileContent({
+        ...createEmptyProfileContent(),
+        education: [{ id: 'e', text: '  ' }],
+        highlights: [
+          { id: 'h1', text: '' },
+          { id: 'h2', text: 'Kept' },
+        ],
+        links: [{ id: 'l', label: ' ', url: ' ' }],
+      }),
+    ).toMatchObject({ education: [], highlights: [{ id: 'h2', text: 'Kept' }], links: [] });
+  });
+
   it('trims text and keeps ids and order', () => {
     expect(
       normalizeProfileContent({
