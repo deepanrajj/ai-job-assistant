@@ -5,7 +5,6 @@ import { TagListEditor } from './TagListEditor';
 import {
   createEmptyProfilePreferences,
   getPreferenceValueError,
-  normalizePreferenceList,
   normalizePreferenceValue,
   type TProfilePreferences,
 } from '../../../services';
@@ -134,7 +133,7 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
 
     for (const key of TAG_LIST_KEYS)
       if (normalizePreferenceValue(pending[key]))
-        next[key] = normalizePreferenceList([...draft[key], pending[key]]);
+        next[key] = [...draft[key], normalizePreferenceValue(pending[key])];
 
     setDraft(next);
     setPending(EMPTY_PENDING);

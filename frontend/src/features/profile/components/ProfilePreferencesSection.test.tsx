@@ -182,6 +182,22 @@ describe('ProfilePreferencesSection', () => {
     });
   });
 
+  it('keeps a stored over-long value when a value is added, by Add or by Save', async () => {
+    const user = userEvent.setup();
+    const long = 'x'.repeat(70);
+    const { props } = renderSection({ preferences: { ...saved, keywords: [], skills: [long] } });
+
+    await user.type(screen.getByLabelText('Skills'), 'Go{Enter}');
+    await user.type(screen.getByLabelText('Keywords'), 'fintech');
+    await user.type(screen.getByLabelText('Skills'), 'Rust');
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(savedPayload(props.save)).toMatchObject({
+      keywords: ['fintech'],
+      skills: [long, 'Go', 'Rust'],
+    });
+  });
+
   it('does not submit the form when Enter adds a value', async () => {
     const user = userEvent.setup();
     const { props } = renderSection();

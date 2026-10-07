@@ -5,7 +5,6 @@ import {
   getPreferenceValueError,
   MAX_PREFERENCE_LIST_LENGTH,
   MAX_PREFERENCE_VALUE_LENGTH,
-  normalizePreferenceList,
   normalizePreferenceValue,
   type TPreferenceValueError,
 } from '../../../services';
@@ -61,7 +60,9 @@ export const TagListEditor: FC<ITagListEditorProps> = ({
   const add = () => {
     if (!canAdd) return;
 
-    onChange(normalizePreferenceList([...values, draft]));
+    // Only the new value is checked against the limits, above; the
+    // existing list is left as it is, so a stored value outside them stays.
+    onChange([...values, normalizePreferenceValue(draft)]);
     onDraftChange('');
   };
 
