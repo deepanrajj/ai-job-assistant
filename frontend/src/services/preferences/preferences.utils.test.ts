@@ -92,6 +92,10 @@ describe('mapProfilePreferencesResponse', () => {
     });
   });
 
+  it.each([[''], ['yesterday'], [42]])('reads an updatedAt of %j as never saved', (updatedAt) => {
+    expect(mapProfilePreferencesResponse({ updatedAt }).updatedAt).toBeNull();
+  });
+
   it('merges case-insensitive duplicates, which would share a chip key', () => {
     expect(
       mapProfilePreferencesResponse({

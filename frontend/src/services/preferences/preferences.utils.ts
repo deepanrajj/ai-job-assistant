@@ -148,8 +148,10 @@ const readList = <T extends string>(value: unknown): T[] =>
 
 /**
  * Makes a received preferences record safe to edit: a missing or `null`
- * list becomes empty rather than crashing the form, and case-insensitive
- * duplicates are merged, since each value is also its chip's React key.
+ * list becomes empty rather than crashing the form, case-insensitive
+ * duplicates are merged, since each value is also its chip's React key,
+ * and an `updatedAt` that is not a valid date reads as never saved, since
+ * formatting it would throw during render.
  *
  * @param {unknown} response The response body.
  * @returns {TProfilePreferencesResponse} A record every list of which is a list.
@@ -163,7 +165,10 @@ export const mapProfilePreferencesResponse = (response: unknown): TProfilePrefer
     roles: cleanPreferenceList(readList(record.roles)),
     seniority: [...new Set(readList<TProfilePreferences['seniority'][number]>(record.seniority))],
     skills: cleanPreferenceList(readList(record.skills)),
-    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : null,
+    updatedAt:
+      typeof record.updatedAt === 'string' && !Number.isNaN(Date.parse(record.updatedAt))
+        ? record.updatedAt
+        : null,
     workModes: [...new Set(readList<TProfilePreferences['workModes'][number]>(record.workModes))],
   };
 };
