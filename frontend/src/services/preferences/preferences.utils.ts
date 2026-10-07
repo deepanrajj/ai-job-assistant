@@ -3,6 +3,7 @@ import {
   PREFERENCES_FALLBACK_ERROR_TRANSLATION_KEYS,
   type TPreferencesFallbackErrorKey,
   type TProfilePreferences,
+  type TProfilePreferencesResponse,
 } from './preferences.types';
 
 /**
@@ -92,8 +93,35 @@ export const normalizePreferenceList = (values: string[]): string[] => {
 };
 
 /**
- * Normalizes every list of a preferences record. The fixed-choice lists
- * only lose duplicates; the free-text ones follow `normalizePreferenceList`.
+ * Cleans a free-text list without applying the limits: each value trimmed
+ * and collapsed, empty values and case-insensitive duplicates dropped.
+ * Used for values already stored, which the client must not delete
+ * behind the user's back; the limits apply when a value is added.
+ *
+ * @param {string[]} values Raw values in the user's order.
+ * @returns {string[]} The cleaned list.
+ */
+export const cleanPreferenceList = (values: string[]): string[] => {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const raw of values) {
+    const value = normalizePreferenceValue(raw);
+    const key = value.toLocaleLowerCase();
+
+    if (!value || seen.has(key)) continue;
+
+    seen.add(key);
+    result.push(value);
+  }
+
+  return result;
+};
+
+/**
+ * Normalizes every list of a preferences record before saving. Values can
+ * only have joined a list through `getPreferenceValueError`, so this only
+ * cleans: a stored value outside the limits is kept, not silently dropped.
  *
  * @param {TProfilePreferences} preferences Preferences as edited.
  * @returns {TProfilePreferences} Preferences ready to save.
@@ -101,13 +129,44 @@ export const normalizePreferenceList = (values: string[]): string[] => {
 export const normalizeProfilePreferences = (
   preferences: TProfilePreferences,
 ): TProfilePreferences => ({
-  keywords: normalizePreferenceList(preferences.keywords),
-  locations: normalizePreferenceList(preferences.locations),
-  roles: normalizePreferenceList(preferences.roles),
+  keywords: cleanPreferenceList(preferences.keywords),
+  locations: cleanPreferenceList(preferences.locations),
+  roles: cleanPreferenceList(preferences.roles),
   seniority: [...new Set(preferences.seniority)],
-  skills: normalizePreferenceList(preferences.skills),
+  skills: cleanPreferenceList(preferences.skills),
   workModes: [...new Set(preferences.workModes)],
 });
+
+/**
+ * Reads a list from a response that is cast, not validated.
+ *
+ * @param {unknown} value The field as received.
+ * @returns {T[]} Its string entries, or an empty list when it is not a list.
+ */
+const readList = <T extends string>(value: unknown): T[] =>
+  Array.isArray(value) ? value.filter((entry): entry is T => typeof entry === 'string') : [];
+
+/**
+ * Makes a received preferences record safe to edit: a missing or `null`
+ * list becomes empty rather than crashing the form, and case-insensitive
+ * duplicates are merged, since each value is also its chip's React key.
+ *
+ * @param {unknown} response The response body.
+ * @returns {TProfilePreferencesResponse} A record every list of which is a list.
+ */
+export const mapProfilePreferencesResponse = (response: unknown): TProfilePreferencesResponse => {
+  const record = (response ?? {}) as Partial<Record<keyof TProfilePreferencesResponse, unknown>>;
+
+  return {
+    keywords: cleanPreferenceList(readList(record.keywords)),
+    locations: cleanPreferenceList(readList(record.locations)),
+    roles: cleanPreferenceList(readList(record.roles)),
+    seniority: [...new Set(readList<TProfilePreferences['seniority'][number]>(record.seniority))],
+    skills: cleanPreferenceList(readList(record.skills)),
+    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : null,
+    workModes: [...new Set(readList<TProfilePreferences['workModes'][number]>(record.workModes))],
+  };
+};
 
 /**
  * A preferences record with nothing chosen.

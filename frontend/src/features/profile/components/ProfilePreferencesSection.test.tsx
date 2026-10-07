@@ -162,6 +162,26 @@ describe('ProfilePreferencesSection', () => {
     );
   });
 
+  it('keeps stored values it would not accept today when saving other changes', async () => {
+    const user = userEvent.setup();
+    const long = 'x'.repeat(70);
+    const { props } = renderSection({
+      preferences: {
+        ...saved,
+        skills: [long],
+        workModes: ['REMOTE', 'CARAVAN' as TProfilePreferences['workModes'][number]],
+      },
+    });
+
+    await user.click(screen.getByRole('checkbox', { name: 'Hybrid' }));
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(savedPayload(props.save)).toMatchObject({
+      skills: [long],
+      workModes: ['REMOTE', 'HYBRID', 'CARAVAN'],
+    });
+  });
+
   it('does not submit the form when Enter adds a value', async () => {
     const user = userEvent.setup();
     const { props } = renderSection();

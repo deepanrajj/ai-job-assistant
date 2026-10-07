@@ -57,9 +57,14 @@ const CheckboxGroup = <T extends string>({
             onChange={(event) =>
               onChange(
                 event.target.checked
-                  ? options.filter(
-                      (candidate) => candidate === option || values.includes(candidate),
-                    )
+                  ? [
+                      ...options.filter(
+                        (candidate) => candidate === option || values.includes(candidate),
+                      ),
+                      // A stored value this client does not offer is kept,
+                      // not dropped by ticking another box.
+                      ...values.filter((value) => !options.includes(value)),
+                    ]
                   : values.filter((candidate) => candidate !== option),
               )
             }

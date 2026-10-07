@@ -12,12 +12,15 @@ vi.mock('../api', () => ({
 
 describe('preferences.service', () => {
   it('reads and replaces the record at /api/profile/preferences', async () => {
-    vi.mocked(getJson).mockResolvedValue({});
+    vi.mocked(getJson).mockResolvedValue({ skills: null });
     vi.mocked(putJson).mockResolvedValue({});
     const preferences = createEmptyProfilePreferences();
 
-    await getProfilePreferences();
-    await saveProfilePreferences(preferences);
+    await expect(getProfilePreferences()).resolves.toEqual({ ...preferences, updatedAt: null });
+    await expect(saveProfilePreferences(preferences)).resolves.toEqual({
+      ...preferences,
+      updatedAt: null,
+    });
 
     expect(getJson).toHaveBeenCalledWith('/api/profile/preferences', {
       errorCode: APP_ERROR_CODES.PREFERENCES_REQUEST_FAILED,

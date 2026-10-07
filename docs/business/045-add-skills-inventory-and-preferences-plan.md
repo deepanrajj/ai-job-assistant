@@ -35,7 +35,10 @@ later AI matching can read. No matching, no taxonomy, no provider.
   60 characters, a duplicate in any case, or past 50 in a list - stays
   in the input with the reason instead of vanishing, and a full list
   says so; Save adds text typed but not added, and saves nothing while
-  any such text cannot be added.
+  any such text cannot be added. A second review: the section now shows on
+  its own when only its flag is on, as D4 intended; a `null` list from
+  the API is read as empty; stored values are never dropped on save
+  (D2).
 
 ## Authoritative References
 
@@ -91,6 +94,12 @@ again by the API: trim, collapse inner whitespace, drop empty values,
 and drop case-insensitive duplicates keeping the first spelling and the
 user's order. Each value is at most 60 characters; each list at most 50
 values. "react", "React " and "REACT" are one skill.
+
+The browser applies the limits when a value is added, and says why it
+refuses one. It never deletes a stored value the user did not remove: a
+value outside the limits, or a work mode or seniority it does not offer,
+is shown and saved back unchanged. A received list that is missing or
+`null` is treated as empty.
 
 Rejected: lower-casing everything (the user's "TypeScript" is the
 spelling to show) and sorting (the user's order can mean priority).

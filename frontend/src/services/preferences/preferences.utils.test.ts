@@ -5,6 +5,7 @@ import {
   MAX_PREFERENCE_VALUE_LENGTH,
   createEmptyProfilePreferences,
   getPreferenceValueError,
+  mapProfilePreferencesResponse,
   normalizePreferenceList,
   normalizeProfilePreferences,
 } from './preferences.utils';
@@ -61,6 +62,47 @@ describe('normalizeProfilePreferences', () => {
       seniority: ['SENIOR'],
       skills: ['Kotlin'],
       workModes: ['REMOTE', 'HYBRID'],
+    });
+  });
+
+  it('keeps a stored value outside the limits instead of dropping it on save', () => {
+    const long = 'x'.repeat(MAX_PREFERENCE_VALUE_LENGTH + 10);
+    const many = Array.from({ length: MAX_PREFERENCE_LIST_LENGTH + 1 }, (_, index) => `v${index}`);
+
+    const normalized = normalizeProfilePreferences({
+      ...createEmptyProfilePreferences(),
+      roles: many,
+      skills: [long],
+    });
+
+    expect(normalized.skills).toEqual([long]);
+    expect(normalized.roles).toHaveLength(MAX_PREFERENCE_LIST_LENGTH + 1);
+  });
+});
+
+describe('mapProfilePreferencesResponse', () => {
+  it('turns missing, null, and non-list fields into empty lists', () => {
+    expect(mapProfilePreferencesResponse({ skills: null, roles: 'Engineer' })).toEqual({
+      ...createEmptyProfilePreferences(),
+      updatedAt: null,
+    });
+    expect(mapProfilePreferencesResponse(null)).toEqual({
+      ...createEmptyProfilePreferences(),
+      updatedAt: null,
+    });
+  });
+
+  it('merges case-insensitive duplicates, which would share a chip key', () => {
+    expect(
+      mapProfilePreferencesResponse({
+        skills: ['Kotlin', 'kotlin', 7],
+        updatedAt: '2026-10-04T09:00:00Z',
+        workModes: ['REMOTE', 'REMOTE'],
+      }),
+    ).toMatchObject({
+      skills: ['Kotlin'],
+      updatedAt: '2026-10-04T09:00:00Z',
+      workModes: ['REMOTE'],
     });
   });
 });
