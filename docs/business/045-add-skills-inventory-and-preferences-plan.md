@@ -38,7 +38,13 @@ later AI matching can read. No matching, no taxonomy, no provider.
   any such text cannot be added. A second review: the section now shows on
   its own when only its flag is on, as D4 intended; a `null` list from
   the API is read as empty; stored values are never dropped on save
-  (D2).
+  (D2). Later rounds: adding keeps stored over-long values; a load
+  overtaken by a newer load or a save is ignored; an invalid `updatedAt`
+  reads as never saved; and the form stays mounted after a save, so
+  focus stays on Save and the status line announces "Saving…" then
+  "Preferences saved"; a blocked save focuses the field that explains
+  it; adding returns focus to the input and removing moves it to a
+  neighbouring chip.
 
 ## Authoritative References
 

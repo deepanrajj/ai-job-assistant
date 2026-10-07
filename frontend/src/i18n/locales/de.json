@@ -245,6 +245,8 @@
     "removeValue": "{{value}} entfernen",
     "noneYet": "Noch keine",
     "save": "Präferenzen speichern",
+    "saving": "Wird gespeichert…",
+    "saved": "Präferenzen gespeichert",
     "savedOn": "Gespeichert am {{date}}",
     "notSavedYet": "Noch nicht gespeichert",
     "listLabel": "{{list}} hinzugefügt"

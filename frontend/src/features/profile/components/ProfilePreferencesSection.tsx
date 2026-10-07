@@ -1,4 +1,4 @@
-import { useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { useRef, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
 
 import { Alert, Button, Card, ErrorState, LoadingState } from '../../../components/ui';
 import { TagListEditor } from './TagListEditor';
@@ -117,17 +117,40 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
   const { language, t } = useTranslation();
   const [draft, setDraft] = useState(initial);
   const [pending, setPending] = useState(EMPTY_PENDING);
+  const [syncedUpdatedAt, setSyncedUpdatedAt] = useState(updatedAt);
+  const [hasSavedHere, setHasSavedHere] = useState(false);
+  const inputRefs = useRef<Partial<Record<TTagListKey, HTMLInputElement | null>>>({});
+  const isSubmittingRef = useRef(false);
+
+  // A save returns a new record. The form takes it over in place rather
+  // than remounting, so focus stays on Save and the status line below
+  // changes text, which is what a screen reader announces.
+  if (updatedAt !== syncedUpdatedAt) {
+    setSyncedUpdatedAt(updatedAt);
+    setDraft(initial);
+    setPending(EMPTY_PENDING);
+  }
 
   /**
    * Text typed into a list but not added would otherwise be left out of
-   * the save and then cleared by the remount that follows it, so Save adds
-   * it. If any of it cannot be added, the field already says why, and
-   * nothing is saved until it is fixed or cleared.
+   * the save, so Save adds it. If any of it cannot be added, focus moves to
+   * the first such field, whose message says why, and nothing is saved.
+   *
+   * Save stays enabled while saving, so it keeps focus; the ref stops a
+   * second submit in the same tick, before `isSaving` has rendered.
    */
   const handleSubmit = async (event: ReactSubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (TAG_LIST_KEYS.some((key) => getPreferenceValueError(draft[key], pending[key]))) return;
+    if (isSaving || isSubmittingRef.current) return;
+
+    const blocked = TAG_LIST_KEYS.find((key) => getPreferenceValueError(draft[key], pending[key]));
+
+    if (blocked) {
+      inputRefs.current[blocked]?.focus();
+
+      return;
+    }
 
     const next = { ...draft };
 
@@ -137,12 +160,30 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
 
     setDraft(next);
     setPending(EMPTY_PENDING);
+    isSubmittingRef.current = true;
 
     try {
       await onSave(next);
+      setHasSavedHere(true);
     } catch {
       // Error is already recorded in request state and rendered from it.
+    } finally {
+      isSubmittingRef.current = false;
     }
+  };
+
+  /**
+   * The status line. It reads "Saving" during a save and "Preferences
+   * saved" after one, so its text changes, and is announced, every time.
+   *
+   * @returns {string} Status text.
+   */
+  const getStatus = (): string => {
+    if (isSaving) return t('preferences.saving');
+    if (hasSavedHere) return t('preferences.saved');
+    if (updatedAt) return t('preferences.savedOn', { date: formatJobDate(updatedAt, language) });
+
+    return t('preferences.notSavedYet');
   };
 
   /**
@@ -154,6 +195,9 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
   const tagListProps = (key: TTagListKey) => ({
     disabled: isSaving,
     draft: pending[key],
+    inputRef: (element: HTMLInputElement | null) => {
+      inputRefs.current[key] = element;
+    },
     onChange: (values: string[]) => setDraft({ ...draft, [key]: values }),
     onDraftChange: (text: string) => setPending({ ...pending, [key]: text }),
     values: draft[key],
@@ -187,13 +231,11 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
       </div>
       <TagListEditor label={t('preferences.keywords')} {...tagListProps('keywords')} />
       <div className="flex flex-wrap items-center gap-3">
-        <Button aria-busy={isSaving} disabled={isSaving} type="submit">
+        <Button aria-busy={isSaving} type="submit">
           {t('preferences.save')}
         </Button>
         <p className="text-sm text-app-textMuted" role="status">
-          {updatedAt
-            ? t('preferences.savedOn', { date: formatJobDate(updatedAt, language) })
-            : t('preferences.notSavedYet')}
+          {getStatus()}
         </p>
       </div>
     </form>
@@ -237,7 +279,6 @@ export const ProfilePreferencesSection: FC<IProfilePreferencesState> = ({
       <PreferencesForm
         initial={{ ...createEmptyProfilePreferences(), ...initial }}
         isSaving={isSaving}
-        key={updatedAt ?? 'unsaved'}
         onSave={save}
         saveError={saveError}
         updatedAt={updatedAt}

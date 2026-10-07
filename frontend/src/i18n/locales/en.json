@@ -245,6 +245,8 @@
     "removeValue": "Remove {{value}}",
     "noneYet": "None yet",
     "save": "Save preferences",
+    "saving": "Saving…",
+    "saved": "Preferences saved",
     "savedOn": "Saved {{date}}",
     "notSavedYet": "Not saved yet",
     "listLabel": "{{list}} added"

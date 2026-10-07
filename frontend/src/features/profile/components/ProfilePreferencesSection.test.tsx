@@ -157,9 +157,64 @@ describe('ProfilePreferencesSection', () => {
     await user.click(screen.getByRole('button', { name: 'Save preferences' }));
 
     expect(props.save).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Target roles')).toHaveFocus();
     expect(screen.getByLabelText('Target roles')).toHaveAccessibleDescription(
       'Already in the list.',
     );
+  });
+
+  it('keeps focus on Save and announces the save in the same status line', async () => {
+    const user = userEvent.setup();
+    const { props, rerender } = renderSection();
+    const status = screen.getByRole('status');
+    const saveButton = screen.getByRole('button', { name: 'Save preferences' });
+
+    await user.click(saveButton);
+
+    expect(props.save).toHaveBeenCalledOnce();
+    expect(saveButton).toHaveFocus();
+    expect(status).toHaveTextContent('Preferences saved');
+
+    rerender(
+      <ProfilePreferencesSection
+        {...props}
+        preferences={{ ...saved, skills: ['Go'], updatedAt: '2026-10-05T09:00:00Z' }}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toBe(status);
+    expect(screen.getByRole('button', { name: 'Save preferences' })).toBe(saveButton);
+    expect(saveButton).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Remove Go' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove Kotlin' })).not.toBeInTheDocument();
+  });
+
+  it('says it is saving while a save is in flight', () => {
+    renderSection({ isSaving: true });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Saving…');
+  });
+
+  it('returns focus to the input after adding, and to a neighbour after removing', async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.type(screen.getByLabelText('Skills'), 'Go');
+    await user.click(screen.getByRole('button', { name: 'Add to Skills' }));
+
+    expect(screen.getByLabelText('Skills')).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove React' }));
+
+    expect(screen.getByRole('button', { name: 'Remove Go' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove Go' }));
+
+    expect(screen.getByRole('button', { name: 'Remove Kotlin' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove Kotlin' }));
+
+    expect(screen.getByLabelText('Skills')).toHaveFocus();
   });
 
   it('keeps stored values it would not accept today when saving other changes', async () => {
