@@ -5,6 +5,7 @@ export * from './contacts';
 export * from './documents';
 export * from './jobs';
 export * from './notes';
+export * from './profiles';
 export * from './reminders';
 export * from './tasks';
 export * from './timeline';

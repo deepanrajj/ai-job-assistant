@@ -49,6 +49,9 @@ numbered task before implementation.
   backend `GET /api/calendar-items` after 040's and 041's; its frontend
   is behind `CALENDAR_FEATURE_ENABLED`.
 - [ ] [Task 044: Add profile and resume library](../../tasks/roadmap/044-add-profile-resume-library.md),
+  backend `/api/resume-profiles`; its frontend is behind
+  `PROFILES_FEATURE_ENABLED`.
+- [ ] [Task 045: Add skills inventory and job preferences](../../tasks/roadmap/045-add-skills-inventory-and-preferences.md),
   the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,

@@ -25,6 +25,7 @@ export const handlers = [
   http.get('/api/jobs/:jobId/documents', () => HttpResponse.json([])),
   http.get('/api/application-documents', () => HttpResponse.json([])),
   http.get('/api/calendar-items', () => HttpResponse.json([])),
+  http.get('/api/resume-profiles', () => HttpResponse.json([])),
   http.get('/api/jobs/:jobId/reminders', () => HttpResponse.json([])),
   http.get('/api/reminders/next', () => HttpResponse.json([])),
   // The dashboard's status history: one empty page. A test that cares what

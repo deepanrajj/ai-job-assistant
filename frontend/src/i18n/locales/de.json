@@ -159,6 +159,58 @@
     "moreItems": "+{{count}} weitere",
     "itemLinkLabel": "{{kind}}: {{title}}, {{company}}"
   },
+  "profile": {
+    "loading": "Lebenslauf-Profile werden geladen",
+    "loadErrorTitle": "Lebenslauf-Profile konnten nicht geladen werden",
+    "targetRole": {
+      "base": "Basis",
+      "frontend": "Frontend",
+      "backend": "Backend",
+      "fullStack": "Full-Stack",
+      "other": "Sonstiges"
+    },
+    "list": {
+      "title": "Lebenslauf-Profile",
+      "subtitle": "Wiederverwendbare Versionen deiner Erfahrung für verschiedene Zielrollen.",
+      "newProfile": "Neues Profil",
+      "edit": "Bearbeiten",
+      "editLabel": "Profil {{name}} bearbeiten",
+      "delete": "Löschen",
+      "deleteLabel": "Profil {{name}} löschen",
+      "counts": "Highlights: {{highlights}} · Ausbildung: {{education}} · Links: {{links}}",
+      "emptyTitle": "Noch keine Lebenslauf-Profile",
+      "emptyDescription": "Lege ein Basisprofil an und dann Versionen für Frontend-, Backend- oder Full-Stack-Rollen."
+    },
+    "editor": {
+      "newTitle": "Neues Lebenslauf-Profil",
+      "editTitle": "Lebenslauf-Profil bearbeiten",
+      "name": "Profilname",
+      "targetRole": "Zielrolle",
+      "summary": "Zusammenfassung",
+      "highlights": "Berufliche Highlights",
+      "highlightLabel": "Highlight {{position}}",
+      "addHighlight": "Highlight hinzufügen",
+      "education": "Ausbildung",
+      "educationLabel": "Ausbildung {{position}}",
+      "addEducation": "Ausbildung hinzufügen",
+      "links": "Links",
+      "linkLabel": "Link {{position}}",
+      "linkName": "{{entry}} Bezeichnung",
+      "linkUrl": "{{entry}} URL",
+      "addLink": "Link hinzufügen",
+      "invalidUrl": "Die URL muss mit http:// oder https:// beginnen",
+      "required": "Pflichtfeld",
+      "notes": "Notizen",
+      "up": "Hoch",
+      "down": "Runter",
+      "removeShort": "Entfernen",
+      "moveUp": "{{entry}} nach oben",
+      "moveDown": "{{entry}} nach unten",
+      "remove": "{{entry}} entfernen",
+      "save": "Profil speichern",
+      "cancel": "Abbrechen"
+    }
+  },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
     "countSummary": "{{shown}} von {{total}} Chancen angezeigt",
@@ -220,6 +272,14 @@
       "updateDocument": "Dokument konnte nicht aktualisiert werden",
       "deleteDocument": "Dokument konnte nicht gelöscht werden",
       "listAllDocuments": "Bewerbungsunterlagen konnten nicht geladen werden"
+    }
+  },
+  "profiles": {
+    "fallbackError": {
+      "listProfiles": "Lebenslauf-Profile konnten nicht geladen werden",
+      "createProfile": "Lebenslauf-Profil konnte nicht erstellt werden",
+      "updateProfile": "Lebenslauf-Profil konnte nicht gespeichert werden",
+      "deleteProfile": "Lebenslauf-Profil konnte nicht gelöscht werden"
     }
   },
   "reminders": {
