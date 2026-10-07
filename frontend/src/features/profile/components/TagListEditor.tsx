@@ -1,7 +1,14 @@
-import { useState, type FC, type KeyboardEvent } from 'react';
+import type { FC, KeyboardEvent } from 'react';
 
 import { Button, Input } from '../../../components/ui';
-import { normalizePreferenceList, normalizePreferenceValue } from '../../../services';
+import {
+  getPreferenceValueError,
+  MAX_PREFERENCE_LIST_LENGTH,
+  MAX_PREFERENCE_VALUE_LENGTH,
+  normalizePreferenceList,
+  normalizePreferenceValue,
+  type TPreferenceValueError,
+} from '../../../services';
 import { useTranslation } from '../../../i18n';
 
 /**
@@ -9,30 +16,53 @@ import { useTranslation } from '../../../i18n';
  */
 interface ITagListEditorProps {
   disabled: boolean;
+  /** Text typed but not added yet; the form owns it so Save can add it. */
+  draft: string;
   label: string;
   onChange: (values: string[]) => void;
+  onDraftChange: (draft: string) => void;
   values: string[];
 }
 
 /**
+ * Translation key explaining why a value cannot be added.
+ */
+const VALUE_ERROR_TRANSLATION_KEYS: Record<TPreferenceValueError, string> = {
+  DUPLICATE: 'preferences.valueDuplicate',
+  LIST_FULL: 'preferences.listFull',
+  TOO_LONG: 'preferences.valueTooLong',
+};
+
+/**
  * Edits a list of short free-text values - skills, roles, locations,
- * keywords - as chips. A value is added with the Add button or Enter, is
- * normalized on the way in, and is ignored when the list already holds it
- * in any letter case. Each chip has a remove button named after its value.
+ * keywords - as chips. A value is added with the Add button or Enter and
+ * is normalized on the way in. A value that cannot be added - too long, a
+ * duplicate in any letter case, or a full list - stays in the input with
+ * the reason, rather than vanishing. Each chip has a remove button named
+ * after its value.
  *
  * @param {ITagListEditorProps} props Component props.
  * @returns {JSX.Element} Tag list editor.
  */
-export const TagListEditor: FC<ITagListEditorProps> = ({ disabled, label, onChange, values }) => {
+export const TagListEditor: FC<ITagListEditorProps> = ({
+  disabled,
+  draft,
+  label,
+  onChange,
+  onDraftChange,
+  values,
+}) => {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState('');
-  const canAdd = !disabled && Boolean(normalizePreferenceValue(draft));
+  const valueError = getPreferenceValueError(values, draft);
+  const canAdd = !disabled && Boolean(normalizePreferenceValue(draft)) && !valueError;
+  const limits = { max: MAX_PREFERENCE_VALUE_LENGTH, maxItems: MAX_PREFERENCE_LIST_LENGTH };
+  const isFull = values.length >= MAX_PREFERENCE_LIST_LENGTH;
 
   const add = () => {
     if (!canAdd) return;
 
     onChange(normalizePreferenceList([...values, draft]));
-    setDraft('');
+    onDraftChange('');
   };
 
   /**
@@ -51,8 +81,10 @@ export const TagListEditor: FC<ITagListEditorProps> = ({ disabled, label, onChan
         <div className="min-w-0 flex-1">
           <Input
             disabled={disabled}
+            error={valueError ? t(VALUE_ERROR_TRANSLATION_KEYS[valueError], limits) : undefined}
+            helperText={isFull ? t('preferences.listFull', limits) : undefined}
             label={label}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => onDraftChange(event.target.value)}
             onKeyDown={handleKeyDown}
             value={draft}
           />

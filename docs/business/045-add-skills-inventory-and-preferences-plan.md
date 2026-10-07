@@ -31,6 +31,11 @@ later AI matching can read. No matching, no taxonomy, no provider.
   `/api/profile/preferences`.
 - **Built image** (compose, port 30080): Profile shows "Coming soon",
   with no preferences request.
+- **PR review fixes** (PR #63): a value that cannot be added - over
+  60 characters, a duplicate in any case, or past 50 in a list - stays
+  in the input with the reason instead of vanishing, and a full list
+  says so; Save adds text typed but not added, and saves nothing while
+  any such text cannot be added.
 
 ## Authoritative References
 

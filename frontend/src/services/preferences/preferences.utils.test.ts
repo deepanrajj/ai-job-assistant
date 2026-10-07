@@ -4,6 +4,7 @@ import {
   MAX_PREFERENCE_LIST_LENGTH,
   MAX_PREFERENCE_VALUE_LENGTH,
   createEmptyProfilePreferences,
+  getPreferenceValueError,
   normalizePreferenceList,
   normalizeProfilePreferences,
 } from './preferences.utils';
@@ -61,5 +62,26 @@ describe('normalizeProfilePreferences', () => {
       skills: ['Kotlin'],
       workModes: ['REMOTE', 'HYBRID'],
     });
+  });
+});
+
+describe('getPreferenceValueError', () => {
+  it('accepts a new value and treats a blank one as nothing to add', () => {
+    expect(getPreferenceValueError(['Kotlin'], ' React ')).toBeNull();
+    expect(getPreferenceValueError(['Kotlin'], '   ')).toBeNull();
+  });
+
+  it('refuses an over-long value, a duplicate in any case, and a full list', () => {
+    expect(getPreferenceValueError([], 'x'.repeat(MAX_PREFERENCE_VALUE_LENGTH + 1))).toBe(
+      'TOO_LONG',
+    );
+    expect(getPreferenceValueError([], 'x'.repeat(MAX_PREFERENCE_VALUE_LENGTH))).toBeNull();
+    expect(getPreferenceValueError(['Kotlin'], ' KOTLIN ')).toBe('DUPLICATE');
+    expect(
+      getPreferenceValueError(
+        Array.from({ length: MAX_PREFERENCE_LIST_LENGTH }, (_, index) => `v${index}`),
+        'new',
+      ),
+    ).toBe('LIST_FULL');
   });
 });

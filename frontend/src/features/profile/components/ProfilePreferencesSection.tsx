@@ -2,7 +2,13 @@ import { useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
 
 import { Alert, Button, Card, ErrorState, LoadingState } from '../../../components/ui';
 import { TagListEditor } from './TagListEditor';
-import { createEmptyProfilePreferences, type TProfilePreferences } from '../../../services';
+import {
+  createEmptyProfilePreferences,
+  getPreferenceValueError,
+  normalizePreferenceList,
+  normalizePreferenceValue,
+  type TProfilePreferences,
+} from '../../../services';
 import type { IProfilePreferencesState } from '../useProfilePreferences';
 import { useTranslation } from '../../../i18n';
 import { formatJobDate } from '../../jobs/jobs.utils';
@@ -67,6 +73,20 @@ const CheckboxGroup = <T extends string>({
 );
 
 /**
+ * The free-text lists, each edited with a `TagListEditor`.
+ */
+type TTagListKey = 'keywords' | 'locations' | 'roles' | 'skills';
+
+const TAG_LIST_KEYS: readonly TTagListKey[] = ['skills', 'roles', 'locations', 'keywords'];
+
+const EMPTY_PENDING: Record<TTagListKey, string> = {
+  keywords: '',
+  locations: '',
+  roles: '',
+  skills: '',
+};
+
+/**
  * Props used by the preferences form.
  */
 interface IPreferencesFormProps {
@@ -92,39 +112,56 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
 }) => {
   const { language, t } = useTranslation();
   const [draft, setDraft] = useState(initial);
+  const [pending, setPending] = useState(EMPTY_PENDING);
 
+  /**
+   * Text typed into a list but not added would otherwise be left out of
+   * the save and then cleared by the remount that follows it, so Save adds
+   * it. If any of it cannot be added, the field already says why, and
+   * nothing is saved until it is fixed or cleared.
+   */
   const handleSubmit = async (event: ReactSubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (TAG_LIST_KEYS.some((key) => getPreferenceValueError(draft[key], pending[key]))) return;
+
+    const next = { ...draft };
+
+    for (const key of TAG_LIST_KEYS)
+      if (normalizePreferenceValue(pending[key]))
+        next[key] = normalizePreferenceList([...draft[key], pending[key]]);
+
+    setDraft(next);
+    setPending(EMPTY_PENDING);
+
     try {
-      await onSave(draft);
+      await onSave(next);
     } catch {
       // Error is already recorded in request state and rendered from it.
     }
   };
 
+  /**
+   * The props that connect one free-text list to the form.
+   *
+   * @param {TTagListKey} key The list.
+   * @returns {object} Values, pending text, and their change handlers.
+   */
+  const tagListProps = (key: TTagListKey) => ({
+    disabled: isSaving,
+    draft: pending[key],
+    onChange: (values: string[]) => setDraft({ ...draft, [key]: values }),
+    onDraftChange: (text: string) => setPending({ ...pending, [key]: text }),
+    values: draft[key],
+  });
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       {saveError && <Alert>{saveError.message}</Alert>}
-      <TagListEditor
-        disabled={isSaving}
-        label={t('preferences.skills')}
-        onChange={(skills) => setDraft({ ...draft, skills })}
-        values={draft.skills}
-      />
+      <TagListEditor label={t('preferences.skills')} {...tagListProps('skills')} />
       <div className="grid gap-6 md:grid-cols-2">
-        <TagListEditor
-          disabled={isSaving}
-          label={t('preferences.roles')}
-          onChange={(roles) => setDraft({ ...draft, roles })}
-          values={draft.roles}
-        />
-        <TagListEditor
-          disabled={isSaving}
-          label={t('preferences.locations')}
-          onChange={(locations) => setDraft({ ...draft, locations })}
-          values={draft.locations}
-        />
+        <TagListEditor label={t('preferences.roles')} {...tagListProps('roles')} />
+        <TagListEditor label={t('preferences.locations')} {...tagListProps('locations')} />
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <CheckboxGroup
@@ -144,12 +181,7 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
           values={draft.seniority}
         />
       </div>
-      <TagListEditor
-        disabled={isSaving}
-        label={t('preferences.keywords')}
-        onChange={(keywords) => setDraft({ ...draft, keywords })}
-        values={draft.keywords}
-      />
+      <TagListEditor label={t('preferences.keywords')} {...tagListProps('keywords')} />
       <div className="flex flex-wrap items-center gap-3">
         <Button aria-busy={isSaving} disabled={isSaving} type="submit">
           {t('preferences.save')}

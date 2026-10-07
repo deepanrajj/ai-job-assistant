@@ -35,6 +35,37 @@ export const normalizePreferenceValue = (value: string): string =>
   value.trim().replace(/\s+/g, ' ');
 
 /**
+ * Why a value cannot join a free-text preference list.
+ */
+export type TPreferenceValueError = 'TOO_LONG' | 'DUPLICATE' | 'LIST_FULL';
+
+/**
+ * Checks a value before it joins a list, so the editor can refuse it out
+ * loud instead of `normalizePreferenceList` dropping it silently.
+ *
+ * @param {string[]} values The list as it is.
+ * @param {string} raw The value being added.
+ * @returns {TPreferenceValueError | null} Why it cannot be added, or null
+ *   when it can (or is blank, which adds nothing).
+ */
+export const getPreferenceValueError = (
+  values: string[],
+  raw: string,
+): TPreferenceValueError | null => {
+  const value = normalizePreferenceValue(raw);
+
+  if (!value) return null;
+  if (value.length > MAX_PREFERENCE_VALUE_LENGTH) return 'TOO_LONG';
+
+  const key = value.toLocaleLowerCase();
+
+  if (values.some((existing) => existing.toLocaleLowerCase() === key)) return 'DUPLICATE';
+  if (values.length >= MAX_PREFERENCE_LIST_LENGTH) return 'LIST_FULL';
+
+  return null;
+};
+
+/**
  * Normalizes a free-text preference list: each value trimmed and
  * collapsed, empty or over-long values dropped, case-insensitive
  * duplicates removed keeping the first spelling and the user's order,

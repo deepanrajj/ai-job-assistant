@@ -74,13 +74,12 @@ describe('ProfilePreferencesSection', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Not saved yet');
   });
 
-  it('adds skills by button and by Enter, ignores a duplicate, and removes one', async () => {
+  it('adds skills by button and by Enter, and removes one', async () => {
     const user = userEvent.setup();
     const { props } = renderSection();
 
     await user.type(screen.getByLabelText('Skills'), '  Spring   Boot ');
     await user.click(screen.getByRole('button', { name: 'Add to Skills' }));
-    await user.type(screen.getByLabelText('Skills'), 'kotlin{Enter}');
     await user.type(screen.getByLabelText('Skills'), 'PostgreSQL{Enter}');
     await user.click(screen.getByRole('button', { name: 'Remove React' }));
 
@@ -94,6 +93,73 @@ describe('ProfilePreferencesSection', () => {
     await user.click(screen.getByRole('button', { name: 'Save preferences' }));
 
     expect(savedPayload(props.save).skills).toEqual(['Kotlin', 'Spring Boot', 'PostgreSQL']);
+  });
+
+  it('keeps a value it cannot add in the input, saying why', async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    const skills = screen.getByLabelText('Skills');
+
+    await user.type(skills, 'kotlin{Enter}');
+
+    expect(skills).toHaveValue('kotlin');
+    expect(skills).toHaveAccessibleDescription('Already in the list.');
+    expect(screen.getByRole('button', { name: 'Add to Skills' })).toBeDisabled();
+
+    await user.clear(skills);
+    await user.type(skills, 'x'.repeat(61));
+    await user.click(screen.getByRole('button', { name: 'Add to Skills' }));
+
+    expect(skills).toHaveValue('x'.repeat(61));
+    expect(skills).toHaveAccessibleDescription('Use at most 60 characters.');
+  });
+
+  it('says when a list is full and refuses another value', async () => {
+    const user = userEvent.setup();
+    const full = Array.from({ length: 50 }, (_, index) => `Skill ${index}`);
+    renderSection({ preferences: { ...saved, skills: full } });
+
+    const skills = screen.getByLabelText('Skills');
+
+    expect(skills).toHaveAccessibleDescription(
+      'This list is full (50). Remove one to add another.',
+    );
+
+    await user.type(skills, 'One more{Enter}');
+
+    expect(skills).toHaveValue('One more');
+    expect(
+      within(screen.getByRole('list', { name: 'Skills added' })).getAllByRole('listitem'),
+    ).toHaveLength(50);
+  });
+
+  it('saves text typed into a list but not added', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.type(screen.getByLabelText('Skills'), ' Go ');
+    await user.type(screen.getByLabelText('Keywords'), 'fintech');
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(savedPayload(props.save)).toMatchObject({
+      keywords: ['payments', 'fintech'],
+      skills: ['Kotlin', 'React', 'Go'],
+    });
+    expect(screen.getByLabelText('Skills')).toHaveValue('');
+  });
+
+  it('does not save while typed text cannot be added', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.type(screen.getByLabelText('Target roles'), 'backend engineer');
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(props.save).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Target roles')).toHaveAccessibleDescription(
+      'Already in the list.',
+    );
   });
 
   it('does not submit the form when Enter adds a value', async () => {
