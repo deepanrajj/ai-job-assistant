@@ -199,6 +199,7 @@
       "linkUrl": "{{entry}} URL",
       "addLink": "Link hinzufügen",
       "invalidUrl": "Die URL muss mit http:// oder https:// beginnen",
+      "required": "Pflichtfeld",
       "notes": "Notizen",
       "up": "Hoch",
       "down": "Runter",

@@ -137,6 +137,16 @@ describe('CalendarPage', () => {
     expect(within(grid).queryByText('Item 3')).not.toBeInTheDocument();
   });
 
+  it('leaves grid days of the neighbouring months empty, since their items are not loaded', () => {
+    const { container } = renderPage({
+      items: [interviewPrep, { ...interviewPrep, date: '2026-11-01', id: 'next-month' }],
+    });
+
+    const grid = container.querySelector('div[aria-hidden="true"]') as HTMLElement;
+
+    expect(within(grid).getAllByText('Prepare system design')).toHaveLength(1);
+  });
+
   it('names a job that is not in the loaded list as unknown', () => {
     renderPage({ items: [{ ...interviewPrep, jobId: 'deleted-job' }] });
 

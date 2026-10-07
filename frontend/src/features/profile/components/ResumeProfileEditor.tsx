@@ -11,6 +11,7 @@ import {
 import { useTranslation } from '../../../i18n';
 import {
   addProfileEntry,
+  isBlankProfileLink,
   isResumeProfileValid,
   moveProfileEntry,
   normalizeProfileContent,
@@ -153,13 +154,23 @@ const LinkListEditor: FC<ILinkListEditorProps> = ({ disabled, links, onChange })
       <ol className="space-y-3">
         {links.map((link, index) => {
           const label = t('profile.editor.linkLabel', { position: index + 1 });
-          const urlIsValid = !link.url.trim() || isValidProfileUrl(link.url);
+          // A link left entirely blank is dropped on save; a half-filled
+          // one says which half is missing, since it blocks saving.
+          const isBlank = isBlankProfileLink(link);
+          const labelError =
+            !isBlank && !link.label.trim() ? t('profile.editor.required') : undefined;
+          let urlError: string | undefined;
+
+          if (!isBlank && !link.url.trim()) urlError = t('profile.editor.required');
+          else if (link.url.trim() && !isValidProfileUrl(link.url))
+            urlError = t('profile.editor.invalidUrl');
 
           return (
             <li className="rounded-lg border border-app-borderSoft p-3" key={link.id}>
               <div className="grid gap-3 md:grid-cols-2">
                 <Input
                   disabled={disabled}
+                  error={labelError}
                   label={t('profile.editor.linkName', { entry: label })}
                   onChange={(event) =>
                     onChange(updateProfileEntry(links, link.id, { label: event.target.value }))
@@ -168,7 +179,7 @@ const LinkListEditor: FC<ILinkListEditorProps> = ({ disabled, links, onChange })
                 />
                 <Input
                   disabled={disabled}
-                  error={urlIsValid ? undefined : t('profile.editor.invalidUrl')}
+                  error={urlError}
                   label={t('profile.editor.linkUrl', { entry: label })}
                   onChange={(event) =>
                     onChange(updateProfileEntry(links, link.id, { url: event.target.value }))
@@ -240,6 +251,8 @@ export const ResumeProfileEditor: FC<IResumeProfileEditorProps> = ({
 }) => {
   const { t } = useTranslation();
   const [name, setName] = useState(initialName);
+  // Shown once the field is left, not while a new profile is still empty.
+  const [isNameTouched, setIsNameTouched] = useState(false);
   const [content, setContent] = useState(initialContent);
   const canSave = !isSaving && isResumeProfileValid(name, content);
 
@@ -262,7 +275,9 @@ export const ResumeProfileEditor: FC<IResumeProfileEditorProps> = ({
         <div className="grid gap-3 md:grid-cols-2">
           <Input
             disabled={isSaving}
+            error={isNameTouched && !name.trim() ? t('profile.editor.required') : undefined}
             label={t('profile.editor.name')}
+            onBlur={() => setIsNameTouched(true)}
             onChange={(event) => setName(event.target.value)}
             value={name}
           />
