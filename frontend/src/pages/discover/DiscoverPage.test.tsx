@@ -91,7 +91,7 @@ describe('DiscoverPage', () => {
     expect(screen.getByLabelText('Skills')).toHaveValue('React');
     expect(screen.getByText('Already in the list.')).toBeInTheDocument();
     await user.clear(screen.getByLabelText('Skills'));
-    await user.type(screen.getByLabelText('Skills'), 'TypeScript{Enter}');
+    await user.type(screen.getByLabelText('Skills'), '  TypeScript  ');
     await user.click(screen.getByRole('button', { name: 'Save search' }));
 
     expect(props.createSearch).toHaveBeenCalledWith({
@@ -106,6 +106,20 @@ describe('DiscoverPage', () => {
       },
     });
     expect(await screen.findByRole('button', { name: 'New search' })).toBeInTheDocument();
+  });
+
+  it('keeps an invalid pending skill visible and focused instead of saving', async () => {
+    const user = userEvent.setup();
+    const { props } = renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    await user.type(screen.getByLabelText('Skills'), 'kotlin');
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(props.updateSearch).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Skills')).toHaveFocus();
+    expect(screen.getByLabelText('Skills')).toHaveValue('kotlin');
+    expect(screen.getByText('Already in the list.')).toBeInTheDocument();
   });
 
   it('edits a search in place', async () => {

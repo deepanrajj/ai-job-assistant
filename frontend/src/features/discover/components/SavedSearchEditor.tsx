@@ -1,10 +1,12 @@
-import { useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { useRef, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
 
 import { Alert, Button, Card, Input, Textarea } from '../../../components/ui';
 import { CheckboxGroup } from '../../profile/components/CheckboxGroup';
 import { TagListEditor } from '../../profile/components/TagListEditor';
 import {
+  getPreferenceValueError,
   isSavedSearchValid,
+  normalizePreferenceValue,
   normalizeSavedSearchCriteria,
   type TSavedSearchCriteria,
 } from '../../../services';
@@ -48,6 +50,7 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
   const { t } = useTranslation();
   const [criteria, setCriteria] = useState(initialCriteria);
   const [skillsDraft, setSkillsDraft] = useState('');
+  const skillsInputRef = useRef<HTMLInputElement | null>(null);
   const canSave = !isSaving && isSavedSearchValid(criteria);
 
   const handleSubmit = async (event: ReactSubmitEvent<HTMLFormElement>) => {
@@ -55,8 +58,16 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
 
     if (!canSave) return;
 
+    if (getPreferenceValueError(criteria.skills, skillsDraft)) {
+      skillsInputRef.current?.focus();
+      return;
+    }
+
+    const skill = normalizePreferenceValue(skillsDraft);
+    const nextCriteria = skill ? { ...criteria, skills: [...criteria.skills, skill] } : criteria;
+
     try {
-      await onSave(normalizeSavedSearchCriteria(criteria));
+      await onSave(normalizeSavedSearchCriteria(nextCriteria));
     } catch {
       // Error is already recorded in request state and rendered from it.
     }
@@ -108,6 +119,9 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
         <TagListEditor
           disabled={isSaving}
           draft={skillsDraft}
+          inputRef={(element) => {
+            skillsInputRef.current = element;
+          }}
           label={t('preferences.skills')}
           onChange={(skills) => setCriteria({ ...criteria, skills })}
           onDraftChange={setSkillsDraft}
