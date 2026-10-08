@@ -52,6 +52,9 @@ numbered task before implementation.
   backend `/api/resume-profiles`; its frontend is behind
   `PROFILES_FEATURE_ENABLED`.
 - [ ] [Task 045: Add skills inventory and job preferences](../../tasks/roadmap/045-add-skills-inventory-and-preferences.md),
+  backend `/api/profile/preferences`; its frontend is behind
+  `PREFERENCES_FEATURE_ENABLED`.
+- [ ] [Task 046: Add Discover saved searches](../../tasks/roadmap/046-add-discover-saved-searches.md),
   the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,

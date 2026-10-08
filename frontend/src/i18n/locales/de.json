@@ -211,6 +211,46 @@
       "cancel": "Abbrechen"
     }
   },
+  "preferences": {
+    "fallbackError": {
+      "getPreferences": "Fähigkeiten und Präferenzen konnten nicht geladen werden",
+      "savePreferences": "Fähigkeiten und Präferenzen konnten nicht gespeichert werden"
+    },
+    "title": "Fähigkeiten und Jobpräferenzen",
+    "subtitle": "Was du kannst und wonach du suchst. Discover und später der KI-Abgleich nutzen das.",
+    "loading": "Fähigkeiten und Präferenzen werden geladen",
+    "loadErrorTitle": "Fähigkeiten und Präferenzen konnten nicht geladen werden",
+    "skills": "Fähigkeiten",
+    "roles": "Zielrollen",
+    "locations": "Orte",
+    "keywords": "Stichwörter",
+    "workModes": "Arbeitsmodell",
+    "seniorityLabel": "Erfahrungsstufe",
+    "workMode": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "Vor Ort"
+    },
+    "seniority": {
+      "junior": "Junior",
+      "mid": "Mid-Level",
+      "senior": "Senior",
+      "lead": "Lead"
+    },
+    "add": "Hinzufügen",
+    "addValue": "Zu {{list}} hinzufügen",
+    "valueTooLong": "Höchstens {{max}} Zeichen.",
+    "valueDuplicate": "Schon in der Liste.",
+    "listFull": "Diese Liste ist voll ({{maxItems}}). Entferne einen Eintrag, um einen neuen hinzuzufügen.",
+    "removeValue": "{{value}} entfernen",
+    "noneYet": "Noch keine",
+    "save": "Präferenzen speichern",
+    "saving": "Wird gespeichert…",
+    "saved": "Präferenzen gespeichert",
+    "savedOn": "Gespeichert am {{date}}",
+    "notSavedYet": "Noch nicht gespeichert",
+    "listLabel": "{{list}} hinzugefügt"
+  },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
     "countSummary": "{{shown}} von {{total}} Chancen angezeigt",
