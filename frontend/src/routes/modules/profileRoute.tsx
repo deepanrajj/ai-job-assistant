@@ -10,35 +10,19 @@ import { PREFERENCES_FEATURE_ENABLED } from '../../features/profile/preferences.
 import { PROFILES_FEATURE_ENABLED } from '../../features/profile/profile.constants';
 
 /**
+ * Renders the resume profile library with its own request.
+ *
+ * @returns {JSX.Element} Resume profile library.
+ */
+const ProfileLibraryWithData: FC = () => <ProfilePage {...useResumeProfiles()} />;
+
+/**
  * Renders the skills and preferences section with its own request.
  *
  * @returns {JSX.Element} Preferences section.
  */
 const PreferencesSectionWithData: FC = () => (
   <ProfilePreferencesSection {...useProfilePreferences()} />
-);
-
-/**
- * The preferences section, or nothing while its backend is pending; chosen
- * once at module load so the hooks above are never called conditionally.
- * TEMPORARY: see `PREFERENCES_FEATURE_ENABLED`.
- */
-const PreferencesSection: FC = PREFERENCES_FEATURE_ENABLED
-  ? PreferencesSectionWithData
-  : () => null;
-
-/**
- * Renders the Profile page: the resume profile library, and below it the
- * skills and preferences section. The route owns the requests, as the
- * other routes do, so the page stays free of MSW.
- *
- * @returns {JSX.Element} Profile route content.
- */
-export const ProfileRouteWithProfiles: FC = () => (
-  <div className="space-y-8">
-    <ProfilePage {...useResumeProfiles()} />
-    <PreferencesSection />
-  </div>
 );
 
 /**
@@ -58,11 +42,53 @@ export const ProfileRouteComingSoon: FC = () => {
 };
 
 /**
- * The Profile route, chosen once at module load so each variant calls the
- * same hooks on every render. TEMPORARY: collapse to
- * `ProfileRouteWithProfiles` once the task 044 backend lands; see
- * `PROFILES_FEATURE_ENABLED`.
+ * Which parts of the Profile page to show.
  */
-export const Component: FC = PROFILES_FEATURE_ENABLED
-  ? ProfileRouteWithProfiles
-  : ProfileRouteComingSoon;
+interface IProfileRouteSectionsProps {
+  showLibrary: boolean;
+  showPreferences: boolean;
+}
+
+/**
+ * Renders the parts of the Profile page whose backends exist: the resume
+ * profile library (task 044) and, below it, the skills and preferences
+ * section (task 045). Each part is its own component with its own request,
+ * so leaving one out never changes which hooks the other calls. The route
+ * owns the requests, as the other routes do, so the pages stay free of MSW.
+ *
+ * @param {IProfileRouteSectionsProps} props Component props.
+ * @returns {JSX.Element} Profile route content.
+ */
+export const ProfileRouteSections: FC<IProfileRouteSectionsProps> = ({
+  showLibrary,
+  showPreferences,
+}) => (
+  <div className="space-y-8">
+    {showLibrary && <ProfileLibraryWithData />}
+    {showPreferences && <PreferencesSectionWithData />}
+  </div>
+);
+
+/**
+ * The parts this build shows. The two flags are independent, since either
+ * backend can land first.
+ *
+ * @returns {JSX.Element} Profile route content.
+ */
+export const ProfileRouteWithSections: FC = () => (
+  <ProfileRouteSections
+    showLibrary={PROFILES_FEATURE_ENABLED}
+    showPreferences={PREFERENCES_FEATURE_ENABLED}
+  />
+);
+
+/**
+ * The Profile route, chosen once at module load: the placeholder only
+ * while both parts are off. TEMPORARY: collapse to both parts once the
+ * task 044 and 045 backends land; see `PROFILES_FEATURE_ENABLED` and
+ * `PREFERENCES_FEATURE_ENABLED`.
+ */
+export const Component: FC =
+  PROFILES_FEATURE_ENABLED || PREFERENCES_FEATURE_ENABLED
+    ? ProfileRouteWithSections
+    : ProfileRouteComingSoon;

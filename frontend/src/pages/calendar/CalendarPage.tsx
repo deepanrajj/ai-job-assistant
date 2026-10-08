@@ -181,14 +181,16 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
               </div>
             ))}
             {weeks.flat().map((day) => {
-              const dayItems = itemsByDate.get(day.date) ?? [];
+              // Only this month's items are loaded, so a day of the
+              // neighbouring month shows none rather than looking free.
+              const dayItems = day.isInMonth ? (itemsByDate.get(day.date) ?? []) : [];
               const hiddenCount = dayItems.length - CALENDAR_DAY_ITEM_LIMIT;
 
               return (
                 <div
                   className={classNames(
-                    'min-h-24 bg-app-surface p-1.5',
-                    day.isInMonth ? '' : 'bg-app-surface2 text-app-textMuted',
+                    'min-h-24 p-1.5',
+                    day.isInMonth ? 'bg-app-surface' : 'bg-app-surface2 text-app-textMuted',
                     day.date === today ? 'ring-2 ring-inset ring-primary-600' : '',
                   )}
                   key={day.date}

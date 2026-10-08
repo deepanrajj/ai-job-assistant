@@ -47,6 +47,7 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
 }) => {
   const { t } = useTranslation();
   const [criteria, setCriteria] = useState(initialCriteria);
+  const [skillsDraft, setSkillsDraft] = useState('');
   const canSave = !isSaving && isSavedSearchValid(criteria);
 
   const handleSubmit = async (event: ReactSubmitEvent<HTMLFormElement>) => {
@@ -106,8 +107,10 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
         </div>
         <TagListEditor
           disabled={isSaving}
+          draft={skillsDraft}
           label={t('preferences.skills')}
           onChange={(skills) => setCriteria({ ...criteria, skills })}
+          onDraftChange={setSkillsDraft}
           values={criteria.skills}
         />
         <Textarea

@@ -75,6 +75,54 @@ describe('useResumeProfiles', () => {
     expect(result.current.mutationError).toBeNull();
   });
 
+  it('clears a recorded write error on request', async () => {
+    server.use(
+      http.get(endpoint, () => HttpResponse.json([profile('p1', 'Base')])),
+      http.delete(`${endpoint}/p1`, () => new HttpResponse(null, { status: 500 })),
+    );
+    const { result } = await renderLoadedHook();
+
+    await act(async () => {
+      await expect(result.current.deleteProfile('p1')).rejects.toThrow();
+    });
+    act(() => result.current.clearMutationError());
+
+    expect(result.current.mutationError).toBeNull();
+  });
+
+  it('ignores a load that a newer load has overtaken', async () => {
+    let releaseFirst: () => void = () => {};
+    let calls = 0;
+
+    server.use(
+      http.get(endpoint, async () => {
+        calls += 1;
+
+        if (calls === 1) {
+          await new Promise<void>((resolve) => {
+            releaseFirst = resolve;
+          });
+
+          return HttpResponse.json([profile('p1', 'Stale')]);
+        }
+
+        return HttpResponse.json([profile('p1', 'Current')]);
+      }),
+    );
+    const { result } = renderHook(() => useResumeProfiles());
+
+    await waitFor(() => expect(calls).toBe(1));
+    act(() => result.current.reload());
+    await waitFor(() => expect(result.current.profiles[0]?.name).toBe('Current'));
+
+    await act(async () => {
+      releaseFirst();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+
+    expect(result.current.profiles.map((item) => item.name)).toEqual(['Current']);
+  });
+
   it('reports a failed load and recovers on reload', async () => {
     server.use(http.get(endpoint, () => new HttpResponse(null, { status: 500 }), { once: true }));
     const { result } = await renderLoadedHook();

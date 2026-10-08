@@ -87,7 +87,11 @@ describe('DiscoverPage', () => {
     await user.type(screen.getByLabelText('Role'), 'Frontend Engineer');
     await user.click(screen.getByRole('checkbox', { name: 'Remote' }));
     await user.click(screen.getByRole('checkbox', { name: 'Mid-level' }));
-    await user.type(screen.getByLabelText('Skills'), 'react{Enter}React{Enter}TypeScript{Enter}');
+    await user.type(screen.getByLabelText('Skills'), 'react{Enter}React{Enter}');
+    expect(screen.getByLabelText('Skills')).toHaveValue('React');
+    expect(screen.getByText('Already in the list.')).toBeInTheDocument();
+    await user.clear(screen.getByLabelText('Skills'));
+    await user.type(screen.getByLabelText('Skills'), 'TypeScript{Enter}');
     await user.click(screen.getByRole('button', { name: 'Save search' }));
 
     expect(props.createSearch).toHaveBeenCalledWith({

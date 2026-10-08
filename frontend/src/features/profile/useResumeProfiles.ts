@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   createResumeProfile,
@@ -18,6 +18,7 @@ import type { AppError } from '../../errors';
  * after recording it in `mutationError`, as the job detail hooks do.
  */
 export interface IResumeProfilesState {
+  clearMutationError: () => void;
   createProfile: (payload: TSaveResumeProfileRequest) => Promise<TResumeProfileResponse>;
   deleteProfile: (profileId: string) => Promise<void>;
   isLoading: boolean;
@@ -38,8 +39,10 @@ export interface IResumeProfilesState {
  * The loaded list is copied into local state when a load settles, and a
  * confirmed write is applied to that list directly rather than by
  * reloading: the response is the saved profile, and a whole profile is
- * the only thing that changes. `useAsyncMutation` drops a load response
- * that a newer load has overtaken.
+ * the only thing that changes. A load that a newer load has overtaken is
+ * ignored: `useAsyncMutation` keeps it out of its own request state but
+ * still resolves with it, so the hook counts its loads, as
+ * `useJobContacts` does.
  *
  * @returns {IResumeProfilesState} Profiles, request state, and the writes.
  */
@@ -51,10 +54,16 @@ export const useResumeProfiles = (): IResumeProfilesState => {
   const [profiles, setProfiles] = useState<TResumeProfileResponse[]>([]);
   const [mutationError, setMutationError] = useState<AppError | null>(null);
   const [pendingWrites, setPendingWrites] = useState(0);
+  const latestLoadIdRef = useRef(0);
 
   const reload = useCallback(() => {
+    latestLoadIdRef.current += 1;
+    const loadId = latestLoadIdRef.current;
+
     loadProfiles().then(
-      (loaded) => setProfiles(Array.isArray(loaded) ? loaded : []),
+      (loaded) => {
+        if (loadId === latestLoadIdRef.current) setProfiles(Array.isArray(loaded) ? loaded : []);
+      },
       () => {
         // Error is already recorded in request state and rendered from it.
       },
@@ -122,7 +131,10 @@ export const useResumeProfiles = (): IResumeProfilesState => {
     [runWrite],
   );
 
+  const clearMutationError = useCallback(() => setMutationError(null), []);
+
   return {
+    clearMutationError,
     createProfile,
     deleteProfile,
     isLoading: isIdle || isLoading,
