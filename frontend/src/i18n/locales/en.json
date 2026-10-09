@@ -271,6 +271,7 @@
       "newTitle": "New saved search",
       "editTitle": "Edit saved search",
       "name": "Search name",
+      "required": "Required",
       "namePlaceholder": "Senior backend in Berlin",
       "role": "Role",
       "location": "Location",

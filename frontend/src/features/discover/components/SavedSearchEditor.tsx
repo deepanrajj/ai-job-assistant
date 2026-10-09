@@ -1,11 +1,13 @@
-import { useRef, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { useMemo, useRef, useState, type FC } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
 
+import { Form } from '../../../components/form';
 import { Alert, Button, Card, Input, Textarea } from '../../../components/ui';
 import { CheckboxGroup } from '../../profile/components/CheckboxGroup';
 import { TagListEditor } from '../../profile/components/TagListEditor';
 import {
   getPreferenceValueError,
-  isSavedSearchValid,
   normalizePreferenceValue,
   normalizeSavedSearchCriteria,
   type TSavedSearchCriteria,
@@ -18,6 +20,7 @@ import {
   WORK_MODE_OPTIONS,
   WORK_MODE_TRANSLATION_KEYS,
 } from '../../profile/preferences.constants';
+import { createSavedSearchFormSchema } from '../savedSearchFormSchema';
 
 /**
  * Props used by the saved search editor.
@@ -48,16 +51,20 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
   title,
 }) => {
   const { t } = useTranslation();
-  const [criteria, setCriteria] = useState(initialCriteria);
+  const schema = useMemo(() => createSavedSearchFormSchema(t('discover.editor.required')), [t]);
+  const form = useForm<TSavedSearchCriteria>({
+    defaultValues: initialCriteria,
+    resolver: zodResolver(schema),
+  });
+  const {
+    control,
+    formState: { errors },
+    register,
+  } = form;
   const [skillsDraft, setSkillsDraft] = useState('');
   const skillsInputRef = useRef<HTMLInputElement | null>(null);
-  const canSave = !isSaving && isSavedSearchValid(criteria);
 
-  const handleSubmit = async (event: ReactSubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!canSave) return;
-
+  const save = async (criteria: TSavedSearchCriteria) => {
     if (getPreferenceValueError(criteria.skills, skillsDraft)) {
       skillsInputRef.current?.focus();
       return;
@@ -75,73 +82,80 @@ export const SavedSearchEditor: FC<ISavedSearchEditorProps> = ({
 
   return (
     <Card title={title}>
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <Form className="space-y-6" form={form} noValidate onSubmit={save}>
         {error && <Alert>{error.message}</Alert>}
         <Input
           disabled={isSaving}
+          error={errors.name?.message}
           label={t('discover.editor.name')}
-          onChange={(event) => setCriteria({ ...criteria, name: event.target.value })}
           placeholder={t('discover.editor.namePlaceholder')}
-          value={criteria.name}
+          {...register('name')}
         />
         <div className="grid gap-3 md:grid-cols-2">
-          <Input
-            disabled={isSaving}
-            label={t('discover.editor.role')}
-            onChange={(event) => setCriteria({ ...criteria, role: event.target.value })}
-            value={criteria.role}
-          />
+          <Input disabled={isSaving} label={t('discover.editor.role')} {...register('role')} />
           <Input
             disabled={isSaving}
             label={t('discover.editor.location')}
-            onChange={(event) => setCriteria({ ...criteria, location: event.target.value })}
-            value={criteria.location}
+            {...register('location')}
           />
         </div>
         <div className="grid gap-6 md:grid-cols-2">
-          <CheckboxGroup
-            disabled={isSaving}
-            label={(level) => t(SENIORITY_TRANSLATION_KEYS[level])}
-            legend={t('preferences.seniorityLabel')}
-            onChange={(seniority) => setCriteria({ ...criteria, seniority })}
-            options={SENIORITY_OPTIONS}
-            values={criteria.seniority}
+          <Controller
+            control={control}
+            name="seniority"
+            render={({ field }) => (
+              <CheckboxGroup
+                disabled={isSaving}
+                label={(level) => t(SENIORITY_TRANSLATION_KEYS[level])}
+                legend={t('preferences.seniorityLabel')}
+                onChange={field.onChange}
+                options={SENIORITY_OPTIONS}
+                values={field.value}
+              />
+            )}
           />
-          <CheckboxGroup
-            disabled={isSaving}
-            label={(mode) => t(WORK_MODE_TRANSLATION_KEYS[mode])}
-            legend={t('preferences.workModes')}
-            onChange={(workModes) => setCriteria({ ...criteria, workModes })}
-            options={WORK_MODE_OPTIONS}
-            values={criteria.workModes}
+          <Controller
+            control={control}
+            name="workModes"
+            render={({ field }) => (
+              <CheckboxGroup
+                disabled={isSaving}
+                label={(mode) => t(WORK_MODE_TRANSLATION_KEYS[mode])}
+                legend={t('preferences.workModes')}
+                onChange={field.onChange}
+                options={WORK_MODE_OPTIONS}
+                values={field.value}
+              />
+            )}
           />
         </div>
-        <TagListEditor
-          disabled={isSaving}
-          draft={skillsDraft}
-          inputRef={(element) => {
-            skillsInputRef.current = element;
-          }}
-          label={t('preferences.skills')}
-          onChange={(skills) => setCriteria({ ...criteria, skills })}
-          onDraftChange={setSkillsDraft}
-          values={criteria.skills}
+        <Controller
+          control={control}
+          name="skills"
+          render={({ field }) => (
+            <TagListEditor
+              disabled={isSaving}
+              draft={skillsDraft}
+              inputRef={(element) => {
+                skillsInputRef.current = element;
+              }}
+              label={t('preferences.skills')}
+              onChange={field.onChange}
+              onDraftChange={setSkillsDraft}
+              values={field.value}
+            />
+          )}
         />
-        <Textarea
-          disabled={isSaving}
-          label={t('discover.editor.notes')}
-          onChange={(event) => setCriteria({ ...criteria, notes: event.target.value })}
-          value={criteria.notes}
-        />
+        <Textarea disabled={isSaving} label={t('discover.editor.notes')} {...register('notes')} />
         <div className="flex flex-wrap gap-2">
-          <Button aria-busy={isSaving} disabled={!canSave} type="submit">
+          <Button aria-busy={isSaving} disabled={isSaving} type="submit">
             {t('discover.editor.save')}
           </Button>
           <Button disabled={isSaving} onClick={onCancel} variant="ghost">
             {t('discover.editor.cancel')}
           </Button>
         </div>
-      </form>
+      </Form>
     </Card>
   );
 };

@@ -86,7 +86,11 @@ describe('DiscoverPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'New search' }));
 
-    expect(screen.getByRole('button', { name: 'Save search' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(screen.getByLabelText('Search name')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('Required')).toBeInTheDocument();
+    expect(props.createSearch).not.toHaveBeenCalled();
 
     await user.type(screen.getByLabelText('Search name'), '  Remote   frontend ');
     await user.type(screen.getByLabelText('Role'), 'Frontend Engineer');
