@@ -26,6 +26,7 @@ const search: TSavedSearchResponse = {
 
 const renderPage = (overrides: Partial<ComponentProps<typeof DiscoverPage>> = {}) => {
   const props: ComponentProps<typeof DiscoverPage> = {
+    clearMutationError: vi.fn(),
     createSearch: vi.fn(async (payload: TSaveSavedSearchRequest) => ({
       ...search,
       ...payload,
@@ -167,6 +168,26 @@ describe('DiscoverPage', () => {
 
     expect(props.updateSearch).not.toHaveBeenCalled();
     expect(props.deleteSearch).toHaveBeenCalledWith('search-1');
+  });
+
+  it('clears a previous write error when opening or closing an editor', async () => {
+    const user = userEvent.setup();
+    const { props } = renderPage({
+      mutationError: new AppError(
+        'Failed to delete saved search',
+        APP_ERROR_CODES.SAVED_SEARCH_REQUEST_FAILED,
+      ),
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to delete saved search');
+    await user.click(screen.getByRole('button', { name: 'New search' }));
+    expect(props.clearMutationError).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(props.clearMutationError).toHaveBeenCalledTimes(2);
+
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    expect(props.clearMutationError).toHaveBeenCalledTimes(3);
   });
 
   it('shows a write error, loading, and a retryable load error', async () => {

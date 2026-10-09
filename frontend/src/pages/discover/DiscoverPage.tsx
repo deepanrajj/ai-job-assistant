@@ -108,6 +108,7 @@ const SavedSearchCard: FC<ISavedSearchCardProps> = ({ isDisabled, onDelete, onEd
  * @returns {JSX.Element} Discover page.
  */
 export const DiscoverPage: FC<TDiscoverPageProps> = ({
+  clearMutationError,
   createSearch,
   deleteSearch,
   isLoading,
@@ -120,6 +121,11 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
 }) => {
   const { t } = useTranslation();
   const [editor, setEditor] = useState<TEditorTarget>({ kind: 'closed' });
+
+  const switchEditor = (target: TEditorTarget) => {
+    clearMutationError();
+    setEditor(target);
+  };
 
   if (isLoading) return <LoadingState label={t('discover.loading')} />;
 
@@ -142,7 +148,7 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
       if (existing) await updateSearch(existing.id, { criteria });
       else await createSearch({ criteria });
 
-      setEditor({ kind: 'closed' });
+      switchEditor({ kind: 'closed' });
     };
 
     return (
@@ -151,7 +157,7 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
         initialCriteria={existing?.criteria ?? createEmptySavedSearchCriteria()}
         isSaving={isMutating}
         key={existing?.id ?? 'new'}
-        onCancel={() => setEditor({ kind: 'closed' })}
+        onCancel={() => switchEditor({ kind: 'closed' })}
         onSave={handleSave}
         title={existing ? t('discover.editor.editTitle') : t('discover.editor.newTitle')}
       />
@@ -173,7 +179,7 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
           </h2>
           <p className="text-sm text-app-textMuted">{t('discover.list.subtitle')}</p>
         </div>
-        <Button disabled={isMutating} onClick={() => setEditor({ kind: 'new' })}>
+        <Button disabled={isMutating} onClick={() => switchEditor({ kind: 'new' })}>
           {t('discover.list.newSearch')}
         </Button>
       </div>
@@ -192,7 +198,7 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
               isDisabled={isMutating}
               key={search.id}
               onDelete={handleDelete}
-              onEdit={(selected) => setEditor({ kind: 'existing', searchId: selected.id })}
+              onEdit={(selected) => switchEditor({ kind: 'existing', searchId: selected.id })}
               search={search}
             />
           ))}
