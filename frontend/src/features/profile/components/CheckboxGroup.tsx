@@ -12,7 +12,7 @@ interface ICheckboxGroupProps<T extends string> {
 
 /**
  * A fieldset of checkboxes for a fixed set of choices. Checked values keep
- * the options' order, whatever order they were ticked in.
+ * the options' order, while stored values outside the options are preserved.
  *
  * @param {ICheckboxGroupProps<T>} props Component props.
  * @returns {JSX.Element} Checkbox group.
@@ -37,9 +37,12 @@ export const CheckboxGroup = <T extends string>({
             onChange={(event) =>
               onChange(
                 event.target.checked
-                  ? options.filter(
-                      (candidate) => candidate === option || values.includes(candidate),
-                    )
+                  ? [
+                      ...options.filter(
+                        (candidate) => candidate === option || values.includes(candidate),
+                      ),
+                      ...values.filter((value) => !options.includes(value)),
+                    ]
                   : values.filter((candidate) => candidate !== option),
               )
             }

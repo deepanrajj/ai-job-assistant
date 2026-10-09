@@ -46,8 +46,8 @@ const SavedSearchCard: FC<ISavedSearchCardProps> = ({ isDisabled, onDelete, onEd
   const { location, name, notes, role, seniority, skills, workModes } = search.criteria;
   const roleAndLocation = [role, location].filter(Boolean).join(' · ');
   const details = [
-    ...seniority.map((level) => t(SENIORITY_TRANSLATION_KEYS[level])),
-    ...workModes.map((mode) => t(WORK_MODE_TRANSLATION_KEYS[mode])),
+    ...seniority.map((level) => t(SENIORITY_TRANSLATION_KEYS[level] ?? level)),
+    ...workModes.map((mode) => t(WORK_MODE_TRANSLATION_KEYS[mode] ?? mode)),
   ];
 
   return (

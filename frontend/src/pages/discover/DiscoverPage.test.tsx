@@ -7,7 +7,11 @@ import { DiscoverPage } from './DiscoverPage';
 import { AppError } from '../../errors';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { APP_ERROR_CODES } from '../../types';
-import type { TSavedSearchResponse, TSaveSavedSearchRequest } from '../../services';
+import type {
+  TSavedSearchCriteria,
+  TSavedSearchResponse,
+  TSaveSavedSearchRequest,
+} from '../../services';
 
 const search: TSavedSearchResponse = {
   createdAt: '2026-10-01T09:00:00Z',
@@ -155,6 +159,38 @@ describe('DiscoverPage', () => {
 
     expect(props.updateSearch).toHaveBeenCalledWith('search-1', {
       criteria: { ...search.criteria, location: 'Munich', skills },
+    });
+  });
+
+  it('preserves stored choices this client does not offer when checking another option', async () => {
+    const user = userEvent.setup();
+    const storedSeniority = 'PRINCIPAL' as TSavedSearchCriteria['seniority'][number];
+    const storedWorkMode = 'CARAVAN' as TSavedSearchCriteria['workModes'][number];
+    const { props } = renderPage({
+      searches: [
+        {
+          ...search,
+          criteria: {
+            ...search.criteria,
+            seniority: ['SENIOR', storedSeniority],
+            workModes: ['HYBRID', storedWorkMode],
+          },
+        },
+      ],
+    });
+
+    expect(screen.getByText('Senior · PRINCIPAL · Hybrid · CARAVAN')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Lead' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Remote' }));
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(props.updateSearch).toHaveBeenCalledWith('search-1', {
+      criteria: {
+        ...search.criteria,
+        seniority: ['SENIOR', 'LEAD', storedSeniority],
+        workModes: ['REMOTE', 'HYBRID', storedWorkMode],
+      },
     });
   });
 
