@@ -141,6 +141,23 @@ describe('DiscoverPage', () => {
     });
   });
 
+  it('preserves stored skills beyond current limits when editing another field', async () => {
+    const user = userEvent.setup();
+    const skills = ['x'.repeat(61), ...Array.from({ length: 50 }, (_, index) => `Skill ${index}`)];
+    const { props } = renderPage({
+      searches: [{ ...search, criteria: { ...search.criteria, skills } }],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    await user.clear(screen.getByLabelText('Location'));
+    await user.type(screen.getByLabelText('Location'), 'Munich');
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(props.updateSearch).toHaveBeenCalledWith('search-1', {
+      criteria: { ...search.criteria, location: 'Munich', skills },
+    });
+  });
+
   it('keeps the editor open with the entered values when saving fails', async () => {
     const user = userEvent.setup();
     renderPage({
