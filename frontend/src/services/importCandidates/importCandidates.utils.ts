@@ -69,7 +69,7 @@ export const buildImportCandidateRequest = (
  */
 const SOURCE_BY_HOST: readonly (readonly [RegExp, TJobSource])[] = [
   [/(^|\.)linkedin\.com$/, 'LINKEDIN'],
-  [/(^|\.)indeed\.[a-z.]+$/, 'INDEED'],
+  [/(^|\.)indeed\.(com|co\.uk|de)$/, 'INDEED'],
   [/(^|\.)xing\.com$/, 'XING'],
 ];
 

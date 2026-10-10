@@ -421,6 +421,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   const [editing, setEditing] = useState<TImportCandidateResponse | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [feedback, setFeedback] = useState<IImportFeedback | null>(null);
+  const [importRequestError, setImportRequestError] = useState<string | null>(null);
   const { error: jobsError, isLoading: jobsLoading, jobs: savedJobs, reload: reloadJobs } = jobs;
   const duplicates = useMemo(() => {
     const jobState = {
@@ -497,8 +498,10 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
         importedCount: results.filter((result) => result.outcome === 'IMPORTED').length,
       });
       jobs.reload();
-    } catch {
-      // Error is already recorded in request state and rendered from it.
+    } catch (error) {
+      setImportRequestError(
+        error instanceof Error ? error.message : t('importCandidates.import.errors.requestFailed'),
+      );
     } finally {
       setIsConfirming(false);
     }
@@ -576,6 +579,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             disabled={selectedCount === 0 || isMutating || isConfirming}
             onClick={() => {
               setFeedback(null);
+              setImportRequestError(null);
               setIsConfirming(true);
             }}
             size="sm"
@@ -583,6 +587,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             {t('importCandidates.import.start', { count: selectedCount })}
           </Button>
         </div>
+        {importRequestError && <Alert>{importRequestError}</Alert>}
         {isConfirming && (
           <div
             aria-labelledby="import-confirm-heading"

@@ -349,6 +349,7 @@
       "errors": {
         "alreadyImported": "bereits importiert",
         "notFound": "existiert nicht mehr",
+        "requestFailed": "Die Importanfrage ist fehlgeschlagen. Bitte versuche es erneut.",
         "unknown": "der Job konnte nicht gespeichert werden"
       }
     }

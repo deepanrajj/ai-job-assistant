@@ -152,10 +152,14 @@ describe('ImportCandidatesSection import', () => {
     expect(alert).toHaveTextContent('Engineer at Personio: the job could not be saved');
   });
 
-  it('keeps the confirmation flow safe when the request itself fails', async () => {
+  it('shows a rejected import request beside the controls and clears it on retry', async () => {
     const user = userEvent.setup();
+    const importCandidates = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Failed to import candidates'))
+      .mockResolvedValueOnce([imported('c1', 'job-1')]);
     const { props } = renderSection({
-      importCandidates: vi.fn(async () => Promise.reject(new Error('x'))),
+      importCandidates,
     });
 
     await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
@@ -163,6 +167,19 @@ describe('ImportCandidatesSection import', () => {
 
     expect(props.jobs.reload).not.toHaveBeenCalled();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    const requestAlert = await screen.findByRole('alert');
+
+    expect(requestAlert).toHaveTextContent('Failed to import candidates');
+    expect(requestAlert.closest('section')).toContainElement(
+      screen.getByRole('button', { name: 'Import selected (3)' }),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Import 3 as jobs' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Imported 1 as saved jobs');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('shows imported candidates as imported, unselectable, and not editable', () => {
