@@ -1,5 +1,17 @@
 # Task 046 - Add Discover Saved Searches
 
+Status: In progress - frontend complete behind a feature flag, backend pending
+
+Progress is tracked in the
+[plan](../../docs/business/046-add-discover-saved-searches-plan.md#progress).
+
+- [ ] **Remove the temporary saved search mock and feature flag once the
+  backend lands.** Delete `frontend/src/services/savedSearches/savedSearches.mock.ts`
+  and its tests, the `USE_MOCK_SAVED_SEARCHES` branches and import in
+  `savedSearches.service.ts`, and `SAVED_SEARCHES_FEATURE_ENABLED` with
+  the places that read it. Until then built images keep Discover on
+  "coming soon", and the mock runs only in the Vite dev server.
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.

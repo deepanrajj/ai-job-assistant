@@ -251,6 +251,35 @@
     "notSavedYet": "Noch nicht gespeichert",
     "listLabel": "{{list}} hinzugefügt"
   },
+  "discover": {
+    "loading": "Gespeicherte Suchen werden geladen",
+    "loadErrorTitle": "Gespeicherte Suchen konnten nicht geladen werden",
+    "list": {
+      "title": "Gespeicherte Suchen",
+      "subtitle": "Wiederverwendbare Kriterien, um später Jobs zu finden und zu importieren. Noch wird nichts automatisch gesucht.",
+      "newSearch": "Neue Suche",
+      "edit": "Bearbeiten",
+      "editLabel": "Suche {{name}} bearbeiten",
+      "delete": "Löschen",
+      "deleteLabel": "Suche {{name}} löschen",
+      "anyRoleOrLocation": "Jede Rolle, jeder Ort",
+      "skillsLabel": "Fähigkeiten für {{name}}",
+      "emptyTitle": "Noch keine gespeicherten Suchen",
+      "emptyDescription": "Speichere Rolle, Ort, Erfahrungsstufe, Fähigkeiten und Arbeitsmodell, nach denen du suchst, damit späterer Import und spätere Suche darauf aufbauen können."
+    },
+    "editor": {
+      "newTitle": "Neue gespeicherte Suche",
+      "editTitle": "Gespeicherte Suche bearbeiten",
+      "name": "Name der Suche",
+      "required": "Pflichtfeld",
+      "namePlaceholder": "Senior Backend in Berlin",
+      "role": "Rolle",
+      "location": "Ort",
+      "notes": "Notizen",
+      "save": "Suche speichern",
+      "cancel": "Abbrechen"
+    }
+  },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
     "countSummary": "{{shown}} von {{total}} Chancen angezeigt",
@@ -320,6 +349,14 @@
       "createProfile": "Lebenslauf-Profil konnte nicht erstellt werden",
       "updateProfile": "Lebenslauf-Profil konnte nicht gespeichert werden",
       "deleteProfile": "Lebenslauf-Profil konnte nicht gelöscht werden"
+    }
+  },
+  "savedSearches": {
+    "fallbackError": {
+      "listSearches": "Gespeicherte Suchen konnten nicht geladen werden",
+      "createSearch": "Gespeicherte Suche konnte nicht erstellt werden",
+      "updateSearch": "Suche konnte nicht gespeichert werden",
+      "deleteSearch": "Gespeicherte Suche konnte nicht gelöscht werden"
     }
   },
   "reminders": {

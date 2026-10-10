@@ -55,6 +55,9 @@ numbered task before implementation.
   backend `/api/profile/preferences`; its frontend is behind
   `PREFERENCES_FEATURE_ENABLED`.
 - [ ] [Task 046: Add Discover saved searches](../../tasks/roadmap/046-add-discover-saved-searches.md),
+  backend `/api/saved-searches`; its frontend is behind
+  `SAVED_SEARCHES_FEATURE_ENABLED`.
+- [ ] [Task 047: Add import candidate review workflow](../../tasks/roadmap/047-add-import-candidate-review-workflow.md),
   the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,

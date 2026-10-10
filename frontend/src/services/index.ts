@@ -8,5 +8,6 @@ export * from './notes';
 export * from './preferences';
 export * from './profiles';
 export * from './reminders';
+export * from './savedSearches';
 export * from './tasks';
 export * from './timeline';
