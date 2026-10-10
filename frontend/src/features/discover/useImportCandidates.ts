@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   createImportCandidate,
@@ -18,6 +18,7 @@ import type { AppError } from '../../errors';
  * after recording it in `mutationError`, as the job detail hooks do.
  */
 export interface IImportCandidatesState {
+  clearMutationError: () => void;
   createCandidate: (payload: TSaveImportCandidateRequest) => Promise<TImportCandidateResponse>;
   deleteCandidate: (candidateId: string) => Promise<void>;
   isLoading: boolean;
@@ -51,10 +52,18 @@ export const useImportCandidates = (): IImportCandidatesState => {
   const [candidates, setCandidates] = useState<TImportCandidateResponse[]>([]);
   const [mutationError, setMutationError] = useState<AppError | null>(null);
   const [pendingWrites, setPendingWrites] = useState(0);
+  const writeVersion = useRef(0);
+  const loadVersion = useRef(0);
 
   const reload = useCallback(() => {
+    const startedAfterWrite = writeVersion.current;
+    const currentLoad = ++loadVersion.current;
+
     loadCandidates().then(
-      (loaded) => setCandidates(Array.isArray(loaded) ? loaded : []),
+      (loaded) => {
+        if (startedAfterWrite === writeVersion.current && currentLoad === loadVersion.current)
+          setCandidates(Array.isArray(loaded) ? loaded : []);
+      },
       () => {
         // Error is already recorded in request state and rendered from it.
       },
@@ -76,6 +85,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
       .then(
         (result) => {
           setMutationError(null);
+          writeVersion.current += 1;
           apply(result);
 
           return result;
@@ -123,7 +133,10 @@ export const useImportCandidates = (): IImportCandidatesState => {
     [runWrite],
   );
 
+  const clearMutationError = useCallback(() => setMutationError(null), []);
+
   return {
+    clearMutationError,
     createCandidate,
     deleteCandidate,
     isLoading: isIdle || isLoading,

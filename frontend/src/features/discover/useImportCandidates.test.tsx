@@ -20,6 +20,33 @@ const candidate = (id: string, company: string): TImportCandidateResponse => ({
 });
 
 describe('useImportCandidates', () => {
+  it('keeps a confirmed write when an older initial load finishes afterward', async () => {
+    let releaseLoad: () => void = () => {};
+    let loadStarted = false;
+    const loadGate = new Promise<void>((resolve) => {
+      releaseLoad = resolve;
+    });
+    server.use(
+      http.get(endpoint, async () => {
+        loadStarted = true;
+        await loadGate;
+        return HttpResponse.json([]);
+      }),
+      http.post(endpoint, () => HttpResponse.json(candidate('c1', 'N26'), { status: 201 })),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+
+    await waitFor(() => expect(loadStarted).toBe(true));
+    await act(() =>
+      result.current.createCandidate({ content: candidate('x', 'N26').content, sourceUrl: null }),
+    );
+    expect(result.current.candidates).toHaveLength(1);
+
+    await act(async () => releaseLoad());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.candidates.map((entry) => entry.id)).toEqual(['c1']);
+  });
+
   it('creates a candidate that survives a reload, and never calls /api/jobs', async () => {
     const stored: TImportCandidateResponse[] = [];
     const jobRequests: string[] = [];
@@ -68,5 +95,8 @@ describe('useImportCandidates', () => {
     });
 
     expect(result.current.mutationError?.message).toBe('Failed to save candidate');
+
+    act(() => result.current.clearMutationError());
+    expect(result.current.mutationError).toBeNull();
   });
 });

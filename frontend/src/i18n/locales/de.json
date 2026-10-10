@@ -310,7 +310,7 @@
       "sourceUrlHelp": "Wo du die Stelle gefunden hast. Wird nur als Link gespeichert; die App öffnet ihn nie.",
       "description": "Stellenbeschreibung",
       "required": "Pflichtfeld",
-      "invalidUrl": "Der Link muss mit http:// oder https:// beginnen",
+      "invalidUrl": "Gib einen gültigen http://- oder https://-Link ein",
       "save": "Kandidat speichern",
       "saveChanges": "Änderungen speichern",
       "cancel": "Abbrechen"
