@@ -1,5 +1,8 @@
 # Task 048 - Add Import Duplicate Detection
 
+Status: Completed - frontend only, no backend work; visible in built
+images once task 047's `IMPORT_CANDIDATES_FEATURE_ENABLED` is removed
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -40,9 +43,9 @@ Run verification for touched frontend/backend layers.
 
 ## Acceptance Criteria
 
-- [ ] Candidates get duplicate classifications.
-- [ ] Likely duplicates are not selected by default.
-- [ ] Manual review remains possible.
+- [x] Candidates get duplicate classifications.
+- [x] Likely duplicates are not selected by default.
+- [x] Manual review remains possible.
 
 ## Commit
 

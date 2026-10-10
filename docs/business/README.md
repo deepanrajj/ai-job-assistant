@@ -71,6 +71,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 045 - Add Skills Inventory And Preferences Plan](./045-add-skills-inventory-and-preferences-plan.md)
 - [Task 046 - Add Discover Saved Searches Plan](./046-add-discover-saved-searches-plan.md)
 - [Task 047 - Add Import Candidate Review Workflow Plan](./047-add-import-candidate-review-workflow-plan.md)
+- [Task 048 - Add Import Duplicate Detection Plan](./048-add-import-duplicate-detection-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)
