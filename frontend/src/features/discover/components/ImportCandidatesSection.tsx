@@ -73,6 +73,8 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
       createImportCandidateFormSchema(
         t('importCandidates.form.required'),
         t('importCandidates.form.invalidUrl'),
+        t('importCandidates.form.tooLongText'),
+        t('importCandidates.form.tooLongUrl'),
       ),
     [t],
   );
@@ -116,6 +118,7 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
         />
         <Input
           disabled={isSaving}
+          error={errors.location?.message}
           label={t('importCandidates.form.location')}
           {...register('location')}
         />
@@ -483,6 +486,8 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
    * nothing is imported without the user saying so.
    */
   const handleImport = async () => {
+    if (selectedCount === 0) return;
+
     const byId = new Map(candidates.map((candidate) => [candidate.id, candidate]));
 
     try {
@@ -660,7 +665,11 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
               </p>
             )}
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button aria-busy={isMutating} disabled={isMutating} onClick={handleImport}>
+              <Button
+                aria-busy={isMutating}
+                disabled={isMutating || selectedCount === 0}
+                onClick={handleImport}
+              >
                 {t('importCandidates.import.confirm', { count: selectedCount })}
               </Button>
               <Button disabled={isMutating} onClick={() => setIsConfirming(false)} variant="ghost">

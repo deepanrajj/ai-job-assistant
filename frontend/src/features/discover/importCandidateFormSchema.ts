@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 import { createRequiredTrimmedTextSchema } from '../formSchema.utils';
 
+const MAX_SHORT_TEXT_LENGTH = 255;
+const MAX_URL_LENGTH = 2048;
+
 /**
  * Accepts an optional source link only when it has an HTTP(S) host.
  *
@@ -28,13 +31,28 @@ export const isValidImportCandidateSourceUrl = (value: string): boolean => {
  *
  * @param {string} required Localized required-field message.
  * @param {string} invalidUrl Localized invalid-link message.
+ * @param {string} tooLongText Localized short-text limit message.
+ * @param {string} tooLongUrl Localized link limit message.
  * @returns {z.ZodObject} Candidate intake schema.
  */
-export const createImportCandidateFormSchema = (required: string, invalidUrl: string) =>
+export const createImportCandidateFormSchema = (
+  required: string,
+  invalidUrl: string,
+  tooLongText: string,
+  tooLongUrl: string,
+) =>
   z.object({
-    company: createRequiredTrimmedTextSchema(required),
+    company: createRequiredTrimmedTextSchema(required).max(MAX_SHORT_TEXT_LENGTH, {
+      message: tooLongText,
+    }),
     description: createRequiredTrimmedTextSchema(required),
-    location: z.string(),
-    roleTitle: createRequiredTrimmedTextSchema(required),
-    sourceUrl: z.string().refine(isValidImportCandidateSourceUrl, { message: invalidUrl }),
+    location: z.string().trim().max(MAX_SHORT_TEXT_LENGTH, { message: tooLongText }),
+    roleTitle: createRequiredTrimmedTextSchema(required).max(MAX_SHORT_TEXT_LENGTH, {
+      message: tooLongText,
+    }),
+    sourceUrl: z
+      .string()
+      .trim()
+      .max(MAX_URL_LENGTH, { message: tooLongUrl })
+      .refine(isValidImportCandidateSourceUrl, { message: invalidUrl }),
   });

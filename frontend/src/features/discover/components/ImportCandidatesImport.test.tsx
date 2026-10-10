@@ -107,6 +107,23 @@ describe('ImportCandidatesSection import', () => {
     expect(screen.getByRole('button', { name: 'Import selected (0)' })).toBeDisabled();
   });
 
+  it('cannot confirm after clearing an open selection', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+
+    const confirmation = screen.getByRole('group', {
+      name: 'Import the selected candidates as saved jobs?',
+    });
+    const confirm = within(confirmation).getByRole('button', { name: 'Import 0 as jobs' });
+
+    expect(confirm).toBeDisabled();
+    await user.click(confirm);
+    expect(props.importCandidates).not.toHaveBeenCalled();
+  });
+
   it('warns in the confirmation when a likely duplicate is selected', async () => {
     const user = userEvent.setup();
     renderSection({

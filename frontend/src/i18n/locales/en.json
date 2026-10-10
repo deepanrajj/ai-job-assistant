@@ -317,6 +317,8 @@
       "description": "Job description",
       "required": "Required",
       "invalidUrl": "Enter a valid http:// or https:// link",
+      "tooLongText": "Use at most 255 characters.",
+      "tooLongUrl": "Use at most 2048 characters.",
       "save": "Save candidate",
       "saveChanges": "Save changes",
       "cancel": "Cancel"

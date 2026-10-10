@@ -317,6 +317,8 @@
       "description": "Stellenbeschreibung",
       "required": "Pflichtfeld",
       "invalidUrl": "Gib einen gültigen http://- oder https://-Link ein",
+      "tooLongText": "Verwende höchstens 255 Zeichen.",
+      "tooLongUrl": "Verwende höchstens 2048 Zeichen.",
       "save": "Kandidat speichern",
       "saveChanges": "Änderungen speichern",
       "cancel": "Abbrechen"
