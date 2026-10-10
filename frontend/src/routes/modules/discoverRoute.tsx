@@ -18,9 +18,11 @@ import { IMPORT_CANDIDATES_FEATURE_ENABLED } from '../../features/discover/impor
  * @returns {JSX.Element} Candidate review section.
  */
 const CandidatesSectionWithData: FC = () => {
-  const { error, isLoading, jobs } = useJobsList();
+  const { error, isLoading, jobs, reload } = useJobsList();
 
-  return <ImportCandidatesSection {...useImportCandidates()} jobs={{ error, isLoading, jobs }} />;
+  return (
+    <ImportCandidatesSection {...useImportCandidates()} jobs={{ error, isLoading, jobs, reload }} />
+  );
 };
 
 /**

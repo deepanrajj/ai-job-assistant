@@ -73,6 +73,8 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
       createImportCandidateFormSchema(
         t('importCandidates.form.required'),
         t('importCandidates.form.invalidUrl'),
+        t('importCandidates.form.tooLongText'),
+        t('importCandidates.form.tooLongUrl'),
       ),
     [t],
   );
@@ -116,6 +118,7 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
         />
         <Input
           disabled={isSaving}
+          error={errors.location?.message}
           label={t('importCandidates.form.location')}
           {...register('location')}
         />
@@ -161,6 +164,11 @@ interface IDuplicateCheckJobs {
   error: AppError | null;
   isLoading: boolean;
   jobs: TJob[];
+  /**
+   * Reloads the saved jobs, so candidates are re-checked against jobs an
+   * import just created.
+   */
+  reload: () => void;
 }
 
 /**
@@ -205,6 +213,29 @@ const getCandidateDuplicateState = (
  */
 const isSelectedByDefault = (duplicate: TCandidateDuplicateState | undefined): boolean =>
   typeof duplicate === 'object' && duplicate.classification !== 'LIKELY_DUPLICATE';
+
+/**
+ * Picks the message for an import failure's error code, falling back to a
+ * general one for codes the frontend does not know.
+ *
+ * @param {string | null} errorCode Error code from the import result.
+ * @returns {string} Translation key.
+ */
+const importErrorTranslationKey = (errorCode: string | null): string => {
+  if (errorCode === 'IMPORT_CANDIDATE_ALREADY_IMPORTED')
+    return 'importCandidates.import.errors.alreadyImported';
+  if (errorCode === 'IMPORT_CANDIDATE_NOT_FOUND') return 'importCandidates.import.errors.notFound';
+
+  return 'importCandidates.import.errors.unknown';
+};
+
+/**
+ * The outcome of the last import, for the feedback above the list.
+ */
+interface IImportFeedback {
+  failed: { errorCode: string | null; label: string }[];
+  importedCount: number;
+}
 
 /**
  * Tailwind text colour for a duplicate state.
@@ -283,14 +314,21 @@ const CandidateRow: FC<ICandidateRowProps> = ({
   const { t } = useTranslation();
   const { company, description, location, roleTitle } = candidate.content;
   const label = t('importCandidates.list.candidateLabel', { company, roleTitle });
+  const isImported = candidate.reviewStatus === 'IMPORTED';
 
   return (
-    <li className="rounded-lg border border-app-borderSoft p-4">
+    <li
+      className={classNames(
+        'rounded-lg border border-app-borderSoft p-4',
+        isImported ? 'bg-app-surface2' : '',
+      )}
+    >
       <div className="flex items-start gap-3">
         <input
           aria-label={t('importCandidates.list.select', { candidate: label })}
           checked={isSelected}
           className="mt-1 h-4 w-4 rounded border-app-border text-primary-600"
+          disabled={isImported}
           onChange={() => onToggle(candidate.id)}
           type="checkbox"
         />
@@ -300,12 +338,16 @@ const CandidateRow: FC<ICandidateRowProps> = ({
             {[
               location || t('importCandidates.list.noLocation'),
               t('importCandidates.source.manual'),
-              t('importCandidates.reviewStatus.pending'),
+              isImported
+                ? t('importCandidates.reviewStatus.imported')
+                : t('importCandidates.reviewStatus.pending'),
             ].join(' · ')}
           </p>
-          <p className={classNames('mt-1 text-sm', duplicateToneClasses(duplicate))}>
-            {describeDuplicate(duplicate, t)}
-          </p>
+          {!isImported && (
+            <p className={classNames('mt-1 text-sm', duplicateToneClasses(duplicate))}>
+              {describeDuplicate(duplicate, t)}
+            </p>
+          )}
           {candidate.sourceUrl && (
             <a
               className="mt-1 inline-block break-all text-sm text-primary-700 hover:underline"
@@ -329,7 +371,7 @@ const CandidateRow: FC<ICandidateRowProps> = ({
       <div className="mt-3 flex flex-wrap gap-2">
         <Button
           aria-label={t('importCandidates.list.editLabel', { candidate: label })}
-          disabled={isDisabled}
+          disabled={isDisabled || isImported}
           onClick={() => onEdit(candidate)}
           size="sm"
         >
@@ -351,10 +393,12 @@ const CandidateRow: FC<ICandidateRowProps> = ({
 
 /**
  * Candidate review on Discover: a manual intake that saves opportunities
- * as candidates, and the list of candidates to review and select. A
- * candidate is not a job; nothing here creates one. Importing the selected
- * candidates is task 049's action. Each candidate is classified against
- * the saved jobs (task 048), and likely duplicates start unselected.
+ * as candidates, and the list of candidates to review, select, and import.
+ * Saving a candidate never creates a job. Each candidate is classified
+ * against the saved jobs (task 048), and likely duplicates start
+ * unselected. Importing (task 049) turns the selection into jobs only
+ * after an explicit confirmation, then reports each outcome and reloads
+ * the saved jobs.
  *
  * @param {TImportCandidatesSectionProps} props Candidates and saved jobs from the route.
  * @returns {JSX.Element} Candidate review section.
@@ -364,6 +408,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   clearMutationError,
   createCandidate,
   deleteCandidate,
+  importCandidates,
   isLoading,
   isMutating,
   jobs,
@@ -376,10 +421,22 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   const [selectionOverrides, setSelectionOverrides] = useState<ReadonlyMap<string, boolean>>(
     new Map(),
   );
-  const [editing, setEditing] = useState<TImportCandidateResponse | null>(null);
-  const { error: jobsError, isLoading: jobsLoading, jobs: savedJobs } = jobs;
+  const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
+  const editing =
+    candidates.find(
+      (candidate) => candidate.id === editingCandidateId && candidate.reviewStatus !== 'IMPORTED',
+    ) ?? null;
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [feedback, setFeedback] = useState<IImportFeedback | null>(null);
+  const [importRequestError, setImportRequestError] = useState<string | null>(null);
+  const { error: jobsError, isLoading: jobsLoading, jobs: savedJobs, reload: reloadJobs } = jobs;
   const duplicates = useMemo(() => {
-    const jobState = { error: jobsError, isLoading: jobsLoading, jobs: savedJobs };
+    const jobState = {
+      error: jobsError,
+      isLoading: jobsLoading,
+      jobs: savedJobs,
+      reload: reloadJobs,
+    };
 
     return new Map(
       candidates.map((candidate) => [
@@ -387,23 +444,85 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
         getCandidateDuplicateState(candidate, jobState),
       ]),
     );
-  }, [candidates, jobsError, jobsLoading, savedJobs]);
+  }, [candidates, jobsError, jobsLoading, savedJobs, reloadJobs]);
+
+  const importedIds = new Set(
+    candidates
+      .filter((candidate) => candidate.reviewStatus === 'IMPORTED')
+      .map((candidate) => candidate.id),
+  );
 
   /**
    * A candidate is selected by default unless it is a likely duplicate, or
-   * duplicates are not known yet; the user's own choices override that.
+   * duplicates are not known yet; the user's own choices override that. An
+   * imported candidate is never selected again.
    */
   const isSelected = (candidateId: string): boolean =>
-    selectionOverrides.get(candidateId) ?? isSelectedByDefault(duplicates.get(candidateId));
-  const selectedCount = candidates.filter((candidate) => isSelected(candidate.id)).length;
+    !importedIds.has(candidateId) &&
+    (selectionOverrides.get(candidateId) ?? isSelectedByDefault(duplicates.get(candidateId)));
+  const selectedCandidates = candidates.filter((candidate) => isSelected(candidate.id));
+  const selectedCount = selectedCandidates.length;
+  const selectedLikelyDuplicates = selectedCandidates.filter((candidate) => {
+    const duplicate = duplicates.get(candidate.id);
+
+    return typeof duplicate === 'object' && duplicate.classification === 'LIKELY_DUPLICATE';
+  }).length;
+  const labelOf = (candidate: TImportCandidateResponse): string =>
+    t('importCandidates.list.candidateLabel', {
+      company: candidate.content.company,
+      roleTitle: candidate.content.roleTitle,
+    });
 
   const switchEditing = (candidate: TImportCandidateResponse | null) => {
     clearMutationError();
-    setEditing(candidate);
+    setEditingCandidateId(candidate?.id ?? null);
   };
 
   const toggle = (candidateId: string) =>
     setSelectionOverrides((current) => new Map(current).set(candidateId, !isSelected(candidateId)));
+
+  /**
+   * Imports the confirmed selection. Only reached from the confirmation, so
+   * nothing is imported without the user saying so.
+   */
+  const handleImport = async () => {
+    if (selectedCount === 0) return;
+
+    const byId = new Map(candidates.map((candidate) => [candidate.id, candidate]));
+
+    try {
+      const results = await importCandidates(selectedCandidates.map((candidate) => candidate.id));
+
+      setFeedback({
+        failed: results
+          .filter((result) => result.outcome === 'FAILED')
+          .map((result) => {
+            const candidate = byId.get(result.candidateId);
+
+            return {
+              errorCode: result.errorCode,
+              label: candidate ? labelOf(candidate) : result.candidateId,
+            };
+          }),
+        importedCount: results.filter((result) => result.outcome === 'IMPORTED').length,
+      });
+      setEditingCandidateId((current) =>
+        results.some((result) => result.candidateId === current && result.outcome === 'IMPORTED')
+          ? null
+          : current,
+      );
+      jobs.reload();
+      if (results.some((result) => result.outcome === 'FAILED')) reload();
+    } catch (error) {
+      reload();
+      jobs.reload();
+      setImportRequestError(
+        error instanceof Error ? error.message : t('importCandidates.import.errors.requestFailed'),
+      );
+    } finally {
+      setIsConfirming(false);
+    }
+  };
 
   const handleSave = async (values: IImportCandidateFormValues) => {
     const payload = buildImportCandidateRequest(values);
@@ -416,31 +535,69 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
 
   const handleDelete = (candidate: TImportCandidateResponse) => {
     deleteCandidate(candidate.id).then(
-      () => setEditing((current) => (current?.id === candidate.id ? null : current)),
+      () => setEditingCandidateId((current) => (current === candidate.id ? null : current)),
       () => {
         // Error is already recorded in request state and rendered from it.
       },
     );
   };
 
+  const renderImportFeedback = () => (
+    <>
+      {importRequestError && <Alert>{importRequestError}</Alert>}
+      {feedback && feedback.importedCount > 0 && (
+        <p className="text-sm text-success-700" role="status">
+          {t('importCandidates.import.success', { count: feedback.importedCount })}
+        </p>
+      )}
+      {feedback && feedback.failed.length > 0 && (
+        <Alert>
+          <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
+          <ul className="mt-1 list-inside list-disc">
+            {feedback.failed.map((failure) => (
+              <li key={failure.label}>
+                {t('importCandidates.import.failedItem', {
+                  candidate: failure.label,
+                  reason: t(importErrorTranslationKey(failure.errorCode)),
+                })}
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
+    </>
+  );
+
   const renderList = () => {
-    if (isLoading) return <LoadingState label={t('importCandidates.loading')} />;
+    if (isLoading)
+      return (
+        <div className="space-y-3">
+          <LoadingState label={t('importCandidates.loading')} />
+          {renderImportFeedback()}
+        </div>
+      );
 
     if (loadError && candidates.length === 0)
       return (
-        <ErrorState
-          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-          description={loadError.message}
-          title={t('importCandidates.loadErrorTitle')}
-        />
+        <div className="space-y-3">
+          <ErrorState
+            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+            description={loadError.message}
+            title={t('importCandidates.loadErrorTitle')}
+          />
+          {renderImportFeedback()}
+        </div>
       );
 
     if (candidates.length === 0)
       return (
-        <EmptyState
-          description={t('importCandidates.list.emptyDescription')}
-          title={t('importCandidates.list.emptyTitle')}
-        />
+        <div className="space-y-3">
+          <EmptyState
+            description={t('importCandidates.list.emptyDescription')}
+            title={t('importCandidates.list.emptyTitle')}
+          />
+          {renderImportFeedback()}
+        </div>
       );
 
     return (
@@ -473,7 +630,54 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
           >
             {t('importCandidates.list.clearSelection')}
           </Button>
+          <Button
+            disabled={selectedCount === 0 || isMutating || isConfirming}
+            onClick={() => {
+              setFeedback(null);
+              setImportRequestError(null);
+              setIsConfirming(true);
+            }}
+            size="sm"
+          >
+            {t('importCandidates.import.start', { count: selectedCount })}
+          </Button>
         </div>
+        {renderImportFeedback()}
+        {isConfirming && (
+          <div
+            aria-labelledby="import-confirm-heading"
+            className="rounded-lg border border-primary-200 bg-primary-50 p-4"
+            role="group"
+          >
+            <h3 className="font-medium text-app-text" id="import-confirm-heading">
+              {t('importCandidates.import.confirmTitle')}
+            </h3>
+            <ul className="mt-2 list-inside list-disc text-sm text-app-text">
+              {selectedCandidates.map((candidate) => (
+                <li key={candidate.id}>{labelOf(candidate)}</li>
+              ))}
+            </ul>
+            {selectedLikelyDuplicates > 0 && (
+              <p className="mt-2 text-sm text-danger-700">
+                {t('importCandidates.import.likelyDuplicateWarning', {
+                  count: selectedLikelyDuplicates,
+                })}
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button
+                aria-busy={isMutating}
+                disabled={isMutating || selectedCount === 0}
+                onClick={handleImport}
+              >
+                {t('importCandidates.import.confirm', { count: selectedCount })}
+              </Button>
+              <Button disabled={isMutating} onClick={() => setIsConfirming(false)} variant="ghost">
+                {t('importCandidates.import.cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
         <ul aria-label={t('importCandidates.list.title')} className="space-y-3">
           {candidates.map((candidate) => (
             <CandidateRow

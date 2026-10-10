@@ -43,7 +43,8 @@ const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidates
     deleteCandidate: vi.fn(async () => {}),
     isLoading: false,
     isMutating: false,
-    jobs: { error: null, isLoading: false, jobs: [] },
+    importCandidates: vi.fn(async () => []),
+    jobs: { error: null, isLoading: false, jobs: [], reload: vi.fn() },
     loadError: null,
     mutationError: null,
     reload: vi.fn(),
@@ -103,6 +104,7 @@ describe('ImportCandidatesSection', () => {
       jobs: {
         error: null,
         isLoading: false,
+        reload: vi.fn(),
         jobs: [
           createMockJob({
             company: 'N26 GmbH',
@@ -150,7 +152,7 @@ describe('ImportCandidatesSection', () => {
     const classify = vi.spyOn(duplicateUtils, 'classifyDuplicate');
     const savedJobs = [createMockJob({ company: 'N26', roleTitle: 'Backend Engineer' })];
     const { props, rerender } = renderSection({
-      jobs: { error: null, isLoading: false, jobs: savedJobs },
+      jobs: { error: null, isLoading: false, jobs: savedJobs, reload: vi.fn() },
     });
 
     expect(classify).toHaveBeenCalledTimes(2);
@@ -167,7 +169,9 @@ describe('ImportCandidatesSection', () => {
   });
 
   it('preselects nothing while the saved jobs load or after they fail', () => {
-    const { unmount } = renderSection({ jobs: { error: null, isLoading: true, jobs: [] } });
+    const { unmount } = renderSection({
+      jobs: { error: null, isLoading: true, jobs: [], reload: vi.fn() },
+    });
 
     expect(screen.getAllByText('Checking for duplicates')).toHaveLength(2);
     expect(screen.getByText('0 of 2 selected')).toBeInTheDocument();
@@ -178,6 +182,7 @@ describe('ImportCandidatesSection', () => {
         error: new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED),
         isLoading: false,
         jobs: [],
+        reload: vi.fn(),
       },
     });
 

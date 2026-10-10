@@ -1,5 +1,13 @@
 # Task 049 - Add Bulk Import Selected Jobs
 
+Status: In progress - frontend complete behind task 047's flag, import
+endpoint pending
+
+Progress is tracked in the
+[plan](../../docs/business/049-add-bulk-import-selected-jobs-plan.md#progress).
+The import endpoint is part of task 047's backend; its dev mock lives in
+047's `importCandidates.mock.ts` and goes with it.
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.

@@ -6,6 +6,7 @@ export const IMPORT_CANDIDATE_FALLBACK_ERROR_TRANSLATION_KEYS = {
   createCandidate: 'importCandidates.fallbackError.createCandidate',
   updateCandidate: 'importCandidates.fallbackError.updateCandidate',
   deleteCandidate: 'importCandidates.fallbackError.deleteCandidate',
+  importCandidates: 'importCandidates.fallbackError.importCandidates',
 } as const;
 
 /**
@@ -27,9 +28,10 @@ export type TImportCandidateSource = 'MANUAL';
 export type TImportCandidateDuplicateStatus = 'UNCHECKED';
 
 /**
- * Where a candidate is in review. `PENDING` until task 049 imports it.
+ * Where a candidate is in review: `PENDING` until it is imported as a
+ * job, then `IMPORTED` for good.
  */
-export type TImportCandidateReviewStatus = 'PENDING';
+export type TImportCandidateReviewStatus = 'PENDING' | 'IMPORTED';
 
 /**
  * The job details a candidate carries, stored by the backend as one JSON
@@ -66,4 +68,33 @@ export type TImportCandidateResponse = {
 export type TSaveImportCandidateRequest = {
   sourceUrl: string | null;
   content: TImportCandidateContent;
+};
+
+/**
+ * Request body accepted by `POST /api/import-candidates/import`: the
+ * candidates the user selected and confirmed.
+ */
+export type TImportCandidatesRequest = {
+  candidateIds: string[];
+};
+
+/**
+ * What happened to one candidate in an import. `jobId` is set when it was
+ * imported; `errorCode` when it failed, e.g. `IMPORT_CANDIDATE_NOT_FOUND`
+ * or `IMPORT_CANDIDATE_ALREADY_IMPORTED`.
+ */
+export type TImportCandidateResult = {
+  candidateId: string;
+  outcome: 'IMPORTED' | 'FAILED';
+  jobId: string | null;
+  errorCode: string | null;
+};
+
+/**
+ * Response of `POST /api/import-candidates/import`: one result per
+ * requested candidate. Each candidate is imported in its own transaction,
+ * so some can succeed while others fail.
+ */
+export type TImportCandidatesResponse = {
+  results: TImportCandidateResult[];
 };

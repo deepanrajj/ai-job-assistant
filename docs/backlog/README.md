@@ -61,7 +61,10 @@ numbered task before implementation.
   backend `/api/import-candidates`; its frontend is behind
   `IMPORT_CANDIDATES_FEATURE_ENABLED`.
 - [ ] [Task 049: Add bulk import selected jobs](../../tasks/roadmap/049-add-bulk-import-selected-jobs.md),
-  the next frontend task. Task 048 is complete (frontend only).
+  backend `POST /api/import-candidates/import` with 047's. Task 048 is
+  complete (frontend only).
+- [ ] [Task 050: Add manual duplicate warning](../../tasks/roadmap/050-add-manual-duplicate-warning.md),
+  the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,
 with a dev-server mock; its backend, then the removal of the mock and

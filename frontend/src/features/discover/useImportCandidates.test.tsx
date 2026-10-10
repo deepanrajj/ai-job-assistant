@@ -157,4 +157,89 @@ describe('useImportCandidates', () => {
     act(() => result.current.clearMutationError());
     expect(result.current.mutationError).toBeNull();
   });
+
+  it('marks imported candidates and returns every result', async () => {
+    server.use(
+      http.get(endpoint, () =>
+        HttpResponse.json([candidate('c1', 'N26'), candidate('c2', 'Zalando')]),
+      ),
+      http.post(`${endpoint}/import`, async ({ request }) => {
+        const { candidateIds } = (await request.json()) as { candidateIds: string[] };
+
+        return HttpResponse.json({
+          results: candidateIds.map((candidateId) =>
+            candidateId === 'c1'
+              ? { candidateId, errorCode: null, jobId: 'job-1', outcome: 'IMPORTED' }
+              : { candidateId, errorCode: 'X', jobId: null, outcome: 'FAILED' },
+          ),
+        });
+      }),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+
+    await waitFor(() => expect(result.current.candidates).toHaveLength(2));
+
+    let results: unknown;
+
+    await act(async () => {
+      results = await result.current.importCandidates(['c1', 'c2']);
+    });
+
+    expect(results).toHaveLength(2);
+    expect(result.current.candidates.map((item) => item.reviewStatus)).toEqual([
+      'IMPORTED',
+      'PENDING',
+    ]);
+  });
+
+  it('rejects an import failure without showing it as an intake form mutation error', async () => {
+    server.use(
+      http.get(endpoint, () => HttpResponse.json([candidate('c1', 'N26')])),
+      http.post(`${endpoint}/import`, () => new HttpResponse(null, { status: 500 })),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+
+    await waitFor(() => expect(result.current.candidates).toHaveLength(1));
+    await act(async () => {
+      await expect(result.current.importCandidates(['c1'])).rejects.toThrow();
+    });
+
+    expect(result.current.mutationError).toBeNull();
+  });
+
+  it('keeps an imported status when an earlier reload returns pending data', async () => {
+    let releaseReload: () => void = () => {};
+    let reloadStarted = false;
+    let loads = 0;
+    const reloadGate = new Promise<void>((resolve) => {
+      releaseReload = resolve;
+    });
+    server.use(
+      http.get(endpoint, async () => {
+        loads += 1;
+        if (loads > 1) {
+          reloadStarted = true;
+          await reloadGate;
+        }
+
+        return HttpResponse.json([candidate('c1', 'N26')]);
+      }),
+      http.post(`${endpoint}/import`, () =>
+        HttpResponse.json({
+          results: [{ candidateId: 'c1', errorCode: null, jobId: 'job-1', outcome: 'IMPORTED' }],
+        }),
+      ),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+
+    await waitFor(() => expect(result.current.candidates).toHaveLength(1));
+    act(() => result.current.reload());
+    await waitFor(() => expect(reloadStarted).toBe(true));
+    await act(() => result.current.importCandidates(['c1']));
+    expect(result.current.candidates[0]?.reviewStatus).toBe('IMPORTED');
+
+    await act(async () => releaseReload());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.candidates[0]?.reviewStatus).toBe('IMPORTED');
+  });
 });

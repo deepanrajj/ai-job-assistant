@@ -1,9 +1,13 @@
+import { mapCandidateToJobRequest } from './importCandidates.utils';
 import { AppError } from '../../errors';
 import { APP_ERROR_CODES } from '../../types';
 import type {
   TImportCandidateResponse,
+  TImportCandidateResult,
+  TImportCandidatesResponse,
   TSaveImportCandidateRequest,
 } from './importCandidates.types';
+import { createJob } from '../jobs';
 
 /*
  * TEMPORARY MOCK - remove when the task 047 backend lands.
@@ -149,6 +153,52 @@ export const mockDeleteImportCandidate = async (candidateId: string): Promise<vo
   if (index === -1) throw candidateNotFound();
 
   list.splice(index, 1);
+};
+
+/**
+ * Mock of `POST /api/import-candidates/import`. Creates each job through
+ * the real `POST /api/jobs` with the import mapping, then marks the
+ * candidate imported, so imported jobs really appear in the dev server's
+ * Jobs list. One candidate failing does not stop the others.
+ */
+export const mockImportCandidatesAsJobs = async (
+  candidateIds: string[],
+): Promise<TImportCandidatesResponse> => {
+  const results: TImportCandidateResult[] = [];
+
+  for (const candidateId of candidateIds) {
+    const candidate = getCandidates().find((item) => item.id === candidateId);
+    const failed = (errorCode: string): TImportCandidateResult => ({
+      candidateId,
+      errorCode,
+      jobId: null,
+      outcome: 'FAILED',
+    });
+
+    if (!candidate) {
+      results.push(failed('IMPORT_CANDIDATE_NOT_FOUND'));
+      continue;
+    }
+
+    if (candidate.reviewStatus === 'IMPORTED') {
+      results.push(failed('IMPORT_CANDIDATE_ALREADY_IMPORTED'));
+      continue;
+    }
+
+    try {
+      const job = await createJob(mapCandidateToJobRequest(candidate));
+
+      candidate.reviewStatus = 'IMPORTED';
+      candidate.updatedAt = new Date().toISOString();
+      results.push({ candidateId, errorCode: null, jobId: job.id, outcome: 'IMPORTED' });
+    } catch (error) {
+      results.push(
+        failed(error instanceof AppError && error.apiCode ? error.apiCode : 'JOB_CREATE_FAILED'),
+      );
+    }
+  }
+
+  return { results };
 };
 
 /**
