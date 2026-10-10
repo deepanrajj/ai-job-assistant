@@ -280,6 +280,58 @@
       "cancel": "Cancel"
     }
   },
+  "importCandidates": {
+    "fallbackError": {
+      "listCandidates": "Failed to load import candidates",
+      "createCandidate": "Failed to save candidate",
+      "updateCandidate": "Failed to save candidate changes",
+      "deleteCandidate": "Failed to delete candidate"
+    },
+    "title": "Import candidates",
+    "subtitle": "Opportunities you collected but have not saved as jobs. Review them here; importing comes next.",
+    "loading": "Loading candidates",
+    "loadErrorTitle": "Candidates could not be loaded",
+    "source": {
+      "manual": "Entered manually"
+    },
+    "reviewStatus": {
+      "pending": "Waiting for review"
+    },
+    "duplicateStatus": {
+      "unchecked": "Duplicates not checked"
+    },
+    "form": {
+      "newTitle": "Add a candidate",
+      "editTitle": "Correct candidate",
+      "company": "Company",
+      "roleTitle": "Role",
+      "location": "Location",
+      "sourceUrl": "Source link",
+      "sourceUrlHelp": "Where you found it. Saved as a link only; never opened by the app.",
+      "description": "Job description",
+      "required": "Required",
+      "invalidUrl": "Enter a valid http:// or https:// link",
+      "save": "Save candidate",
+      "saveChanges": "Save changes",
+      "cancel": "Cancel"
+    },
+    "list": {
+      "title": "Candidates to review",
+      "candidateLabel": "{{roleTitle}} at {{company}}",
+      "select": "Select {{candidate}}",
+      "selectedCount": "{{count}} of {{total}} selected",
+      "selectAll": "Select all",
+      "clearSelection": "Clear selection",
+      "noLocation": "No location",
+      "description": "Description",
+      "edit": "Edit",
+      "editLabel": "Correct {{candidate}}",
+      "delete": "Delete",
+      "deleteLabel": "Delete {{candidate}}",
+      "emptyTitle": "No candidates yet",
+      "emptyDescription": "Paste a job description above to collect it as a candidate. It only becomes a job when you import it."
+    }
+  },
   "jobs": {
     "savedJobs": "Saved jobs",
     "countSummary": "{{shown}} of {{total}} opportunities shown",

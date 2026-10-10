@@ -19,6 +19,13 @@ describe('discoverRoute', () => {
     expect(await screen.findByText('No saved searches yet')).toBeInTheDocument();
   });
 
+  it('shows the candidate review below the saved searches', async () => {
+    renderWithProviders(<DiscoverRoute />);
+
+    expect(await screen.findByRole('region', { name: 'Import candidates' })).toBeInTheDocument();
+    expect(await screen.findByText('No candidates yet')).toBeInTheDocument();
+  });
+
   it('keeps the coming soon placeholder, making no request, while the feature is off', () => {
     renderWithProviders(<DiscoverRouteComingSoon />);
 

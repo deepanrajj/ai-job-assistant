@@ -58,6 +58,9 @@ numbered task before implementation.
   backend `/api/saved-searches`; its frontend is behind
   `SAVED_SEARCHES_FEATURE_ENABLED`.
 - [ ] [Task 047: Add import candidate review workflow](../../tasks/roadmap/047-add-import-candidate-review-workflow.md),
+  backend `/api/import-candidates`; its frontend is behind
+  `IMPORT_CANDIDATES_FEATURE_ENABLED`.
+- [ ] [Task 048: Add import duplicate detection](../../tasks/roadmap/048-add-import-duplicate-detection.md),
   the next frontend task.
 
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,

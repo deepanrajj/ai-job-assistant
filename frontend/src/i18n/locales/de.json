@@ -280,6 +280,58 @@
       "cancel": "Abbrechen"
     }
   },
+  "importCandidates": {
+    "fallbackError": {
+      "listCandidates": "Import-Kandidaten konnten nicht geladen werden",
+      "createCandidate": "Kandidat konnte nicht gespeichert werden",
+      "updateCandidate": "Änderungen am Kandidaten konnten nicht gespeichert werden",
+      "deleteCandidate": "Kandidat konnte nicht gelöscht werden"
+    },
+    "title": "Import-Kandidaten",
+    "subtitle": "Gesammelte Stellen, die noch nicht als Jobs gespeichert sind. Prüfe sie hier; der Import folgt als Nächstes.",
+    "loading": "Kandidaten werden geladen",
+    "loadErrorTitle": "Kandidaten konnten nicht geladen werden",
+    "source": {
+      "manual": "Manuell eingegeben"
+    },
+    "reviewStatus": {
+      "pending": "Wartet auf Prüfung"
+    },
+    "duplicateStatus": {
+      "unchecked": "Duplikate nicht geprüft"
+    },
+    "form": {
+      "newTitle": "Kandidat hinzufügen",
+      "editTitle": "Kandidat korrigieren",
+      "company": "Unternehmen",
+      "roleTitle": "Rolle",
+      "location": "Ort",
+      "sourceUrl": "Quell-Link",
+      "sourceUrlHelp": "Wo du die Stelle gefunden hast. Wird nur als Link gespeichert; die App öffnet ihn nie.",
+      "description": "Stellenbeschreibung",
+      "required": "Pflichtfeld",
+      "invalidUrl": "Gib einen gültigen http://- oder https://-Link ein",
+      "save": "Kandidat speichern",
+      "saveChanges": "Änderungen speichern",
+      "cancel": "Abbrechen"
+    },
+    "list": {
+      "title": "Zu prüfende Kandidaten",
+      "candidateLabel": "{{roleTitle}} bei {{company}}",
+      "select": "{{candidate}} auswählen",
+      "selectedCount": "{{count}} von {{total}} ausgewählt",
+      "selectAll": "Alle auswählen",
+      "clearSelection": "Auswahl aufheben",
+      "noLocation": "Kein Ort",
+      "description": "Beschreibung",
+      "edit": "Bearbeiten",
+      "editLabel": "{{candidate}} korrigieren",
+      "delete": "Löschen",
+      "deleteLabel": "{{candidate}} löschen",
+      "emptyTitle": "Noch keine Kandidaten",
+      "emptyDescription": "Füge oben eine Stellenbeschreibung ein, um sie als Kandidat zu sammeln. Sie wird erst durch den Import zum Job."
+    }
+  },
   "jobs": {
     "savedJobs": "Gespeicherte Jobs",
     "countSummary": "{{shown}} von {{total}} Chancen angezeigt",

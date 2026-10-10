@@ -27,6 +27,7 @@ export const handlers = [
   http.get('/api/calendar-items', () => HttpResponse.json([])),
   http.get('/api/resume-profiles', () => HttpResponse.json([])),
   http.get('/api/saved-searches', () => HttpResponse.json([])),
+  http.get('/api/import-candidates', () => HttpResponse.json([])),
   http.get('/api/profile/preferences', () =>
     HttpResponse.json({
       keywords: [],
