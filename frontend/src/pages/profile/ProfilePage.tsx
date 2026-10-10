@@ -94,6 +94,7 @@ const ResumeProfileCard: FC<IResumeProfileCardProps> = ({
  * @returns {JSX.Element} Profile page.
  */
 export const ProfilePage: FC<TProfilePageProps> = ({
+  clearMutationError,
   createProfile,
   deleteProfile,
   isLoading,
@@ -106,6 +107,16 @@ export const ProfilePage: FC<TProfilePageProps> = ({
 }) => {
   const { t } = useTranslation();
   const [editor, setEditor] = useState<TEditorTarget>({ kind: 'closed' });
+
+  /**
+   * Opens or closes the editor. A write error belongs to the view it
+   * happened in, so it is cleared on the way to the other one: a failed
+   * delete must not greet a new profile, nor a cancelled save the list.
+   */
+  const switchEditor = (target: TEditorTarget) => {
+    clearMutationError();
+    setEditor(target);
+  };
 
   if (isLoading) return <LoadingState label={t('profile.loading')} />;
 
@@ -128,7 +139,7 @@ export const ProfilePage: FC<TProfilePageProps> = ({
       if (existing) await updateProfile(existing.id, { name, profile: content });
       else await createProfile({ name, profile: content });
 
-      setEditor({ kind: 'closed' });
+      switchEditor({ kind: 'closed' });
     };
 
     return (
@@ -138,7 +149,7 @@ export const ProfilePage: FC<TProfilePageProps> = ({
         initialName={existing?.name ?? ''}
         isSaving={isMutating}
         key={existing?.id ?? 'new'}
-        onCancel={() => setEditor({ kind: 'closed' })}
+        onCancel={() => switchEditor({ kind: 'closed' })}
         onSave={handleSave}
         title={existing ? t('profile.editor.editTitle') : t('profile.editor.newTitle')}
       />
@@ -160,7 +171,7 @@ export const ProfilePage: FC<TProfilePageProps> = ({
           </h2>
           <p className="text-sm text-app-textMuted">{t('profile.list.subtitle')}</p>
         </div>
-        <Button disabled={isMutating} onClick={() => setEditor({ kind: 'new' })}>
+        <Button disabled={isMutating} onClick={() => switchEditor({ kind: 'new' })}>
           {t('profile.list.newProfile')}
         </Button>
       </div>
@@ -179,7 +190,7 @@ export const ProfilePage: FC<TProfilePageProps> = ({
               isDisabled={isMutating}
               key={profile.id}
               onDelete={handleDelete}
-              onEdit={(selected) => setEditor({ kind: 'existing', profileId: selected.id })}
+              onEdit={(selected) => switchEditor({ kind: 'existing', profileId: selected.id })}
               profile={profile}
             />
           ))}

@@ -38,6 +38,7 @@ const imported = (candidateId: string, jobId: string): TImportCandidateResult =>
 const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidatesSection>> = {}) => {
   const props: ComponentProps<typeof ImportCandidatesSection> = {
     candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando'), candidate('c3', 'Personio')],
+    clearMutationError: vi.fn(),
     createCandidate: vi.fn(),
     deleteCandidate: vi.fn(),
     importCandidates: vi.fn(async (ids: string[]) => ids.map((id) => imported(id, `job-${id}`))),
@@ -106,6 +107,23 @@ describe('ImportCandidatesSection import', () => {
     expect(screen.getByRole('button', { name: 'Import selected (0)' })).toBeDisabled();
   });
 
+  it('cannot confirm after clearing an open selection', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+
+    const confirmation = screen.getByRole('group', {
+      name: 'Import the selected candidates as saved jobs?',
+    });
+    const confirm = within(confirmation).getByRole('button', { name: 'Import 0 as jobs' });
+
+    expect(confirm).toBeDisabled();
+    await user.click(confirm);
+    expect(props.importCandidates).not.toHaveBeenCalled();
+  });
+
   it('warns in the confirmation when a likely duplicate is selected', async () => {
     const user = userEvent.setup();
     renderSection({
@@ -126,7 +144,7 @@ describe('ImportCandidatesSection import', () => {
 
   it('names each failed candidate with its reason next to the successes', async () => {
     const user = userEvent.setup();
-    renderSection({
+    const { props } = renderSection({
       importCandidates: vi.fn(async () => [
         imported('c1', 'job-1'),
         {
@@ -149,19 +167,68 @@ describe('ImportCandidatesSection import', () => {
     expect(alert).toHaveTextContent('2 could not be imported');
     expect(alert).toHaveTextContent('Engineer at Zalando: already imported');
     expect(alert).toHaveTextContent('Engineer at Personio: the job could not be saved');
+    expect(props.reload).toHaveBeenCalledOnce();
+    expect(props.jobs.reload).toHaveBeenCalledOnce();
   });
 
-  it('keeps the confirmation flow safe when the request itself fails', async () => {
+  it('refreshes candidates after a no-longer-existing candidate fails', async () => {
     const user = userEvent.setup();
-    const { props } = renderSection({
-      importCandidates: vi.fn(async () => Promise.reject(new Error('x'))),
+    const { props, rerender } = renderSection({
+      importCandidates: vi.fn(async () => [
+        {
+          candidateId: 'c1',
+          errorCode: 'IMPORT_CANDIDATE_NOT_FOUND',
+          jobId: null,
+          outcome: 'FAILED' as const,
+        },
+      ]),
     });
 
     await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
     await user.click(screen.getByRole('button', { name: 'Import 3 as jobs' }));
 
-    expect(props.jobs.reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Engineer at N26: no longer exists');
+    expect(props.reload).toHaveBeenCalledOnce();
+
+    rerender(<ImportCandidatesSection {...props} candidates={[]} />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Engineer at N26: no longer exists');
+  });
+
+  it('shows a rejected import request beside the controls and clears it on retry', async () => {
+    const user = userEvent.setup();
+    const importCandidates = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Failed to import candidates'))
+      .mockResolvedValueOnce([imported('c1', 'job-1')]);
+    const { props, rerender } = renderSection({
+      importCandidates,
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
+    await user.click(screen.getByRole('button', { name: 'Import 3 as jobs' }));
+
+    expect(props.reload).toHaveBeenCalledOnce();
+    expect(props.jobs.reload).toHaveBeenCalledOnce();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    const requestAlert = await screen.findByRole('alert');
+
+    expect(requestAlert).toHaveTextContent('Failed to import candidates');
+    expect(requestAlert.closest('section')).toContainElement(
+      screen.getByRole('button', { name: 'Import selected (3)' }),
+    );
+
+    rerender(<ImportCandidatesSection {...props} isLoading />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to import candidates');
+    rerender(<ImportCandidatesSection {...props} />);
+
+    await user.click(screen.getByRole('button', { name: 'Import selected (3)' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Import 3 as jobs' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Imported 1 as saved jobs');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(props.reload).toHaveBeenCalledOnce();
+    expect(props.jobs.reload).toHaveBeenCalledTimes(2);
   });
 
   it('shows imported candidates as imported, unselectable, and not editable', () => {
@@ -174,5 +241,43 @@ describe('ImportCandidatesSection import', () => {
     expect(screen.getByText('Berlin · Entered manually · Imported as a job')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Correct Engineer at N26' })).toBeDisabled();
     expect(screen.getByText('1 of 2 selected')).toBeInTheDocument();
+  });
+
+  it('closes an open correction when that candidate is imported', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection({
+      candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando')],
+      importCandidates: vi.fn(async () => [imported('c1', 'job-1')]),
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Correct Engineer at N26' }));
+    expect(screen.getByRole('heading', { name: 'Correct candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Company' })).toHaveValue('N26');
+
+    await user.click(screen.getByRole('checkbox', { name: 'Select Engineer at Zalando' }));
+    await user.click(screen.getByRole('button', { name: 'Import selected (1)' }));
+    await user.click(screen.getByRole('button', { name: 'Import 1 as jobs' }));
+
+    expect(props.importCandidates).toHaveBeenCalledWith(['c1']);
+    expect(screen.getByRole('heading', { name: 'Add a candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Company' })).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
+    expect(props.updateCandidate).not.toHaveBeenCalled();
+  });
+
+  it('closes an open correction when refreshed candidates mark it imported', async () => {
+    const user = userEvent.setup();
+    const { props, rerender } = renderSection({ candidates: [candidate('c1', 'N26')] });
+
+    await user.click(screen.getByRole('button', { name: 'Correct Engineer at N26' }));
+    expect(screen.getByRole('heading', { name: 'Correct candidate' })).toBeInTheDocument();
+
+    rerender(
+      <ImportCandidatesSection {...props} candidates={[candidate('c1', 'N26', 'IMPORTED')]} />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Add a candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Company' })).toHaveValue('');
+    expect(props.updateCandidate).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   createImportCandidate,
@@ -13,17 +13,21 @@ import {
 import { useAsyncMutation } from '../../hooks';
 import type { AppError } from '../../errors';
 
+/** Applies one confirmed write to a candidate list. */
+type TCandidateChange = (current: TImportCandidateResponse[]) => TImportCandidateResponse[];
+
 /**
  * Resume candidates state returned by useImportCandidates.
  *
- * Each write resolves once it is confirmed and rejects with the error
- * after recording it in `mutationError`, as the job detail hooks do.
+ * Candidate edits record rejected writes in `mutationError`; imports
+ * reject for the import controls to display the request error.
  */
 export interface IImportCandidatesState {
+  clearMutationError: () => void;
   /**
    * Imports the given candidates as jobs and resolves with each outcome.
    * Candidates reported imported are marked so in the list. Rejects only
-   * when the request itself fails, after recording `mutationError`.
+   * when the request itself fails.
    */
   importCandidates: (candidateIds: string[]) => Promise<TImportCandidateResult[]>;
   createCandidate: (payload: TSaveImportCandidateRequest) => Promise<TImportCandidateResponse>;
@@ -43,11 +47,10 @@ export interface IImportCandidatesState {
 /**
  * Loads every import candidate and offers create, update, and delete.
  *
- * The loaded list is copied into local state when a load settles, and a
- * confirmed write is applied to that list directly rather than by
- * reloading: the response is the saved candidate, and a whole candidate is
- * the only thing that changes. `useAsyncMutation` drops a load response
- * that a newer load has overtaken.
+ * Confirmed writes apply immediately. When a load was already in flight,
+ * those writes are replayed over its response so older server rows and
+ * newer local changes both remain visible. Older loads cannot replace a
+ * newer load.
  *
  * @returns {IImportCandidatesState} Candidates, request state, and the writes.
  */
@@ -59,11 +62,31 @@ export const useImportCandidates = (): IImportCandidatesState => {
   const [candidates, setCandidates] = useState<TImportCandidateResponse[]>([]);
   const [mutationError, setMutationError] = useState<AppError | null>(null);
   const [pendingWrites, setPendingWrites] = useState(0);
+  const loadVersion = useRef(0);
+  const loadIsPending = useRef(false);
+  const changesDuringLoad = useRef<TCandidateChange[]>([]);
 
   const reload = useCallback(() => {
+    const currentLoad = ++loadVersion.current;
+    loadIsPending.current = true;
+    changesDuringLoad.current = [];
+
     loadCandidates().then(
-      (loaded) => setCandidates(Array.isArray(loaded) ? loaded : []),
+      (loaded) => {
+        if (currentLoad !== loadVersion.current) return;
+
+        loadIsPending.current = false;
+        const changes = changesDuringLoad.current;
+        changesDuringLoad.current = [];
+        setCandidates(
+          changes.reduce((rows, change) => change(rows), Array.isArray(loaded) ? loaded : []),
+        );
+      },
       () => {
+        if (currentLoad === loadVersion.current) {
+          loadIsPending.current = false;
+          changesDuringLoad.current = [];
+        }
         // Error is already recorded in request state and rendered from it.
       },
     );
@@ -75,36 +98,45 @@ export const useImportCandidates = (): IImportCandidatesState => {
 
   /**
    * Runs a write: tracks it as pending, clears or records the mutation
-   * error, applies the confirmed result, and re-throws a failure.
+   * error for candidate edits, applies the confirmed result, and re-throws
+   * a failure. Import errors are displayed by the import controls instead.
    */
-  const runWrite = useCallback(<T>(write: () => Promise<T>, apply: (result: T) => void) => {
-    setPendingWrites((count) => count + 1);
+  const runWrite = useCallback(
+    <T>(
+      write: () => Promise<T>,
+      apply: (result: T) => TCandidateChange,
+      recordMutationError = true,
+    ) => {
+      setPendingWrites((count) => count + 1);
 
-    return write()
-      .then(
-        (result) => {
-          setMutationError(null);
-          apply(result);
+      return write()
+        .then(
+          (result) => {
+            if (recordMutationError) setMutationError(null);
+            const change = apply(result);
+            if (loadIsPending.current) changesDuringLoad.current.push(change);
+            setCandidates(change);
 
-          return result;
-        },
-        (error: AppError) => {
-          setMutationError(error);
-          throw error;
-        },
-      )
-      .finally(() => setPendingWrites((count) => count - 1));
-  }, []);
+            return result;
+          },
+          (error: AppError) => {
+            if (recordMutationError) setMutationError(error);
+            throw error;
+          },
+        )
+        .finally(() => setPendingWrites((count) => count - 1));
+    },
+    [],
+  );
 
   const createCandidate = useCallback(
     (payload: TSaveImportCandidateRequest) =>
       runWrite(
         () => createImportCandidate(payload),
-        (created) =>
-          setCandidates((current) => [
-            ...current.filter((candidate) => candidate.id !== created.id),
-            created,
-          ]),
+        (created) => (current) => [
+          ...current.filter((candidate) => candidate.id !== created.id),
+          created,
+        ],
       ),
     [runWrite],
   );
@@ -113,10 +145,8 @@ export const useImportCandidates = (): IImportCandidatesState => {
     (candidateId: string, payload: TSaveImportCandidateRequest) =>
       runWrite(
         () => updateImportCandidate(candidateId, payload),
-        (updated) =>
-          setCandidates((current) =>
-            current.map((candidate) => (candidate.id === updated.id ? updated : candidate)),
-          ),
+        (updated) => (current) =>
+          current.map((candidate) => (candidate.id === updated.id ? updated : candidate)),
       ),
     [runWrite],
   );
@@ -132,12 +162,12 @@ export const useImportCandidates = (): IImportCandidatesState => {
               .map((result) => result.candidateId),
           );
 
-          setCandidates((current) =>
+          return (current: TImportCandidateResponse[]) =>
             current.map((candidate) =>
               imported.has(candidate.id) ? { ...candidate, reviewStatus: 'IMPORTED' } : candidate,
-            ),
-          );
+            );
         },
+        false,
       ),
     [runWrite],
   );
@@ -146,13 +176,15 @@ export const useImportCandidates = (): IImportCandidatesState => {
     (candidateId: string) =>
       runWrite(
         () => deleteImportCandidate(candidateId),
-        () =>
-          setCandidates((current) => current.filter((candidate) => candidate.id !== candidateId)),
+        () => (current) => current.filter((candidate) => candidate.id !== candidateId),
       ),
     [runWrite],
   );
 
+  const clearMutationError = useCallback(() => setMutationError(null), []);
+
   return {
+    clearMutationError,
     createCandidate,
     deleteCandidate,
     importCandidates,

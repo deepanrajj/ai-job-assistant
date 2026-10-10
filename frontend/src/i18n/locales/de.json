@@ -199,6 +199,7 @@
       "linkUrl": "{{entry}} URL",
       "addLink": "Link hinzufügen",
       "invalidUrl": "Die URL muss mit http:// oder https:// beginnen",
+      "required": "Pflichtfeld",
       "notes": "Notizen",
       "up": "Hoch",
       "down": "Runter",
@@ -238,9 +239,14 @@
     },
     "add": "Hinzufügen",
     "addValue": "Zu {{list}} hinzufügen",
+    "valueTooLong": "Höchstens {{max}} Zeichen.",
+    "valueDuplicate": "Schon in der Liste.",
+    "listFull": "Diese Liste ist voll ({{maxItems}}). Entferne einen Eintrag, um einen neuen hinzuzufügen.",
     "removeValue": "{{value}} entfernen",
     "noneYet": "Noch keine",
     "save": "Präferenzen speichern",
+    "saving": "Wird gespeichert…",
+    "saved": "Präferenzen gespeichert",
     "savedOn": "Gespeichert am {{date}}",
     "notSavedYet": "Noch nicht gespeichert",
     "listLabel": "{{list}} hinzugefügt"
@@ -265,6 +271,7 @@
       "newTitle": "Neue gespeicherte Suche",
       "editTitle": "Gespeicherte Suche bearbeiten",
       "name": "Name der Suche",
+      "required": "Pflichtfeld",
       "namePlaceholder": "Senior Backend in Berlin",
       "role": "Rolle",
       "location": "Ort",
@@ -309,7 +316,9 @@
       "sourceUrlHelp": "Wo du die Stelle gefunden hast. Wird nur als Link gespeichert; die App öffnet ihn nie.",
       "description": "Stellenbeschreibung",
       "required": "Pflichtfeld",
-      "invalidUrl": "Der Link muss mit http:// oder https:// beginnen",
+      "invalidUrl": "Gib einen gültigen http://- oder https://-Link ein",
+      "tooLongText": "Verwende höchstens 255 Zeichen.",
+      "tooLongUrl": "Verwende höchstens 2048 Zeichen.",
       "save": "Kandidat speichern",
       "saveChanges": "Änderungen speichern",
       "cancel": "Abbrechen"
@@ -342,6 +351,7 @@
       "errors": {
         "alreadyImported": "bereits importiert",
         "notFound": "existiert nicht mehr",
+        "requestFailed": "Die Importanfrage ist fehlgeschlagen. Bitte versuche es erneut.",
         "unknown": "der Job konnte nicht gespeichert werden"
       }
     }

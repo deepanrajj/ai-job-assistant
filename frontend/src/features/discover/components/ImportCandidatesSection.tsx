@@ -1,5 +1,8 @@
-import { useMemo, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { useMemo, useState, type FC } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
+import { Form } from '../../../components/form';
 import {
   Alert,
   Button,
@@ -13,7 +16,6 @@ import {
 import {
   buildImportCandidateRequest,
   createEmptyImportCandidateForm,
-  validateImportCandidateForm,
   type IImportCandidateFormValues,
   type TImportCandidateResponse,
 } from '../../../services';
@@ -25,6 +27,7 @@ import type { AppError } from '../../../errors';
 import { DUPLICATE_REASON_TRANSLATION_KEYS } from '../../duplicates/duplicates.constants';
 import type { TJob } from '../../../types';
 import type { IDuplicateResult } from '../../duplicates/duplicates.types';
+import { createImportCandidateFormSchema } from '../importCandidateFormSchema';
 
 /**
  * Converts a saved candidate into intake form values for correcting it.
@@ -65,85 +68,74 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
   onSave,
 }) => {
   const { t } = useTranslation();
-  const [values, setValues] = useState<IImportCandidateFormValues>(() =>
-    editing ? toFormValues(editing) : createEmptyImportCandidateForm(),
+  const schema = useMemo(
+    () =>
+      createImportCandidateFormSchema(
+        t('importCandidates.form.required'),
+        t('importCandidates.form.invalidUrl'),
+        t('importCandidates.form.tooLongText'),
+        t('importCandidates.form.tooLongUrl'),
+      ),
+    [t],
   );
-  const [touched, setTouched] = useState<Partial<Record<keyof IImportCandidateFormValues, true>>>(
-    {},
-  );
-  const [attempted, setAttempted] = useState(false);
-  const errors = validateImportCandidateForm(values);
-  const hasErrors = Object.keys(errors).length > 0;
-
-  const show = (field: keyof IImportCandidateFormValues): boolean =>
-    attempted || Boolean(touched[field]);
-  const fieldError = (field: keyof typeof errors): string | undefined => {
-    const problem = errors[field];
-
-    if (!problem || !show(field)) return undefined;
-
-    return problem === 'invalidUrl'
-      ? t('importCandidates.form.invalidUrl')
-      : t('importCandidates.form.required');
-  };
-  const bind = (field: keyof IImportCandidateFormValues) => ({
-    onBlur: () => setTouched((current) => ({ ...current, [field]: true })),
-    onChange: (event: { target: { value: string } }) =>
-      setValues((current) => ({ ...current, [field]: event.target.value })),
-    value: values[field],
+  const form = useForm<IImportCandidateFormValues>({
+    defaultValues: editing ? toFormValues(editing) : createEmptyImportCandidateForm(),
+    mode: 'onBlur',
+    resolver: zodResolver(schema),
   });
+  const {
+    formState: { errors },
+    register,
+    reset,
+  } = form;
 
-  const handleSubmit = async (event: ReactSubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAttempted(true);
-
-    if (hasErrors || isSaving) return;
+  const handleSubmit = async (values: IImportCandidateFormValues) => {
+    if (isSaving) return;
 
     try {
       await onSave(values);
-      setValues(createEmptyImportCandidateForm());
-      setTouched({});
-      setAttempted(false);
+      reset(createEmptyImportCandidateForm());
     } catch {
       // Error is already recorded in request state and rendered from it.
     }
   };
 
   return (
-    <form className="space-y-3" noValidate onSubmit={handleSubmit}>
+    <Form className="space-y-3" form={form} noValidate onSubmit={handleSubmit}>
       {error && <Alert>{error.message}</Alert>}
       <div className="grid gap-3 md:grid-cols-2">
         <Input
           disabled={isSaving}
-          error={fieldError('company')}
+          error={errors.company?.message}
           label={t('importCandidates.form.company')}
-          {...bind('company')}
+          {...register('company')}
         />
         <Input
           disabled={isSaving}
-          error={fieldError('roleTitle')}
+          error={errors.roleTitle?.message}
           label={t('importCandidates.form.roleTitle')}
-          {...bind('roleTitle')}
+          {...register('roleTitle')}
         />
         <Input
           disabled={isSaving}
+          error={errors.location?.message}
           label={t('importCandidates.form.location')}
-          {...bind('location')}
+          {...register('location')}
         />
         <Input
           disabled={isSaving}
-          error={fieldError('sourceUrl')}
+          error={errors.sourceUrl?.message}
           helperText={t('importCandidates.form.sourceUrlHelp')}
           label={t('importCandidates.form.sourceUrl')}
-          {...bind('sourceUrl')}
+          {...register('sourceUrl')}
         />
       </div>
       <Textarea
         disabled={isSaving}
-        error={fieldError('description')}
+        error={errors.description?.message}
         label={t('importCandidates.form.description')}
         rows={6}
-        {...bind('description')}
+        {...register('description')}
       />
       <div className="flex flex-wrap gap-2">
         <Button aria-busy={isSaving} disabled={isSaving} type="submit">
@@ -155,7 +147,7 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
           </Button>
         )}
       </div>
-    </form>
+    </Form>
   );
 };
 
@@ -413,6 +405,7 @@ const CandidateRow: FC<ICandidateRowProps> = ({
  */
 export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   candidates,
+  clearMutationError,
   createCandidate,
   deleteCandidate,
   importCandidates,
@@ -428,16 +421,30 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   const [selectionOverrides, setSelectionOverrides] = useState<ReadonlyMap<string, boolean>>(
     new Map(),
   );
-  const [editing, setEditing] = useState<TImportCandidateResponse | null>(null);
+  const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
+  const editing =
+    candidates.find(
+      (candidate) => candidate.id === editingCandidateId && candidate.reviewStatus !== 'IMPORTED',
+    ) ?? null;
   const [isConfirming, setIsConfirming] = useState(false);
   const [feedback, setFeedback] = useState<IImportFeedback | null>(null);
-  const duplicates = useMemo(
-    () =>
-      new Map(
-        candidates.map((candidate) => [candidate.id, getCandidateDuplicateState(candidate, jobs)]),
-      ),
-    [candidates, jobs],
-  );
+  const [importRequestError, setImportRequestError] = useState<string | null>(null);
+  const { error: jobsError, isLoading: jobsLoading, jobs: savedJobs, reload: reloadJobs } = jobs;
+  const duplicates = useMemo(() => {
+    const jobState = {
+      error: jobsError,
+      isLoading: jobsLoading,
+      jobs: savedJobs,
+      reload: reloadJobs,
+    };
+
+    return new Map(
+      candidates.map((candidate) => [
+        candidate.id,
+        getCandidateDuplicateState(candidate, jobState),
+      ]),
+    );
+  }, [candidates, jobsError, jobsLoading, savedJobs, reloadJobs]);
 
   const importedIds = new Set(
     candidates
@@ -466,6 +473,11 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
       roleTitle: candidate.content.roleTitle,
     });
 
+  const switchEditing = (candidate: TImportCandidateResponse | null) => {
+    clearMutationError();
+    setEditingCandidateId(candidate?.id ?? null);
+  };
+
   const toggle = (candidateId: string) =>
     setSelectionOverrides((current) => new Map(current).set(candidateId, !isSelected(candidateId)));
 
@@ -474,6 +486,8 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
    * nothing is imported without the user saying so.
    */
   const handleImport = async () => {
+    if (selectedCount === 0) return;
+
     const byId = new Map(candidates.map((candidate) => [candidate.id, candidate]));
 
     try {
@@ -492,9 +506,19 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
           }),
         importedCount: results.filter((result) => result.outcome === 'IMPORTED').length,
       });
+      setEditingCandidateId((current) =>
+        results.some((result) => result.candidateId === current && result.outcome === 'IMPORTED')
+          ? null
+          : current,
+      );
       jobs.reload();
-    } catch {
-      // Error is already recorded in request state and rendered from it.
+      if (results.some((result) => result.outcome === 'FAILED')) reload();
+    } catch (error) {
+      reload();
+      jobs.reload();
+      setImportRequestError(
+        error instanceof Error ? error.message : t('importCandidates.import.errors.requestFailed'),
+      );
     } finally {
       setIsConfirming(false);
     }
@@ -506,37 +530,86 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     if (editing) await updateCandidate(editing.id, payload);
     else await createCandidate(payload);
 
-    setEditing(null);
+    switchEditing(null);
   };
 
   const handleDelete = (candidate: TImportCandidateResponse) => {
-    deleteCandidate(candidate.id).catch(() => {
-      // Error is already recorded in request state and rendered from it.
-    });
+    deleteCandidate(candidate.id).then(
+      () => setEditingCandidateId((current) => (current === candidate.id ? null : current)),
+      () => {
+        // Error is already recorded in request state and rendered from it.
+      },
+    );
   };
 
-  const renderList = () => {
-    if (isLoading) return <LoadingState label={t('importCandidates.loading')} />;
+  const renderImportFeedback = () => (
+    <>
+      {importRequestError && <Alert>{importRequestError}</Alert>}
+      {feedback && feedback.importedCount > 0 && (
+        <p className="text-sm text-success-700" role="status">
+          {t('importCandidates.import.success', { count: feedback.importedCount })}
+        </p>
+      )}
+      {feedback && feedback.failed.length > 0 && (
+        <Alert>
+          <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
+          <ul className="mt-1 list-inside list-disc">
+            {feedback.failed.map((failure) => (
+              <li key={failure.label}>
+                {t('importCandidates.import.failedItem', {
+                  candidate: failure.label,
+                  reason: t(importErrorTranslationKey(failure.errorCode)),
+                })}
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
+    </>
+  );
 
-    if (loadError)
+  const renderList = () => {
+    if (isLoading)
       return (
-        <ErrorState
-          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-          description={loadError.message}
-          title={t('importCandidates.loadErrorTitle')}
-        />
+        <div className="space-y-3">
+          <LoadingState label={t('importCandidates.loading')} />
+          {renderImportFeedback()}
+        </div>
+      );
+
+    if (loadError && candidates.length === 0)
+      return (
+        <div className="space-y-3">
+          <ErrorState
+            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+            description={loadError.message}
+            title={t('importCandidates.loadErrorTitle')}
+          />
+          {renderImportFeedback()}
+        </div>
       );
 
     if (candidates.length === 0)
       return (
-        <EmptyState
-          description={t('importCandidates.list.emptyDescription')}
-          title={t('importCandidates.list.emptyTitle')}
-        />
+        <div className="space-y-3">
+          <EmptyState
+            description={t('importCandidates.list.emptyDescription')}
+            title={t('importCandidates.list.emptyTitle')}
+          />
+          {renderImportFeedback()}
+        </div>
       );
 
     return (
       <div className="space-y-3">
+        {loadError && (
+          <Alert>
+            <p>{loadError.message}</p>
+            <Button onClick={reload} size="sm" variant="ghost">
+              {t('jobs.loadErrorRetry')}
+            </Button>
+          </Alert>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <p aria-live="polite" className="text-sm text-app-textSoft">
             {t('importCandidates.list.selectedCount', {
@@ -561,6 +634,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             disabled={selectedCount === 0 || isMutating || isConfirming}
             onClick={() => {
               setFeedback(null);
+              setImportRequestError(null);
               setIsConfirming(true);
             }}
             size="sm"
@@ -568,6 +642,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             {t('importCandidates.import.start', { count: selectedCount })}
           </Button>
         </div>
+        {renderImportFeedback()}
         {isConfirming && (
           <div
             aria-labelledby="import-confirm-heading"
@@ -590,7 +665,11 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
               </p>
             )}
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button aria-busy={isMutating} disabled={isMutating} onClick={handleImport}>
+              <Button
+                aria-busy={isMutating}
+                disabled={isMutating || selectedCount === 0}
+                onClick={handleImport}
+              >
                 {t('importCandidates.import.confirm', { count: selectedCount })}
               </Button>
               <Button disabled={isMutating} onClick={() => setIsConfirming(false)} variant="ghost">
@@ -598,26 +677,6 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
               </Button>
             </div>
           </div>
-        )}
-        {feedback && feedback.importedCount > 0 && (
-          <p className="text-sm text-success-700" role="status">
-            {t('importCandidates.import.success', { count: feedback.importedCount })}
-          </p>
-        )}
-        {feedback && feedback.failed.length > 0 && (
-          <Alert>
-            <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
-            <ul className="mt-1 list-inside list-disc">
-              {feedback.failed.map((failure) => (
-                <li key={failure.label}>
-                  {t('importCandidates.import.failedItem', {
-                    candidate: failure.label,
-                    reason: t(importErrorTranslationKey(failure.errorCode)),
-                  })}
-                </li>
-              ))}
-            </ul>
-          </Alert>
         )}
         <ul aria-label={t('importCandidates.list.title')} className="space-y-3">
           {candidates.map((candidate) => (
@@ -628,7 +687,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
               isSelected={isSelected(candidate.id)}
               key={candidate.id}
               onDelete={handleDelete}
-              onEdit={setEditing}
+              onEdit={switchEditing}
               onToggle={toggle}
             />
           ))}
@@ -653,7 +712,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
           error={mutationError}
           isSaving={isMutating}
           key={editing?.id ?? 'new'}
-          onCancelEdit={() => setEditing(null)}
+          onCancelEdit={() => switchEditing(null)}
           onSave={handleSave}
         />
       </Card>

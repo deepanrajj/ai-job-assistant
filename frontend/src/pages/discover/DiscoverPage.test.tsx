@@ -7,7 +7,11 @@ import { DiscoverPage } from './DiscoverPage';
 import { AppError } from '../../errors';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { APP_ERROR_CODES } from '../../types';
-import type { TSavedSearchResponse, TSaveSavedSearchRequest } from '../../services';
+import type {
+  TSavedSearchCriteria,
+  TSavedSearchResponse,
+  TSaveSavedSearchRequest,
+} from '../../services';
 
 const search: TSavedSearchResponse = {
   createdAt: '2026-10-01T09:00:00Z',
@@ -26,6 +30,7 @@ const search: TSavedSearchResponse = {
 
 const renderPage = (overrides: Partial<ComponentProps<typeof DiscoverPage>> = {}) => {
   const props: ComponentProps<typeof DiscoverPage> = {
+    clearMutationError: vi.fn(),
     createSearch: vi.fn(async (payload: TSaveSavedSearchRequest) => ({
       ...search,
       ...payload,
@@ -81,13 +86,21 @@ describe('DiscoverPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'New search' }));
 
-    expect(screen.getByRole('button', { name: 'Save search' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(screen.getByLabelText('Search name')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('Required')).toBeInTheDocument();
+    expect(props.createSearch).not.toHaveBeenCalled();
 
     await user.type(screen.getByLabelText('Search name'), '  Remote   frontend ');
     await user.type(screen.getByLabelText('Role'), 'Frontend Engineer');
     await user.click(screen.getByRole('checkbox', { name: 'Remote' }));
     await user.click(screen.getByRole('checkbox', { name: 'Mid-level' }));
-    await user.type(screen.getByLabelText('Skills'), 'react{Enter}React{Enter}TypeScript{Enter}');
+    await user.type(screen.getByLabelText('Skills'), 'react{Enter}React{Enter}');
+    expect(screen.getByLabelText('Skills')).toHaveValue('React');
+    expect(screen.getByText('Already in the list.')).toBeInTheDocument();
+    await user.clear(screen.getByLabelText('Skills'));
+    await user.type(screen.getByLabelText('Skills'), '  TypeScript  ');
     await user.click(screen.getByRole('button', { name: 'Save search' }));
 
     expect(props.createSearch).toHaveBeenCalledWith({
@@ -102,6 +115,20 @@ describe('DiscoverPage', () => {
       },
     });
     expect(await screen.findByRole('button', { name: 'New search' })).toBeInTheDocument();
+  });
+
+  it('keeps an invalid pending skill visible and focused instead of saving', async () => {
+    const user = userEvent.setup();
+    const { props } = renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    await user.type(screen.getByLabelText('Skills'), 'kotlin');
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(props.updateSearch).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Skills')).toHaveFocus();
+    expect(screen.getByLabelText('Skills')).toHaveValue('kotlin');
+    expect(screen.getByText('Already in the list.')).toBeInTheDocument();
   });
 
   it('edits a search in place', async () => {
@@ -119,6 +146,55 @@ describe('DiscoverPage', () => {
 
     expect(props.updateSearch).toHaveBeenCalledWith('search-1', {
       criteria: { ...search.criteria, location: 'Munich', skills: ['PostgreSQL'] },
+    });
+  });
+
+  it('preserves stored skills beyond current limits when editing another field', async () => {
+    const user = userEvent.setup();
+    const skills = ['x'.repeat(61), ...Array.from({ length: 50 }, (_, index) => `Skill ${index}`)];
+    const { props } = renderPage({
+      searches: [{ ...search, criteria: { ...search.criteria, skills } }],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    await user.clear(screen.getByLabelText('Location'));
+    await user.type(screen.getByLabelText('Location'), 'Munich');
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(props.updateSearch).toHaveBeenCalledWith('search-1', {
+      criteria: { ...search.criteria, location: 'Munich', skills },
+    });
+  });
+
+  it('preserves stored choices this client does not offer when checking another option', async () => {
+    const user = userEvent.setup();
+    const storedSeniority = 'PRINCIPAL' as TSavedSearchCriteria['seniority'][number];
+    const storedWorkMode = 'CARAVAN' as TSavedSearchCriteria['workModes'][number];
+    const { props } = renderPage({
+      searches: [
+        {
+          ...search,
+          criteria: {
+            ...search.criteria,
+            seniority: ['SENIOR', storedSeniority],
+            workModes: ['HYBRID', storedWorkMode],
+          },
+        },
+      ],
+    });
+
+    expect(screen.getByText('Senior · PRINCIPAL · Hybrid · CARAVAN')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Lead' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Remote' }));
+    await user.click(screen.getByRole('button', { name: 'Save search' }));
+
+    expect(props.updateSearch).toHaveBeenCalledWith('search-1', {
+      criteria: {
+        ...search.criteria,
+        seniority: ['SENIOR', 'LEAD', storedSeniority],
+        workModes: ['REMOTE', 'HYBRID', storedWorkMode],
+      },
     });
   });
 
@@ -149,6 +225,26 @@ describe('DiscoverPage', () => {
 
     expect(props.updateSearch).not.toHaveBeenCalled();
     expect(props.deleteSearch).toHaveBeenCalledWith('search-1');
+  });
+
+  it('clears a previous write error when opening or closing an editor', async () => {
+    const user = userEvent.setup();
+    const { props } = renderPage({
+      mutationError: new AppError(
+        'Failed to delete saved search',
+        APP_ERROR_CODES.SAVED_SEARCH_REQUEST_FAILED,
+      ),
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to delete saved search');
+    await user.click(screen.getByRole('button', { name: 'New search' }));
+    expect(props.clearMutationError).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(props.clearMutationError).toHaveBeenCalledTimes(2);
+
+    await user.click(screen.getByRole('button', { name: 'Edit search Senior backend in Berlin' }));
+    expect(props.clearMutationError).toHaveBeenCalledTimes(3);
   });
 
   it('shows a write error, loading, and a retryable load error', async () => {

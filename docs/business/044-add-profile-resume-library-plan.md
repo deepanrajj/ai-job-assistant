@@ -33,6 +33,12 @@ which entry a claim came from. No AI, no export, no resume styling.
   No request reached `/api/resume-profiles`.
 - **Built image** (compose, port 30080): Profile shows "Coming soon"
   and makes no profile request.
+- **PR review fixes** (PR #62): a write error is cleared when the
+  editor opens or closes, so it never shows in the other view; an empty
+  profile name and a half-filled link say "Required" instead of only
+  disabling Save; entries and links left empty are dropped on save, so
+  the backend should still reject blank ones; a load overtaken by a
+  newer one is ignored, as `useJobContacts` does.
 
 ### Backend contract the frontend expects
 

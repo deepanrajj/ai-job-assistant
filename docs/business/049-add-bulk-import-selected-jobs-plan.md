@@ -99,7 +99,7 @@ Rejected:
 | `company`, `roleTitle`, `location`, `description` | its content |
 | `jobUrl` | its source link |
 | `status` | `WISHLIST`: saved, not applied |
-| `source` | from the link's host: `linkedin.com` → `LINKEDIN`, `indeed.*` → `INDEED`, `xing.com` → `XING`; otherwise not set |
+| `source` | from the link's host: `linkedin.com` → `LINKEDIN`, `indeed.com`, `indeed.co.uk`, or `indeed.de` → `INDEED`, `xing.com` → `XING`; otherwise not set |
 
 The source is only inferred where the host says it unambiguously; a
 company careers page and an aggregator look alike, so anything else is

@@ -39,17 +39,22 @@ describe('inferJobSourceFromUrl', () => {
     ['https://www.linkedin.com/jobs/view/1', 'LINKEDIN'],
     ['https://de.indeed.com/viewjob?jk=1', 'INDEED'],
     ['https://www.indeed.co.uk/viewjob', 'INDEED'],
+    ['https://indeed.com/viewjob', 'INDEED'],
     ['https://www.xing.com/jobs/1', 'XING'],
   ])('reads %s as %s', (url, source) => {
     expect(inferJobSourceFromUrl(url)).toBe(source);
   });
 
-  it.each([['https://careers.n26.com/jobs/1'], ['https://notlinkedin.com/jobs'], ['not a url']])(
-    'leaves %s unknown',
-    (url) => {
-      expect(inferJobSourceFromUrl(url)).toBeNull();
-    },
-  );
+  it.each([
+    ['https://careers.n26.com/jobs/1'],
+    ['https://notlinkedin.com/jobs'],
+    ['https://indeed.com.evil/jobs'],
+    ['https://jobs.indeed.co.uk.evil/viewjob'],
+    ['https://indeed.evil/jobs'],
+    ['not a url'],
+  ])('leaves %s unknown', (url) => {
+    expect(inferJobSourceFromUrl(url)).toBeNull();
+  });
 
   it('leaves a missing link unknown', () => {
     expect(inferJobSourceFromUrl(null)).toBeNull();

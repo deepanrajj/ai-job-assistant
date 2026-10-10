@@ -54,23 +54,26 @@ export const normalizeDuplicateText = (value: string | undefined): string =>
     .trim();
 
 /**
- * Normalizes a company name: as `normalizeDuplicateText`, without legal
- * suffixes such as GmbH or Inc.
+ * Normalizes a company name: as `normalizeDuplicateText`, without trailing
+ * legal suffixes such as GmbH or Inc.
  *
  * @param {string} value Raw company name.
  * @returns {string} Comparable company name.
  */
-export const normalizeCompany = (value: string): string =>
-  normalizeDuplicateText(value)
-    .split(' ')
-    .filter((word) => word && !COMPANY_SUFFIXES.has(word))
-    .join(' ');
+export const normalizeCompany = (value: string): string => {
+  const words = normalizeDuplicateText(value).split(' ').filter(Boolean);
+
+  while (words.length > 1 && COMPANY_SUFFIXES.has(words[words.length - 1])) words.pop();
+
+  return words.join(' ');
+};
 
 /**
  * Normalizes a job URL so the same posting compares equal however it was
- * copied: host lower-cased without `www.`, no trailing slash, no
- * fragment, no `utm_*` tracking parameters, scheme ignored. Other query
- * parameters stay, since some boards identify the job by them.
+ * copied: host lower-cased without `www.`, non-default port kept, no
+ * trailing slash, no fragment, no `utm_*` tracking parameters, scheme
+ * ignored. Other query parameters stay, since some boards identify the
+ * job by them.
  *
  * @param {string | null | undefined} value Raw URL.
  * @returns {string} Comparable URL, or empty for a missing or unparseable one.
@@ -86,7 +89,7 @@ export const normalizeJobUrl = (value: string | null | undefined): string => {
     const query = new URLSearchParams(params).toString();
     const path = url.pathname.replace(/\/+$/, '');
 
-    return `${url.hostname.toLowerCase().replace(/^www\./, '')}${path}${query ? `?${query}` : ''}`;
+    return `${url.host.toLowerCase().replace(/^www\./, '')}${path}${query ? `?${query}` : ''}`;
   } catch {
     return '';
   }

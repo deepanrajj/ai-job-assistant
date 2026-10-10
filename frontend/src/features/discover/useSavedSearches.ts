@@ -18,6 +18,7 @@ import type { AppError } from '../../errors';
  * after recording it in `mutationError`, as the job detail hooks do.
  */
 export interface ISavedSearchesState {
+  clearMutationError: () => void;
   createSearch: (payload: TSaveSavedSearchRequest) => Promise<TSavedSearchResponse>;
   deleteSearch: (searchId: string) => Promise<void>;
   isLoading: boolean;
@@ -122,7 +123,10 @@ export const useSavedSearches = (): ISavedSearchesState => {
     [runWrite],
   );
 
+  const clearMutationError = useCallback(() => setMutationError(null), []);
+
   return {
+    clearMutationError,
     createSearch,
     deleteSearch,
     isLoading: isIdle || isLoading,
