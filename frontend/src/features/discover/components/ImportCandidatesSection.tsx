@@ -498,7 +498,10 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
         importedCount: results.filter((result) => result.outcome === 'IMPORTED').length,
       });
       jobs.reload();
+      if (results.some((result) => result.outcome === 'FAILED')) reload();
     } catch (error) {
+      reload();
+      jobs.reload();
       setImportRequestError(
         error instanceof Error ? error.message : t('importCandidates.import.errors.requestFailed'),
       );
@@ -525,24 +528,62 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     );
   };
 
+  const renderImportFeedback = () => (
+    <>
+      {importRequestError && <Alert>{importRequestError}</Alert>}
+      {feedback && feedback.importedCount > 0 && (
+        <p className="text-sm text-success-700" role="status">
+          {t('importCandidates.import.success', { count: feedback.importedCount })}
+        </p>
+      )}
+      {feedback && feedback.failed.length > 0 && (
+        <Alert>
+          <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
+          <ul className="mt-1 list-inside list-disc">
+            {feedback.failed.map((failure) => (
+              <li key={failure.label}>
+                {t('importCandidates.import.failedItem', {
+                  candidate: failure.label,
+                  reason: t(importErrorTranslationKey(failure.errorCode)),
+                })}
+              </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
+    </>
+  );
+
   const renderList = () => {
-    if (isLoading) return <LoadingState label={t('importCandidates.loading')} />;
+    if (isLoading)
+      return (
+        <div className="space-y-3">
+          <LoadingState label={t('importCandidates.loading')} />
+          {renderImportFeedback()}
+        </div>
+      );
 
     if (loadError && candidates.length === 0)
       return (
-        <ErrorState
-          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-          description={loadError.message}
-          title={t('importCandidates.loadErrorTitle')}
-        />
+        <div className="space-y-3">
+          <ErrorState
+            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+            description={loadError.message}
+            title={t('importCandidates.loadErrorTitle')}
+          />
+          {renderImportFeedback()}
+        </div>
       );
 
     if (candidates.length === 0)
       return (
-        <EmptyState
-          description={t('importCandidates.list.emptyDescription')}
-          title={t('importCandidates.list.emptyTitle')}
-        />
+        <div className="space-y-3">
+          <EmptyState
+            description={t('importCandidates.list.emptyDescription')}
+            title={t('importCandidates.list.emptyTitle')}
+          />
+          {renderImportFeedback()}
+        </div>
       );
 
     return (
@@ -587,7 +628,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             {t('importCandidates.import.start', { count: selectedCount })}
           </Button>
         </div>
-        {importRequestError && <Alert>{importRequestError}</Alert>}
+        {renderImportFeedback()}
         {isConfirming && (
           <div
             aria-labelledby="import-confirm-heading"
@@ -618,26 +659,6 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
               </Button>
             </div>
           </div>
-        )}
-        {feedback && feedback.importedCount > 0 && (
-          <p className="text-sm text-success-700" role="status">
-            {t('importCandidates.import.success', { count: feedback.importedCount })}
-          </p>
-        )}
-        {feedback && feedback.failed.length > 0 && (
-          <Alert>
-            <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
-            <ul className="mt-1 list-inside list-disc">
-              {feedback.failed.map((failure) => (
-                <li key={failure.label}>
-                  {t('importCandidates.import.failedItem', {
-                    candidate: failure.label,
-                    reason: t(importErrorTranslationKey(failure.errorCode)),
-                  })}
-                </li>
-              ))}
-            </ul>
-          </Alert>
         )}
         <ul aria-label={t('importCandidates.list.title')} className="space-y-3">
           {candidates.map((candidate) => (

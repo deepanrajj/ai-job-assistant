@@ -192,6 +192,21 @@ describe('useImportCandidates', () => {
     ]);
   });
 
+  it('rejects an import failure without showing it as an intake form mutation error', async () => {
+    server.use(
+      http.get(endpoint, () => HttpResponse.json([candidate('c1', 'N26')])),
+      http.post(`${endpoint}/import`, () => new HttpResponse(null, { status: 500 })),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+
+    await waitFor(() => expect(result.current.candidates).toHaveLength(1));
+    await act(async () => {
+      await expect(result.current.importCandidates(['c1'])).rejects.toThrow();
+    });
+
+    expect(result.current.mutationError).toBeNull();
+  });
+
   it('keeps an imported status when an earlier reload returns pending data', async () => {
     let releaseReload: () => void = () => {};
     let reloadStarted = false;
