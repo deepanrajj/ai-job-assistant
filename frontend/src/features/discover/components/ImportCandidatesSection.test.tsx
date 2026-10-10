@@ -278,4 +278,22 @@ describe('ImportCandidatesSection', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(props.reload).toHaveBeenCalledOnce();
   });
+
+  it('shows a confirmed candidate alongside a failed-load warning and retry', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection({
+      candidates: [candidate('c1', 'N26')],
+      loadError: new AppError(
+        'Failed to load import candidates',
+        APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
+      ),
+    });
+
+    expect(screen.getByRole('list', { name: 'Candidates to review' })).toBeInTheDocument();
+    expect(screen.getByText('Backend Engineer at N26')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load import candidates');
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(props.reload).toHaveBeenCalledOnce();
+  });
 });

@@ -299,7 +299,7 @@ export const ImportCandidatesSection: FC<IImportCandidatesState> = ({
   const renderList = () => {
     if (isLoading) return <LoadingState label={t('importCandidates.loading')} />;
 
-    if (loadError)
+    if (loadError && candidates.length === 0)
       return (
         <ErrorState
           action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
@@ -318,6 +318,14 @@ export const ImportCandidatesSection: FC<IImportCandidatesState> = ({
 
     return (
       <div className="space-y-3">
+        {loadError && (
+          <Alert>
+            <p>{loadError.message}</p>
+            <Button onClick={reload} size="sm" variant="ghost">
+              {t('jobs.loadErrorRetry')}
+            </Button>
+          </Alert>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <p aria-live="polite" className="text-sm text-app-textSoft">
             {t('importCandidates.list.selectedCount', {
