@@ -74,13 +74,12 @@ describe('ProfilePreferencesSection', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Not saved yet');
   });
 
-  it('adds skills by button and by Enter, ignores a duplicate, and removes one', async () => {
+  it('adds skills by button and by Enter, and removes one', async () => {
     const user = userEvent.setup();
     const { props } = renderSection();
 
     await user.type(screen.getByLabelText('Skills'), '  Spring   Boot ');
     await user.click(screen.getByRole('button', { name: 'Add to Skills' }));
-    await user.type(screen.getByLabelText('Skills'), 'kotlin{Enter}');
     await user.type(screen.getByLabelText('Skills'), 'PostgreSQL{Enter}');
     await user.click(screen.getByRole('button', { name: 'Remove React' }));
 
@@ -94,6 +93,164 @@ describe('ProfilePreferencesSection', () => {
     await user.click(screen.getByRole('button', { name: 'Save preferences' }));
 
     expect(savedPayload(props.save).skills).toEqual(['Kotlin', 'Spring Boot', 'PostgreSQL']);
+  });
+
+  it('keeps a value it cannot add in the input, saying why', async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    const skills = screen.getByLabelText('Skills');
+
+    await user.type(skills, 'kotlin{Enter}');
+
+    expect(skills).toHaveValue('kotlin');
+    expect(skills).toHaveAccessibleDescription('Already in the list.');
+    expect(screen.getByRole('button', { name: 'Add to Skills' })).toBeDisabled();
+
+    await user.clear(skills);
+    await user.type(skills, 'x'.repeat(61));
+    await user.click(screen.getByRole('button', { name: 'Add to Skills' }));
+
+    expect(skills).toHaveValue('x'.repeat(61));
+    expect(skills).toHaveAccessibleDescription('Use at most 60 characters.');
+  });
+
+  it('says when a list is full and refuses another value', async () => {
+    const user = userEvent.setup();
+    const full = Array.from({ length: 50 }, (_, index) => `Skill ${index}`);
+    renderSection({ preferences: { ...saved, skills: full } });
+
+    const skills = screen.getByLabelText('Skills');
+
+    expect(skills).toHaveAccessibleDescription(
+      'This list is full (50). Remove one to add another.',
+    );
+
+    await user.type(skills, 'One more{Enter}');
+
+    expect(skills).toHaveValue('One more');
+    expect(
+      within(screen.getByRole('list', { name: 'Skills added' })).getAllByRole('listitem'),
+    ).toHaveLength(50);
+  });
+
+  it('saves text typed into a list but not added', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.type(screen.getByLabelText('Skills'), ' Go ');
+    await user.type(screen.getByLabelText('Keywords'), 'fintech');
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(savedPayload(props.save)).toMatchObject({
+      keywords: ['payments', 'fintech'],
+      skills: ['Kotlin', 'React', 'Go'],
+    });
+    expect(screen.getByLabelText('Skills')).toHaveValue('');
+  });
+
+  it('does not save while typed text cannot be added', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.type(screen.getByLabelText('Target roles'), 'backend engineer');
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(props.save).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Target roles')).toHaveFocus();
+    expect(screen.getByLabelText('Target roles')).toHaveAccessibleDescription(
+      'Already in the list.',
+    );
+  });
+
+  it('keeps focus on Save and announces the save in the same status line', async () => {
+    const user = userEvent.setup();
+    const { props, rerender } = renderSection();
+    const status = screen.getByRole('status');
+    const saveButton = screen.getByRole('button', { name: 'Save preferences' });
+
+    await user.click(saveButton);
+
+    expect(props.save).toHaveBeenCalledOnce();
+    expect(saveButton).toHaveFocus();
+    expect(status).toHaveTextContent('Preferences saved');
+
+    rerender(
+      <ProfilePreferencesSection
+        {...props}
+        preferences={{ ...saved, skills: ['Go'], updatedAt: '2026-10-05T09:00:00Z' }}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toBe(status);
+    expect(screen.getByRole('button', { name: 'Save preferences' })).toBe(saveButton);
+    expect(saveButton).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Remove Go' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove Kotlin' })).not.toBeInTheDocument();
+  });
+
+  it('says it is saving while a save is in flight', () => {
+    renderSection({ isSaving: true });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Saving…');
+  });
+
+  it('returns focus to the input after adding, and to a neighbour after removing', async () => {
+    const user = userEvent.setup();
+    renderSection();
+
+    await user.type(screen.getByLabelText('Skills'), 'Go');
+    await user.click(screen.getByRole('button', { name: 'Add to Skills' }));
+
+    expect(screen.getByLabelText('Skills')).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove React' }));
+
+    expect(screen.getByRole('button', { name: 'Remove Go' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove Go' }));
+
+    expect(screen.getByRole('button', { name: 'Remove Kotlin' })).toHaveFocus();
+
+    await user.click(screen.getByRole('button', { name: 'Remove Kotlin' }));
+
+    expect(screen.getByLabelText('Skills')).toHaveFocus();
+  });
+
+  it('keeps stored values it would not accept today when saving other changes', async () => {
+    const user = userEvent.setup();
+    const long = 'x'.repeat(70);
+    const { props } = renderSection({
+      preferences: {
+        ...saved,
+        skills: [long],
+        workModes: ['REMOTE', 'CARAVAN' as TProfilePreferences['workModes'][number]],
+      },
+    });
+
+    await user.click(screen.getByRole('checkbox', { name: 'Hybrid' }));
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(savedPayload(props.save)).toMatchObject({
+      skills: [long],
+      workModes: ['REMOTE', 'HYBRID', 'CARAVAN'],
+    });
+  });
+
+  it('keeps a stored over-long value when a value is added, by Add or by Save', async () => {
+    const user = userEvent.setup();
+    const long = 'x'.repeat(70);
+    const { props } = renderSection({ preferences: { ...saved, keywords: [], skills: [long] } });
+
+    await user.type(screen.getByLabelText('Skills'), 'Go{Enter}');
+    await user.type(screen.getByLabelText('Keywords'), 'fintech');
+    await user.type(screen.getByLabelText('Skills'), 'Rust');
+    await user.click(screen.getByRole('button', { name: 'Save preferences' }));
+
+    expect(savedPayload(props.save)).toMatchObject({
+      keywords: ['fintech'],
+      skills: [long, 'Go', 'Rust'],
+    });
   });
 
   it('does not submit the form when Enter adds a value', async () => {
