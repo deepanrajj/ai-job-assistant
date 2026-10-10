@@ -38,6 +38,12 @@ describe('normalization', () => {
     expect(normalizeCompany('SAP SE')).toBe('sap');
   });
 
+  it('keeps legal-form words when they are part of the company name', () => {
+    expect(normalizeCompany('AG Insurance')).toBe('ag insurance');
+    expect(normalizeCompany('AG Insurance GmbH')).toBe('ag insurance');
+    expect(normalizeCompany('Insurance AG')).toBe('insurance');
+  });
+
   it('ignores scheme, www, trailing slash, fragment, and utm parameters in URLs', () => {
     expect(normalizeJobUrl('http://www.Example.com/jobs/123/?utm_source=x#apply')).toBe(
       normalizeJobUrl('https://example.com/jobs/123'),
@@ -47,6 +53,15 @@ describe('normalization', () => {
   it('keeps other query parameters, which can identify the job', () => {
     expect(normalizeJobUrl('https://boards.example.com/view?gh_jid=1')).not.toBe(
       normalizeJobUrl('https://boards.example.com/view?gh_jid=2'),
+    );
+  });
+
+  it('keeps non-default ports, which can identify different hosts', () => {
+    expect(normalizeJobUrl('https://jobs.example.com:8080/jobs/1')).not.toBe(
+      normalizeJobUrl('https://jobs.example.com:8081/jobs/1'),
+    );
+    expect(normalizeJobUrl('https://jobs.example.com:443/jobs/1')).toBe(
+      normalizeJobUrl('https://jobs.example.com/jobs/1'),
     );
   });
 
@@ -69,6 +84,22 @@ describe('classifyDuplicate', () => {
     expect(
       classifyDuplicate(candidate({ company: 'n26', roleTitle: 'BACKEND ENGINEER' }), [savedJob]),
     ).toMatchObject({ classification: 'LIKELY_DUPLICATE', reason: 'SAME_COMPANY_AND_ROLE' });
+  });
+
+  it('does not conflate a company starting with a legal-form word with another company', () => {
+    const job = createMockJob({ company: 'Insurance', roleTitle: 'Claims Analyst' });
+
+    expect(
+      classifyDuplicate(candidate({ company: 'AG Insurance', roleTitle: 'Claims Analyst' }), [job]),
+    ).toEqual({ classification: 'NEW' });
+  });
+
+  it('does not conflate different posting URLs on non-default ports', () => {
+    const job = createMockJob({ jobUrl: 'https://jobs.example.com:8080/jobs/1' });
+
+    expect(
+      classifyDuplicate(candidate({ url: 'https://jobs.example.com:8081/jobs/1' }), [job]),
+    ).toEqual({ classification: 'NEW' });
   });
 
   it('calls a similar role at the same company a possible duplicate', () => {
