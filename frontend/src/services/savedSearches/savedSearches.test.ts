@@ -54,6 +54,12 @@ describe('savedSearches.utils', () => {
     });
   });
 
+  it('preserves stored skills beyond the new-entry limits', () => {
+    const skills = ['x'.repeat(61), ...Array.from({ length: 50 }, (_, index) => `Skill ${index}`)];
+
+    expect(normalizeSavedSearchCriteria({ ...body.criteria, skills }).skills).toEqual(skills);
+  });
+
   it('requires a name', () => {
     expect(isSavedSearchValid(createEmptySavedSearchCriteria())).toBe(false);
     expect(isSavedSearchValid({ ...createEmptySavedSearchCriteria(), name: '  ' })).toBe(false);

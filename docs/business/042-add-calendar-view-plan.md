@@ -127,7 +127,11 @@ The page shows one month, with previous, next, and "today" controls.
 
 - **From `md` up**: a seven-column, Monday-first month grid. Each day
   lists up to three items (linking to their job) and "+n more"; today
-  is outlined.
+  is outlined. The days of the neighbouring months that fill out the
+  first and last weeks are greyed and list nothing: only the month's
+  items are loaded, so showing them empty would read as free days.
+  Loading the whole grid's range was rejected because the list would
+  then cover days the month heading does not.
 - **Always**, and alone on small screens: the same month as a list,
   one section per date that has items, each item showing its source
   label, title, the job's company, and a link to the job. A month with

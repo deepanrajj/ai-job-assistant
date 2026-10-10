@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
@@ -34,6 +34,7 @@ const candidate = (
 const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidatesSection>> = {}) => {
   const props: ComponentProps<typeof ImportCandidatesSection> = {
     candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando')],
+    clearMutationError: vi.fn(),
     createCandidate: vi.fn(async (payload: TSaveImportCandidateRequest) => ({
       ...candidate('c3', payload.content.company),
       ...payload,
@@ -209,7 +210,20 @@ describe('ImportCandidatesSection', () => {
     await user.type(screen.getByLabelText('Source link'), 'javascript:alert(1)');
     await user.click(screen.getByRole('button', { name: 'Save candidate' }));
 
-    expect(screen.getByText('Link must start with http:// or https://')).toBeInTheDocument();
+    expect(screen.getByText('Enter a valid http:// or https:// link')).toBeInTheDocument();
+    expect(props.createCandidate).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Company')).toHaveValue('Personio');
+  });
+
+  it('rejects a source link without a host, keeping the draft', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await fillRequired(user);
+    await user.type(screen.getByLabelText('Source link'), 'https://');
+    await user.click(screen.getByRole('button', { name: 'Save candidate' }));
+
+    expect(screen.getByText('Enter a valid http:// or https:// link')).toBeInTheDocument();
     expect(props.createCandidate).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Company')).toHaveValue('Personio');
   });
@@ -288,6 +302,37 @@ describe('ImportCandidatesSection', () => {
     expect(props.deleteCandidate).toHaveBeenCalledWith('c2');
   });
 
+  it('clears a stale error when switching between editing and adding', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection({
+      mutationError: new AppError(
+        'Failed to save candidate changes',
+        APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
+      ),
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Correct Backend Engineer at N26' }));
+    expect(props.clearMutationError).toHaveBeenCalledOnce();
+    await user.click(screen.getByRole('button', { name: 'Correct Backend Engineer at Zalando' }));
+    expect(props.clearMutationError).toHaveBeenCalledTimes(2);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(props.clearMutationError).toHaveBeenCalledTimes(3);
+  });
+
+  it('leaves edit mode after deleting the candidate being edited', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection();
+
+    await user.click(screen.getByRole('button', { name: 'Correct Backend Engineer at N26' }));
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Delete Backend Engineer at N26' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Save candidate' })).toBeInTheDocument(),
+    );
+    expect(props.deleteCandidate).toHaveBeenCalledWith('c1');
+  });
+
   it('shows loading and a retryable load error', async () => {
     const user = userEvent.setup();
     const { unmount } = renderSection({ isLoading: true });
@@ -298,6 +343,24 @@ describe('ImportCandidatesSection', () => {
     const { props } = renderSection({
       loadError: new AppError('Failed', APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED),
     });
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(props.reload).toHaveBeenCalledOnce();
+  });
+
+  it('shows a confirmed candidate alongside a failed-load warning and retry', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection({
+      candidates: [candidate('c1', 'N26')],
+      loadError: new AppError(
+        'Failed to load import candidates',
+        APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
+      ),
+    });
+
+    expect(screen.getByRole('list', { name: 'Candidates to review' })).toBeInTheDocument();
+    expect(screen.getByText('Backend Engineer at N26')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load import candidates');
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(props.reload).toHaveBeenCalledOnce();

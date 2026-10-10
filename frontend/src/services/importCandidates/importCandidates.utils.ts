@@ -4,7 +4,7 @@ import {
   type TImportCandidateFallbackErrorKey,
   type TSaveImportCandidateRequest,
 } from './importCandidates.types';
-import { isValidProfileUrl, toNullableTrimmed } from '../contacts';
+import { toNullableTrimmed } from '../contacts';
 
 /**
  * Resolves the localized fallback error message for an import candidate operation.
@@ -28,16 +28,6 @@ export interface IImportCandidateFormValues {
 }
 
 /**
- * Which intake fields currently block saving, and why.
- */
-export interface IImportCandidateFormErrors {
-  company?: 'required';
-  description?: 'required';
-  roleTitle?: 'required';
-  sourceUrl?: 'invalidUrl';
-}
-
-/**
  * An empty intake form.
  *
  * @returns {IImportCandidateFormValues} Empty values.
@@ -48,23 +38,6 @@ export const createEmptyImportCandidateForm = (): IImportCandidateFormValues => 
   location: '',
   roleTitle: '',
   sourceUrl: '',
-});
-
-/**
- * Checks the intake form: company, role, and description must not be
- * blank, and a source link, when given, must be `http(s)`. The link is
- * only ever stored and shown, never requested.
- *
- * @param {IImportCandidateFormValues} values Raw form values.
- * @returns {IImportCandidateFormErrors} The blocking problems, empty when none.
- */
-export const validateImportCandidateForm = (
-  values: IImportCandidateFormValues,
-): IImportCandidateFormErrors => ({
-  ...(values.company.trim() ? {} : { company: 'required' as const }),
-  ...(values.description.trim() ? {} : { description: 'required' as const }),
-  ...(values.roleTitle.trim() ? {} : { roleTitle: 'required' as const }),
-  ...(isValidProfileUrl(values.sourceUrl) ? {} : { sourceUrl: 'invalidUrl' as const }),
 });
 
 /**
