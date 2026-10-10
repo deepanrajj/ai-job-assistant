@@ -225,4 +225,42 @@ describe('ImportCandidatesSection import', () => {
     expect(screen.getByRole('button', { name: 'Correct Engineer at N26' })).toBeDisabled();
     expect(screen.getByText('1 of 2 selected')).toBeInTheDocument();
   });
+
+  it('closes an open correction when that candidate is imported', async () => {
+    const user = userEvent.setup();
+    const { props } = renderSection({
+      candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando')],
+      importCandidates: vi.fn(async () => [imported('c1', 'job-1')]),
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Correct Engineer at N26' }));
+    expect(screen.getByRole('heading', { name: 'Correct candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Company' })).toHaveValue('N26');
+
+    await user.click(screen.getByRole('checkbox', { name: 'Select Engineer at Zalando' }));
+    await user.click(screen.getByRole('button', { name: 'Import selected (1)' }));
+    await user.click(screen.getByRole('button', { name: 'Import 1 as jobs' }));
+
+    expect(props.importCandidates).toHaveBeenCalledWith(['c1']);
+    expect(screen.getByRole('heading', { name: 'Add a candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Company' })).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'Save changes' })).not.toBeInTheDocument();
+    expect(props.updateCandidate).not.toHaveBeenCalled();
+  });
+
+  it('closes an open correction when refreshed candidates mark it imported', async () => {
+    const user = userEvent.setup();
+    const { props, rerender } = renderSection({ candidates: [candidate('c1', 'N26')] });
+
+    await user.click(screen.getByRole('button', { name: 'Correct Engineer at N26' }));
+    expect(screen.getByRole('heading', { name: 'Correct candidate' })).toBeInTheDocument();
+
+    rerender(
+      <ImportCandidatesSection {...props} candidates={[candidate('c1', 'N26', 'IMPORTED')]} />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Add a candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Company' })).toHaveValue('');
+    expect(props.updateCandidate).not.toHaveBeenCalled();
+  });
 });

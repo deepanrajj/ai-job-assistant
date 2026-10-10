@@ -418,7 +418,11 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   const [selectionOverrides, setSelectionOverrides] = useState<ReadonlyMap<string, boolean>>(
     new Map(),
   );
-  const [editing, setEditing] = useState<TImportCandidateResponse | null>(null);
+  const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
+  const editing =
+    candidates.find(
+      (candidate) => candidate.id === editingCandidateId && candidate.reviewStatus !== 'IMPORTED',
+    ) ?? null;
   const [isConfirming, setIsConfirming] = useState(false);
   const [feedback, setFeedback] = useState<IImportFeedback | null>(null);
   const [importRequestError, setImportRequestError] = useState<string | null>(null);
@@ -468,7 +472,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
 
   const switchEditing = (candidate: TImportCandidateResponse | null) => {
     clearMutationError();
-    setEditing(candidate);
+    setEditingCandidateId(candidate?.id ?? null);
   };
 
   const toggle = (candidateId: string) =>
@@ -497,6 +501,11 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
           }),
         importedCount: results.filter((result) => result.outcome === 'IMPORTED').length,
       });
+      setEditingCandidateId((current) =>
+        results.some((result) => result.candidateId === current && result.outcome === 'IMPORTED')
+          ? null
+          : current,
+      );
       jobs.reload();
       if (results.some((result) => result.outcome === 'FAILED')) reload();
     } catch (error) {
@@ -521,7 +530,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
 
   const handleDelete = (candidate: TImportCandidateResponse) => {
     deleteCandidate(candidate.id).then(
-      () => setEditing((current) => (current?.id === candidate.id ? null : current)),
+      () => setEditingCandidateId((current) => (current === candidate.id ? null : current)),
       () => {
         // Error is already recorded in request state and rendered from it.
       },
