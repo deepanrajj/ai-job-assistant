@@ -4,7 +4,7 @@ import {
   type TSavedSearchCriteria,
   type TSavedSearchFallbackErrorKey,
 } from './savedSearches.types';
-import { normalizePreferenceList, normalizePreferenceValue } from '../preferences';
+import { cleanPreferenceList, normalizePreferenceValue } from '../preferences';
 
 /**
  * Resolves the localized fallback error message for a saved search operation.
@@ -45,7 +45,7 @@ export const normalizeSavedSearchCriteria = (
   notes: criteria.notes.trim(),
   role: normalizePreferenceValue(criteria.role),
   seniority: [...new Set(criteria.seniority)],
-  skills: normalizePreferenceList(criteria.skills),
+  skills: cleanPreferenceList(criteria.skills),
   workModes: [...new Set(criteria.workModes)],
 });
 

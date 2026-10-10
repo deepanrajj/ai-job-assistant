@@ -31,6 +31,45 @@ describe('useProfilePreferences', () => {
     expect(result.current.preferences?.updatedAt).toBe('2026-10-05T09:00:00Z');
   });
 
+  it('ignores a load that returns after a save started', async () => {
+    let releaseLoad: () => void = () => {};
+    let loads = 0;
+
+    server.use(
+      http.get(endpoint, async () => {
+        loads += 1;
+        await new Promise<void>((resolve) => {
+          releaseLoad = resolve;
+        });
+
+        return HttpResponse.json({
+          ...createEmptyProfilePreferences(),
+          skills: ['Old'],
+          updatedAt: '2026-10-01T09:00:00Z',
+        });
+      }),
+      http.put(endpoint, async ({ request }) =>
+        HttpResponse.json({
+          ...((await request.json()) as object),
+          updatedAt: '2026-10-05T09:00:00Z',
+        }),
+      ),
+    );
+    const { result } = renderHook(() => useProfilePreferences());
+
+    await waitFor(() => expect(loads).toBe(1));
+    await act(() => result.current.save({ ...createEmptyProfilePreferences(), skills: ['New'] }));
+    await act(async () => {
+      releaseLoad();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+
+    expect(result.current.preferences).toMatchObject({
+      skills: ['New'],
+      updatedAt: '2026-10-05T09:00:00Z',
+    });
+  });
+
   it('records a failed save and rejects with it', async () => {
     server.use(http.put(endpoint, () => new HttpResponse(null, { status: 500 })));
     const { result } = renderHook(() => useProfilePreferences());

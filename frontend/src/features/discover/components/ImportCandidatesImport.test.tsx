@@ -38,6 +38,7 @@ const imported = (candidateId: string, jobId: string): TImportCandidateResult =>
 const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidatesSection>> = {}) => {
   const props: ComponentProps<typeof ImportCandidatesSection> = {
     candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando'), candidate('c3', 'Personio')],
+    clearMutationError: vi.fn(),
     createCandidate: vi.fn(),
     deleteCandidate: vi.fn(),
     importCandidates: vi.fn(async (ids: string[]) => ids.map((id) => imported(id, `job-${id}`))),

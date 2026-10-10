@@ -174,3 +174,4 @@ Built as planned, with no backend change.
 Follow-up for task 049: re-check duplicates on the server with the same
 rules when importing, rather than trusting the browser's answer (D1).
 
+\r\n

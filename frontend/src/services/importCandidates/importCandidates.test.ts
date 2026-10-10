@@ -15,11 +15,7 @@ import {
   updateImportCandidate,
 } from './importCandidates.service';
 import { deleteJson, getJson, postJson, putJson } from '../api';
-import {
-  buildImportCandidateRequest,
-  createEmptyImportCandidateForm,
-  validateImportCandidateForm,
-} from './importCandidates.utils';
+import { buildImportCandidateRequest } from './importCandidates.utils';
 import { APP_ERROR_CODES } from '../../types';
 
 vi.mock('../api', () => ({
@@ -38,23 +34,6 @@ const body = buildImportCandidateRequest({
 });
 
 describe('importCandidates.utils', () => {
-  it('requires company, role, and description, and an http(s) link when given', () => {
-    expect(validateImportCandidateForm(createEmptyImportCandidateForm())).toEqual({
-      company: 'required',
-      description: 'required',
-      roleTitle: 'required',
-    });
-    expect(
-      validateImportCandidateForm({
-        company: 'N26',
-        description: 'x',
-        location: '',
-        roleTitle: 'y',
-        sourceUrl: 'ftp://example.com',
-      }),
-    ).toEqual({ sourceUrl: 'invalidUrl' });
-  });
-
   it('trims text and sends a blank link as null', () => {
     expect(body).toEqual({
       content: { company: 'N26', description: 'Text', location: '', roleTitle: 'Engineer' },

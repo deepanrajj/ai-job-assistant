@@ -1,5 +1,8 @@
 import { getJson, putJson } from '../api';
-import { getPreferencesFallbackErrorMessage } from './preferences.utils';
+import {
+  getPreferencesFallbackErrorMessage,
+  mapProfilePreferencesResponse,
+} from './preferences.utils';
 // TEMPORARY: remove this import and the USE_MOCK_PREFERENCES branches
 // below when the task 045 backend lands. See preferences.mock.ts.
 import {
@@ -19,12 +22,13 @@ const PREFERENCES_ENDPOINT = '/api/profile/preferences';
  * @returns {Promise<TProfilePreferencesResponse>} The preferences record.
  */
 export const getProfilePreferences = (): Promise<TProfilePreferencesResponse> =>
-  USE_MOCK_PREFERENCES
+  (USE_MOCK_PREFERENCES
     ? mockGetProfilePreferences()
     : getJson<TProfilePreferencesResponse>(PREFERENCES_ENDPOINT, {
         errorCode: APP_ERROR_CODES.PREFERENCES_REQUEST_FAILED,
         fallbackErrorMessage: getPreferencesFallbackErrorMessage('getPreferences'),
-      });
+      })
+  ).then(mapProfilePreferencesResponse);
 
 /**
  * Replaces the user's skills and job preferences.
@@ -35,9 +39,10 @@ export const getProfilePreferences = (): Promise<TProfilePreferencesResponse> =>
 export const saveProfilePreferences = (
   preferences: TProfilePreferences,
 ): Promise<TProfilePreferencesResponse> =>
-  USE_MOCK_PREFERENCES
+  (USE_MOCK_PREFERENCES
     ? mockSaveProfilePreferences(preferences)
     : putJson<TProfilePreferencesResponse, TProfilePreferences>(PREFERENCES_ENDPOINT, preferences, {
         errorCode: APP_ERROR_CODES.PREFERENCES_REQUEST_FAILED,
         fallbackErrorMessage: getPreferencesFallbackErrorMessage('savePreferences'),
-      });
+      })
+  ).then(mapProfilePreferencesResponse);

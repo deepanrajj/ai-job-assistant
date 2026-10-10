@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   getProfilePreferences,
@@ -28,6 +28,12 @@ export interface IProfilePreferencesState {
  * `save` normalizes the record first, so whatever reaches the API is
  * already clean; it rejects after recording `saveError` on failure.
  *
+ * A load's result is applied only if no newer load or save started after
+ * it was sent: `useAsyncMutation` keeps an overtaken response out of its
+ * own request state but still resolves with it, and under `StrictMode` two
+ * loads go out at mount, so a slow one could otherwise land after a save
+ * and put the old record back on screen.
+ *
  * @returns {IProfilePreferencesState} Preferences, request state, and save.
  */
 export const useProfilePreferences = (): IProfilePreferencesState => {
@@ -40,11 +46,20 @@ export const useProfilePreferences = (): IProfilePreferencesState => {
     request: { error: saveError, isLoading: isSaving },
   } = useAsyncMutation<TProfilePreferences, TProfilePreferencesResponse>(saveProfilePreferences);
   const [preferences, setPreferences] = useState<TProfilePreferencesResponse | null>(null);
+  const latestRequestIdRef = useRef(0);
 
   const reload = useCallback(() => {
-    loadPreferences().then(setPreferences, () => {
-      // Error is already recorded in request state and rendered from it.
-    });
+    latestRequestIdRef.current += 1;
+    const requestId = latestRequestIdRef.current;
+
+    loadPreferences().then(
+      (loaded) => {
+        if (requestId === latestRequestIdRef.current) setPreferences(loaded);
+      },
+      () => {
+        // Error is already recorded in request state and rendered from it.
+      },
+    );
   }, [loadPreferences]);
 
   useEffect(() => {
@@ -52,10 +67,14 @@ export const useProfilePreferences = (): IProfilePreferencesState => {
   }, [reload]);
 
   const save = useCallback(
-    (next: TProfilePreferences) =>
-      putPreferences(normalizeProfilePreferences(next)).then((saved) => {
+    (next: TProfilePreferences) => {
+      // Supersedes any load in flight; the saved record is the newest.
+      latestRequestIdRef.current += 1;
+
+      return putPreferences(normalizeProfilePreferences(next)).then((saved) => {
         setPreferences(saved);
-      }),
+      });
+    },
     [putPreferences],
   );
 

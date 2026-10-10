@@ -64,6 +64,9 @@ describe('useSavedSearches', () => {
 
     expect(result.current.mutationError?.message).toBe('Failed to delete saved search');
     expect(result.current.searches).toHaveLength(1);
+
+    act(() => result.current.clearMutationError());
+    expect(result.current.mutationError).toBeNull();
   });
 
   it('reports a failed load', async () => {

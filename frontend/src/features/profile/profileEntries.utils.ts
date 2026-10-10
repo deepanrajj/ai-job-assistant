@@ -94,8 +94,28 @@ export const createEmptyProfileContent = (): TResumeProfileContent => ({
 });
 
 /**
- * Checks whether a profile can be saved: a name, and every link with a
- * label and an http(s) URL.
+ * Checks whether a link was added and left entirely empty. Such a link is
+ * not saved, so it never blocks saving either.
+ *
+ * @param {TResumeProfileContent['links'][number]} link A link as edited.
+ * @returns {boolean} True when both its label and URL are blank.
+ */
+export const isBlankProfileLink = (link: TResumeProfileContent['links'][number]): boolean =>
+  !link.label.trim() && !link.url.trim();
+
+/**
+ * Trims text entries and drops the ones left empty, which would otherwise
+ * be saved, counted, and later cited as if they said something.
+ *
+ * @param {T[]} entries Text entries as edited.
+ * @returns {T[]} Trimmed, non-empty entries, ids and order kept.
+ */
+const trimTextEntries = <T extends IEntry & { text: string }>(entries: T[]): T[] =>
+  entries.map((entry) => ({ ...entry, text: entry.text.trim() })).filter((entry) => entry.text);
+
+/**
+ * Checks whether a profile can be saved: a name, and every link that is
+ * not entirely blank with a label and an http(s) URL.
  *
  * @param {string} name Profile name.
  * @param {TResumeProfileContent} content Profile content.
@@ -103,20 +123,26 @@ export const createEmptyProfileContent = (): TResumeProfileContent => ({
  */
 export const isResumeProfileValid = (name: string, content: TResumeProfileContent): boolean =>
   Boolean(name.trim()) &&
-  content.links.every(
-    (link) => Boolean(link.label.trim()) && Boolean(link.url.trim()) && isValidProfileUrl(link.url),
-  );
+  content.links
+    .filter((link) => !isBlankProfileLink(link))
+    .every(
+      (link) =>
+        Boolean(link.label.trim()) && Boolean(link.url.trim()) && isValidProfileUrl(link.url),
+    );
 
 /**
- * Trims every text field before saving. Entry ids and order are kept.
+ * Trims every text field before saving and drops entries and links left
+ * empty. Entry ids and order are kept.
  *
  * @param {TResumeProfileContent} content Profile content as edited.
  * @returns {TResumeProfileContent} Content ready to send.
  */
 export const normalizeProfileContent = (content: TResumeProfileContent): TResumeProfileContent => ({
-  education: content.education.map((entry) => ({ ...entry, text: entry.text.trim() })),
-  highlights: content.highlights.map((entry) => ({ ...entry, text: entry.text.trim() })),
-  links: content.links.map((link) => ({ ...link, label: link.label.trim(), url: link.url.trim() })),
+  education: trimTextEntries(content.education),
+  highlights: trimTextEntries(content.highlights),
+  links: content.links
+    .filter((link) => !isBlankProfileLink(link))
+    .map((link) => ({ ...link, label: link.label.trim(), url: link.url.trim() })),
   notes: content.notes.trim(),
   summary: content.summary.trim(),
   targetRole: content.targetRole,
