@@ -377,13 +377,17 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     new Map(),
   );
   const [editing, setEditing] = useState<TImportCandidateResponse | null>(null);
-  const duplicates = useMemo(
-    () =>
-      new Map(
-        candidates.map((candidate) => [candidate.id, getCandidateDuplicateState(candidate, jobs)]),
-      ),
-    [candidates, jobs],
-  );
+  const { error: jobsError, isLoading: jobsLoading, jobs: savedJobs } = jobs;
+  const duplicates = useMemo(() => {
+    const jobState = { error: jobsError, isLoading: jobsLoading, jobs: savedJobs };
+
+    return new Map(
+      candidates.map((candidate) => [
+        candidate.id,
+        getCandidateDuplicateState(candidate, jobState),
+      ]),
+    );
+  }, [candidates, jobsError, jobsLoading, savedJobs]);
 
   /**
    * A candidate is selected by default unless it is a likely duplicate, or

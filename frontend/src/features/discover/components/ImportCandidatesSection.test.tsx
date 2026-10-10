@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
 import { ImportCandidatesSection } from './ImportCandidatesSection';
+import * as duplicateUtils from '../../duplicates/duplicates.utils';
 import { AppError } from '../../../errors';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import { createMockJob } from '../../../test/mockJobs';
@@ -142,6 +143,27 @@ describe('ImportCandidatesSection', () => {
     expect(
       screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' }),
     ).not.toBeChecked();
+  });
+
+  it('reuses duplicate classifications after selection and a new saved jobs wrapper', async () => {
+    const user = userEvent.setup();
+    const classify = vi.spyOn(duplicateUtils, 'classifyDuplicate');
+    const savedJobs = [createMockJob({ company: 'N26', roleTitle: 'Backend Engineer' })];
+    const { props, rerender } = renderSection({
+      jobs: { error: null, isLoading: false, jobs: savedJobs },
+    });
+
+    expect(classify).toHaveBeenCalledTimes(2);
+
+    await user.click(screen.getByRole('checkbox', { name: 'Select Backend Engineer at N26' }));
+    expect(classify).toHaveBeenCalledTimes(2);
+
+    rerender(<ImportCandidatesSection {...props} jobs={{ ...props.jobs }} />);
+    expect(classify).toHaveBeenCalledTimes(2);
+
+    rerender(<ImportCandidatesSection {...props} jobs={{ ...props.jobs, jobs: [...savedJobs] }} />);
+    expect(classify).toHaveBeenCalledTimes(4);
+    classify.mockRestore();
   });
 
   it('preselects nothing while the saved jobs load or after they fail', () => {
