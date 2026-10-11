@@ -83,7 +83,9 @@ The card has only the five earliest open reminders, so it cannot know
 that a day without one is free. A seven-day grid would print "No plans"
 on days that may have reminders beyond the fifth. When exactly
 `NEXT_REMINDERS_LIMIT` reminders arrive, the card says it shows the next
-five, so a full list is not read as the whole week.
+five, so a full list is not read as the whole week. It states only that,
+not that more exist: exactly five open reminders also arrive as five, and
+telling the cases apart would need a sixth from the request.
 
 Rejected:
 
@@ -129,7 +131,8 @@ meters keep their accessible names and values.
 recorded APPLIED transitions, and last week is counted only from its
 Monday through today's weekday, in whole local days. A week in progress
 is compared with the same span of last week, so Monday morning does not
-read as a drop against a full week. The trend is a sentence with a decorative
+read as a drop against a full week, and the sentence says so: "1 more
+than at this point last week". The trend is a sentence with a decorative
 arrow, so colour and arrow are never the only signal.
 
 Rejected:
@@ -147,9 +150,14 @@ job), role, applied date, status, and updated date, chosen with
 DOM. Phones keep the linked cards. The applied date is the recorded
 APPLIED transition from `getRecordedApplications`, and only from a
 settled, error-free history. Otherwise the cell shows a dash whose
-screen-reader text says why: "Not available" while the history loads or
-after it fails, "Not recorded" when it holds no application for the job.
-Only the recent jobs are looked up. Rows are not links as a whole, so
+screen-reader text says why: "Not applied" for a wishlist job or one
+withdrawn straight from the wishlist, "Not available" while the history
+loads or after it fails, and "Not recorded" when it holds no application
+for the job. Only the recent jobs' events are read.
+
+When reminders are off, the production default, recent activity shares
+the middle row with the pipeline from `lg` up. Half a row is too narrow
+for five columns, so there it keeps the cards. Rows are not links as a whole, so
 they have no hover highlight; the company name is the link.
 
 Rejected:
@@ -242,6 +250,6 @@ phase backlog's next-task line.
 - The insight cards have icon tiles and a soft blue response-rate card;
   applications this week compares with last week; recent activity is a
   table from `md` up with recorded applied dates.
-- `npm run frontend:verify`: 956 tests in 179 files, lint, format check,
+- `npm run frontend:verify`: 958 tests in 179 files, lint, format check,
   coverage, and build passed. Checked in the running app at 320 px in
   German and at 1280 px in English, the latter in a 1280 px iframe.

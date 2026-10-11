@@ -125,22 +125,23 @@
       "responseRate": "Antwortquote",
       "unavailable": "Nicht verfügbar",
       "responseRateUnavailable": "Braucht erfasste Antworten von Arbeitgebern, die der Tracker noch nicht speichert. Eine Absage oder ein Rückzug allein zählt nicht als Antwort.",
-      "trendUp": "{{count}} mehr als letzte Woche",
-      "trendDown": "{{count}} weniger als letzte Woche",
-      "trendSame": "Wie letzte Woche"
+      "trendUp": "{{count}} mehr als zum gleichen Zeitpunkt letzte Woche",
+      "trendDown": "{{count}} weniger als zum gleichen Zeitpunkt letzte Woche",
+      "trendSame": "Gleich viele wie zum gleichen Zeitpunkt letzte Woche"
     },
     "agenda": {
       "overdue": "Überfällig",
       "today": "Heute · {{date}}",
       "later": "Später",
-      "limitNote": "Angezeigt werden die nächsten {{count}} Erinnerungen. Ein Tag ohne Eintrag hier kann trotzdem Erinnerungen haben."
+      "limitNote": "Angezeigt werden die nächsten {{count}} Erinnerungen."
     },
     "pipeline": "Pipeline",
     "pipelineSummary": "{{total}} gespeichert · {{active}} aktiv",
     "viewAll": "Alle anzeigen",
     "appliedColumn": "Beworben am",
     "notRecorded": "Nicht erfasst",
-    "appliedUnavailable": "Nicht verfügbar"
+    "appliedUnavailable": "Nicht verfügbar",
+    "notApplied": "Nicht beworben"
   },
   "applications": {
     "title": "Bewerbungen",

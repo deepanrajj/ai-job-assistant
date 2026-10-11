@@ -83,14 +83,14 @@ describe('DashboardInsights', () => {
     const { unmount } = renderInsights();
 
     expect(
-      within(getCard('Applications this week')).getByText('1 more than last week'),
+      within(getCard('Applications this week')).getByText('1 more than at this point last week'),
     ).toBeInTheDocument();
     unmount();
 
     const fewer = renderInsights({ events: twoLastWeek });
 
     expect(
-      within(getCard('Applications this week')).getByText('2 fewer than last week'),
+      within(getCard('Applications this week')).getByText('2 fewer than at this point last week'),
     ).toBeInTheDocument();
     fewer.unmount();
 
@@ -98,7 +98,7 @@ describe('DashboardInsights', () => {
       events: [statusEvent('celonis', 'APPLIED', new Date().toISOString()), twoLastWeek[1]],
     });
     expect(
-      within(getCard('Applications this week')).getByText('Same as last week'),
+      within(getCard('Applications this week')).getByText('Same as at this point last week'),
     ).toBeInTheDocument();
   });
 

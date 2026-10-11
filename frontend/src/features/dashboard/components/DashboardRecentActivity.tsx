@@ -9,35 +9,45 @@ import { useTranslation } from '../../../i18n';
 import { formatDashboardDate } from '../dashboard.utils';
 import { APP_PATH_BUILDERS } from '../../../routes/paths';
 import type { TJob } from '../../../types';
+import type { IRecentApplications } from '../dashboard.types';
 
 /**
  * Props used by the dashboard recent activity list.
  */
 interface IDashboardRecentActivityProps {
   /**
-   * Each job's recorded application date from status history, or null
-   * while that history is loading or failed. A job missing from the map
-   * has no recorded application, and the table says so rather than guess.
+   * What status history says about the recent jobs, or null while that
+   * history is loading or failed. The table never guesses a date: it says
+   * whether one is unavailable, not recorded, or does not apply.
    */
-  appliedDates: Map<string, Date> | null;
+  applications: IRecentApplications | null;
   jobs: TJob[];
+  /**
+   * True when the card shares its row with another card from `lg` up.
+   * A five-column table does not fit half a row, so it uses the cards.
+   */
+  sharesRow?: boolean;
 }
 
 /**
- * Renders the most recently updated jobs. From `md` up they form a table
- * with company, role, recorded application date, status, and update date;
- * on phones each job is a compact card. Either way, each job links to its
+ * Renders the most recently updated jobs. With room for it (from `md` up,
+ * unless the card shares a row from `lg` up) they form a table with
+ * company, role, recorded application date, status, and update date;
+ * otherwise each job is a compact card. Either way, each job links to its
  * detail page and shows its status with the same pill as the jobs list.
  *
  * @param {IDashboardRecentActivityProps} props Component props.
  * @returns {JSX.Element} Dashboard recent activity list.
  */
 const DashboardRecentActivityComponent: FC<IDashboardRecentActivityProps> = ({
-  appliedDates,
+  applications,
   jobs,
+  sharesRow = false,
 }) => {
   const { language, t } = useTranslation();
-  const isTableLayout = useBreakpoint('md');
+  const isMediumUp = useBreakpoint('md');
+  const isLargeUp = useBreakpoint('lg');
+  const isTableLayout = isMediumUp && !(sharesRow && isLargeUp);
   const title = t('dashboard.recentActivity');
 
   if (jobs.length === 0)
@@ -51,24 +61,37 @@ const DashboardRecentActivityComponent: FC<IDashboardRecentActivityProps> = ({
     );
 
   /**
+   * Picks what a missing application date means for screen readers: a
+   * wishlist job, or one withdrawn straight from the wishlist, was never
+   * applied for; otherwise the date is not recorded, or the history that
+   * would hold it is unavailable.
+   *
+   * @param {TJob} job Job without a recorded application date.
+   * @returns {string} Translation key for the missing date.
+   */
+  const getMissingAppliedKey = (job: TJob): string => {
+    if (job.status === 'WISHLIST' || applications?.withdrawnFromWishlist.has(job.id))
+      return 'dashboard.notApplied';
+
+    return applications ? 'dashboard.notRecorded' : 'dashboard.appliedUnavailable';
+  };
+
+  /**
    * Renders a job's recorded application date, or a dash that tells screen
-   * readers why there is none: the history is unavailable, or it holds no
-   * application for this job.
+   * readers why there is none.
    *
    * @param {TJob} job Job to describe.
    * @returns {JSX.Element} Application date or placeholder.
    */
   const renderAppliedDate = (job: TJob) => {
-    const appliedAt = appliedDates?.get(job.id);
+    const appliedAt = applications?.appliedDates.get(job.id);
 
-    if (appliedAt) return formatDashboardDate(appliedAt.toISOString(), language);
+    if (appliedAt) return formatDashboardDate(appliedAt, language);
 
     return (
       <>
         <span aria-hidden="true">—</span>
-        <span className="sr-only">
-          {t(appliedDates ? 'dashboard.notRecorded' : 'dashboard.appliedUnavailable')}
-        </span>
+        <span className="sr-only">{t(getMissingAppliedKey(job))}</span>
       </>
     );
   };

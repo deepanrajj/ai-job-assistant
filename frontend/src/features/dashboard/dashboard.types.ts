@@ -29,3 +29,13 @@ export interface IReminderGroup {
   kind: TReminderGroupKind;
   reminders: TReminderItem[];
 }
+
+/**
+ * What status history says about the recent jobs: each one's recorded
+ * application date, and the jobs withdrawn straight from WISHLIST, which
+ * were never applied for (see `getJobsWithdrawnFromWishlist`).
+ */
+export interface IRecentApplications {
+  appliedDates: Map<string, Date>;
+  withdrawnFromWishlist: Set<string>;
+}

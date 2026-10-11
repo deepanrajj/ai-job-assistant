@@ -3,7 +3,7 @@ import { screen, within } from '@testing-library/react';
 
 import { DashboardRecentActivity } from './DashboardRecentActivity';
 import { renderWithRouter } from '../../../test/renderWithRouter';
-import { MOCK_JOB_IDS, createMockJobs } from '../../../test/mockJobs';
+import { MOCK_JOB_IDS, createMockJob, createMockJobs } from '../../../test/mockJobs';
 
 /**
  * Simulates a viewport below every breakpoint, i.e. a phone, and returns
@@ -32,7 +32,10 @@ describe('DashboardRecentActivity', () => {
   it('renders a table of recent jobs with links, applied dates, status, and update dates', () => {
     renderWithRouter(
       <DashboardRecentActivity
-        appliedDates={new Map([[MOCK_JOB_IDS.celonis, new Date(2026, 4, 2)]])}
+        applications={{
+          appliedDates: new Map([[MOCK_JOB_IDS.celonis, new Date(2026, 4, 2)]]),
+          withdrawnFromWishlist: new Set(),
+        }}
         jobs={createMockJobs()}
       />,
     );
@@ -54,23 +57,56 @@ describe('DashboardRecentActivity', () => {
 
   it('names a missing application date instead of guessing one', () => {
     const { unmount } = renderWithRouter(
-      <DashboardRecentActivity appliedDates={new Map()} jobs={createMockJobs()} />,
+      <DashboardRecentActivity
+        applications={{ appliedDates: new Map(), withdrawnFromWishlist: new Set() }}
+        jobs={createMockJobs()}
+      />,
     );
 
     expect(screen.getAllByText('Not recorded')).toHaveLength(createMockJobs().length);
     unmount();
 
     // No history yet, or it failed: the date is unknown, not absent.
-    renderWithRouter(<DashboardRecentActivity appliedDates={null} jobs={createMockJobs()} />);
+    renderWithRouter(<DashboardRecentActivity applications={null} jobs={createMockJobs()} />);
     expect(screen.getAllByText('Not available')).toHaveLength(createMockJobs().length);
     expect(screen.queryByText('Not recorded')).not.toBeInTheDocument();
+  });
+
+  it('says a wishlist job, or one withdrawn straight from it, was never applied for', () => {
+    renderWithRouter(
+      <DashboardRecentActivity
+        applications={{ appliedDates: new Map(), withdrawnFromWishlist: new Set(['dropped']) }}
+        jobs={[
+          createMockJob({ company: 'Saved', id: 'saved', status: 'WISHLIST' }),
+          createMockJob({ company: 'Dropped', id: 'dropped', status: 'WITHDRAWN' }),
+          createMockJob({ company: 'Undated', id: 'undated', status: 'APPLIED' }),
+        ]}
+      />,
+    );
+
+    const rowFor = (company: string): HTMLElement =>
+      screen.getByRole('link', { name: company }).closest('tr') as HTMLElement;
+
+    expect(within(rowFor('Saved')).getByText('Not applied')).toBeInTheDocument();
+    expect(within(rowFor('Dropped')).getByText('Not applied')).toBeInTheDocument();
+    expect(within(rowFor('Undated')).getByText('Not recorded')).toBeInTheDocument();
+  });
+
+  it('uses the cards when it shares a row on a large screen, where a table would not fit', () => {
+    // The setup file's matchMedia matches every query, i.e. a large screen.
+    renderWithRouter(
+      <DashboardRecentActivity applications={null} jobs={createMockJobs()} sharesRow />,
+    );
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Celonis/ })).toBeInTheDocument();
   });
 
   it('renders each job as a linked card on phones', () => {
     const restoreViewport = mockPhoneViewport();
 
     try {
-      renderWithRouter(<DashboardRecentActivity appliedDates={null} jobs={createMockJobs()} />);
+      renderWithRouter(<DashboardRecentActivity applications={null} jobs={createMockJobs()} />);
 
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
 
@@ -90,7 +126,7 @@ describe('DashboardRecentActivity', () => {
    * with nothing inside it.
    */
   it('renders first-run copy instead of an empty list when there are no jobs', () => {
-    renderWithRouter(<DashboardRecentActivity appliedDates={null} jobs={[]} />);
+    renderWithRouter(<DashboardRecentActivity applications={null} jobs={[]} />);
 
     expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
     expect(screen.getByText('No activity yet')).toBeInTheDocument();

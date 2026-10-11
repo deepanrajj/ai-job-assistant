@@ -50,11 +50,11 @@ export const getDashboardData = (jobs: TJob[]): IDashboardData => {
 /**
  * Formats a dashboard activity date for the active language.
  *
- * @param {string} date ISO date string to format.
+ * @param {string | Date} date ISO date string or date to format.
  * @param {TLanguage} language Active app language.
  * @returns {string} Localized dashboard date.
  */
-export const formatDashboardDate = (date: string, language: TLanguage): string =>
+export const formatDashboardDate = (date: string | Date, language: TLanguage): string =>
   new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
     month: 'short',
     day: 'numeric',

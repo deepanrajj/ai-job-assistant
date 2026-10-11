@@ -125,22 +125,23 @@
       "responseRate": "Response rate",
       "unavailable": "Unavailable",
       "responseRateUnavailable": "Needs recorded employer responses, which the tracker does not capture yet. A rejection or withdrawal alone is not counted as a response.",
-      "trendUp": "{{count}} more than last week",
-      "trendDown": "{{count}} fewer than last week",
-      "trendSame": "Same as last week"
+      "trendUp": "{{count}} more than at this point last week",
+      "trendDown": "{{count}} fewer than at this point last week",
+      "trendSame": "Same as at this point last week"
     },
     "agenda": {
       "overdue": "Overdue",
       "today": "Today · {{date}}",
       "later": "Later",
-      "limitNote": "Showing the next {{count}} reminders. A day with none here may still have reminders."
+      "limitNote": "Showing the next {{count}} reminders."
     },
     "pipeline": "Pipeline",
     "pipelineSummary": "{{total}} saved · {{active}} active",
     "viewAll": "View all",
     "appliedColumn": "Applied",
     "notRecorded": "Not recorded",
-    "appliedUnavailable": "Not available"
+    "appliedUnavailable": "Not available",
+    "notApplied": "Not applied"
   },
   "applications": {
     "title": "Applications",
