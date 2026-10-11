@@ -114,6 +114,15 @@ On phones (below `sm`), Add Job and the language switch now sit in the
 menu drawer instead of the header, at the owner's request: the language
 switch beside the close button and a full-width Add Job below it.
 
+Third PR review fixes: shared breakpoints use Tailwind 4's rem values so
+JS and CSS agree at any browser font size; Back/Forward keeps the restored
+scroll position; `<main>` shows no outline when focused on route change;
+the phone-only empty-state action is passed only below `sm`; the menu
+state is one value with one focus effect; the right tooltip hides on
+scroll and resize; Add Job links use the shared `getButtonClassName`; the
+menu, close, and chevron icons are named components; and the collapse
+toggle reports `aria-expanded` with `aria-controls`.
+
 Second PR review fixes: the drawer no longer reopens after Back/Forward
 and closes through the shared `useBreakpoint('lg')` hook; the first-run
 Jobs empty state offers Add Job on phones; the skip link is inert while

@@ -48,15 +48,13 @@ describe('AppShellSidebar', () => {
     expect(onCloseMobile).toHaveBeenCalledTimes(1);
   });
 
-  it('offers Add Job and the language switch inside the mobile drawer', async () => {
-    const user = userEvent.setup();
-    const onCloseMobile = vi.fn();
+  it('offers Add Job and the language switch inside the mobile drawer', () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/jobs']}>
         <AppShellSidebar
           collapsed={false}
           mobileOpen
-          onCloseMobile={onCloseMobile}
+          onCloseMobile={() => {}}
           onToggleCollapsed={() => {}}
         />
       </MemoryRouter>,
@@ -64,10 +62,11 @@ describe('AppShellSidebar', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Mobile navigation' });
     expect(within(dialog).getByRole('group', { name: 'Language' })).toBeInTheDocument();
-    const addJob = within(dialog).getByRole('link', { name: 'Add Job' });
-    expect(addJob).toHaveAttribute('href', '/jobs/new');
-    await user.click(addJob);
-    expect(onCloseMobile).toHaveBeenCalledTimes(1);
+    // Following the link leaves the route, which closes the drawer in AppShell.
+    expect(within(dialog).getByRole('link', { name: 'Add Job' })).toHaveAttribute(
+      'href',
+      '/jobs/new',
+    );
   });
 
   it('hides the drawer Add Job action on the create page', () => {

@@ -15,6 +15,7 @@ import {
   createJobsViewToggle,
 } from '../../features/jobs/jobs.config';
 import { PlusIcon } from '../../components/icons';
+import { useBreakpoint } from '../../hooks';
 import { useTranslation } from '../../i18n';
 import type { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
@@ -40,6 +41,7 @@ interface IJobsPageProps {
 export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }) => {
   const { language, t } = useTranslation();
   const navigate = useNavigate();
+  const isSmallUp = useBreakpoint('sm');
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
   const [viewMode, setViewMode] = useState<TJobsViewMode>('table');
 
@@ -116,12 +118,10 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
           ? {
               // From `sm` up the header carries Add Job; on phones it lives in the menu drawer,
               // so the first-run empty state offers it directly.
-              action: (
-                <div className="sm:hidden">
-                  <Button leftIcon={<PlusIcon />} onClick={() => navigate(APP_PATHS.JOB_NEW)}>
-                    {t('jobs.addJob')}
-                  </Button>
-                </div>
+              action: isSmallUp ? undefined : (
+                <Button leftIcon={<PlusIcon />} onClick={() => navigate(APP_PATHS.JOB_NEW)}>
+                  {t('jobs.addJob')}
+                </Button>
               ),
               description: t('jobs.noJobsYetDescription'),
               title: t('jobs.noJobsYet'),

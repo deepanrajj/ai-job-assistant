@@ -11,6 +11,27 @@ import { renderWithRouter } from '../../test/renderWithRouter';
 import { createMockJobs } from '../../test/mockJobs';
 import { APP_ERROR_CODES } from '../../types';
 
+/**
+ * Simulates a viewport below every breakpoint, i.e. a phone.
+ */
+const mockPhoneViewport = () => {
+  // Swap rather than spy: spying on the setup file's mock and restoring it would wipe it.
+  const originalMatchMedia = window.matchMedia;
+  window.matchMedia = vi.fn(
+    (query: string) =>
+      ({
+        addEventListener: vi.fn(),
+        matches: false,
+        media: query,
+        removeEventListener: vi.fn(),
+      }) as unknown as MediaQueryList,
+  );
+
+  return () => {
+    window.matchMedia = originalMatchMedia;
+  };
+};
+
 const loadError = () => new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED);
 
 /**
@@ -85,10 +106,12 @@ describe('JobsPage', () => {
       screen.getByText('Add your first opportunity to start tracking applications.'),
     ).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add Job' }).parentElement).toHaveClass('sm:hidden');
+    // From `sm` up the header carries Add Job, so the empty state leaves it out.
+    expect(screen.queryByRole('button', { name: 'Add Job' })).not.toBeInTheDocument();
   });
 
-  it('opens the add job route from the first-run empty state', async () => {
+  it('opens the add job route from the first-run empty state on phones', async () => {
+    const restoreViewport = mockPhoneViewport();
     const user = userEvent.setup();
     const router = createMemoryRouter(
       [
@@ -111,6 +134,7 @@ describe('JobsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Add Job' }));
 
     expect(await screen.findByText('Add job route')).toBeInTheDocument();
+    restoreViewport();
   });
 
   it('keeps the filter-oriented empty state when a search excludes every job', async () => {

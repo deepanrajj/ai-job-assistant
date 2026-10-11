@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
-import { Outlet, useLocation, useMatches } from 'react-router-dom';
+import { Outlet, useLocation, useMatches, useNavigationType } from 'react-router-dom';
 
 import { AppShellHeader, AppShellPageHeading, AppShellSidebar } from './layout';
 import { useBreakpoint } from '../../hooks';
@@ -17,36 +17,33 @@ export const AppShell: FC = () => {
   const { t } = useTranslation();
   const page = getActiveRouteHandle(matches);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // The drawer belongs to the route it was opened on, so any route change closes it.
-  const [mobileMenuPathname, setMobileMenuPathname] = useState<string | null>(null);
   const isDesktop = useBreakpoint('lg');
+  const navigationType = useNavigationType();
+  // The drawer belongs to the route it was opened on: leaving that route or widening to desktop
+  // closes it in the same render, so a route change never races a separate close.
+  const [mobileMenuPathname, setMobileMenuPathname] = useState<string | null>(null);
   const mobileMenuOpen = !isDesktop && mobileMenuPathname === pathname;
-  // Forget a menu left behind by Back/Forward or a resize to desktop, or it would reopen later.
+  // Forget a closed drawer's route, or Back/Forward to it would reopen the drawer.
   if (mobileMenuPathname !== null && !mobileMenuOpen) setMobileMenuPathname(null);
   const mainRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const previousPathnameRef = useRef(pathname);
-  const restoreMenuFocusRef = useRef(false);
-  const closeMobileMenu = useCallback(() => {
-    restoreMenuFocusRef.current = true;
-    setMobileMenuPathname(null);
-  }, []);
+  const previousRef = useRef({ mobileMenuOpen, pathname });
+  const closeMobileMenu = useCallback(() => setMobileMenuPathname(null), []);
 
-  // The header is inert while the drawer is open, so focus returns only after it re-renders.
+  // One effect owns focus: a route change moves focus to the page, while closing the drawer on
+  // the same route returns focus to the menu button once the header is no longer inert.
   useEffect(() => {
-    if (mobileMenuOpen || !restoreMenuFocusRef.current) return;
-    restoreMenuFocusRef.current = false;
-    menuButtonRef.current?.focus();
-  }, [mobileMenuOpen]);
+    const previous = previousRef.current;
+    previousRef.current = { mobileMenuOpen, pathname };
 
-  // Declared after the menu focus effect so a route change wins over returning to the menu button.
-  useEffect(() => {
-    if (previousPathnameRef.current === pathname) return;
-    previousPathnameRef.current = pathname;
-    restoreMenuFocusRef.current = false;
-    document.documentElement.scrollTop = 0;
-    mainRef.current?.focus({ preventScroll: true });
-  }, [pathname]);
+    if (previous.pathname !== pathname) {
+      // Back/Forward (POP) keeps the scroll position the browser restored.
+      if (navigationType !== 'POP') document.documentElement.scrollTop = 0;
+      mainRef.current?.focus({ preventScroll: true });
+    } else if (previous.mobileMenuOpen && !mobileMenuOpen && !isDesktop) {
+      menuButtonRef.current?.focus();
+    }
+  }, [isDesktop, mobileMenuOpen, navigationType, pathname]);
 
   return (
     <div className="min-h-screen bg-app-bg text-app-text">
@@ -78,7 +75,7 @@ export const AppShell: FC = () => {
             {/* The id and aria-labelledby connect the skip link, page title, and route outlet. */}
             <main
               aria-labelledby="page-title"
-              className="pb-8"
+              className="pb-8 focus:outline-none"
               id="main-content"
               ref={mainRef}
               tabIndex={-1}

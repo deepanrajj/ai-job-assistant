@@ -1,5 +1,6 @@
 import {
   cloneElement,
+  useEffect,
   useId,
   useState,
   type FocusEventHandler,
@@ -83,6 +84,20 @@ export const Tooltip: FC<ITooltipProps> = ({
     }
     setIsVisible(true);
   };
+
+  // A `right` tooltip is placed once in viewport coordinates, so hide it rather than let it drift
+  // away from its trigger when anything scrolls or the window resizes.
+  useEffect(() => {
+    if (!isVisible || placement !== 'right') return;
+
+    const hide = () => setIsVisible(false);
+    window.addEventListener('scroll', hide, { capture: true, passive: true });
+    window.addEventListener('resize', hide);
+    return () => {
+      window.removeEventListener('scroll', hide, { capture: true });
+      window.removeEventListener('resize', hide);
+    };
+  }, [isVisible, placement]);
 
   const describedBy = classNames(children.props['aria-describedby'], isVisible && tooltipId);
 

@@ -1,9 +1,11 @@
 import { useEffect, useRef, type FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+import { getButtonClassName } from '../../ui';
 import { LanguageSelect } from '../../languageSelect/LanguageSelect';
 import { AppShellNavigation } from './AppShellNavigation';
 import { PlusIcon } from '../../icons';
+import { ChevronIcon, CloseIcon } from '../appShell.icons';
 import { useTranslation } from '../../../i18n';
 import { isDisplayed, navClassName } from '../appShell.utils';
 import { APP_PATHS } from '../../../routes/paths';
@@ -84,6 +86,8 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
         }`}
       >
         <button
+          aria-controls="desktop-nav"
+          aria-expanded={!collapsed}
           aria-label={t(collapsed ? 'nav.expandSidebar' : 'nav.collapseSidebar')}
           className={`mb-5 flex h-10 w-full items-center gap-2 rounded-lg border border-app-border text-app-textSoft hover:bg-app-surface2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
             collapsed ? 'justify-center' : 'px-3'
@@ -91,21 +95,14 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
           onClick={onToggleCollapsed}
           type="button"
         >
-          <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <path
-              d={collapsed ? 'm9 6 6 6-6 6' : 'm15 6-6 6 6 6'}
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.8"
-            />
-          </svg>
+          <ChevronIcon direction={collapsed ? 'right' : 'left'} />
           {!collapsed && <span className="text-sm">{t('nav.collapseSidebar')}</span>}
         </button>
         <AppShellNavigation
           ariaLabel={t('nav.main')}
           className="space-y-1"
           collapsed={collapsed}
+          id="desktop-nav"
           linkClassName={({ isActive }) => navClassName({ collapsed, isActive })}
         />
       </div>
@@ -139,21 +136,17 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
                 ref={closeButtonRef}
                 type="button"
               >
-                <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <path
-                    d="M5 5 19 19M19 5 5 19"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeWidth="1.8"
-                  />
-                </svg>
+                <CloseIcon />
               </button>
             </div>
             {pathname !== APP_PATHS.JOB_NEW && (
               <div className="mb-4 border-b border-app-border pb-4 sm:hidden">
+                {/* Leaving the route closes the drawer, so the link needs no close handler. */}
                 <Link
-                  className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-primary-600 px-4 text-sm font-medium text-white transition hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
-                  onClick={onCloseMobile}
+                  className={getButtonClassName({
+                    className: 'whitespace-nowrap',
+                    fullWidth: true,
+                  })}
                   to={APP_PATHS.JOB_NEW}
                 >
                   <PlusIcon />
@@ -165,7 +158,10 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
             <AppShellNavigation
               className="space-y-1"
               linkClassName={navClassName}
-              onNavigate={onCloseMobile}
+              // Other routes close the drawer on their own; the current one has to close it here.
+              onNavigate={(path) => {
+                if (path === pathname) onCloseMobile();
+              }}
             />
           </aside>
         </div>

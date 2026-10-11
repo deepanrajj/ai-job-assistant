@@ -1,9 +1,10 @@
 import type { FC, RefObject } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+import { getButtonClassName } from '../../ui';
 import { LanguageSelect } from '../../languageSelect/LanguageSelect';
 import { PlusIcon } from '../../icons';
-import { AppLogoIcon, ProfileIcon } from '../appShell.icons';
+import { AppLogoIcon, MenuIcon, ProfileIcon } from '../appShell.icons';
 import { useTranslation } from '../../../i18n';
 import { APP_PATHS } from '../../../routes/paths';
 
@@ -48,14 +49,7 @@ export const AppShellHeader: FC<IAppShellHeaderProps> = ({
             ref={menuButtonRef}
             type="button"
           >
-            <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
-              <path
-                d="M4 6h16M4 12h16M4 18h16"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeWidth="1.8"
-              />
-            </svg>
+            <MenuIcon />
           </button>
           <Link
             aria-label={t('app.name')}
@@ -73,13 +67,12 @@ export const AppShellHeader: FC<IAppShellHeaderProps> = ({
 
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
           {pathname !== APP_PATHS.JOB_NEW && (
-            <Link
-              className="hidden h-10 shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary-600 px-4 text-sm font-medium text-white transition hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:inline-flex"
-              to={APP_PATHS.JOB_NEW}
-            >
-              <PlusIcon />
-              {t('jobs.addJob')}
-            </Link>
+            <div className="hidden sm:block">
+              <Link className={getButtonClassName({ size: 'sm' })} to={APP_PATHS.JOB_NEW}>
+                <PlusIcon />
+                {t('jobs.addJob')}
+              </Link>
+            </div>
           )}
           <div className="hidden sm:block">
             <LanguageSelect />

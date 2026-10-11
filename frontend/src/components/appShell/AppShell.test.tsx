@@ -60,17 +60,22 @@ const createAppShellRouter = (initialPath = '/jobs') =>
 const mockViewport = () => {
   let desktop = false;
   const listeners = new Set<() => void>();
-  vi.spyOn(window, 'matchMedia').mockImplementation(
+  // Swap rather than spy: spying on the setup file's mock and restoring it would wipe it.
+  const originalMatchMedia = window.matchMedia;
+  window.matchMedia = vi.fn(
     (query: string) =>
       ({
         addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
-        matches: desktop && query.includes('1024px'),
+        matches: desktop && query.includes('64rem'),
         media: query,
         removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
       }) as unknown as MediaQueryList,
   );
 
   return {
+    restore: () => {
+      window.matchMedia = originalMatchMedia;
+    },
     setDesktop: (value: boolean) => {
       desktop = value;
       listeners.forEach((listener) => listener());
@@ -86,7 +91,7 @@ describe('AppShell', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    viewport.restore();
   });
 
   it('renders active route metadata from route handles', () => {
@@ -220,9 +225,9 @@ describe('AppShell', () => {
     expect(jobsLink).not.toHaveAttribute('title');
     act(() => jobsLink.focus());
     expect(screen.getByRole('tooltip')).toHaveTextContent('Jobs');
-    expect(screen.getByRole('button', { name: 'Expand sidebar' })).not.toHaveAttribute(
-      'aria-expanded',
-    );
+    const toggle = screen.getByRole('button', { name: 'Expand sidebar' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls', navigation.id);
   });
 
   it('updates the language from the header language selector', async () => {
@@ -295,5 +300,31 @@ describe('AppShell', () => {
     // Shrinking back must not reopen the drawer.
     act(() => viewport.setDesktop(false));
     expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+  });
+
+  it('resets scroll on link navigation but keeps it on Back', async () => {
+    const router = createAppShellRouter();
+    renderWithProviders(<RouterProvider router={router} />);
+
+    document.documentElement.scrollTop = 500;
+    await act(() => router.navigate('/dashboard'));
+    expect(document.documentElement.scrollTop).toBe(0);
+
+    document.documentElement.scrollTop = 500;
+    await act(() => router.navigate(-1));
+    expect(document.documentElement.scrollTop).toBe(500);
+    expect(screen.getByRole('main')).toHaveFocus();
+  });
+
+  it('closes the drawer and returns focus when its current-route link is chosen', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mobile navigation' });
+    await user.click(within(dialog).getByRole('link', { name: 'Jobs' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open navigation menu' })).toHaveFocus();
   });
 });
