@@ -42,7 +42,7 @@ export const DataTablePagination = ({
   if (totalRows === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-app-border bg-app-surface2 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-app-border bg-app-surface px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="text-sm text-app-textMuted">
         {t('dataTable.rowsSummary', {
           from: firstVisibleRow,

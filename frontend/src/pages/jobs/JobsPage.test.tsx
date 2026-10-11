@@ -1,14 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
+import { http, HttpResponse } from 'msw';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { JobsPage } from './JobsPage';
 import { AppError } from '../../errors';
 import { renderWithProviders } from '../../test/renderWithProviders';
 import { renderWithRouter } from '../../test/renderWithRouter';
-import { createMockJobs } from '../../test/mockJobs';
+import { createMockJob, createMockJobResponse, createMockJobs } from '../../test/mockJobs';
+import { server } from '../../test/server';
 import { APP_ERROR_CODES } from '../../types';
 
 /**
@@ -190,6 +192,35 @@ describe('JobsPage', () => {
     expect(screen.getByRole('button', { name: 'Table' })).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('keeps the view switch a named group of pressed-state buttons, showing the same jobs', async () => {
+    const user = userEvent.setup();
+    renderJobsPage();
+
+    const viewSwitch = screen.getByRole('group', { name: 'Jobs view' });
+    const companies = ['Celonis', 'Personio', 'Miro'];
+
+    companies.forEach((company) =>
+      expect(within(screen.getByRole('table')).getByText(company)).toBeInTheDocument(),
+    );
+
+    await user.click(within(viewSwitch).getByRole('button', { name: 'Pipeline' }));
+
+    // The board renders its own header, so the switch is found again.
+    const boardSwitch = screen.getByRole('group', { name: 'Jobs view' });
+
+    expect(within(boardSwitch).getByRole('button', { name: 'Pipeline' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(within(boardSwitch).getByRole('button', { name: 'Table' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    companies.forEach((company) =>
+      expect(screen.getByRole('link', { name: `View details for ${company}` })).toBeInTheDocument(),
+    );
+  });
+
   it('switches to the Kanban pipeline view and back', async () => {
     const user = userEvent.setup();
     renderJobsPage();
@@ -242,5 +273,104 @@ describe('JobsPage', () => {
     await user.click(screen.getByRole('link', { name: 'View details for Personio' }));
 
     expect(await screen.findByText('Job detail route')).toBeInTheDocument();
+  });
+
+  it('moves a job to another status from its board card, and announces it', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.put('/api/jobs/:jobId', async ({ params, request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+
+        return HttpResponse.json(createMockJobResponse({ ...body, id: String(params.jobId) }));
+      }),
+    );
+    renderJobsPage();
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    const personioCard = within(screen.getByRole('region', { name: 'Applied' }))
+      .getByRole('link', { name: 'View details for Personio' })
+      .closest('article') as HTMLElement;
+
+    await user.click(
+      within(personioCard).getByRole('button', { name: 'Applied, change status for Personio' }),
+    );
+    await user.click(within(personioCard).getByRole('button', { name: 'Offer' }));
+
+    const offerColumn = screen.getByRole('region', { name: 'Offer' });
+
+    expect(
+      within(offerColumn).getByRole('link', { name: 'View details for Personio' }),
+    ).toBeInTheDocument();
+    expect(
+      within(offerColumn).getByRole('button', { name: 'Offer, change status for Personio' }),
+    ).toHaveFocus();
+    expect(screen.getByRole('status')).toHaveTextContent('Moved Personio to Offer.');
+  });
+
+  it('puts the card back and explains when a move fails', async () => {
+    const user = userEvent.setup();
+    server.use(http.put('/api/jobs/:jobId', () => new HttpResponse(null, { status: 500 })));
+    renderJobsPage();
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+    await user.click(screen.getByRole('button', { name: 'Applied, change status for Personio' }));
+    await user.click(screen.getByRole('button', { name: 'Offer' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Personio could not be moved to Offer.',
+    );
+    expect(
+      within(screen.getByRole('region', { name: 'Applied' })).getByRole('link', {
+        name: 'View details for Personio',
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the search when switching to the board, hiding cards that do not match', async () => {
+    const user = userEvent.setup();
+    renderJobsPage();
+
+    await user.type(screen.getByRole('textbox', { name: 'Search' }), 'Celonis');
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('Celonis');
+    expect(screen.getByRole('link', { name: 'View details for Celonis' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'View details for Personio' }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(screen.getByRole('region', { name: 'Applied' })).getByText(
+        'No matching jobs in this status',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('1 of 3 opportunities shown')).toBeInTheDocument();
+    // The board groups by status, so it offers no status filter.
+    expect(screen.queryByRole('combobox', { name: 'Status' })).not.toBeInTheDocument();
+  });
+
+  it('orders the cards within each board column by the chosen sort', async () => {
+    const user = userEvent.setup();
+    renderJobsPage({
+      jobs: [
+        createMockJob({ company: 'Alpha', id: 'a', status: 'APPLIED' }),
+        createMockJob({ company: 'Zeta', id: 'z', status: 'APPLIED' }),
+      ],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    const sortSelect = screen.getByRole('combobox', { name: 'Sort by' });
+    const companiesInApplied = () =>
+      within(screen.getByRole('region', { name: 'Applied' }))
+        .getAllByRole('link')
+        .map((link) => link.getAttribute('aria-label'));
+
+    await user.selectOptions(sortSelect, 'company:desc');
+    expect(companiesInApplied()).toEqual(['View details for Zeta', 'View details for Alpha']);
+
+    await user.selectOptions(sortSelect, 'company:asc');
+    expect(companiesInApplied()).toEqual(['View details for Alpha', 'View details for Zeta']);
+    expect(within(sortSelect).queryByRole('option', { name: /^Status/ })).not.toBeInTheDocument();
   });
 });

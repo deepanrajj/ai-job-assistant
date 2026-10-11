@@ -7,10 +7,20 @@ import { DashboardViewAllLink } from './DashboardViewAllLink';
 import { useBreakpoint, useElementWidth, useLocalToday } from '../../../hooks';
 import { useTranslation } from '../../../i18n';
 import { formatDashboardDate } from '../dashboard.utils';
+import { getMissingApplicationReason } from '../dashboardInsights.utils';
 import { APP_PATH_BUILDERS } from '../../../routes/paths';
 import { RECENT_ACTIVITY_TABLE_MIN_WIDTH } from '../dashboard.constants';
 import type { TJob } from '../../../types';
-import type { IApplicationHistory } from '../dashboardInsights.types';
+import type { IApplicationHistory, TMissingApplicationReason } from '../dashboardInsights.types';
+
+/**
+ * Translation key per missing-application reason.
+ */
+const MISSING_APPLICATION_KEYS: Record<TMissingApplicationReason, string> = {
+  notApplied: 'dashboard.notApplied',
+  notRecorded: 'dashboard.notRecorded',
+  unavailable: 'dashboard.appliedUnavailable',
+};
 
 /**
  * Props used by the dashboard recent activity list.
@@ -64,20 +74,13 @@ const DashboardRecentActivityComponent: FC<IDashboardRecentActivityProps> = ({
     applicationHistory?.applications.get(job.id)?.appliedAt;
 
   /**
-   * Picks what a missing application date means for screen readers: a
-   * wishlist job, or one withdrawn straight from the wishlist, was never
-   * applied for; otherwise the date is not recorded, or the history that
-   * would hold it is unavailable.
+   * Names a missing application date for screen readers and the cards.
    *
    * @param {TJob} job Job without a recorded application date.
    * @returns {string} Translation key for the missing date.
    */
-  const getMissingAppliedKey = (job: TJob): string => {
-    if (job.status === 'WISHLIST' || applicationHistory?.withdrawnFromWishlist.has(job.id))
-      return 'dashboard.notApplied';
-
-    return applicationHistory ? 'dashboard.notRecorded' : 'dashboard.appliedUnavailable';
-  };
+  const getMissingAppliedKey = (job: TJob): string =>
+    MISSING_APPLICATION_KEYS[getMissingApplicationReason(job, applicationHistory)];
 
   /**
    * Renders a job's recorded application date, or a dash that tells screen

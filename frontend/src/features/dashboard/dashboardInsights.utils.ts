@@ -4,6 +4,7 @@ import type {
   IApplicationHistory,
   IDashboardInsights,
   IRecordedApplication,
+  TMissingApplicationReason,
 } from './dashboardInsights.types';
 import type { TTimelineEventResponse } from '../../services';
 
@@ -151,6 +152,23 @@ export const getApplicationHistory = (
   applications: getRecordedApplications(jobs, events),
   withdrawnFromWishlist: getJobsWithdrawnFromWishlist(jobs, events),
 });
+
+/**
+ * Explains a job's missing application date, the same way wherever such a
+ * date is shown.
+ *
+ * @param {TJob} job Job without a recorded application date.
+ * @param {IApplicationHistory | null} history Application history, or null while unavailable.
+ * @returns {TMissingApplicationReason} Why the date is missing.
+ */
+export const getMissingApplicationReason = (
+  job: TJob,
+  history: IApplicationHistory | null,
+): TMissingApplicationReason => {
+  if (job.status === 'WISHLIST' || history?.withdrawnFromWishlist.has(job.id)) return 'notApplied';
+
+  return history ? 'notRecorded' : 'unavailable';
+};
 
 /**
  * Derives every dashboard insight from saved jobs and their recorded status

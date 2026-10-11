@@ -34,6 +34,8 @@ export interface IDataTableColumn<TData> {
   id: string;
   isRowHeader?: boolean;
   mobileCell?: (row: TData) => ReactNode;
+  // Leads each phone card, unlabelled, instead of appearing as a field.
+  mobileHeading?: boolean;
   mobileLabel?: ReactNode;
   sortLabel?: string;
   sortValue?: (row: TData) => TDataTableSortValue;
@@ -84,8 +86,16 @@ export interface IDataTableProps<TData> {
   filters?: ReactNode;
   getRowId: (row: TData) => string;
   initialSort?: TDataTableSortState;
+  /** With `searchQuery`, makes the search controlled, e.g. shared with another view. */
+  onSearchQueryChange?: (searchQuery: string) => void;
+  /** With `sortState`, makes the sort controlled. */
+  onSortStateChange?: (sortState: TDataTableSortState) => void;
   pageSizeOptions?: number[];
   renderSummary?: (state: IDataTableSummaryState) => ReactNode;
   search?: IDataTableSearchConfig<TData>;
+  searchQuery?: string;
+  /** Adds a "Sort by" select offering every sortable column in both directions. */
+  showSortSelect?: boolean;
+  sortState?: TDataTableSortState;
   title?: ReactNode;
 }

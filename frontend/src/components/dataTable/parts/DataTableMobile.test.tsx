@@ -52,4 +52,22 @@ describe('DataTableMobile', () => {
     expect(screen.getByText('Alpha')).toBeInTheDocument();
     expect(screen.getByText('Status: Applied')).toBeInTheDocument();
   });
+
+  it('leads each card with heading columns, unlabelled, and keeps every other field', () => {
+    renderWithProviders(
+      <DataTableMobile<TRow>
+        caption="Mobile rows"
+        columns={[{ ...columns[0], mobileHeading: true }, columns[1]]}
+        getRowId={(row) => row.id}
+        rows={rows}
+      />,
+    );
+
+    const card = screen.getByRole('listitem');
+
+    expect(within(card).getByText('Alpha')).toBeInTheDocument();
+    expect(within(card).queryByText('Company')).not.toBeInTheDocument();
+    expect(within(card).getByText('Status')).toBeInTheDocument();
+    expect(within(card).getByText('Status: Applied')).toBeInTheDocument();
+  });
 });

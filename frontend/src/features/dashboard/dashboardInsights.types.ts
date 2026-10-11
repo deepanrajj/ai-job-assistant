@@ -20,6 +20,13 @@ export interface IApplicationHistory {
 }
 
 /**
+ * Why a job has no recorded application date: it was never applied for
+ * (still on the wishlist, or withdrawn straight from it), its history holds
+ * no application, or the history is unavailable (loading or failed).
+ */
+export type TMissingApplicationReason = 'notApplied' | 'notRecorded' | 'unavailable';
+
+/**
  * A job still in APPLIED, with how many local calendar days ago it applied.
  */
 export interface IAgingApplication {

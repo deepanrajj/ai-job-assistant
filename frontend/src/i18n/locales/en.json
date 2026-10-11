@@ -416,7 +416,21 @@
       "createJob": "Failed to create job",
       "updateJob": "Failed to update job",
       "deleteJob": "Failed to delete job"
-    }
+    },
+    "updatedOn": "Updated {{date}}",
+    "dateApplied": "Date applied",
+    "notApplied": "Not applied",
+    "notRecorded": "Not recorded",
+    "appliedUnavailable": "Not available",
+    "summaryLabel": "Jobs by status",
+    "summaryTotal": "Total jobs",
+    "moveStatus": {
+      "toggle": "{{status}}, change status for {{company}}",
+      "listLabel": "Statuses to move {{company}} to",
+      "moved": "Moved {{company}} to {{status}}.",
+      "failed": "{{company}} could not be moved to {{status}}."
+    },
+    "kanbanColumnNoMatch": "No matching jobs in this status"
   },
   "notes": {
     "fallbackError": {
@@ -718,7 +732,11 @@
     "sortDirection": {
       "asc": "Asc",
       "desc": "Desc"
-    }
+    },
+    "sortBy": "Sort by",
+    "sortNone": "Default order",
+    "sortOptionAsc": "{{column}}, ascending",
+    "sortOptionDesc": "{{column}}, descending"
   },
   "status": {
     "wishlist": "Wishlist",

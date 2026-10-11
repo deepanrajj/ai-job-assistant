@@ -416,7 +416,21 @@
       "createJob": "Erstellen des Jobs fehlgeschlagen",
       "updateJob": "Aktualisieren des Jobs fehlgeschlagen",
       "deleteJob": "Löschen des Jobs fehlgeschlagen"
-    }
+    },
+    "updatedOn": "Aktualisiert {{date}}",
+    "dateApplied": "Beworben am",
+    "notApplied": "Nicht beworben",
+    "notRecorded": "Nicht erfasst",
+    "appliedUnavailable": "Nicht verfügbar",
+    "summaryLabel": "Jobs nach Status",
+    "summaryTotal": "Jobs gesamt",
+    "moveStatus": {
+      "toggle": "{{status}}, Status ändern für {{company}}",
+      "listLabel": "Status für {{company}}",
+      "moved": "{{company}} nach {{status}} verschoben.",
+      "failed": "{{company}} konnte nicht nach {{status}} verschoben werden."
+    },
+    "kanbanColumnNoMatch": "Keine passenden Jobs in diesem Status"
   },
   "notes": {
     "fallbackError": {
@@ -718,7 +732,11 @@
     "sortDirection": {
       "asc": "Auf",
       "desc": "Ab"
-    }
+    },
+    "sortBy": "Sortieren nach",
+    "sortNone": "Standardreihenfolge",
+    "sortOptionAsc": "{{column}}, aufsteigend",
+    "sortOptionDesc": "{{column}}, absteigend"
   },
   "status": {
     "wishlist": "Wunschliste",

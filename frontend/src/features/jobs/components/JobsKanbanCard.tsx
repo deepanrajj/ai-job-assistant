@@ -1,40 +1,73 @@
 import { memo, type FC } from 'react';
 import { Link } from 'react-router-dom';
 
+import { JobStatusMenu } from './JobStatusMenu';
 import { useTranslation } from '../../../i18n';
-import { formatJobSalary } from '../jobs.utils';
+import { formatJobDate, formatJobSalary } from '../jobs.utils';
 import { APP_PATH_BUILDERS } from '../../../routes/paths';
-import type { TJob } from '../../../types';
+import type { TJob, TJobStatus } from '../../../types';
 
 /**
  * Props used by the jobs Kanban card.
  */
 interface IJobsKanbanCardProps {
+  /** Focuses the card's status pill once, after the card changed column. */
+  focusMoveControl?: boolean;
   job: TJob;
+  onMove?: (job: TJob, status: TJobStatus) => void;
+  onMoveControlFocused?: () => void;
 }
 
 /**
- * Renders one saved job as a Kanban card linking to its detail page.
+ * Renders one saved job as a Kanban card: a link to its detail page with
+ * company, role, the location and salary that are set, and the last
+ * update, the same facts the table shows. With `onMove`, the job's status
+ * pill sits beside the link and opens the other statuses to move it. The
+ * link and the pill are siblings, since an interactive control may not sit
+ * inside a link.
  *
  * @param {IJobsKanbanCardProps} props Component props.
- * @param {TJob} props.job Job shown by the card.
  * @returns {JSX.Element} Jobs Kanban card.
  */
-const JobsKanbanCardComponent: FC<IJobsKanbanCardProps> = ({ job }) => {
-  const { t } = useTranslation();
+const JobsKanbanCardComponent: FC<IJobsKanbanCardProps> = ({
+  focusMoveControl = false,
+  job,
+  onMove,
+  onMoveControlFocused,
+}) => {
+  const { language, t } = useTranslation();
+  const details = [job.location, formatJobSalary(job)].filter(Boolean).join(' · ');
 
-  return (
+  const link = (
     <Link
       aria-label={t('a11y.viewJobDetailsFor', { company: job.company })}
-      className="block rounded-lg border border-app-border bg-app-surface p-3 shadow-sm transition hover:border-primary-300 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface2"
+      className="block min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
       to={APP_PATH_BUILDERS.jobDetail(job.id)}
     >
-      <p className="font-medium text-app-text">{job.company}</p>
-      <p className="mt-1 text-sm text-app-textSoft">{job.roleTitle}</p>
-      <p className="mt-2 text-xs text-app-textMuted">
-        {job.location ?? t('jobs.notSet')} - {formatJobSalary(job) ?? t('jobs.notSet')}
+      <p className="font-semibold text-app-text">{job.company}</p>
+      <p className="mt-0.5 text-sm text-app-textSoft">{job.roleTitle}</p>
+      {details && <p className="mt-2 text-xs text-app-textMuted">{details}</p>}
+      <p className="mt-3 text-xs text-app-textMuted">
+        {t('jobs.updatedOn', { date: formatJobDate(job.updatedAt, language) })}
       </p>
     </Link>
+  );
+
+  return (
+    <article className="rounded-xl border border-app-border bg-app-surface p-4 shadow-sm transition hover:border-primary-300 hover:shadow">
+      {onMove ? (
+        <JobStatusMenu
+          company={job.company}
+          currentStatus={job.status}
+          focusOnMount={focusMoveControl}
+          leading={link}
+          onFocused={onMoveControlFocused}
+          onSelect={(status) => onMove(job, status)}
+        />
+      ) : (
+        link
+      )}
+    </article>
   );
 };
 

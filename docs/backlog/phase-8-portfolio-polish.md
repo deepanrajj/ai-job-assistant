@@ -20,7 +20,7 @@ Goal: make the project presentable for GitHub, interviews, and deployment.
 - [ ] [Expand browser journey coverage](../../tasks/roadmap/081-expand-browser-journey-coverage.md).
 - [x] [Refresh frontend theme and shell](../../tasks/roadmap/084-refresh-frontend-theme-and-shell.md).
 - [x] [Refresh dashboard layout](../../tasks/roadmap/085-refresh-dashboard-layout.md).
-- [ ] [Refresh Jobs list and board](../../tasks/roadmap/086-refresh-jobs-list-and-board.md).
+- [x] [Refresh Jobs list and board](../../tasks/roadmap/086-refresh-jobs-list-and-board.md).
 - [ ] [Refresh Discover workflow](../../tasks/roadmap/087-refresh-discover-workflow.md).
 - [ ] [Refresh Applications page](../../tasks/roadmap/088-refresh-applications-page.md).
 - [ ] [Refresh Calendar page](../../tasks/roadmap/089-refresh-calendar-page.md).
@@ -44,9 +44,9 @@ under R-12 in the
 
 Tasks 084-092 follow the
 [frontend visual refresh plan](../business/084-frontend-visual-refresh-plan.md).
-Shared theme and shell task 084 and dashboard task 085 are complete;
-tasks 086-091 can be implemented one at a time in any order, and task
-092 closes the visual pass. These tasks use existing frontend data and feature flags, so they
+Tasks 084 (theme and shell), 085 (dashboard), and 086 (jobs list and
+board) are complete; tasks 087-091 can be implemented one at a time in
+any order, and task 092 closes the visual pass. These tasks use existing frontend data and feature flags, so they
 do not wait for the pending backend tasks 040-049.
 
 ## Acceptance Criteria
