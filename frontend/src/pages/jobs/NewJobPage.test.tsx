@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -34,6 +34,11 @@ const renderNewJobPage = () => {
 };
 
 describe('NewJobPage', () => {
+  // The form loads the saved jobs for its duplicate warning (task 050).
+  beforeEach(() => {
+    server.use(http.get('/api/jobs', () => HttpResponse.json([])));
+  });
+
   it('renders an empty add job form', () => {
     renderNewJobPage();
 
@@ -66,6 +71,37 @@ describe('NewJobPage', () => {
         status: 'WISHLIST',
       }),
     );
+    expect(await screen.findByText('Jobs route')).toBeInTheDocument();
+  });
+
+  it('warns about a similar saved job and still creates the job', async () => {
+    const user = userEvent.setup();
+    let body: unknown;
+
+    server.use(
+      http.get('/api/jobs', () =>
+        HttpResponse.json([
+          createMockJobResponse({ company: 'Acme', id: 'saved', roleTitle: 'Frontend Engineer' }),
+        ]),
+      ),
+      http.post('/api/jobs', async ({ request }) => {
+        body = await request.json();
+
+        return HttpResponse.json(createMockJobResponse(), { status: 201 });
+      }),
+    );
+    renderNewJobPage();
+
+    await user.type(screen.getByLabelText('Company'), 'Acme GmbH');
+    await user.type(screen.getByLabelText('Role'), 'Frontend Engineer');
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Frontend Engineer at Acme (opens in a new tab) (likely duplicate: same company and role)',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create job' }));
+
+    await waitFor(() => expect(body).toMatchObject({ company: 'Acme GmbH' }));
     expect(await screen.findByText('Jobs route')).toBeInTheDocument();
   });
 

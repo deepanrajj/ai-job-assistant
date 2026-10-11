@@ -13,6 +13,7 @@ export const alertVariantClasses: Record<TAlertVariant, string> = {
   error: 'border-danger-100 bg-danger-50 text-danger-700',
   info: 'border-primary-100 bg-primary-50 text-primary-700',
   success: 'border-success-100 bg-success-50 text-success-700',
+  warning: 'border-warning-100 bg-warning-50 text-warning-800',
 };
 
 /**

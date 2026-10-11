@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
@@ -25,6 +25,11 @@ const renderJobEditRoute = () => {
 };
 
 describe('jobEditRoute', () => {
+  // The form loads the saved jobs for its duplicate warning (task 050).
+  beforeEach(() => {
+    server.use(http.get('/api/jobs', () => HttpResponse.json([])));
+  });
+
   it('prefills the form with the job the route param names', async () => {
     server.use(
       http.get(`/api/jobs/${MOCK_JOB_IDS.celonis}`, () =>

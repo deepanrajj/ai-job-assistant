@@ -1,5 +1,9 @@
 # Task 050 - Add Manual Duplicate Warning
 
+Status: Completed - frontend only, no backend work
+
+See the [plan](../../docs/business/050-add-manual-duplicate-warning-plan.md#verified-state).
+
 ## Instructions
 
 Read `../../AGENTS.md`, `../../frontend/AGENTS.md`, `../../backend/AGENTS.md`, and `../../docs/context.md` before starting.
@@ -40,9 +44,9 @@ Run verification for touched frontend/backend layers.
 
 ## Acceptance Criteria
 
-- [ ] Manual create/edit warns on duplicates.
-- [ ] Users can override the warning.
-- [ ] Duplicate logic is shared with import where practical.
+- [x] Manual create/edit warns on duplicates.
+- [x] Users can override the warning.
+- [x] Duplicate logic is shared with import where practical.
 
 ## Commit
 

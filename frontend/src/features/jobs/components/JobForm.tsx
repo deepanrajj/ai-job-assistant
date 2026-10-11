@@ -13,6 +13,8 @@ import type { TJobFormValues } from '../jobFormSchema';
  */
 interface IJobFormProps {
   busySubmitLabel: string;
+  /** Non-blocking warning about similar saved jobs, shown above the buttons. */
+  duplicateWarning?: ReactNode;
   error?: ReactNode;
   form: UseFormReturn<TJobFormValues>;
   isSubmitting?: boolean;
@@ -31,6 +33,7 @@ interface IJobFormProps {
  */
 export const JobForm: FC<IJobFormProps> = ({
   busySubmitLabel,
+  duplicateWarning,
   error,
   form,
   isSubmitting = false,
@@ -119,6 +122,8 @@ export const JobForm: FC<IJobFormProps> = ({
         {error}
 
         <FormFields<TJobFormValues> columns={2} fields={fields} />
+
+        {duplicateWarning}
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button onClick={onCancel} type="button" variant="secondary">

@@ -4,9 +4,10 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, ErrorState } from '../../components/ui';
+import { JobDuplicateWarning } from '../../features/jobs/components/JobDuplicateWarning';
 import { JobForm } from '../../features/jobs/components/JobForm';
 import { createJobFormSchema, type TJobFormValues } from '../../features/jobs/jobFormSchema';
-import { isJobNotFoundError, useUpdateJob } from '../../features/jobs';
+import { isJobNotFoundError, useJobsList, useUpdateJob } from '../../features/jobs';
 import { useTranslation } from '../../i18n';
 import { createJobFormDefaultValues, createJobFormFields } from '../../features/jobs/jobForm.utils';
 import { AppError } from '../../errors';
@@ -37,6 +38,7 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { error, isSaving, saveJob } = useUpdateJob();
+  const savedJobs = useJobsList();
   const schema = useMemo(
     () =>
       createJobFormSchema({
@@ -106,6 +108,9 @@ export const EditJobForm: FC<IEditJobFormProps> = ({ job }) => {
   return (
     <JobForm
       busySubmitLabel={t('jobForm.actions.saving')}
+      duplicateWarning={
+        <JobDuplicateWarning control={form.control} excludeJobId={job.id} jobs={savedJobs} />
+      }
       error={
         error && (
           <ErrorState
