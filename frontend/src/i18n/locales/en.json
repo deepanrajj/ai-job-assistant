@@ -139,9 +139,6 @@
     "pipelineSummary": "{{total}} saved · {{active}} active",
     "viewAll": "View all",
     "appliedColumn": "Applied",
-    "notRecorded": "Not recorded",
-    "appliedUnavailable": "Not available",
-    "notApplied": "Not applied",
     "appliedOn": "Applied {{date}}",
     "appliedMissing": "Applied: {{reason}}"
   },
@@ -419,9 +416,6 @@
     },
     "updatedOn": "Updated {{date}}",
     "dateApplied": "Date applied",
-    "notApplied": "Not applied",
-    "notRecorded": "Not recorded",
-    "appliedUnavailable": "Not available",
     "summaryLabel": "Jobs by status",
     "summaryTotal": "Total jobs",
     "moveStatus": {
@@ -430,7 +424,8 @@
       "moved": "Moved {{company}} to {{status}}.",
       "failed": "{{company}} could not be moved to {{status}}."
     },
-    "kanbanColumnNoMatch": "No matching jobs in this status"
+    "kanbanColumnNoMatch": "No matching jobs in this status",
+    "historyUnavailable": "Application dates could not be loaded, so the Date applied column is empty."
   },
   "notes": {
     "fallbackError": {
@@ -779,5 +774,10 @@
     "asking": "Asking...",
     "askButton": "Ask",
     "answer": "AI Answer"
+  },
+  "statusHistory": {
+    "notApplied": "Not applied",
+    "notRecorded": "Not recorded",
+    "unavailable": "Not available"
   }
 }

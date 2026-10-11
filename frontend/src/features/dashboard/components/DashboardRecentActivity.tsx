@@ -7,20 +7,14 @@ import { DashboardViewAllLink } from './DashboardViewAllLink';
 import { useBreakpoint, useElementWidth, useLocalToday } from '../../../hooks';
 import { useTranslation } from '../../../i18n';
 import { formatDashboardDate } from '../dashboard.utils';
-import { getMissingApplicationReason } from '../dashboardInsights.utils';
 import { APP_PATH_BUILDERS } from '../../../routes/paths';
 import { RECENT_ACTIVITY_TABLE_MIN_WIDTH } from '../dashboard.constants';
 import type { TJob } from '../../../types';
-import type { IApplicationHistory, TMissingApplicationReason } from '../dashboardInsights.types';
-
-/**
- * Translation key per missing-application reason.
- */
-const MISSING_APPLICATION_KEYS: Record<TMissingApplicationReason, string> = {
-  notApplied: 'dashboard.notApplied',
-  notRecorded: 'dashboard.notRecorded',
-  unavailable: 'dashboard.appliedUnavailable',
-};
+import {
+  MISSING_APPLICATION_KEYS,
+  getMissingApplicationReason,
+  type IApplicationHistory,
+} from '../../statusHistory';
 
 /**
  * Props used by the dashboard recent activity list.

@@ -7,17 +7,17 @@ import { StatusPill } from './components/StatusPill';
 import { KanbanIcon, TableIcon } from '../../components/icons';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
 import { classNames } from '../../utils';
-import { getMissingApplicationReason } from '../dashboard/dashboardInsights.utils';
 import { formatJobDate, formatJobSalary } from './jobs.utils';
 import { APP_PATH_BUILDERS } from '../../routes/paths';
 import { statusOptions } from './jobs.constants';
 import { JOB_STATUS_TRANSLATION_KEYS, type TJob } from '../../types';
 import type { IDataTableColumn, IDataTableSearchConfig } from '../../components/dataTable';
-import type {
-  IApplicationHistory,
-  TMissingApplicationReason,
-} from '../dashboard/dashboardInsights.types';
 import type { TJobsViewMode, TStatusFilter } from './jobs.types';
+import {
+  MISSING_APPLICATION_KEYS,
+  getMissingApplicationReason,
+  type IApplicationHistory,
+} from '../statusHistory';
 
 /**
  * Params used to create localized jobs table columns.
@@ -28,15 +28,6 @@ interface ICreateJobsColumnsParams {
   language: TLanguage;
   t: TTranslationContextValue['t'];
 }
-
-/**
- * Translation key per missing-application reason.
- */
-const MISSING_APPLICATION_KEYS: Record<TMissingApplicationReason, string> = {
-  notApplied: 'jobs.notApplied',
-  notRecorded: 'jobs.notRecorded',
-  unavailable: 'jobs.appliedUnavailable',
-};
 
 /**
  * Params used to create the jobs status filter control.

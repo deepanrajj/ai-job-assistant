@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { http, HttpResponse } from 'msw';
@@ -371,6 +371,58 @@ describe('JobsPage', () => {
 
     await user.selectOptions(sortSelect, 'company:asc');
     expect(companiesInApplied()).toEqual(['View details for Alpha', 'View details for Zeta']);
-    expect(within(sortSelect).queryByRole('option', { name: /^Status/ })).not.toBeInTheDocument();
+  });
+
+  it('keeps a status sort chosen in the table selectable on the board', async () => {
+    const user = userEvent.setup();
+    renderJobsPage();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Sort by' }), 'status:asc');
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    const boardSort = screen.getByRole('combobox', { name: 'Sort by' });
+
+    expect(boardSort).toHaveValue('status:asc');
+    await user.selectOptions(boardSort, '');
+    expect(boardSort).toHaveValue('');
+  });
+
+  it('offers a retry when application dates cannot be loaded', async () => {
+    const user = userEvent.setup();
+    const reload = vi.fn();
+    renderJobsPage({
+      statusHistory: {
+        error: new AppError(
+          'Failed to load status history',
+          APP_ERROR_CODES.TIMELINE_REQUEST_FAILED,
+        ),
+        events: null,
+        isLoading: false,
+        reload,
+      },
+    });
+
+    expect(screen.getByText(/Application dates could not be loaded/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it('reloads the status history after a saved move, so application dates follow it', async () => {
+    const user = userEvent.setup();
+    const reload = vi.fn();
+    server.use(
+      http.put('/api/jobs/:jobId', async ({ params, request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+
+        return HttpResponse.json(createMockJobResponse({ ...body, id: String(params.jobId) }));
+      }),
+    );
+    renderJobsPage({ statusHistory: { error: null, events: [], isLoading: false, reload } });
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+    await user.click(screen.getByRole('button', { name: 'Applied, change status for Personio' }));
+    await user.click(screen.getByRole('button', { name: 'Offer' }));
+
+    await waitFor(() => expect(reload).toHaveBeenCalledOnce());
   });
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 
@@ -70,5 +70,92 @@ describe('useMoveJobStatus', () => {
 
     rerender({ jobs: [{ ...job, status: 'REJECTED' }] });
     expect(result.current.jobs[0].status).toBe('REJECTED');
+  });
+
+  it('sends moves of one job in order, each after the previous one settles', async () => {
+    const sentStatuses: string[] = [];
+    let releaseFirst: () => void = () => {};
+    server.use(
+      http.put('/api/jobs/job-1', async ({ request }) => {
+        const body = (await request.json()) as { status: string };
+
+        sentStatuses.push(body.status);
+        if (body.status === 'INTERVIEW')
+          await new Promise<void>((resolve) => {
+            releaseFirst = resolve;
+          });
+
+        return HttpResponse.json(
+          createMockJobResponse({ id: 'job-1', status: body.status as never }),
+        );
+      }),
+    );
+    const { result } = renderHook(() => useMoveJobStatus(loadedJobs));
+
+    let first: Promise<void> = Promise.resolve();
+    let second: Promise<void> = Promise.resolve();
+    act(() => {
+      first = result.current.moveJob(job, 'INTERVIEW');
+      second = result.current.moveJob({ ...job, status: 'INTERVIEW' }, 'OFFER');
+    });
+
+    await waitFor(() => expect(sentStatuses).toEqual(['INTERVIEW']));
+    expect(result.current.jobs[0].status).toBe('OFFER');
+
+    await act(async () => {
+      releaseFirst();
+      await first;
+      await second;
+    });
+
+    expect(sentStatuses).toEqual(['INTERVIEW', 'OFFER']);
+    expect(result.current.jobs[0].status).toBe('OFFER');
+  });
+
+  it('ignores a move that settles after the jobs reloaded', async () => {
+    let release: (() => void) | undefined;
+    server.use(
+      http.put('/api/jobs/job-1', async () => {
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+
+        return new HttpResponse(null, { status: 500 });
+      }),
+    );
+    const { rerender, result } = renderHook(({ jobs }) => useMoveJobStatus(jobs), {
+      initialProps: { jobs: loadedJobs },
+    });
+
+    let pending: Promise<void> = Promise.resolve();
+    act(() => {
+      pending = result.current.moveJob(job, 'OFFER');
+    });
+    const reloaded = [{ ...job, status: 'REJECTED' as const }];
+
+    rerender({ jobs: reloaded });
+    // Release only once the request is actually waiting.
+    await waitFor(() => expect(release).toBeDefined());
+    await act(async () => {
+      release?.();
+      await pending;
+    });
+
+    expect(result.current.jobs[0].status).toBe('REJECTED');
+    expect(result.current.lastMove?.error ?? null).toBeNull();
+  });
+
+  it('reports each saved move', async () => {
+    const onMoved = vi.fn();
+    server.use(
+      http.put('/api/jobs/job-1', () =>
+        HttpResponse.json(createMockJobResponse({ id: 'job-1', status: 'OFFER' })),
+      ),
+    );
+    const { result } = renderHook(() => useMoveJobStatus(loadedJobs, { onMoved }));
+
+    await act(() => result.current.moveJob(job, 'OFFER'));
+
+    expect(onMoved).toHaveBeenCalledOnce();
   });
 });

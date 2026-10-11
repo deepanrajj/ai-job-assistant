@@ -121,7 +121,8 @@ date shows a dash that tells screen readers why ("Not applied",
 "Not recorded", "Not available"), using one shared
 `getMissingApplicationReason` that the dashboard now uses too. The
 history is a separate request, so it never holds up or replaces the
-list.
+list. It reloads after each saved board move, since a move can record an
+application; if it fails, the table shows a notice with "Try again".
 
 ### D9 - Move a job to another status from its board card
 
@@ -143,12 +144,16 @@ pill keeps the current status visible and takes no extra space.
   sends. A new `useMoveJobStatus` calls `updateJob` per move rather than
   through `useUpdateJob`, whose single shared request discards an older
   response when a newer one starts, which would lose a quick second move
-  of another job.
+  of another job. Moves of one job are queued, each sent once the
+  previous one settles, so the server applies them in order; moves of
+  different jobs run side by side.
 - **Feedback.** The card moves at once and takes the saved job from the
   response; a failure puts it back and shows an alert naming the job and
   status. Each move is announced in a status region, and focus follows
   the card to its status pill in the new column. Moves apply to the
-  table and counts too, and are dropped when the jobs reload.
+  table and counts too. A reload drops them, and a move still in flight
+  then is ignored when it settles, so it cannot overwrite fresher data.
+  A failed move restores the job as last saved.
 
 Rejected:
 
@@ -174,10 +179,22 @@ controls, and both views share one search and one sort, lifted into
 `JobsPage` (`DataTable` gains optional controlled `searchQuery` and
 `sortState`). Cards that do not match the search are hidden in each
 column, an emptied column says "No matching jobs in this status", and
-the summary reports how many are shown. The sort orders cards within
-each column; "Status" is not offered there, since it means nothing
-inside a status column. The status filter stays table-only: on a board
+the summary reports how many are shown, using the table's own
+`filterDataTableRows`, so the two views cannot match differently. The
+sort orders cards within each column. "Status" stays on offer there:
+it changes nothing inside a status column, but leaving it out let a
+status sort chosen in the table show as "Default order" on the board,
+where it could not be cleared. The status filter stays table-only: on a board
 grouped by status it would only empty the other columns.
+
+### D12 - Application history is its own shared module
+
+Recorded applications, wishlist withdrawals, the missing-date reasons
+and their one set of strings (`statusHistory.*`), and
+`useStatusHistory` move from the dashboard feature to
+`features/statusHistory`. The dashboard and the jobs page both import
+it, so neither reaches into the other, and the missing-date wording
+exists once per language.
 
 ## Proposed Change
 
@@ -246,6 +263,10 @@ phase backlog's next-task line.
 - Board cards move a job to another status from their status pill, a
   keyboard- and screen-reader-friendly disclosure, optimistically, with an
   announcement, focus that follows the card, and an alert on failure.
-- `npm run frontend:verify` passed 981 tests in 183 files, lint, format
+- PR review fixes: moves of one job are queued and a reload drops
+  in-flight results; the history reloads after a move and offers a retry
+  when it fails; the board offers the status sort; both views share one
+  search filter; the history helpers live in `features/statusHistory`.
+- `npm run frontend:verify` passed 990 tests in 184 files, lint, format
   check, coverage, and build. The page overflow fix was measured in the
   running app at 1536 px, and the status pill at 768 px in German.

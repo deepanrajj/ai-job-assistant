@@ -1,5 +1,6 @@
 import type {
   IDataTableColumn,
+  IDataTableSearchConfig,
   TDataTableAriaSortValue,
   TDataTableSortDirection,
   TDataTableSortState,
@@ -13,6 +14,39 @@ import type {
  * @returns {string} Search-ready text.
  */
 export const normalizeTableSearchText = (value: string): string => value.trim().toLowerCase();
+
+/**
+ * Keeps the rows that pass the optional filter and contain the search
+ * text, the same way wherever a table's rows are shown.
+ *
+ * @param {TData[]} rows Rows to filter.
+ * @param {object} options Filter, search config, and search text.
+ * @param {(row: TData) => boolean} [options.filterPredicate] Extra row filter.
+ * @param {IDataTableSearchConfig<TData>} [options.search] How a row is searched.
+ * @param {string} options.searchQuery Text typed into the search.
+ * @returns {TData[]} Matching rows, in their original order.
+ */
+export const filterDataTableRows = <TData>(
+  rows: TData[],
+  {
+    filterPredicate,
+    search,
+    searchQuery,
+  }: {
+    filterPredicate?: (row: TData) => boolean;
+    search?: IDataTableSearchConfig<TData>;
+    searchQuery: string;
+  },
+): TData[] => {
+  const filteredByControls = filterPredicate ? rows.filter(filterPredicate) : rows;
+  const normalizedSearchQuery = normalizeTableSearchText(searchQuery);
+
+  if (!search || !normalizedSearchQuery) return filteredByControls;
+
+  return filteredByControls.filter((row) =>
+    normalizeTableSearchText(search.getSearchText(row)).includes(normalizedSearchQuery),
+  );
+};
 
 /**
  * Returns the next sort state when a sortable column header is activated.

@@ -37,7 +37,7 @@ In scope:
   the existing sorts, one card holding the table and view switch, a
   "Date applied" column from the existing status history, a clickable
   status pill on each board card that moves the job to another status
-  with the existing job update request, and the shared search and sort on the board. See D6-D11 in the
+  with the existing job update request, and the shared search and sort on the board. See D6-D12 in the
   plan.
 
 Out of scope:
@@ -88,7 +88,7 @@ Report focused local checks and actual CI E2E status in the PR.
 - [x] Desktop and mobile layouts are accessible.
 - [x] Focused tests and frontend verification pass.
 
-Local verification: `npm run frontend:verify` passed 981 tests, lint,
+Local verification: `npm run frontend:verify` passed 990 tests, lint,
 format check, coverage, and build. The board's page overflow fix was
 measured in the running app.
 

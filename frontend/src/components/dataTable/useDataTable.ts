@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState, type ChangeEvent, type ChangeEventHandler } from 'react';
 
 import {
+  filterDataTableRows,
   getNextDataTableSortState,
-  normalizeTableSearchText,
   paginateDataTableRows,
   sortDataTableRows,
 } from './dataTable.utils';
@@ -79,17 +79,10 @@ export const useDataTable = <TData>({
   const setSortState = onSortStateChange ?? setOwnSortState;
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [pageIndex, setPageIndex] = useState(0);
-  const normalizedSearchQuery = normalizeTableSearchText(searchQuery);
-
-  const filteredRows = useMemo(() => {
-    const filteredByControls = filterPredicate ? data.filter(filterPredicate) : data;
-
-    if (!search || !normalizedSearchQuery) return filteredByControls;
-
-    return filteredByControls.filter((row) =>
-      normalizeTableSearchText(search.getSearchText(row)).includes(normalizedSearchQuery),
-    );
-  }, [data, filterPredicate, normalizedSearchQuery, search]);
+  const filteredRows = useMemo(
+    () => filterDataTableRows(data, { filterPredicate, search, searchQuery }),
+    [data, filterPredicate, search, searchQuery],
+  );
 
   const sortedRows = useMemo(
     () => sortDataTableRows(filteredRows, columns, sortState),

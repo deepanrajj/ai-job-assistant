@@ -139,9 +139,6 @@
     "pipelineSummary": "{{total}} gespeichert · {{active}} aktiv",
     "viewAll": "Alle anzeigen",
     "appliedColumn": "Beworben am",
-    "notRecorded": "Nicht erfasst",
-    "appliedUnavailable": "Nicht verfügbar",
-    "notApplied": "Nicht beworben",
     "appliedOn": "Beworben {{date}}",
     "appliedMissing": "Beworben: {{reason}}"
   },
@@ -419,9 +416,6 @@
     },
     "updatedOn": "Aktualisiert {{date}}",
     "dateApplied": "Beworben am",
-    "notApplied": "Nicht beworben",
-    "notRecorded": "Nicht erfasst",
-    "appliedUnavailable": "Nicht verfügbar",
     "summaryLabel": "Jobs nach Status",
     "summaryTotal": "Jobs gesamt",
     "moveStatus": {
@@ -430,7 +424,8 @@
       "moved": "{{company}} nach {{status}} verschoben.",
       "failed": "{{company}} konnte nicht nach {{status}} verschoben werden."
     },
-    "kanbanColumnNoMatch": "Keine passenden Jobs in diesem Status"
+    "kanbanColumnNoMatch": "Keine passenden Jobs in diesem Status",
+    "historyUnavailable": "Bewerbungsdaten konnten nicht geladen werden, daher ist die Spalte „Beworben am“ leer."
   },
   "notes": {
     "fallbackError": {
@@ -779,5 +774,10 @@
     "asking": "Frage...",
     "askButton": "Fragen",
     "answer": "KI-Antwort"
+  },
+  "statusHistory": {
+    "notApplied": "Nicht beworben",
+    "notRecorded": "Nicht erfasst",
+    "unavailable": "Nicht verfügbar"
   }
 }

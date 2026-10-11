@@ -2,7 +2,7 @@ import type { FC } from 'react';
 
 import { DashboardPage } from '../../pages/dashboard/DashboardPage';
 import { useNextReminders } from '../../features/dashboard/useNextReminders';
-import { useStatusHistory } from '../../features/dashboard/useStatusHistory';
+import { useStatusHistory } from '../../features/statusHistory';
 import { useJobsList } from '../../features/jobs';
 import { REMINDERS_FEATURE_ENABLED } from '../../features/reminders/reminders.constants';
 

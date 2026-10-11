@@ -8,8 +8,8 @@ import { useTranslation, type TLanguage } from '../../../i18n';
 import { formatInsightRate, getDashboardInsights } from '../dashboardInsights.utils';
 import type { AppError } from '../../../errors';
 import type { TJob } from '../../../types';
-import type { IApplicationHistory } from '../dashboardInsights.types';
 import type { TTimelineEventResponse } from '../../../services';
+import type { IApplicationHistory } from '../../statusHistory';
 
 /**
  * Props used by the dashboard insights section.

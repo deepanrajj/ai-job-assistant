@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import {
   DataTable,
   DataTableToolbar,
+  filterDataTableRows,
   normalizeTableSearchText,
   sortDataTableRows,
   type IDataTableSummaryState,
   type TDataTableSortState,
 } from '../../components/dataTable';
-import { Button, ErrorState, LoadingState } from '../../components/ui';
+import { Alert, Button, ErrorState, LoadingState } from '../../components/ui';
 import { JobsKanbanBoard } from '../../features/jobs/components/JobsKanbanBoard';
 import { JobsSummaryCards } from '../../features/jobs/components/JobsSummaryCards';
 import {
@@ -19,11 +20,10 @@ import {
   createJobsViewToggle,
 } from '../../features/jobs/jobs.config';
 import { useMoveJobStatus } from '../../features/jobs/useMoveJobStatus';
+import { getApplicationHistory, type IStatusHistoryState } from '../../features/statusHistory';
 import { PlusIcon } from '../../components/icons';
 import { useBreakpoint } from '../../hooks';
-import type { IStatusHistoryState } from '../../features/dashboard/useStatusHistory';
 import { useTranslation } from '../../i18n';
-import { getApplicationHistory } from '../../features/dashboard/dashboardInsights.utils';
 import type { AppError } from '../../errors';
 import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
@@ -62,7 +62,14 @@ export const JobsPage: FC<IJobsPageProps> = ({
 }) => {
   const { language, t } = useTranslation();
   // Moves apply to every view, so the table and counts agree with the board.
-  const { jobs: displayedJobs, lastMove, moveJob } = useMoveJobStatus(jobs);
+  // A saved move can record an application, so the history reloads after it.
+  const {
+    jobs: displayedJobs,
+    lastMove,
+    moveJob,
+  } = useMoveJobStatus(jobs, {
+    onMoved: statusHistory?.reload,
+  });
   const navigate = useNavigate();
   const isSmallUp = useBreakpoint('sm');
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
@@ -109,23 +116,20 @@ export const JobsPage: FC<IJobsPageProps> = ({
     () => createJobsColumns({ applicationHistory, language, t }),
     [applicationHistory, language, t],
   );
-  // The board takes the shared search and sort; the status filter does not
-  // apply to it, since it already groups by status.
-  const normalizedSearchQuery = normalizeTableSearchText(searchQuery);
-  const boardJobs = useMemo(() => {
-    const matching = normalizedSearchQuery
-      ? displayedJobs.filter((job) =>
-          normalizeTableSearchText(searchConfig.getSearchText(job)).includes(normalizedSearchQuery),
-        )
-      : displayedJobs;
-
-    return sortDataTableRows(matching, columns, sortState);
-  }, [columns, displayedJobs, normalizedSearchQuery, searchConfig, sortState]);
-  // Sorting by status means nothing within a status column.
-  const boardSortColumns = useMemo(
-    () => columns.filter((column) => column.id !== 'status'),
-    [columns],
+  // The board takes the shared search and sort, through the same filter as
+  // the table; the status filter does not apply, since it already groups by
+  // status. A status sort is kept on offer so both views always agree, even
+  // though it changes nothing inside one status column.
+  const boardJobs = useMemo(
+    () =>
+      sortDataTableRows(
+        filterDataTableRows(displayedJobs, { search: searchConfig, searchQuery }),
+        columns,
+        sortState,
+      ),
+    [columns, displayedJobs, searchConfig, searchQuery, sortState],
   );
+  const isBoardFiltered = Boolean(normalizeTableSearchText(searchQuery));
   // A first-run user has nothing to count yet.
   const summaryCards =
     displayedJobs.length > 0 ? <JobsSummaryCards jobs={displayedJobs} /> : undefined;
@@ -154,14 +158,13 @@ export const JobsPage: FC<IJobsPageProps> = ({
       />
     );
 
-  // The board shows every job, so it has no toolbar: search, filter, and
-  // sort apply to the table only.
+  // The board shares the search and sort, but not the status filter.
   if (viewMode === 'kanban')
     return (
       <div className="space-y-4">
         {summaryCards}
         <DataTableToolbar<TJob>
-          columns={boardSortColumns}
+          columns={columns}
           onSearchChange={(event) => setSearchQuery(event.target.value)}
           onSortChange={setSortState}
           search={searchConfig}
@@ -183,10 +186,10 @@ export const JobsPage: FC<IJobsPageProps> = ({
           </div>
           <div className="p-4">
             <JobsKanbanBoard
-              isFiltered={Boolean(normalizedSearchQuery)}
+              isFiltered={isBoardFiltered}
               jobs={boardJobs}
               lastMove={lastMove}
-              onMove={(job, status) => void moveJob(job, status)}
+              onMove={moveJob}
             />
           </div>
         </section>
@@ -197,6 +200,18 @@ export const JobsPage: FC<IJobsPageProps> = ({
   return (
     <div className="space-y-4">
       {summaryCards}
+      {statusHistory?.error && (
+        <Alert
+          className="flex flex-wrap items-center justify-between gap-3"
+          role="status"
+          variant="warning"
+        >
+          <span>{t('jobs.historyUnavailable')}</span>
+          <Button onClick={statusHistory.reload} size="sm" variant="secondary">
+            {t('jobs.loadErrorRetry')}
+          </Button>
+        </Alert>
+      )}
       <DataTable<TJob>
         actions={actions}
         caption={t('a11y.jobsTableCaption')}

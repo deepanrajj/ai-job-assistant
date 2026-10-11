@@ -5,7 +5,7 @@ import { DashboardRecentActivity } from './DashboardRecentActivity';
 import { renderWithRouter } from '../../../test/renderWithRouter';
 import { MOCK_JOB_IDS, createMockJob, createMockJobs } from '../../../test/mockJobs';
 import type { TJob } from '../../../types';
-import type { IApplicationHistory } from '../dashboardInsights.types';
+import type { IApplicationHistory } from '../../statusHistory';
 
 /**
  * Builds an application history with the given applied dates by job.

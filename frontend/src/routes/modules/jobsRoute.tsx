@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 import { JobsPage } from '../../pages/jobs/JobsPage';
-import { useStatusHistory } from '../../features/dashboard/useStatusHistory';
+import { useStatusHistory } from '../../features/statusHistory';
 import { useJobsList } from '../../features/jobs';
 
 /**
