@@ -83,14 +83,14 @@ describe('DashboardInsights', () => {
     const { unmount } = renderInsights();
 
     expect(
-      within(getCard('Applications this week')).getByText('1 more than at this point last week'),
+      within(getCard('Applications this week')).getByText('1 more than by this day last week'),
     ).toBeInTheDocument();
     unmount();
 
     const fewer = renderInsights({ events: twoLastWeek });
 
     expect(
-      within(getCard('Applications this week')).getByText('2 fewer than at this point last week'),
+      within(getCard('Applications this week')).getByText('2 fewer than by this day last week'),
     ).toBeInTheDocument();
     fewer.unmount();
 
@@ -98,8 +98,16 @@ describe('DashboardInsights', () => {
       events: [statusEvent('celonis', 'APPLIED', new Date().toISOString()), twoLastWeek[1]],
     });
     expect(
-      within(getCard('Applications this week')).getByText('Same as at this point last week'),
+      within(getCard('Applications this week')).getByText('Same as by this day last week'),
     ).toBeInTheDocument();
+  });
+
+  it('shows no trend when neither week has an application to compare', () => {
+    renderInsights({ events: [] });
+
+    expect(
+      within(getCard('Applications this week')).queryByText(/last week/),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the interview rate with both counts', () => {

@@ -125,9 +125,9 @@
       "responseRate": "Response rate",
       "unavailable": "Unavailable",
       "responseRateUnavailable": "Needs recorded employer responses, which the tracker does not capture yet. A rejection or withdrawal alone is not counted as a response.",
-      "trendUp": "{{count}} more than at this point last week",
-      "trendDown": "{{count}} fewer than at this point last week",
-      "trendSame": "Same as at this point last week"
+      "trendUp": "{{count}} more than by this day last week",
+      "trendDown": "{{count}} fewer than by this day last week",
+      "trendSame": "Same as by this day last week"
     },
     "agenda": {
       "overdue": "Overdue",
@@ -141,7 +141,8 @@
     "appliedColumn": "Applied",
     "notRecorded": "Not recorded",
     "appliedUnavailable": "Not available",
-    "notApplied": "Not applied"
+    "notApplied": "Not applied",
+    "appliedOn": "Applied {{date}}"
   },
   "applications": {
     "title": "Applications",

@@ -1,6 +1,7 @@
 import type { TJob } from '../../types';
 import type {
   IAgingApplication,
+  IApplicationHistory,
   IDashboardInsights,
   IRecordedApplication,
 } from './dashboardInsights.types';
@@ -136,6 +137,22 @@ export const getJobsWithdrawnFromWishlist = (
 };
 
 /**
+ * Derives the application facts the dashboard reads from status history,
+ * so the insights and recent activity share one derivation.
+ *
+ * @param {TJob[]} jobs Saved jobs.
+ * @param {TTimelineEventResponse[]} events Status history across every job.
+ * @returns {IApplicationHistory} Recorded applications and wishlist withdrawals.
+ */
+export const getApplicationHistory = (
+  jobs: TJob[],
+  events: TTimelineEventResponse[],
+): IApplicationHistory => ({
+  applications: getRecordedApplications(jobs, events),
+  withdrawnFromWishlist: getJobsWithdrawnFromWishlist(jobs, events),
+});
+
+/**
  * Derives every dashboard insight from saved jobs and their recorded status
  * history. Pure: the same inputs and `now` always give the same result.
  *
@@ -158,16 +175,17 @@ export const getJobsWithdrawnFromWishlist = (
  * @param {TJob[]} jobs Saved jobs.
  * @param {TTimelineEventResponse[]} events Complete status history across every job.
  * @param {Date} now The current moment.
+ * @param {IApplicationHistory} history The same jobs' and events' application history, when the caller already has it.
  * @returns {IDashboardInsights} Dashboard insights.
  */
 export const getDashboardInsights = (
   jobs: TJob[],
   events: TTimelineEventResponse[],
   now: Date,
+  history: IApplicationHistory = getApplicationHistory(jobs, events),
 ): IDashboardInsights => {
-  const applications = getRecordedApplications(jobs, events);
+  const { applications, withdrawnFromWishlist } = history;
   const week = getLocalWeek(now);
-  const withdrawnFromWishlist = getJobsWithdrawnFromWishlist(jobs, events);
   const isUnknownApplication = (job: TJob): boolean =>
     job.status !== 'WISHLIST' && !applications.has(job.id) && !withdrawnFromWishlist.has(job.id);
 

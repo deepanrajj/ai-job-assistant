@@ -18,23 +18,6 @@ export const ApplicationsInsightIcon: FC = () => (
 );
 
 /**
- * Renders the calendar icon for the interview-rate insight.
- *
- * @returns {JSX.Element} Decorative calendar icon.
- */
-export const InterviewInsightIcon: FC = () => (
-  <svg aria-hidden="true" className="h-6 w-6" fill="none" focusable="false" viewBox="0 0 24 24">
-    <path
-      d="M7.5 3.75v3M16.5 3.75v3M4.75 9.25h14.5M6.75 5.25h10.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6.75a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2Z"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1.8"
-    />
-  </svg>
-);
-
-/**
  * Renders the clock icon for the aging-applications insight.
  *
  * @returns {JSX.Element} Decorative clock icon.

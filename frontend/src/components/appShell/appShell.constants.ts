@@ -1,6 +1,6 @@
+import { CalendarIcon } from '../icons';
 import {
   ApplicationsIcon,
-  CalendarIcon,
   DashboardIcon,
   DiscoverIcon,
   JobsIcon,

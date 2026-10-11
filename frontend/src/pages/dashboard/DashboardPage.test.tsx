@@ -203,7 +203,8 @@ describe('DashboardPage', () => {
     const pipeline = screen.getByRole('heading', { name: 'Pipeline' }).closest('section');
     const recent = screen.getByRole('heading', { name: 'Recent activity' }).closest('section');
 
-    expect(pipeline?.parentElement).toBe(recent?.parentElement);
+    // Same grid row: recent activity sits in its own measuring wrapper.
+    expect(pipeline?.parentElement).toContainElement(recent ?? null);
   });
 
   it('renders the insights from the status history alongside the job counts', () => {

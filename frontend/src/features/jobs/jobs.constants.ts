@@ -42,3 +42,17 @@ export const statusPillClasses: Record<TJobStatus, string> = {
   REJECTED: 'bg-danger-50 text-danger-700 ring-danger-100',
   WITHDRAWN: 'bg-zinc-100 text-zinc-700 ring-zinc-200',
 };
+
+/**
+ * Solid background per job status, from the same colour family as its
+ * pill in `statusPillClasses`. Kept beside it so a status looks the same
+ * as a pill and as a dot or bar, such as in the dashboard pipeline.
+ */
+export const statusSolidClasses: Record<TJobStatus, string> = {
+  WISHLIST: 'bg-slate-400',
+  APPLIED: 'bg-primary-500',
+  INTERVIEW: 'bg-warning-500',
+  OFFER: 'bg-success-500',
+  REJECTED: 'bg-danger-500',
+  WITHDRAWN: 'bg-zinc-400',
+};

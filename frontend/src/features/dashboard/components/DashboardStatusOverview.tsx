@@ -4,7 +4,8 @@ import { Card } from '../../../components/ui';
 import { DashboardViewAllLink } from './DashboardViewAllLink';
 import { useTranslation } from '../../../i18n';
 import { getStatusMeterWidth } from '../dashboard.utils';
-import { dashboardStatusOrder, pipelineStatusColorClasses } from '../dashboard.constants';
+import { statusSolidClasses } from '../../jobs/jobs.constants';
+import { dashboardStatusOrder } from '../dashboard.constants';
 import { JOB_STATUS_TRANSLATION_KEYS } from '../../../types';
 import type { TJobStatusCounts } from '../dashboard.types';
 
@@ -55,7 +56,7 @@ const DashboardStatusOverviewComponent: FC<IDashboardStatusOverviewProps> = ({
             >
               <span
                 aria-hidden="true"
-                className={`h-3 w-3 rounded-full ${pipelineStatusColorClasses[status]}`}
+                className={`h-3 w-3 rounded-full ${statusSolidClasses[status]}`}
               />
               <span className="font-medium text-app-textSoft">{label}</span>
               <span className="text-right font-semibold text-app-text">{count}</span>
@@ -65,7 +66,7 @@ const DashboardStatusOverviewComponent: FC<IDashboardStatusOverviewProps> = ({
                   aria-valuemax={Math.max(totalJobCount, 1)}
                   aria-valuemin={0}
                   aria-valuenow={count}
-                  className={`h-full rounded-full ${pipelineStatusColorClasses[status]}`}
+                  className={`h-full rounded-full ${statusSolidClasses[status]}`}
                   role="meter"
                   style={{ width: getStatusMeterWidth(count, totalJobCount) }}
                 />

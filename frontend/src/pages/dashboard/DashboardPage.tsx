@@ -9,13 +9,9 @@ import type { INextRemindersState } from '../../features/dashboard/useNextRemind
 import type { IStatusHistoryState } from '../../features/dashboard/useStatusHistory';
 import { useTranslation } from '../../i18n';
 import { getDashboardData } from '../../features/dashboard/dashboard.utils';
-import {
-  getJobsWithdrawnFromWishlist,
-  getRecordedApplications,
-} from '../../features/dashboard/dashboardInsights.utils';
+import { getApplicationHistory } from '../../features/dashboard/dashboardInsights.utils';
 import type { AppError } from '../../errors';
 import type { TJob } from '../../types';
-import type { IRecentApplications } from '../../features/dashboard/dashboard.types';
 
 /**
  * Props used by the dashboard page.
@@ -61,26 +57,16 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
     () => getDashboardData(jobs),
     [jobs],
   );
-  // Only a settled, complete history may date an application; while it
-  // loads or after it fails, the table shows no dates rather than partial
-  // ones. Only the recent jobs' events are read, so the full history is not
-  // sorted a second time just to date four rows.
-  const recentApplications = useMemo((): IRecentApplications | null => {
-    if (!statusHistory.events || statusHistory.isLoading || statusHistory.error) return null;
-
-    const recentJobIds = new Set(recentJobs.map((job) => job.id));
-    const recentEvents = statusHistory.events.filter((event) => recentJobIds.has(event.jobId));
-
-    return {
-      appliedDates: new Map(
-        [...getRecordedApplications(recentJobs, recentEvents)].map(([jobId, { appliedAt }]) => [
-          jobId,
-          appliedAt,
-        ]),
-      ),
-      withdrawnFromWishlist: getJobsWithdrawnFromWishlist(recentJobs, recentEvents),
-    };
-  }, [recentJobs, statusHistory.error, statusHistory.events, statusHistory.isLoading]);
+  // Derived once from a settled, complete history and shared by the insights
+  // and recent activity. While the history loads or after it fails there is
+  // none, so recent activity shows no dates rather than partial ones.
+  const applicationHistory = useMemo(
+    () =>
+      statusHistory.events && !statusHistory.isLoading && !statusHistory.error
+        ? getApplicationHistory(jobs, statusHistory.events)
+        : null,
+    [jobs, statusHistory.error, statusHistory.events, statusHistory.isLoading],
+  );
 
   if (isLoading) return <LoadingState label={t('dashboard.loading')} />;
 
@@ -96,6 +82,7 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
   return (
     <div className="space-y-6">
       <DashboardInsights
+        applicationHistory={applicationHistory}
         error={statusHistory.error}
         events={statusHistory.events}
         isLoading={statusHistory.isLoading}
@@ -122,12 +109,12 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
             reminders={nextReminders.reminders}
           />
         ) : (
-          <DashboardRecentActivity applications={recentApplications} jobs={recentJobs} sharesRow />
+          <DashboardRecentActivity applicationHistory={applicationHistory} jobs={recentJobs} />
         )}
       </div>
 
       {nextReminders && (
-        <DashboardRecentActivity applications={recentApplications} jobs={recentJobs} />
+        <DashboardRecentActivity applicationHistory={applicationHistory} jobs={recentJobs} />
       )}
     </div>
   );

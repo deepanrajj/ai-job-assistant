@@ -48,17 +48,28 @@ export const getDashboardData = (jobs: TJob[]): IDashboardData => {
 };
 
 /**
- * Formats a dashboard activity date for the active language.
+ * Formats a dashboard activity date for the active language: day and month,
+ * plus the year when it is not the year of `today`, so last year's date is
+ * never read as this year's.
  *
  * @param {string | Date} date ISO date string or date to format.
  * @param {TLanguage} language Active app language.
+ * @param {Date} today The current day, from `useLocalToday`.
  * @returns {string} Localized dashboard date.
  */
-export const formatDashboardDate = (date: string | Date, language: TLanguage): string =>
-  new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
-    month: 'short',
+export const formatDashboardDate = (
+  date: string | Date,
+  language: TLanguage,
+  today: Date = new Date(),
+): string => {
+  const value = new Date(date);
+
+  return new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
     day: 'numeric',
-  }).format(new Date(date));
+    month: 'short',
+    ...(value.getFullYear() === today.getFullYear() ? {} : { year: 'numeric' }),
+  }).format(value);
+};
 
 /**
  * Formats a `YYYY-MM-DD` day as a short weekday and date for the reminder
@@ -91,8 +102,8 @@ export const getStatusMeterWidth = (count: number, totalJobCount: number): strin
 /**
  * Groups reminders for the dashboard's weekly agenda: overdue first, then
  * one group per day of the current week that has reminders, then later.
- * Reminders keep their incoming order, which is earliest first, so day
- * groups come out in date order without sorting.
+ * Reminders keep their incoming order within each group, and day groups
+ * are sorted by date.
  *
  * Days without reminders get no group: the dashboard loads only the next
  * few reminders, so it cannot tell that such a day is free.
@@ -127,5 +138,11 @@ export const groupRemindersByWeek = (
     }
   });
 
-  return [overdue, ...days.values(), later].filter((group) => group.reminders.length > 0);
+  // Day groups are sorted here rather than trusted to the input order: the
+  // response merges stored reminders with task-derived ones.
+  const dayGroups = [...days.values()].sort((left, right) =>
+    (left.date ?? '').localeCompare(right.date ?? ''),
+  );
+
+  return [overdue, ...dayGroups, later].filter((group) => group.reminders.length > 0);
 };

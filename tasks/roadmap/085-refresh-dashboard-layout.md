@@ -92,7 +92,7 @@ checks and actual CI E2E status in the PR description.
 - [x] Desktop and mobile layouts are readable and keyboard accessible.
 - [x] Focused tests and frontend verification pass.
 
-Local verification: `npm run frontend:verify` passed 958 tests, lint,
+Local verification: `npm run frontend:verify` passed 964 tests, lint,
 format check, coverage, and build. The populated dashboard was checked
 in the running app at 320 px in German and at 1280 px in English (in a
 1280 px iframe, since the browser window could not be resized). The

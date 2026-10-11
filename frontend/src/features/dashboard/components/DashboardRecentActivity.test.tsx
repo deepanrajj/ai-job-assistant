@@ -1,9 +1,22 @@
-import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, screen, within } from '@testing-library/react';
 
 import { DashboardRecentActivity } from './DashboardRecentActivity';
 import { renderWithRouter } from '../../../test/renderWithRouter';
 import { MOCK_JOB_IDS, createMockJob, createMockJobs } from '../../../test/mockJobs';
+import type { TJob } from '../../../types';
+import type { IApplicationHistory } from '../dashboardInsights.types';
+
+/**
+ * Builds an application history with the given applied dates by job.
+ */
+const historyWith = (
+  appliedDates: [TJob, Date][] = [],
+  withdrawnFromWishlist: string[] = [],
+): IApplicationHistory => ({
+  applications: new Map(appliedDates.map(([job, appliedAt]) => [job.id, { appliedAt, job }])),
+  withdrawnFromWishlist: new Set(withdrawnFromWishlist),
+});
 
 /**
  * Simulates a viewport below every breakpoint, i.e. a phone, and returns
@@ -29,18 +42,24 @@ const mockPhoneViewport = () => {
 };
 
 describe('DashboardRecentActivity', () => {
+  const originalResizeObserver = globalThis.ResizeObserver;
+
+  afterEach(() => {
+    globalThis.ResizeObserver = originalResizeObserver;
+  });
+
   it('renders a table of recent jobs with links, applied dates, status, and update dates', () => {
+    const jobs = createMockJobs();
+    const celonis = jobs.find((job) => job.id === MOCK_JOB_IDS.celonis) as TJob;
+
     renderWithRouter(
       <DashboardRecentActivity
-        applications={{
-          appliedDates: new Map([[MOCK_JOB_IDS.celonis, new Date(2026, 4, 2)]]),
-          withdrawnFromWishlist: new Set(),
-        }}
-        jobs={createMockJobs()}
+        applicationHistory={historyWith([[celonis, new Date(2026, 4, 2)]])}
+        jobs={jobs}
       />,
     );
 
-    const table = screen.getByRole('table', { name: 'Recent activity' });
+    const table = screen.getByRole('table');
     const celonisRow = within(table)
       .getByRole('link', { name: 'Celonis' })
       .closest('tr') as HTMLElement;
@@ -50,24 +69,21 @@ describe('DashboardRecentActivity', () => {
       `/jobs/${MOCK_JOB_IDS.celonis}`,
     );
     expect(within(celonisRow).getByText('Senior Frontend Engineer')).toBeInTheDocument();
-    expect(within(celonisRow).getByText('May 2')).toBeInTheDocument();
-    expect(within(celonisRow).getByText('May 9')).toBeInTheDocument();
+    expect(within(celonisRow).getByText(/^May 2/)).toBeInTheDocument();
+    expect(within(celonisRow).getByText(/^May 9/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', '/jobs');
   });
 
   it('names a missing application date instead of guessing one', () => {
     const { unmount } = renderWithRouter(
-      <DashboardRecentActivity
-        applications={{ appliedDates: new Map(), withdrawnFromWishlist: new Set() }}
-        jobs={createMockJobs()}
-      />,
+      <DashboardRecentActivity applicationHistory={historyWith()} jobs={createMockJobs()} />,
     );
 
     expect(screen.getAllByText('Not recorded')).toHaveLength(createMockJobs().length);
     unmount();
 
     // No history yet, or it failed: the date is unknown, not absent.
-    renderWithRouter(<DashboardRecentActivity applications={null} jobs={createMockJobs()} />);
+    renderWithRouter(<DashboardRecentActivity applicationHistory={null} jobs={createMockJobs()} />);
     expect(screen.getAllByText('Not available')).toHaveLength(createMockJobs().length);
     expect(screen.queryByText('Not recorded')).not.toBeInTheDocument();
   });
@@ -75,7 +91,7 @@ describe('DashboardRecentActivity', () => {
   it('says a wishlist job, or one withdrawn straight from it, was never applied for', () => {
     renderWithRouter(
       <DashboardRecentActivity
-        applications={{ appliedDates: new Map(), withdrawnFromWishlist: new Set(['dropped']) }}
+        applicationHistory={historyWith([], ['dropped'])}
         jobs={[
           createMockJob({ company: 'Saved', id: 'saved', status: 'WISHLIST' }),
           createMockJob({ company: 'Dropped', id: 'dropped', status: 'WITHDRAWN' }),
@@ -92,28 +108,58 @@ describe('DashboardRecentActivity', () => {
     expect(within(rowFor('Undated')).getByText('Not recorded')).toBeInTheDocument();
   });
 
-  it('uses the cards when it shares a row on a large screen, where a table would not fit', () => {
-    // The setup file's matchMedia matches every query, i.e. a large screen.
-    renderWithRouter(
-      <DashboardRecentActivity applications={null} jobs={createMockJobs()} sharesRow />,
-    );
+  it('switches to cards when its own width is too narrow for the table', () => {
+    let report: ((width: number) => void) | undefined;
 
+    globalThis.ResizeObserver = class {
+      constructor(callback: ResizeObserverCallback) {
+        report = (width) =>
+          callback(
+            [{ contentRect: { width } } as ResizeObserverEntry],
+            this as unknown as ResizeObserver,
+          );
+      }
+
+      disconnect() {}
+
+      observe() {}
+
+      unobserve() {}
+    } as unknown as typeof ResizeObserver;
+
+    renderWithRouter(<DashboardRecentActivity applicationHistory={null} jobs={createMockJobs()} />);
+
+    // Unmeasured, a large viewport picks the table.
+    expect(screen.getByRole('table')).toBeInTheDocument();
+
+    // Half a row on a wide screen: too narrow for five columns.
+    act(() => report?.(500));
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Celonis/ })).toBeInTheDocument();
+
+    act(() => report?.(900));
+    expect(screen.getByRole('table')).toBeInTheDocument();
   });
 
-  it('renders each job as a linked card on phones', () => {
+  it('renders each job as a linked card on phones, with its applied date when recorded', () => {
     const restoreViewport = mockPhoneViewport();
+    const jobs = createMockJobs();
+    const celonis = jobs.find((job) => job.id === MOCK_JOB_IDS.celonis) as TJob;
 
     try {
-      renderWithRouter(<DashboardRecentActivity applications={null} jobs={createMockJobs()} />);
+      renderWithRouter(
+        <DashboardRecentActivity
+          applicationHistory={historyWith([[celonis, new Date(2026, 4, 2)]])}
+          jobs={jobs}
+        />,
+      );
 
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
 
-      const celonis = screen.getByRole('link', { name: /Celonis/ });
+      const celonisLink = screen.getByRole('link', { name: /Celonis/ });
 
-      expect(celonis).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.celonis}`);
-      expect(within(celonis).getByText('Updated May 9')).toBeInTheDocument();
+      expect(celonisLink).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.celonis}`);
+      expect(within(celonisLink).getByText(/^Applied May 2.* · Updated May 9/)).toBeInTheDocument();
     } finally {
       restoreViewport();
     }
@@ -126,7 +172,7 @@ describe('DashboardRecentActivity', () => {
    * with nothing inside it.
    */
   it('renders first-run copy instead of an empty list when there are no jobs', () => {
-    renderWithRouter(<DashboardRecentActivity applications={null} jobs={[]} />);
+    renderWithRouter(<DashboardRecentActivity applicationHistory={null} jobs={[]} />);
 
     expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
     expect(screen.getByText('No activity yet')).toBeInTheDocument();

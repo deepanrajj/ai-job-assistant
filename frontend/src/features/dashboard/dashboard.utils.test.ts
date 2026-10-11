@@ -55,8 +55,17 @@ describe('getDashboardData', () => {
 
 describe('formatDashboardDate', () => {
   it('formats dashboard dates for English and German', () => {
-    expect(formatDashboardDate('2026-05-09T15:20:00.000Z', 'en')).toBe('May 9');
-    expect(formatDashboardDate('2026-05-09T15:20:00.000Z', 'de')).toBe('9. Mai');
+    const sameYear = new Date(2026, 9, 11);
+
+    expect(formatDashboardDate('2026-05-09T15:20:00.000Z', 'en', sameYear)).toBe('May 9');
+    expect(formatDashboardDate('2026-05-09T15:20:00.000Z', 'de', sameYear)).toBe('9. Mai');
+  });
+
+  it('adds the year to a date from another year, so it is not read as this year', () => {
+    const nextYear = new Date(2027, 0, 5);
+
+    expect(formatDashboardDate(new Date(2026, 4, 9), 'en', nextYear)).toBe('May 9, 2026');
+    expect(formatDashboardDate(new Date(2026, 4, 9), 'de', nextYear)).toBe('9. Mai 2026');
   });
 });
 
@@ -93,6 +102,16 @@ describe('groupRemindersByWeek', () => {
       ['day', '2026-10-18', ['sunday']],
       ['later', null, ['next-week']],
     ]);
+  });
+
+  it('orders day groups by date whatever order the reminders arrive in', () => {
+    const groups = groupRemindersByWeek(
+      [reminderDue('friday', '2026-10-16'), reminderDue('thursday', '2026-10-15')],
+      today,
+      weekEnd,
+    );
+
+    expect(groups.map((group) => group.date)).toEqual(['2026-10-15', '2026-10-16']);
   });
 
   it('leaves out empty groups and days without reminders', () => {

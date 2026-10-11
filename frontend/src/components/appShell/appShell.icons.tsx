@@ -85,23 +85,6 @@ export const ApplicationsIcon: FC = () => (
 );
 
 /**
- * Renders the Calendar navigation icon.
- *
- * @returns {JSX.Element} Decorative Calendar icon.
- */
-export const CalendarIcon: FC = () => (
-  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
-    <path
-      d="M5 9.5h14M7.5 4v3M16.5 4v3M6.25 6h11.5A1.75 1.75 0 0 1 19.5 7.75v10.5A1.75 1.75 0 0 1 17.75 20H6.25a1.75 1.75 0 0 1-1.75-1.75V7.75A1.75 1.75 0 0 1 6.25 6Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-/**
  * Renders the Profile navigation icon.
  *
  * @returns {JSX.Element} Decorative Profile icon.

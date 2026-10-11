@@ -118,8 +118,12 @@ still reads as an explanation rather than a result.
 
 Pipeline rows get a status dot and bar colour from one new constant map,
 using the solid shade of each status pill's colour family, so a status
-looks the same in the pipeline and in its pill. `warning-500` and
-`danger-500` are added to the theme for this.
+looks the same in the pipeline and in its pill. That map,
+`statusSolidClasses`, sits beside `statusPillClasses` in the jobs
+feature so the two cannot drift apart unnoticed. `warning-500` and
+`danger-500` are added to the theme for this. The interview-rate card
+reuses a shared `CalendarIcon`, moved from the app shell to
+`components/icons`.
 The bars sit under each label, so German status names are never cut
 short. The bars stay supplementary: each row prints its count, and the
 meters keep their accessible names and values.
@@ -131,8 +135,11 @@ meters keep their accessible names and values.
 recorded APPLIED transitions, and last week is counted only from its
 Monday through today's weekday, in whole local days. A week in progress
 is compared with the same span of last week, so Monday morning does not
-read as a drop against a full week, and the sentence says so: "1 more
-than at this point last week". The trend is a sentence with a decorative
+read as a drop against a full week. The figures refresh only at
+midnight, so both spans include the whole current weekday, and the
+sentence says exactly that: "1 more than by this day last week". With no
+application in either span there is nothing to compare, so the trend is
+left out. The trend is a sentence with a decorative
 arrow, so colour and arrow are never the only signal.
 
 Rejected:
@@ -155,9 +162,14 @@ withdrawn straight from the wishlist, "Not available" while the history
 loads or after it fails, and "Not recorded" when it holds no application
 for the job. Only the recent jobs' events are read.
 
-When reminders are off, the production default, recent activity shares
-the middle row with the pipeline from `lg` up. Half a row is too narrow
-for five columns, so there it keeps the cards. Rows are not links as a whole, so
+The table needs about 640 px. Recent activity measures its own width
+with a new `useElementWidth` hook (a `ResizeObserver`) and uses the
+cards when narrower, such as in half of the middle row when reminders
+are off, the production default. The cards then show the applied date
+too. Where the width cannot be measured, the `md` breakpoint decides.
+The page derives the application history once, with a new
+`getApplicationHistory`, and passes it to both the insights and recent
+activity. Dates from another year include the year. Rows are not links as a whole, so
 they have no hover highlight; the company name is the link.
 
 Rejected:
@@ -250,6 +262,6 @@ phase backlog's next-task line.
 - The insight cards have icon tiles and a soft blue response-rate card;
   applications this week compares with last week; recent activity is a
   table from `md` up with recorded applied dates.
-- `npm run frontend:verify`: 958 tests in 179 files, lint, format check,
+- `npm run frontend:verify`: 964 tests in 179 files, lint, format check,
   coverage, and build passed. Checked in the running app at 320 px in
   German and at 1280 px in English, the latter in a 1280 px iframe.

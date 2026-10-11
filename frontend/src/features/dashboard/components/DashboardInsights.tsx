@@ -1,23 +1,25 @@
 import { memo, useMemo, type FC, type ReactNode } from 'react';
 
 import { Button, Card, ErrorState, LoadingState } from '../../../components/ui';
-import {
-  AgingInsightIcon,
-  ApplicationsInsightIcon,
-  InterviewInsightIcon,
-  ResponseInsightIcon,
-} from '../dashboard.icons';
+import { CalendarIcon } from '../../../components/icons';
+import { AgingInsightIcon, ApplicationsInsightIcon, ResponseInsightIcon } from '../dashboard.icons';
 import { useLocalToday } from '../../../hooks';
 import { useTranslation, type TLanguage } from '../../../i18n';
 import { formatInsightRate, getDashboardInsights } from '../dashboardInsights.utils';
 import type { AppError } from '../../../errors';
 import type { TJob } from '../../../types';
+import type { IApplicationHistory } from '../dashboardInsights.types';
 import type { TTimelineEventResponse } from '../../../services';
 
 /**
  * Props used by the dashboard insights section.
  */
 interface IDashboardInsightsProps {
+  /**
+   * The application history the page already derived from these events,
+   * so it is not derived twice. Derived here when absent.
+   */
+  applicationHistory?: IApplicationHistory | null;
   error: AppError | null;
   events: TTimelineEventResponse[] | null;
   isLoading: boolean;
@@ -134,6 +136,9 @@ const WeeklyTrend: FC<IWeeklyTrendProps> = ({ current, previous }) => {
   const { t } = useTranslation();
   const difference = current - previous;
 
+  // With no applications in either span there is nothing to compare.
+  if (current === 0 && previous === 0) return null;
+
   if (difference === 0)
     return <span className="text-sm text-app-textMuted">{t('dashboard.insights.trendSame')}</span>;
 
@@ -176,6 +181,7 @@ const formatShortDate = (date: Date, language: TLanguage): string =>
  * @returns {JSX.Element} Dashboard insights section.
  */
 const DashboardInsightsComponent: FC<IDashboardInsightsProps> = ({
+  applicationHistory,
   error,
   events,
   isLoading,
@@ -185,8 +191,9 @@ const DashboardInsightsComponent: FC<IDashboardInsightsProps> = ({
   const { language, t } = useTranslation();
   const today = useLocalToday();
   const insights = useMemo(
-    () => (events ? getDashboardInsights(jobs, events, today) : null),
-    [events, jobs, today],
+    () =>
+      events ? getDashboardInsights(jobs, events, today, applicationHistory ?? undefined) : null,
+    [applicationHistory, events, jobs, today],
   );
 
   const heading = (
@@ -262,7 +269,7 @@ const DashboardInsightsComponent: FC<IDashboardInsightsProps> = ({
                   total: interviewRate.cohortSize,
                 })
           }
-          icon={<InterviewInsightIcon />}
+          icon={<CalendarIcon className="h-6 w-6" />}
           label={t('dashboard.insights.interviewRate')}
           tone="mint"
           value={
