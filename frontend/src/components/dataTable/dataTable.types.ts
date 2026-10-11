@@ -53,6 +53,7 @@ export interface IDataTableSearchConfig<TData> {
  * Empty state content shown when no rows match.
  */
 export interface IDataTableEmptyState {
+  action?: ReactNode;
   description?: string;
   title: string;
 }

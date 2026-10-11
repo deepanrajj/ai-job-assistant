@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { Outlet, useLocation, useMatches } from 'react-router-dom';
 
 import { AppShellHeader, AppShellPageHeading, AppShellSidebar } from './layout';
+import { useBreakpoint } from '../../hooks';
 import { useTranslation } from '../../i18n';
 import { getActiveRouteHandle } from '../../routes/routes.utils';
 
@@ -18,7 +19,10 @@ export const AppShell: FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // The drawer belongs to the route it was opened on, so any route change closes it.
   const [mobileMenuPathname, setMobileMenuPathname] = useState<string | null>(null);
-  const mobileMenuOpen = mobileMenuPathname === pathname;
+  const isDesktop = useBreakpoint('lg');
+  const mobileMenuOpen = !isDesktop && mobileMenuPathname === pathname;
+  // Forget a menu left behind by Back/Forward or a resize to desktop, or it would reopen later.
+  if (mobileMenuPathname !== null && !mobileMenuOpen) setMobileMenuPathname(null);
   const mainRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const previousPathnameRef = useRef(pathname);
@@ -44,23 +48,13 @@ export const AppShell: FC = () => {
     mainRef.current?.focus({ preventScroll: true });
   }, [pathname]);
 
-  useEffect(() => {
-    if (!mobileMenuOpen) return;
-
-    const desktopQuery = window.matchMedia('(min-width: 64rem)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      if (event.matches) setMobileMenuPathname(null);
-    };
-    desktopQuery.addEventListener('change', handleChange);
-    return () => desktopQuery.removeEventListener('change', handleChange);
-  }, [mobileMenuOpen]);
-
   return (
     <div className="min-h-screen bg-app-bg text-app-text">
       {/* Keep the skip link first so keyboard users can bypass persistent navigation. */}
       <a
         className="sr-only z-50 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
         href="#main-content"
+        inert={mobileMenuOpen}
       >
         {t('a11y.skipToContent')}
       </a>

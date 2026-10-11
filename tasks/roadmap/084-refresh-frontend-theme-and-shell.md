@@ -36,13 +36,15 @@ In scope:
   route. Do not imply a signed-in identity.
 - Add a global Add Job action to the header that uses the existing route
   and avoids duplicate actions at the same viewport size.
+- Use Inter, self-hosted through `@fontsource-variable/inter` (SIL OFL
+  1.1), as the app font. Added to scope at the owner's request.
 
 Out of scope:
 
 - Page-specific content/layout changes owned by tasks 085-091.
 - A global search field, notification control, account avatar, or mock
   data without a corresponding real capability.
-- New fonts, component libraries, API changes, or feature-flag changes.
+- Other new fonts, component libraries, API changes, or feature-flag changes.
 
 ## Pre-Execution
 
@@ -111,6 +113,14 @@ check, coverage, and build.
 On phones (below `sm`), Add Job and the language switch now sit in the
 menu drawer instead of the header, at the owner's request: the language
 switch beside the close button and a full-width Add Job below it.
+
+Second PR review fixes: the drawer no longer reopens after Back/Forward
+and closes through the shared `useBreakpoint('lg')` hook; the first-run
+Jobs empty state offers Add Job on phones; the skip link is inert while
+the drawer is open; the focus trap skips hidden controls in every browser;
+the desktop sidebar scrolls in short windows; collapsed links use the
+shared `Tooltip` (new `right` placement); and the collapse toggle no
+longer duplicates its state with `aria-expanded`.
 
 PR review fixes: the page heading renders inside `<main>`; route changes
 scroll to the top and focus `<main>` without scrolling; the drawer closes

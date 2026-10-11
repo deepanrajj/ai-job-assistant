@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { NavLink } from 'react-router-dom';
 
+import { Tooltip } from '../../ui/Tooltip';
 import { useTranslation } from '../../../i18n';
 import { navItems } from '../appShell.constants';
 import type { TNavLinkClassName } from '../appShell.types';
@@ -41,26 +42,21 @@ export const AppShellNavigation: FC<IAppShellNavigationProps> = ({
       {navItems.map((item) => {
         // Icons are component references so the same nav config works in desktop and mobile.
         const Icon = item.icon;
-
-        return (
-          <NavLink
-            key={item.id}
-            to={item.path}
-            className={(state) => `group relative ${linkClassName(state)}`}
-            onClick={onNavigate}
-          >
+        const label = t(item.labelKey);
+        const link = (
+          <NavLink key={item.id} to={item.path} className={linkClassName} onClick={onNavigate}>
             <Icon />
-            <span className={collapsed ? 'sr-only' : undefined}>{t(item.labelKey)}</span>
-            {/* Visual tooltip for icon-only links; shown on hover and keyboard focus alike. */}
-            {collapsed && (
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md bg-app-text px-2 py-1 text-xs font-medium text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-              >
-                {t(item.labelKey)}
-              </span>
-            )}
+            <span className={collapsed ? 'sr-only' : undefined}>{label}</span>
           </NavLink>
+        );
+
+        // Icon-only links show their label on hover and keyboard focus.
+        return collapsed ? (
+          <Tooltip className="flex" content={label} key={item.id} placement="right">
+            {link}
+          </Tooltip>
+        ) : (
+          link
         );
       })}
     </nav>

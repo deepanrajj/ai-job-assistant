@@ -1,6 +1,21 @@
 import type { TNavClassNameParams } from './appShell.types';
 
 /**
+ * Checks whether an element is rendered, i.e. neither it nor an ancestor up to `root` is
+ * `display: none`. Works in every browser, unlike `Element.checkVisibility`.
+ *
+ * @param {HTMLElement} element Element to check.
+ * @param {HTMLElement} root Ancestor where the check stops.
+ * @returns {boolean} Whether the element is displayed.
+ */
+export const isDisplayed = (element: HTMLElement, root: HTMLElement): boolean => {
+  for (let node: HTMLElement | null = element; node && node !== root; node = node.parentElement) {
+    if (window.getComputedStyle(node).display === 'none') return false;
+  }
+  return true;
+};
+
+/**
  * Builds a sidebar navigation link class name from its active and collapsed state.
  *
  * @param {TNavClassNameParams} params Navigation link state from React Router.

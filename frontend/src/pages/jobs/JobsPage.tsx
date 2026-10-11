@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   DataTable,
@@ -13,8 +14,10 @@ import {
   createJobsSearchConfig,
   createJobsViewToggle,
 } from '../../features/jobs/jobs.config';
+import { PlusIcon } from '../../components/icons';
 import { useTranslation } from '../../i18n';
 import type { AppError } from '../../errors';
+import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
 import type { TJobsViewMode, TStatusFilter } from '../../features/jobs/jobs.types';
 
@@ -36,6 +39,7 @@ interface IJobsPageProps {
  */
 export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }) => {
   const { language, t } = useTranslation();
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
   const [viewMode, setViewMode] = useState<TJobsViewMode>('table');
 
@@ -110,6 +114,15 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
       emptyState={
         jobs.length === 0
           ? {
+              // From `sm` up the header carries Add Job; on phones it lives in the menu drawer,
+              // so the first-run empty state offers it directly.
+              action: (
+                <div className="sm:hidden">
+                  <Button leftIcon={<PlusIcon />} onClick={() => navigate(APP_PATHS.JOB_NEW)}>
+                    {t('jobs.addJob')}
+                  </Button>
+                </div>
+              ),
               description: t('jobs.noJobsYetDescription'),
               title: t('jobs.noJobsYet'),
             }

@@ -85,7 +85,32 @@ describe('JobsPage', () => {
       screen.getByText('Add your first opportunity to start tracking applications.'),
     ).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Add Job' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add Job' }).parentElement).toHaveClass('sm:hidden');
+  });
+
+  it('opens the add job route from the first-run empty state', async () => {
+    const user = userEvent.setup();
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/jobs',
+          element: <JobsPage error={null} isLoading={false} jobs={[]} onRetry={() => {}} />,
+        },
+        {
+          path: '/jobs/new',
+          element: <p>Add job route</p>,
+        },
+      ],
+      {
+        initialEntries: ['/jobs'],
+      },
+    );
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    await user.click(screen.getByRole('button', { name: 'Add Job' }));
+
+    expect(await screen.findByText('Add job route')).toBeInTheDocument();
   });
 
   it('keeps the filter-oriented empty state when a search excludes every job', async () => {

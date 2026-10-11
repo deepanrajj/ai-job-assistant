@@ -23,8 +23,7 @@ describe('AppShellSidebar', () => {
     expect(within(nav).getAllByRole('link')).toHaveLength(6);
     expect(within(nav).getByRole('link', { name: 'Jobs' })).toHaveAttribute('aria-current', 'page');
     const jobsLink = within(nav).getByRole('link', { name: 'Jobs' });
-    expect(within(jobsLink).getAllByText('Jobs')[0]).toHaveClass('sr-only');
-    expect(within(jobsLink).getAllByText('Jobs')[1]).toHaveAttribute('aria-hidden', 'true');
+    expect(within(jobsLink).getByText('Jobs')).toHaveClass('sr-only');
   });
 
   it('closes the mobile drawer through its visible control', async () => {

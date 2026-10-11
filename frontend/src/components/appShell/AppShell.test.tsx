@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
@@ -54,7 +54,41 @@ const createAppShellRouter = (initialPath = '/jobs') =>
     },
   );
 
+/**
+ * Simulates the viewport for `useBreakpoint`: below `lg` until `setDesktop(true)` fires a change.
+ */
+const mockViewport = () => {
+  let desktop = false;
+  const listeners = new Set<() => void>();
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
+        matches: desktop && query.includes('1024px'),
+        media: query,
+        removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+      }) as unknown as MediaQueryList,
+  );
+
+  return {
+    setDesktop: (value: boolean) => {
+      desktop = value;
+      listeners.forEach((listener) => listener());
+    },
+  };
+};
+
 describe('AppShell', () => {
+  let viewport: ReturnType<typeof mockViewport>;
+
+  beforeEach(() => {
+    viewport = mockViewport();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders active route metadata from route handles', () => {
     renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
 
@@ -183,11 +217,11 @@ describe('AppShell', () => {
     const navigation = screen.getByRole('navigation', { name: 'Main navigation' });
     expect(within(navigation).getAllByRole('link')).toHaveLength(6);
     const jobsLink = within(navigation).getByRole('link', { name: 'Jobs' });
-    expect(within(jobsLink).getAllByText('Jobs')).toHaveLength(2);
     expect(jobsLink).not.toHaveAttribute('title');
-    expect(screen.getByRole('button', { name: 'Expand sidebar' })).toHaveAttribute(
+    act(() => jobsLink.focus());
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Jobs');
+    expect(screen.getByRole('button', { name: 'Expand sidebar' })).not.toHaveAttribute(
       'aria-expanded',
-      'false',
     );
   });
 
@@ -235,28 +269,31 @@ describe('AppShell', () => {
 
     expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveFocus();
+
+    // Returning to the route the drawer was opened on must not reopen it.
+    await act(() => router.navigate(-1));
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('makes the skip link inert while the drawer is open', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    expect(screen.getByText('Skip to main content')).toHaveAttribute('inert');
   });
 
   it('closes the mobile drawer when the viewport reaches the desktop breakpoint', async () => {
     const user = userEvent.setup();
-    let notifyChange: ((event: Pick<MediaQueryListEvent, 'matches'>) => void) | undefined;
-    vi.spyOn(window, 'matchMedia').mockImplementation(
-      (query: string) =>
-        ({
-          addEventListener: (_type: string, listener: typeof notifyChange) => {
-            notifyChange = listener;
-          },
-          matches: false,
-          media: query,
-          removeEventListener: vi.fn(),
-        }) as unknown as MediaQueryList,
-    );
     renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
 
     await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
-    act(() => notifyChange?.({ matches: true }));
-
+    act(() => viewport.setDesktop(true));
     expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
-    vi.restoreAllMocks();
+
+    // Shrinking back must not reopen the drawer.
+    act(() => viewport.setDesktop(false));
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
   });
 });

@@ -8,6 +8,7 @@ import {
   type MouseEventHandler,
   type ReactElement,
   type ReactNode,
+  type SyntheticEvent,
 } from 'react';
 
 import { classNames } from '../../utils';
@@ -17,12 +18,31 @@ type TTooltipTriggerProps = HTMLAttributes<HTMLElement> & {
 };
 
 /**
+ * Side of the trigger the tooltip appears on.
+ */
+type TTooltipPlacement = 'right' | 'top';
+
+/**
  * Props used by the shared tooltip.
  */
 interface ITooltipProps {
   children: ReactElement<TTooltipTriggerProps>;
+  className?: string;
   content: ReactNode;
+  // `right` uses fixed positioning so a scrolling container cannot clip the tooltip.
+  placement?: TTooltipPlacement;
 }
+
+/**
+ * Viewport position of a `right` tooltip, measured from its trigger.
+ */
+interface ITooltipAnchor {
+  left: number;
+  top: number;
+}
+
+/** Gap in pixels between a trigger and its `right` tooltip. */
+const RIGHT_TOOLTIP_OFFSET = 12;
 
 /**
  * Combines an existing trigger handler with the tooltip visibility handler.
@@ -46,9 +66,23 @@ const composeTooltipHandler = <THandler extends (...args: never[]) => void>(
  * @param {ITooltipProps} props Component props.
  * @returns {JSX.Element} Tooltip wrapper.
  */
-export const Tooltip: FC<ITooltipProps> = ({ children, content }) => {
+export const Tooltip: FC<ITooltipProps> = ({
+  children,
+  className = 'relative inline-flex',
+  content,
+  placement = 'top',
+}) => {
   const tooltipId = useId();
   const [isVisible, setIsVisible] = useState(false);
+  const [anchor, setAnchor] = useState<ITooltipAnchor | null>(null);
+
+  const show = (event: SyntheticEvent<HTMLElement>) => {
+    if (placement === 'right') {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setAnchor({ left: rect.right + RIGHT_TOOLTIP_OFFSET, top: rect.top + rect.height / 2 });
+    }
+    setIsVisible(true);
+  };
 
   const describedBy = classNames(children.props['aria-describedby'], isVisible && tooltipId);
 
@@ -57,12 +91,10 @@ export const Tooltip: FC<ITooltipProps> = ({ children, content }) => {
     onBlur: composeTooltipHandler<FocusEventHandler<HTMLElement>>(children.props.onBlur, () =>
       setIsVisible(false),
     ),
-    onFocus: composeTooltipHandler<FocusEventHandler<HTMLElement>>(children.props.onFocus, () =>
-      setIsVisible(true),
-    ),
+    onFocus: composeTooltipHandler<FocusEventHandler<HTMLElement>>(children.props.onFocus, show),
     onMouseEnter: composeTooltipHandler<MouseEventHandler<HTMLElement>>(
       children.props.onMouseEnter,
-      () => setIsVisible(true),
+      show,
     ),
     onMouseLeave: composeTooltipHandler<MouseEventHandler<HTMLElement>>(
       children.props.onMouseLeave,
@@ -71,13 +103,19 @@ export const Tooltip: FC<ITooltipProps> = ({ children, content }) => {
   });
 
   return (
-    <span className="relative inline-flex">
+    <span className={className}>
       {trigger}
       {isVisible && (
         <span
-          className="absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-app-text px-2 py-1 text-xs font-medium text-white shadow-sm"
+          className={classNames(
+            'whitespace-nowrap rounded-md bg-app-text px-2 py-1 text-xs font-medium text-white shadow-sm',
+            placement === 'right'
+              ? 'fixed z-50 -translate-y-1/2'
+              : 'absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2',
+          )}
           id={tooltipId}
           role="tooltip"
+          style={placement === 'right' && anchor ? anchor : undefined}
         >
           {content}
         </span>

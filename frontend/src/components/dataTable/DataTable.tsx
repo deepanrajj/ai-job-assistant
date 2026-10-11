@@ -86,7 +86,11 @@ export const DataTable = <TData,>({
             />
           )
         ) : (
-          <EmptyState description={emptyState.description} title={emptyState.title} />
+          <EmptyState
+            action={emptyState.action}
+            description={emptyState.description}
+            title={emptyState.title}
+          />
         )}
 
         <DataTablePagination

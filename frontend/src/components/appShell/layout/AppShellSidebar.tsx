@@ -5,7 +5,7 @@ import { LanguageSelect } from '../../languageSelect/LanguageSelect';
 import { AppShellNavigation } from './AppShellNavigation';
 import { PlusIcon } from '../../icons';
 import { useTranslation } from '../../../i18n';
-import { navClassName } from '../appShell.utils';
+import { isDisplayed, navClassName } from '../appShell.utils';
 import { APP_PATHS } from '../../../routes/paths';
 
 /**
@@ -57,9 +57,10 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
       if (event.key !== 'Tab') return;
 
       // Phone-only drawer actions are display:none on wider screens, so skip hidden controls.
+      const panel = mobilePanelRef.current;
       const focusable = Array.from(
-        mobilePanelRef.current?.querySelectorAll<HTMLElement>('button, a[href]') ?? [],
-      ).filter((element) => element.checkVisibility?.() ?? true);
+        panel?.querySelectorAll<HTMLElement>('button, a[href]') ?? [],
+      ).filter((element) => panel && isDisplayed(element, panel));
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -78,12 +79,11 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
   return (
     <>
       <div
-        className={`sticky top-16 z-10 hidden h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-app-border bg-app-surface px-3 py-4 transition-[width] lg:flex ${
+        className={`sticky top-16 z-10 hidden h-[calc(100vh-4rem)] shrink-0 flex-col overflow-y-auto border-r border-app-border bg-app-surface px-3 py-4 transition-[width] lg:flex ${
           collapsed ? 'w-18' : 'w-60'
         }`}
       >
         <button
-          aria-expanded={!collapsed}
           aria-label={t(collapsed ? 'nav.expandSidebar' : 'nav.collapseSidebar')}
           className={`mb-5 flex h-10 w-full items-center gap-2 rounded-lg border border-app-border text-app-textSoft hover:bg-app-surface2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
             collapsed ? 'justify-center' : 'px-3'
