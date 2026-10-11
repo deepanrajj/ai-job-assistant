@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
@@ -124,7 +124,9 @@ describe('AppShell', () => {
     renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
 
     await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
-    const navigation = screen.getByRole('navigation', { name: 'Mobile navigation' });
+    const navigation = within(screen.getByRole('dialog', { name: 'Mobile navigation' })).getByRole(
+      'navigation',
+    );
     expect(within(navigation).getAllByRole('link')).toHaveLength(6);
     expect(within(navigation).getByRole('link', { name: 'Applications' })).toHaveAttribute(
       'href',
@@ -132,7 +134,7 @@ describe('AppShell', () => {
     );
     await user.click(within(navigation).getByRole('link', { name: 'Applications' }));
     expect(screen.getByText('applications outlet')).toBeInTheDocument();
-    expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveFocus();
   });
 
@@ -148,7 +150,7 @@ describe('AppShell', () => {
     ).toHaveFocus();
     await user.keyboard('{Escape}');
 
-    expect(screen.queryByRole('navigation', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open navigation menu' })).toHaveFocus();
   });
 
@@ -157,15 +159,20 @@ describe('AppShell', () => {
     renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
 
     await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
-    const navigation = screen.getByRole('navigation', { name: 'Mobile navigation' });
+    const navigation = within(screen.getByRole('dialog', { name: 'Mobile navigation' })).getByRole(
+      'navigation',
+    );
+    const englishButton = within(
+      screen.getByRole('dialog', { name: 'Mobile navigation' }),
+    ).getByRole('button', { name: 'EN English' });
+    // From the close button: back over the language switch, then wrap to the last link.
+    await user.tab({ shift: true });
+    await user.tab({ shift: true });
+    expect(englishButton).toHaveFocus();
     await user.tab({ shift: true });
     expect(within(navigation).getByRole('link', { name: 'Profile' })).toHaveFocus();
     await user.tab();
-    expect(
-      within(screen.getByRole('dialog', { name: 'Mobile navigation' })).getByRole('button', {
-        name: 'Close navigation menu',
-      }),
-    ).toHaveFocus();
+    expect(englishButton).toHaveFocus();
   });
 
   it('keeps all destinations named when the desktop sidebar is collapsed', async () => {
@@ -175,7 +182,9 @@ describe('AppShell', () => {
     await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
     const navigation = screen.getByRole('navigation', { name: 'Main navigation' });
     expect(within(navigation).getAllByRole('link')).toHaveLength(6);
-    expect(within(navigation).getByRole('link', { name: 'Jobs' })).toHaveAttribute('title', 'Jobs');
+    const jobsLink = within(navigation).getByRole('link', { name: 'Jobs' });
+    expect(within(jobsLink).getAllByText('Jobs')).toHaveLength(2);
+    expect(jobsLink).not.toHaveAttribute('title');
     expect(screen.getByRole('button', { name: 'Expand sidebar' })).toHaveAttribute(
       'aria-expanded',
       'false',
@@ -186,9 +195,68 @@ describe('AppShell', () => {
     const user = userEvent.setup();
     renderWithProviders(<RouterProvider router={createAppShellRouter('/dashboard')} />);
 
-    await user.click(screen.getByRole('button', { name: 'German' }));
+    await user.click(screen.getByRole('button', { name: 'DE German' }));
 
     expect(document.documentElement).toHaveAttribute('lang', 'de');
     expect(screen.getByRole('navigation', { name: 'Hauptnavigation' })).toBeInTheDocument();
+  });
+
+  it('renders the page heading inside the main landmark', () => {
+    renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
+
+    expect(
+      within(screen.getByRole('main')).getByRole('heading', { level: 1, name: 'Jobs' }),
+    ).toBeInTheDocument();
+  });
+
+  it('makes the page behind the open drawer inert and locks its scroll', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    expect(document.querySelector('header')).toHaveAttribute('inert');
+    expect(document.getElementById('main-content')?.parentElement?.parentElement).toHaveAttribute(
+      'inert',
+    );
+    expect(document.body.style.overflow).toBe('hidden');
+
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('banner')).not.toHaveAttribute('inert');
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('closes the mobile drawer when the route changes outside it', async () => {
+    const user = userEvent.setup();
+    const router = createAppShellRouter();
+    renderWithProviders(<RouterProvider router={router} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    await act(() => router.navigate('/dashboard'));
+
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveFocus();
+  });
+
+  it('closes the mobile drawer when the viewport reaches the desktop breakpoint', async () => {
+    const user = userEvent.setup();
+    let notifyChange: ((event: Pick<MediaQueryListEvent, 'matches'>) => void) | undefined;
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          addEventListener: (_type: string, listener: typeof notifyChange) => {
+            notifyChange = listener;
+          },
+          matches: false,
+          media: query,
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList,
+    );
+    renderWithProviders(<RouterProvider router={createAppShellRouter()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    act(() => notifyChange?.({ matches: true }));
+
+    expect(screen.queryByRole('dialog', { name: 'Mobile navigation' })).not.toBeInTheDocument();
+    vi.restoreAllMocks();
   });
 });

@@ -11,6 +11,7 @@ import { APP_PATHS } from '../../../routes/paths';
  * Props used by the app shell header.
  */
 interface IAppShellHeaderProps {
+  inert?: boolean;
   menuButtonRef: RefObject<HTMLButtonElement | null>;
   mobileMenuOpen: boolean;
   onToggleMobileMenu: () => void;
@@ -23,6 +24,7 @@ interface IAppShellHeaderProps {
  * @returns {JSX.Element} App shell header.
  */
 export const AppShellHeader: FC<IAppShellHeaderProps> = ({
+  inert = false,
   menuButtonRef,
   mobileMenuOpen,
   onToggleMobileMenu,
@@ -31,7 +33,10 @@ export const AppShellHeader: FC<IAppShellHeaderProps> = ({
   const { pathname } = useLocation();
 
   return (
-    <header className="sticky top-0 z-20 h-16 border-b border-app-border bg-app-surface/95 backdrop-blur">
+    <header
+      className="sticky top-0 z-20 h-16 border-b border-app-border bg-app-surface/95 backdrop-blur"
+      inert={inert}
+    >
       <div className="flex h-full items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <button
@@ -69,15 +74,16 @@ export const AppShellHeader: FC<IAppShellHeaderProps> = ({
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
           {pathname !== APP_PATHS.JOB_NEW && (
             <Link
-              aria-label={t('jobs.addJob')}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary-600 text-sm font-medium text-white transition hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:w-auto sm:px-4"
+              className="hidden h-10 shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary-600 px-4 text-sm font-medium text-white transition hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:inline-flex"
               to={APP_PATHS.JOB_NEW}
             >
               <PlusIcon />
-              <span className="hidden sm:inline">{t('jobs.addJob')}</span>
+              {t('jobs.addJob')}
             </Link>
           )}
-          <LanguageSelect />
+          <div className="hidden sm:block">
+            <LanguageSelect />
+          </div>
           <Link
             aria-label={t('nav.profile')}
             className="flex h-10 items-center gap-2 rounded-full border border-app-border bg-app-surface2 px-2 text-app-textSoft hover:bg-primary-50 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:px-3"

@@ -16,20 +16,44 @@ export const AppShell: FC = () => {
   const { t } = useTranslation();
   const page = getActiveRouteHandle(matches);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // The drawer belongs to the route it was opened on, so any route change closes it.
+  const [mobileMenuPathname, setMobileMenuPathname] = useState<string | null>(null);
+  const mobileMenuOpen = mobileMenuPathname === pathname;
   const mainRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const previousPathnameRef = useRef(pathname);
+  const restoreMenuFocusRef = useRef(false);
   const closeMobileMenu = useCallback(() => {
-    setMobileMenuOpen(false);
-    menuButtonRef.current?.focus();
+    restoreMenuFocusRef.current = true;
+    setMobileMenuPathname(null);
   }, []);
 
+  // The header is inert while the drawer is open, so focus returns only after it re-renders.
+  useEffect(() => {
+    if (mobileMenuOpen || !restoreMenuFocusRef.current) return;
+    restoreMenuFocusRef.current = false;
+    menuButtonRef.current?.focus();
+  }, [mobileMenuOpen]);
+
+  // Declared after the menu focus effect so a route change wins over returning to the menu button.
   useEffect(() => {
     if (previousPathnameRef.current === pathname) return;
     previousPathnameRef.current = pathname;
-    mainRef.current?.focus();
+    restoreMenuFocusRef.current = false;
+    document.documentElement.scrollTop = 0;
+    mainRef.current?.focus({ preventScroll: true });
   }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const desktopQuery = window.matchMedia('(min-width: 64rem)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      if (event.matches) setMobileMenuPathname(null);
+    };
+    desktopQuery.addEventListener('change', handleChange);
+    return () => desktopQuery.removeEventListener('change', handleChange);
+  }, [mobileMenuOpen]);
 
   return (
     <div className="min-h-screen bg-app-bg text-app-text">
@@ -41,9 +65,12 @@ export const AppShell: FC = () => {
         {t('a11y.skipToContent')}
       </a>
       <AppShellHeader
+        inert={mobileMenuOpen}
         menuButtonRef={menuButtonRef}
         mobileMenuOpen={mobileMenuOpen}
-        onToggleMobileMenu={() => setMobileMenuOpen((open) => !open)}
+        onToggleMobileMenu={() =>
+          setMobileMenuPathname((openPathname) => (openPathname === pathname ? null : pathname))
+        }
       />
       <div className="flex min-h-[calc(100vh-4rem)]">
         <AppShellSidebar
@@ -52,9 +79,8 @@ export const AppShell: FC = () => {
           onCloseMobile={closeMobileMenu}
           onToggleCollapsed={() => setSidebarCollapsed((collapsed) => !collapsed)}
         />
-        <div className="min-w-0 flex-1 px-4 sm:px-6 lg:px-8">
+        <div className="min-w-0 flex-1 px-4 sm:px-6 lg:px-8" inert={mobileMenuOpen}>
           <div className="mx-auto w-full max-w-7xl">
-            <AppShellPageHeading page={page} />
             {/* The id and aria-labelledby connect the skip link, page title, and route outlet. */}
             <main
               aria-labelledby="page-title"
@@ -63,6 +89,7 @@ export const AppShell: FC = () => {
               ref={mainRef}
               tabIndex={-1}
             >
+              <AppShellPageHeading page={page} />
               <Outlet />
             </main>
           </div>

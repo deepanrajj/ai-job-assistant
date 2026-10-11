@@ -57,9 +57,10 @@ mobile header menu, active link, global Add Job header action, shared
 spacing, and shared primitives. Keep all six final navigation
 destinations, a compact language switch, the skip link, and accessible
 route focus. The header uses the existing logo and a real Profile link;
-it does not show fictitious account details. The Add Job action uses an
-icon with an accessible name on narrow phones. A global search field waits
-for a real shared search capability. Do not duplicate an Add Job action
+it does not show fictitious account details. Below the `sm` breakpoint,
+Add Job and the language switch move from the header into the menu
+drawer (language beside the close button, a full-width Add Job below), so
+the phone header holds only the menu, logo, and Profile link. A global search field waits for a real shared search capability. Do not duplicate an Add Job action
 in the same viewport when a page already provides one.
 
 ### D4 - Map each page to available data

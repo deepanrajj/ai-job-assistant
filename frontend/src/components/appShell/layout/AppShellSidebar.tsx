@@ -1,8 +1,12 @@
 import { useEffect, useRef, type FC } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
+import { LanguageSelect } from '../../languageSelect/LanguageSelect';
 import { AppShellNavigation } from './AppShellNavigation';
+import { PlusIcon } from '../../icons';
 import { useTranslation } from '../../../i18n';
 import { navClassName } from '../appShell.utils';
+import { APP_PATHS } from '../../../routes/paths';
 
 /**
  * Props for the responsive sidebar and its compact-screen drawer.
@@ -27,8 +31,19 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
   onToggleCollapsed,
 }) => {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const mobilePanelRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -41,8 +56,11 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
       }
       if (event.key !== 'Tab') return;
 
-      const focusable = mobilePanelRef.current?.querySelectorAll<HTMLElement>('button, a[href]');
-      if (!focusable?.length) return;
+      // Phone-only drawer actions are display:none on wider screens, so skip hidden controls.
+      const focusable = Array.from(
+        mobilePanelRef.current?.querySelectorAll<HTMLElement>('button, a[href]') ?? [],
+      ).filter((element) => element.checkVisibility?.() ?? true);
+      if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) {
@@ -59,9 +77,8 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
 
   return (
     <>
-      <aside
-        aria-label={t('nav.main')}
-        className={`sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-app-border bg-app-surface px-3 py-4 transition-[width] lg:flex ${
+      <div
+        className={`sticky top-16 z-10 hidden h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-app-border bg-app-surface px-3 py-4 transition-[width] lg:flex ${
           collapsed ? 'w-18' : 'w-60'
         }`}
       >
@@ -91,14 +108,16 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
           collapsed={collapsed}
           linkClassName={({ isActive }) => navClassName({ collapsed, isActive })}
         />
-      </aside>
+      </div>
 
       {mobileOpen && (
         <div className="lg:hidden">
+          {/* Pointer-only backdrop; keyboard users close the drawer with its button or Escape. */}
           <button
-            aria-label={t('nav.closeMenu')}
+            aria-hidden="true"
             className="fixed inset-0 z-30 bg-app-text/30"
             onClick={onCloseMobile}
+            tabIndex={-1}
             type="button"
           />
           <aside
@@ -109,10 +128,13 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
             ref={mobilePanelRef}
             role="dialog"
           >
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="sm:hidden">
+                <LanguageSelect />
+              </div>
               <button
                 aria-label={t('nav.closeMenu')}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-app-textSoft hover:bg-app-surface2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                className="ml-auto flex h-10 w-10 items-center justify-center rounded-lg text-app-textSoft hover:bg-app-surface2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
                 onClick={onCloseMobile}
                 ref={closeButtonRef}
                 type="button"
@@ -127,8 +149,20 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
                 </svg>
               </button>
             </div>
+            {pathname !== APP_PATHS.JOB_NEW && (
+              <div className="mb-4 border-b border-app-border pb-4 sm:hidden">
+                <Link
+                  className="flex h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-primary-600 px-4 text-sm font-medium text-white transition hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+                  onClick={onCloseMobile}
+                  to={APP_PATHS.JOB_NEW}
+                >
+                  <PlusIcon />
+                  {t('jobs.addJob')}
+                </Link>
+              </div>
+            )}
+            {/* The dialog already carries the name, so the nav inside it stays unlabelled. */}
             <AppShellNavigation
-              ariaLabel={t('nav.mobile')}
               className="space-y-1"
               linkClassName={navClassName}
               onNavigate={onCloseMobile}

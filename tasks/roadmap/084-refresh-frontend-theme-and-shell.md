@@ -108,6 +108,19 @@ tint with dark text, and enabled buttons regain the pointer cursor. After
 these changes `npm run frontend:verify` passed 935 tests, lint, format
 check, coverage, and build.
 
+On phones (below `sm`), Add Job and the language switch now sit in the
+menu drawer instead of the header, at the owner's request: the language
+switch beside the close button and a full-width Add Job below it.
+
+PR review fixes: the page heading renders inside `<main>`; route changes
+scroll to the top and focus `<main>` without scrolling; the drawer closes
+on any route change and at the desktop breakpoint, makes the rest of the
+page inert, and locks body scroll; language buttons are named with their
+visible code (for example "DE German"); collapsed sidebar links show a
+label on hover and keyboard focus; duplicate landmark names and the unused
+`LanguageIcon` and `app.stage` key are removed. `npm run frontend:verify`
+passed 940 tests after these changes.
+
 ## Commit
 
 ```text

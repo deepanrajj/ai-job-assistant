@@ -11,15 +11,18 @@ describe('LanguageSelect', () => {
     renderWithProviders(<LanguageSelect />);
 
     const switcher = screen.getByRole('group', { name: 'Language' });
-    expect(within(switcher).getByRole('button', { name: 'English' })).toHaveAttribute(
+    expect(within(switcher).getByRole('button', { name: 'EN English' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
 
-    await user.click(within(switcher).getByRole('button', { name: 'German' }));
+    await user.click(within(switcher).getByRole('button', { name: 'DE German' }));
 
     expect(document.documentElement).toHaveAttribute('lang', 'de');
     expect(screen.getByRole('group', { name: 'Sprache' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Deutsch' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'DE Deutsch' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 });

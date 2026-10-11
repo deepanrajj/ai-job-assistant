@@ -18,7 +18,8 @@ export const LanguageSelect: FC = () => {
     >
       {supportedLanguages.map((option) => (
         <button
-          aria-label={t(`app.language.${option}`)}
+          // The visible code starts the name so voice control users can say "click DE".
+          aria-label={`${option.toUpperCase()} ${t(`app.language.${option}`)}`}
           aria-pressed={language === option}
           className={`min-h-8 min-w-9 rounded-full px-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
             language === option
