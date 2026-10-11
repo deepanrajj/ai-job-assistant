@@ -33,7 +33,7 @@ In scope:
 - Use the existing `WISHLIST`, `APPLIED`, `INTERVIEW`, `OFFER`,
   `REJECTED`, and `WITHDRAWN` statuses and the existing source data.
 - Added at the owner's request after the first pass, from a reference
-  image: status count cards above the toolbar, a "Sort by" select over
+  image: a status stats bar above the toolbar, a "Sort by" select over
   the existing sorts, one card holding the table and view switch, a
   "Date applied" column from the existing status history, a clickable
   status pill on each board card that moves the job to another status
@@ -88,7 +88,7 @@ Report focused local checks and actual CI E2E status in the PR.
 - [x] Desktop and mobile layouts are accessible.
 - [x] Focused tests and frontend verification pass.
 
-Local verification: `npm run frontend:verify` passed 998 tests, lint,
+Local verification: `npm run frontend:verify` passed 999 tests, lint,
 format check, coverage, and build. The board's page overflow fix was
 measured in the running app.
 

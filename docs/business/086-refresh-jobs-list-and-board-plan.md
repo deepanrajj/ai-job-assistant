@@ -87,12 +87,18 @@ Rejected:
 - **Hiding columns on phones.** Location, salary, and update date would
   become unreachable on the device where the list is most used.
 
-### D6 - Status count cards above the toolbar
+### D6 - A status stats bar above the toolbar
 
-At the owner's request, after first leaving them out, the page shows a
-row of count cards above the toolbar, in both views: total jobs, then
-Applied, Interview, Offer, and Rejected, each topped with its status
-colour. Wishlist and Withdrawn count in the total only, to keep the row
+At the owner's request, after first leaving them out, the page shows the
+counts above the toolbar, in both views: total jobs, then Applied,
+Interview, Offer, and Rejected, each status marked with its colour. They
+sit in one stats bar split by thin dividers rather than five separate
+cards: separate cards broke into three plus two, with an empty slot, at
+tablet widths. From `sm` up the five counts share one row; on phones the
+total takes a full-width row and the statuses a 2x2 grid. The bar is a
+`dl` with `role="group"` and a name, since a `dl` has no role of its own.
+The owner chose this over a sideways-scrolling strip and a wide total
+card above four separate cards. Wishlist and Withdrawn count in the total only, to keep the row
 at five. The counts cover every saved job, not the current search or
 filter, so they stay put while the list narrows; the result summary
 still reports the filtered list. A first-run user with no jobs sees no
@@ -288,6 +294,6 @@ phase backlog's next-task line.
   rather than reloading it, and a failed history load offers a retry;
   every move failure is reported and its alert can be dismissed; the board offers the status sort; both views share one
   search filter; the history helpers live in `features/statusHistory`.
-- `npm run frontend:verify` passed 998 tests in 184 files, lint, format
+- `npm run frontend:verify` passed 999 tests in 185 files, lint, format
   check, coverage, and build. The page overflow fix was measured in the
   running app at 1536 px, and the status pill at 768 px in German.
