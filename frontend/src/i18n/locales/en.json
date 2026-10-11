@@ -25,7 +25,11 @@
     "calendar": "Calendar",
     "profile": "Profile",
     "main": "Main navigation",
-    "mobile": "Mobile navigation"
+    "mobile": "Mobile navigation",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "route": {
     "dashboard": {

@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState, type ChangeEvent, type FC } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import {
   DataTable,
@@ -9,7 +8,6 @@ import {
 import { Button, ErrorState, LoadingState } from '../../components/ui';
 import { JobsKanbanBoard } from '../../features/jobs/components/JobsKanbanBoard';
 import {
-  createJobsActions,
   createJobsColumns,
   createJobsFilters,
   createJobsSearchConfig,
@@ -17,7 +15,6 @@ import {
 } from '../../features/jobs/jobs.config';
 import { useTranslation } from '../../i18n';
 import type { AppError } from '../../errors';
-import { APP_PATHS } from '../../routes/paths';
 import type { TJob } from '../../types';
 import type { TJobsViewMode, TStatusFilter } from '../../features/jobs/jobs.types';
 
@@ -38,7 +35,6 @@ interface IJobsPageProps {
  * @returns {JSX.Element} Jobs list experience.
  */
 export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }) => {
-  const navigate = useNavigate();
   const { language, t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
   const [viewMode, setViewMode] = useState<TJobsViewMode>('table');
@@ -58,9 +54,6 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
   const handleStatusFilterChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(event.target.value as TStatusFilter);
   }, []);
-  const handleAddJob = useCallback(() => {
-    navigate(APP_PATHS.JOB_NEW);
-  }, [navigate]);
   const renderJobsSummary = useCallback(
     ({ shown, total }: IDataTableSummaryState) =>
       t('jobs.countSummary', {
@@ -73,13 +66,8 @@ export const JobsPage: FC<IJobsPageProps> = ({ error, isLoading, jobs, onRetry }
   const searchConfig = useMemo(() => createJobsSearchConfig(t), [t]);
   const columns = useMemo(() => createJobsColumns({ language, t }), [language, t]);
   const actions = useMemo(
-    () => (
-      <div className="flex items-center gap-3">
-        {createJobsViewToggle({ onViewModeChange: setViewMode, t, viewMode })}
-        {createJobsActions({ onAddJob: handleAddJob, t })}
-      </div>
-    ),
-    [handleAddJob, t, viewMode],
+    () => createJobsViewToggle({ onViewModeChange: setViewMode, t, viewMode }),
+    [t, viewMode],
   );
   const filters = useMemo(
     () =>

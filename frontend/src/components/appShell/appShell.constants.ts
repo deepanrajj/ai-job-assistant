@@ -10,7 +10,7 @@ import { APP_PATHS } from '../../routes/paths';
 import type { TNavItem } from './appShell.types';
 
 /**
- * Defines the sidebar and mobile navigation items for the app shell, in the
+ * Defines the desktop and mobile navigation items for the app shell, in the
  * final product order `docs/context.md` names them.
  */
 export const navItems: TNavItem[] = [

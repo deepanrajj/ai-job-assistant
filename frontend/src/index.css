@@ -2,20 +2,32 @@
 
 @theme {
   /* Brand colors */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-primary-50: #f0f1fb;
+  --color-primary-100: #e1e3f6;
+  --color-primary-200: #c5c9ec;
+  --color-primary-300: #a0a6dd;
+  --color-primary-400: #7177c4;
+  --color-primary-500: #4c52a8;
+  --color-primary-600: #363c8c;
+  --color-primary-700: #2c3175;
+  --color-primary-800: #23275d;
+  --color-primary-900: #1a1d45;
+
+  --color-accent-mint: #e3f3f1;
+  --color-accent-peach: #fff0e6;
+
+  /* Inter is self-hosted via @fontsource-variable/inter; system fonts are fallbacks. */
+  --font-sans:
+    'Inter Variable', 'Segoe UI Variable Text', 'SF Pro Text', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display:
+    'Inter Variable', 'Segoe UI Variable Display', 'SF Pro Display', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Feedback colors */
   --color-success-50: #ecfdf5;
   --color-success-100: #d1fae5;
-  --color-success-500: #10b981;
+  --color-success-500: #0f9f6e;
   --color-success-700: #047857;
 
   --color-warning-50: #fffbeb;
@@ -27,14 +39,14 @@
   --color-danger-700: #b91c1c;
 
   /* Application surface colors */
-  --color-app-bg: #f8fafc;
+  --color-app-bg: #fcfbfa;
   --color-app-surface: #ffffff;
-  --color-app-surface2: #f1f5f9;
-  --color-app-border: #e2e8f0;
-  --color-app-borderSoft: #edf2f7;
-  --color-app-text: #0f172a;
-  --color-app-textSoft: #334155;
-  --color-app-textMuted: #64748b;
+  --color-app-surface2: #f6f5f3;
+  --color-app-border: #e8e6e1;
+  --color-app-borderSoft: #f0eeea;
+  --color-app-text: #1a1d2e;
+  --color-app-textSoft: #3a3f55;
+  --color-app-textMuted: #646a7d;
 }
 
 @layer base {
@@ -44,9 +56,17 @@
     min-height: 100%;
   }
 
+  /* Tailwind 4 resets buttons to the default cursor; restore the pointer. */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
   body {
     margin: 0;
     background: var(--color-app-bg);
     color: var(--color-app-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
 }

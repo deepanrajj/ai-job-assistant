@@ -4,7 +4,7 @@ import { Button, Select } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
 import { StatusPill } from './components/StatusPill';
-import { KanbanIcon, PlusIcon, TableIcon } from '../../components/icons';
+import { KanbanIcon, TableIcon } from '../../components/icons';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
 import { formatJobDate, formatJobSalary } from './jobs.utils';
 import { APP_PATH_BUILDERS } from '../../routes/paths';
@@ -27,14 +27,6 @@ interface ICreateJobsColumnsParams {
 interface ICreateJobsFiltersParams {
   onStatusFilterChange: ChangeEventHandler<HTMLSelectElement>;
   statusFilter: TStatusFilter;
-  t: TTranslationContextValue['t'];
-}
-
-/**
- * Params used to create the jobs table action controls.
- */
-interface ICreateJobsActionsParams {
-  onAddJob: () => void;
   t: TTranslationContextValue['t'];
 }
 
@@ -135,18 +127,6 @@ export const createJobsColumns = ({
     widthClassName: 'w-[8%]',
   },
 ];
-
-/**
- * Creates the jobs table action controls.
- *
- * @param {ICreateJobsActionsParams} params Action config params.
- * @returns {ReactNode} Jobs table actions.
- */
-export const createJobsActions = ({ onAddJob, t }: ICreateJobsActionsParams): ReactNode => (
-  <Button leftIcon={<PlusIcon />} onClick={onAddJob}>
-    {t('jobs.addJob')}
-  </Button>
-);
 
 /**
  * Creates the jobs page view toggle, switching between the table and Kanban layouts.

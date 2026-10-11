@@ -11,7 +11,9 @@ import type { TNavLinkClassName } from '../appShell.types';
 interface IAppShellNavigationProps {
   ariaLabel: string;
   className: string;
+  collapsed?: boolean;
   linkClassName: TNavLinkClassName;
+  onNavigate?: () => void;
 }
 
 /**
@@ -20,13 +22,17 @@ interface IAppShellNavigationProps {
  * @param {IAppShellNavigationProps} props Component props.
  * @param {string} props.ariaLabel Accessible navigation label.
  * @param {string} props.className Navigation container class name.
+ * @param {boolean} props.collapsed Whether link labels are visually hidden.
  * @param {TNavLinkClassName} props.linkClassName React Router nav link class builder.
+ * @param {() => void} props.onNavigate Callback after a route link is selected.
  * @returns {JSX.Element} App shell navigation.
  */
 export const AppShellNavigation: FC<IAppShellNavigationProps> = ({
   ariaLabel,
   className,
+  collapsed = false,
   linkClassName,
+  onNavigate,
 }) => {
   const { t } = useTranslation();
 
@@ -37,9 +43,15 @@ export const AppShellNavigation: FC<IAppShellNavigationProps> = ({
         const Icon = item.icon;
 
         return (
-          <NavLink key={item.id} to={item.path} className={linkClassName}>
+          <NavLink
+            key={item.id}
+            to={item.path}
+            className={linkClassName}
+            onClick={onNavigate}
+            title={collapsed ? t(item.labelKey) : undefined}
+          >
             <Icon />
-            <span>{t(item.labelKey)}</span>
+            <span className={collapsed ? 'sr-only' : undefined}>{t(item.labelKey)}</span>
           </NavLink>
         );
       })}

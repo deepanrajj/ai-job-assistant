@@ -39,19 +39,19 @@ export const Card: FC<ICardProps> = ({
   return (
     <section
       className={classNames(
-        'overflow-hidden rounded-lg border border-app-border bg-app-surface shadow-sm',
+        'overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm',
         className,
       )}
     >
       {hasHeader && (
         <div
           className={classNames(
-            'flex items-start justify-between gap-4 border-b border-app-borderSoft bg-app-surface2 px-5 py-4',
+            'flex items-start justify-between gap-4 border-b border-app-borderSoft bg-app-surface px-5 py-4',
             headerClassName,
           )}
         >
           <div>
-            {title && <h2 className="text-base font-semibold text-app-text">{title}</h2>}
+            {title && <h2 className="font-display text-xl font-semibold text-app-text">{title}</h2>}
             {subtitle && <p className="mt-1 text-sm text-app-textMuted">{subtitle}</p>}
           </div>
           {action}

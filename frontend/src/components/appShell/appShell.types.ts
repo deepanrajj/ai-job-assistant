@@ -27,6 +27,7 @@ export type TNavItem = {
  * Represents the route state passed by React Router when styling nav links.
  */
 export type TNavClassNameParams = {
+  collapsed?: boolean;
   isActive: boolean;
 };
 

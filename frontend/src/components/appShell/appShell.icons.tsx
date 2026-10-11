@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 /**
- * Renders the app logo icon used in the sidebar brand block.
+ * Renders the app logo icon used in the header brand block.
  *
  * @returns {JSX.Element} Decorative app logo icon.
  */
