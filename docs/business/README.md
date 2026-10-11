@@ -75,6 +75,7 @@ focused plan in this folder and link it from the relevant numbered task.
 - [Task 049 - Add Bulk Import Selected Jobs Plan](./049-add-bulk-import-selected-jobs-plan.md)
 - [Task 050 - Add Manual Duplicate Warning Plan](./050-add-manual-duplicate-warning-plan.md)
 - [Frontend Visual Refresh Plan (Tasks 084-092)](./084-frontend-visual-refresh-plan.md)
+- [Task 085 - Refresh Dashboard Layout Plan](./085-refresh-dashboard-layout-plan.md)
 - [Task 069 - Add Docker Compose For Full Local Stack Plan](./069-add-docker-compose-for-full-local-stack-plan.md)
 - [Task 077 - Make Backend Scripts Cross-Platform Plan](./077-make-backend-scripts-cross-platform-plan.md)
 - [Task 078 - Add Testcontainers PostgreSQL Tests Plan](./078-add-testcontainers-postgres-tests-plan.md)

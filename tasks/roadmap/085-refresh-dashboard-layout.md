@@ -1,6 +1,6 @@
 # Task 085 - Refresh Dashboard Layout
 
-Status: Not started
+Status: Completed
 
 Related plan: [Frontend visual refresh](../../docs/business/084-frontend-visual-refresh-plan.md).
 
@@ -36,6 +36,10 @@ In scope:
   next-reminders presentation.
 - Use the shared theme, responsive cards, readable status colors, and
   existing route links.
+- Added at the owner's request after the first pass: icon tiles on the
+  insight cards, a week-over-week trend for applications this week, and
+  a recent-activity table on desktop with recorded application dates.
+  Both new figures come from the existing status history.
 
 Out of scope:
 
@@ -82,11 +86,22 @@ checks and actual CI E2E status in the PR description.
 
 ## Acceptance Criteria
 
-- [ ] Dashboard follows the approved hierarchy using real data.
-- [ ] The response-rate limitation remains clear.
-- [ ] Optional reminders and independent failure states still work.
-- [ ] Desktop and mobile layouts are readable and keyboard accessible.
-- [ ] Focused tests and frontend verification pass.
+- [x] Dashboard follows the approved hierarchy using real data.
+- [x] The response-rate limitation remains clear.
+- [x] Optional reminders and independent failure states still work.
+- [x] Desktop and mobile layouts are readable and keyboard accessible.
+- [x] Focused tests and frontend verification pass.
+
+Local verification: `npm run frontend:verify` passed 966 tests, lint,
+format check, coverage, and build. The populated dashboard was checked
+in the running app at 320 px in German and at 1280 px in English (in a
+1280 px iframe, since the browser window could not be resized). The
+reminders card is a weekly agenda rather than the prototype's seven-day
+grid, since the dashboard loads only the next five reminders; see D3 in
+the plan. Following a richer reference image from the owner, the
+insight cards gained icon tiles, applications this week gained a
+week-over-week trend from recorded history, and recent activity became a
+table on desktop with recorded applied dates (D5-D7).
 
 ## Commit
 

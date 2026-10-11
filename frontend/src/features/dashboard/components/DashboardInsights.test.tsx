@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
 import { DashboardInsights } from './DashboardInsights';
+import { getApplicationHistory } from '../dashboardInsights.utils';
 import { AppError } from '../../../errors';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import { createMockJob } from '../../../test/mockJobs';
@@ -48,19 +49,23 @@ const events = [
 ];
 
 const getCard = (label: string): HTMLElement =>
-  screen.getByRole('heading', { name: label }).parentElement as HTMLElement;
+  screen.getByRole('heading', { name: label }).closest('section') as HTMLElement;
 
-const renderInsights = (overrides: Partial<ComponentProps<typeof DashboardInsights>> = {}) =>
-  renderWithProviders(
+const renderInsights = (overrides: Partial<ComponentProps<typeof DashboardInsights>> = {}) => {
+  const props = { error: null, events, isLoading: false, jobs, onRetry: () => {}, ...overrides };
+
+  return renderWithProviders(
     <DashboardInsights
-      error={null}
-      events={events}
-      isLoading={false}
-      jobs={jobs}
-      onRetry={() => {}}
-      {...overrides}
+      // Derived as the page derives it, unless a case passes its own.
+      applicationHistory={
+        props.events && !props.isLoading && !props.error
+          ? getApplicationHistory(props.jobs, props.events)
+          : null
+      }
+      {...props}
     />,
   );
+};
 
 describe('DashboardInsights', () => {
   it('shows applications this week with its date range and the unknown dates left out', () => {
@@ -72,6 +77,42 @@ describe('DashboardInsights', () => {
     expect(
       within(card).getByText(/ - .*Not counted, no recorded application date: 1/),
     ).toBeInTheDocument();
+  });
+
+  it('compares this week with last week in words, not only with an arrow', () => {
+    // Seven days ago is today's weekday last week, inside last week to date.
+    const twoLastWeek = [
+      statusEvent('celonis', 'APPLIED', daysAgo(7)),
+      statusEvent('personio', 'APPLIED', daysAgo(7)),
+    ];
+    const { unmount } = renderInsights();
+
+    expect(
+      within(getCard('Applications this week')).getByText('1 more than by this day last week'),
+    ).toBeInTheDocument();
+    unmount();
+
+    const fewer = renderInsights({ events: twoLastWeek });
+
+    expect(
+      within(getCard('Applications this week')).getByText('2 fewer than by this day last week'),
+    ).toBeInTheDocument();
+    fewer.unmount();
+
+    renderInsights({
+      events: [statusEvent('celonis', 'APPLIED', new Date().toISOString()), twoLastWeek[1]],
+    });
+    expect(
+      within(getCard('Applications this week')).getByText('Same as by this day last week'),
+    ).toBeInTheDocument();
+  });
+
+  it('shows no trend when neither week has an application to compare', () => {
+    renderInsights({ events: [] });
+
+    expect(
+      within(getCard('Applications this week')).queryByText(/last week/),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the interview rate with both counts', () => {

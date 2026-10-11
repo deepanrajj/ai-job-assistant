@@ -91,11 +91,6 @@
     }
   },
   "dashboard": {
-    "totalJobs": "Total jobs",
-    "activePipeline": "Active pipeline",
-    "interviews": "Interviews",
-    "offers": "Offers",
-    "statusOverview": "Status overview",
     "recentActivity": "Recent activity",
     "updated": "Updated {{date}}",
     "loading": "Loading dashboard",
@@ -129,8 +124,26 @@
       "ageDays": "{{count}} days",
       "responseRate": "Response rate",
       "unavailable": "Unavailable",
-      "responseRateUnavailable": "Needs recorded employer responses, which the tracker does not capture yet. A rejection or withdrawal alone is not counted as a response."
-    }
+      "responseRateUnavailable": "Needs recorded employer responses, which the tracker does not capture yet. A rejection or withdrawal alone is not counted as a response.",
+      "trendUp": "{{count}} more than by this day last week",
+      "trendDown": "{{count}} fewer than by this day last week",
+      "trendSame": "Same as by this day last week"
+    },
+    "agenda": {
+      "overdue": "Overdue",
+      "today": "Today · {{date}}",
+      "later": "Later",
+      "limitNote": "Showing the next {{count}} reminders."
+    },
+    "pipeline": "Pipeline",
+    "pipelineSummary": "{{total}} saved · {{active}} active",
+    "viewAll": "View all",
+    "appliedColumn": "Applied",
+    "notRecorded": "Not recorded",
+    "appliedUnavailable": "Not available",
+    "notApplied": "Not applied",
+    "appliedOn": "Applied {{date}}",
+    "appliedMissing": "Applied: {{reason}}"
   },
   "applications": {
     "title": "Applications",

@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   AGING_APPLICATIONS_LIMIT,
   formatInsightRate,
+  getApplicationHistory,
   getDashboardInsights,
   getLocalCalendarDayDifference,
   getLocalWeek,
@@ -34,6 +35,13 @@ afterAll(() => {
  */
 const local = (month: number, day: number, hour = 12, minute = 0): Date =>
   new Date(2026, month - 1, day, hour, minute);
+
+/**
+ * Derives the insights the way the page does: the history first, then the
+ * insights from it.
+ */
+const insightsFor = (jobs: TJob[], events: TTimelineEventResponse[], now: Date) =>
+  getDashboardInsights(jobs, events, now, getApplicationHistory(jobs, events));
 
 let eventCounter = 0;
 
@@ -100,10 +108,11 @@ describe('getLocalCalendarDayDifference', () => {
 
 describe('getDashboardInsights', () => {
   it('handles no jobs and no history', () => {
-    expect(getDashboardInsights([], [], local(10, 7))).toEqual({
+    expect(insightsFor([], [], local(10, 7))).toEqual({
       agingApplications: { items: [], total: 0, unknownDateCount: 0 },
       applicationsThisWeek: {
         count: 0,
+        lastWeekToDateCount: 0,
         unknownDateCount: 0,
         weekEnd: local(10, 12, 0),
         weekStart: local(10, 5, 0),
@@ -131,11 +140,35 @@ describe('getDashboardInsights', () => {
       statusEvent('skipped-applied', 'INTERVIEW', local(10, 6)),
     ];
 
-    const { applicationsThisWeek } = getDashboardInsights(jobs, events, local(10, 7));
+    const { applicationsThisWeek } = insightsFor(jobs, events, local(10, 7));
 
     expect(applicationsThisWeek.count).toBe(2);
     // saved-as-applied and skipped-applied: past WISHLIST, no APPLIED event.
     expect(applicationsThisWeek.unknownDateCount).toBe(2);
+    // last-week fell on last Sunday, after last week's Wednesday, so a
+    // Wednesday does not compare against it.
+    expect(applicationsThisWeek.lastWeekToDateCount).toBe(0);
+  });
+
+  it('compares a week in progress with the same days of last week', () => {
+    // Wednesday 7 October: last week to date is Monday 28 September through
+    // the end of Wednesday 30 September.
+    const jobs = [
+      job('first-minute', 'APPLIED'),
+      job('last-minute', 'APPLIED'),
+      job('too-early', 'APPLIED'),
+      job('too-late', 'APPLIED'),
+    ];
+    const events = [
+      statusEvent('first-minute', 'APPLIED', local(9, 28, 0)),
+      statusEvent('last-minute', 'APPLIED', local(9, 30, 23, 59)),
+      statusEvent('too-early', 'APPLIED', local(9, 27, 23, 59)),
+      statusEvent('too-late', 'APPLIED', local(10, 1, 0)),
+    ];
+
+    const { applicationsThisWeek } = insightsFor(jobs, events, local(10, 7, 9));
+
+    expect(applicationsThisWeek.lastWeekToDateCount).toBe(2);
   });
 
   it('counts a repeated APPLIED transition once, from its first date', () => {
@@ -146,7 +179,7 @@ describe('getDashboardInsights', () => {
       statusEvent('reapplied', 'APPLIED', local(10, 6), 'INTERVIEW'),
     ];
 
-    const insights = getDashboardInsights(jobs, events, local(10, 7));
+    const insights = insightsFor(jobs, events, local(10, 7));
 
     expect(insights.applicationsThisWeek.count).toBe(0);
     expect(insights.interviewRate).toEqual({ cohortSize: 1, interviewed: 1, rate: 1 });
@@ -160,9 +193,7 @@ describe('getDashboardInsights', () => {
       statusEvent('unordered', 'APPLIED', local(10, 1)),
     ];
 
-    expect(
-      getDashboardInsights(jobs, events, local(10, 7)).agingApplications.items[0]?.ageDays,
-    ).toBe(6);
+    expect(insightsFor(jobs, events, local(10, 7)).agingApplications.items[0]?.ageDays).toBe(6);
   });
 
   it('does not reset an application age when the job is edited later', () => {
@@ -174,7 +205,7 @@ describe('getDashboardInsights', () => {
     ];
     const events = [statusEvent('edited', 'APPLIED', local(9, 27))];
 
-    expect(getDashboardInsights(jobs, events, local(10, 7)).agingApplications.items).toEqual([
+    expect(insightsFor(jobs, events, local(10, 7)).agingApplications.items).toEqual([
       { ageDays: 10, job: jobs[0] },
     ]);
   });
@@ -198,7 +229,7 @@ describe('getDashboardInsights', () => {
       statusEvent('waiting', 'APPLIED', local(9, 4)),
     ];
 
-    expect(getDashboardInsights(jobs, events, local(10, 7)).interviewRate).toEqual({
+    expect(insightsFor(jobs, events, local(10, 7)).interviewRate).toEqual({
       cohortSize: 4,
       interviewed: 2,
       rate: 0.5,
@@ -212,13 +243,13 @@ describe('getDashboardInsights', () => {
       statusEvent('odd-order', 'APPLIED', local(9, 2), 'INTERVIEW'),
     ];
 
-    expect(getDashboardInsights(jobs, events, local(10, 7)).interviewRate.interviewed).toBe(0);
+    expect(insightsFor(jobs, events, local(10, 7)).interviewRate.interviewed).toBe(0);
   });
 
   it('gives no interview rate, rather than 0%, when no application is recorded', () => {
     const jobs = [job('saved-as-applied', 'APPLIED')];
 
-    expect(getDashboardInsights(jobs, [], local(10, 7)).interviewRate).toEqual({
+    expect(insightsFor(jobs, [], local(10, 7)).interviewRate).toEqual({
       cohortSize: 0,
       interviewed: 0,
       rate: null,
@@ -228,7 +259,7 @@ describe('getDashboardInsights', () => {
   it('ignores history for jobs that no longer exist', () => {
     const events = [statusEvent('deleted', 'APPLIED', local(10, 6))];
 
-    expect(getDashboardInsights([], events, local(10, 7)).applicationsThisWeek.count).toBe(0);
+    expect(insightsFor([], events, local(10, 7)).applicationsThisWeek.count).toBe(0);
   });
 
   it('lists only jobs still in APPLIED, oldest first, up to the limit, with the full total', () => {
@@ -244,7 +275,7 @@ describe('getDashboardInsights', () => {
       statusEvent('moved-on', 'INTERVIEW', local(8, 3), 'APPLIED'),
     ];
 
-    const { agingApplications } = getDashboardInsights(jobs, events, local(10, 7));
+    const { agingApplications } = insightsFor(jobs, events, local(10, 7));
 
     expect(agingApplications.items.map((item) => [item.job.id, item.ageDays])).toEqual([
       ['f', 22],
@@ -263,7 +294,7 @@ describe('getDashboardInsights', () => {
     const events = [statusEvent('dst', 'APPLIED', local(10, 24, 23, 30))];
 
     expect(
-      getDashboardInsights(jobs, events, local(10, 26, 0, 30)).agingApplications.items[0]?.ageDays,
+      insightsFor(jobs, events, local(10, 26, 0, 30)).agingApplications.items[0]?.ageDays,
     ).toBe(2);
   });
 
@@ -271,9 +302,7 @@ describe('getDashboardInsights', () => {
     const jobs = [job('late-sunday', 'APPLIED')];
     const events = [statusEvent('late-sunday', 'APPLIED', local(10, 25, 23, 45))];
 
-    expect(
-      getDashboardInsights(jobs, events, local(10, 25, 23, 50)).applicationsThisWeek.count,
-    ).toBe(1);
+    expect(insightsFor(jobs, events, local(10, 25, 23, 50)).applicationsThisWeek.count).toBe(1);
   });
 
   it('does not count a job withdrawn straight from WISHLIST as an application with an unknown date', () => {
@@ -290,9 +319,7 @@ describe('getDashboardInsights', () => {
 
     // dropped is excluded; saved-as-withdrawn has no history, and the
     // reopened job moved on after the withdrawal, so both stay unknown.
-    expect(
-      getDashboardInsights(jobs, events, local(10, 7)).applicationsThisWeek.unknownDateCount,
-    ).toBe(2);
+    expect(insightsFor(jobs, events, local(10, 7)).applicationsThisWeek.unknownDateCount).toBe(2);
   });
 
   it('still counts a job withdrawn after applying as a recorded application', () => {
@@ -302,7 +329,7 @@ describe('getDashboardInsights', () => {
       statusEvent('withdrew-after-applying', 'WITHDRAWN', local(10, 6), 'APPLIED'),
     ];
 
-    const insights = getDashboardInsights(jobs, events, local(10, 7));
+    const insights = insightsFor(jobs, events, local(10, 7));
 
     expect(insights.applicationsThisWeek).toMatchObject({ count: 1, unknownDateCount: 0 });
     expect(insights.interviewRate.cohortSize).toBe(1);

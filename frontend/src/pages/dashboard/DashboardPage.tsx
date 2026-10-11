@@ -2,7 +2,6 @@ import { useMemo, type FC } from 'react';
 
 import { Button, ErrorState, LoadingState } from '../../components/ui';
 import { DashboardInsights } from '../../features/dashboard/components/DashboardInsights';
-import { DashboardMetrics } from '../../features/dashboard/components/DashboardMetrics';
 import { DashboardNextReminders } from '../../features/dashboard/components/DashboardNextReminders';
 import { DashboardRecentActivity } from '../../features/dashboard/components/DashboardRecentActivity';
 import { DashboardStatusOverview } from '../../features/dashboard/components/DashboardStatusOverview';
@@ -10,6 +9,7 @@ import type { INextRemindersState } from '../../features/dashboard/useNextRemind
 import type { IStatusHistoryState } from '../../features/dashboard/useStatusHistory';
 import { useTranslation } from '../../i18n';
 import { getDashboardData } from '../../features/dashboard/dashboard.utils';
+import { getApplicationHistory } from '../../features/dashboard/dashboardInsights.utils';
 import type { AppError } from '../../errors';
 import type { TJob } from '../../types';
 
@@ -36,8 +36,10 @@ interface IDashboardPageProps {
 }
 
 /**
- * Renders dashboard metrics, job search insights, the next reminders,
- * status distribution, and recent job activity.
+ * Renders the dashboard: job-search insights first, then the pipeline
+ * beside the next reminders, then recent job activity. Without the
+ * reminders feature the pipeline and recent activity share the middle row,
+ * so no column is left empty.
  *
  * @param {IDashboardPageProps} props Component props.
  * @returns {JSX.Element} Smart job tracker dashboard.
@@ -55,6 +57,16 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
     () => getDashboardData(jobs),
     [jobs],
   );
+  // Derived once from a settled, complete history and shared by the insights
+  // and recent activity. While the history loads or after it fails there is
+  // none, so recent activity shows no dates rather than partial ones.
+  const applicationHistory = useMemo(
+    () =>
+      statusHistory.events && !statusHistory.isLoading && !statusHistory.error
+        ? getApplicationHistory(jobs, statusHistory.events)
+        : null,
+    [jobs, statusHistory.error, statusHistory.events, statusHistory.isLoading],
+  );
 
   if (isLoading) return <LoadingState label={t('dashboard.loading')} />;
 
@@ -67,15 +79,15 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
       />
     );
 
+  // One element, placed beside the pipeline or below it.
+  const recentActivity = (
+    <DashboardRecentActivity applicationHistory={applicationHistory} jobs={recentJobs} />
+  );
+
   return (
     <div className="space-y-6">
-      <DashboardMetrics
-        activeJobCount={activeJobCount}
-        statusCounts={statusCounts}
-        totalJobCount={totalJobCount}
-      />
-
       <DashboardInsights
+        applicationHistory={applicationHistory}
         error={statusHistory.error}
         events={statusHistory.events}
         isLoading={statusHistory.isLoading}
@@ -83,20 +95,31 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
         onRetry={statusHistory.reload}
       />
 
-      {nextReminders && (
-        <DashboardNextReminders
-          error={nextReminders.error}
-          isLoading={nextReminders.isLoading}
-          jobs={jobs}
-          onRetry={nextReminders.reload}
-          reminders={nextReminders.reminders}
+      <div
+        className={`grid gap-6 ${
+          nextReminders ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]' : 'lg:grid-cols-2'
+        }`}
+      >
+        <DashboardStatusOverview
+          activeJobCount={activeJobCount}
+          statusCounts={statusCounts}
+          totalJobCount={totalJobCount}
         />
-      )}
-
-      <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-        <DashboardStatusOverview statusCounts={statusCounts} totalJobCount={totalJobCount} />
-        <DashboardRecentActivity jobs={recentJobs} />
+        {nextReminders ? (
+          <DashboardNextReminders
+            error={nextReminders.error}
+            hasMore={nextReminders.hasMore}
+            isLoading={nextReminders.isLoading}
+            jobs={jobs}
+            onRetry={nextReminders.reload}
+            reminders={nextReminders.reminders}
+          />
+        ) : (
+          recentActivity
+        )}
       </div>
+
+      {nextReminders && recentActivity}
     </div>
   );
 };

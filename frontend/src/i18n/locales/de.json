@@ -91,11 +91,6 @@
     }
   },
   "dashboard": {
-    "totalJobs": "Jobs insgesamt",
-    "activePipeline": "Aktive Pipeline",
-    "interviews": "Interviews",
-    "offers": "Angebote",
-    "statusOverview": "Statusübersicht",
     "recentActivity": "Letzte Aktivität",
     "updated": "Aktualisiert {{date}}",
     "loading": "Dashboard wird geladen",
@@ -129,8 +124,26 @@
       "ageDays": "{{count}} Tage",
       "responseRate": "Antwortquote",
       "unavailable": "Nicht verfügbar",
-      "responseRateUnavailable": "Braucht erfasste Antworten von Arbeitgebern, die der Tracker noch nicht speichert. Eine Absage oder ein Rückzug allein zählt nicht als Antwort."
-    }
+      "responseRateUnavailable": "Braucht erfasste Antworten von Arbeitgebern, die der Tracker noch nicht speichert. Eine Absage oder ein Rückzug allein zählt nicht als Antwort.",
+      "trendUp": "{{count}} mehr als bis zu diesem Tag letzte Woche",
+      "trendDown": "{{count}} weniger als bis zu diesem Tag letzte Woche",
+      "trendSame": "Gleich viele wie bis zu diesem Tag letzte Woche"
+    },
+    "agenda": {
+      "overdue": "Überfällig",
+      "today": "Heute · {{date}}",
+      "later": "Später",
+      "limitNote": "Angezeigt werden die nächsten {{count}} Erinnerungen."
+    },
+    "pipeline": "Pipeline",
+    "pipelineSummary": "{{total}} gespeichert · {{active}} aktiv",
+    "viewAll": "Alle anzeigen",
+    "appliedColumn": "Beworben am",
+    "notRecorded": "Nicht erfasst",
+    "appliedUnavailable": "Nicht verfügbar",
+    "notApplied": "Nicht beworben",
+    "appliedOn": "Beworben {{date}}",
+    "appliedMissing": "Beworben: {{reason}}"
   },
   "applications": {
     "title": "Bewerbungen",

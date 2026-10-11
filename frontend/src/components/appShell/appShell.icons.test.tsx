@@ -4,7 +4,6 @@ import { render } from '@testing-library/react';
 import {
   ApplicationsIcon,
   AppLogoIcon,
-  CalendarIcon,
   DashboardIcon,
   DiscoverIcon,
   JobsIcon,
@@ -28,9 +27,6 @@ describe('appShell icons', () => {
 
     rerender(<ApplicationsIcon />);
     expect(container.querySelector('svg')).toHaveAttribute('focusable', 'false');
-
-    rerender(<CalendarIcon />);
-    expect(container.querySelector('svg')).toHaveAttribute('viewBox', '0 0 24 24');
 
     rerender(<ProfileIcon />);
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');

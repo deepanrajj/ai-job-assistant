@@ -34,6 +34,7 @@ const renderCard = (overrides: Partial<ComponentProps<typeof DashboardNextRemind
   renderWithRouter(
     <DashboardNextReminders
       error={null}
+      hasMore={false}
       isLoading={false}
       jobs={createMockJobs()}
       onRetry={() => {}}
@@ -57,6 +58,38 @@ describe('DashboardNextReminders', () => {
     expect(within(links[0]).getByText(/^Overdue · was due/)).toBeInTheDocument();
     expect(within(links[1]).getByText(/^Task · Personio/)).toBeInTheDocument();
     expect(within(links[1]).getByText('Due today')).toBeInTheDocument();
+  });
+
+  it('groups reminders into overdue, today, and later, each a named list', () => {
+    renderCard({
+      reminders: [
+        overdueReminder,
+        taskReminder,
+        { ...overdueReminder, dueDate: localDateFromToday(8), id: 'reminder-later' },
+      ],
+    });
+
+    expect(screen.getByRole('heading', { name: 'Overdue' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^Today · / })).toBeInTheDocument();
+    expect(within(screen.getByRole('list', { name: 'Overdue' })).getAllByRole('link')).toHaveLength(
+      1,
+    );
+    expect(
+      within(screen.getByRole('list', { name: /^Today · / })).getByRole('link'),
+    ).toHaveAccessibleName('Open Personio for reminder Tailor CV bullets');
+    expect(within(screen.getByRole('list', { name: 'Later' })).getAllByRole('link')).toHaveLength(
+      1,
+    );
+  });
+
+  it('says the list is limited only when more reminders exist than it shows', () => {
+    const { unmount } = renderCard({ hasMore: true });
+
+    expect(screen.getByText(/^Showing the next 5 reminders/)).toBeInTheDocument();
+    unmount();
+
+    renderCard();
+    expect(screen.queryByText(/^Showing the next/)).not.toBeInTheDocument();
   });
 
   it('names a reminder whose job is not in the loaded list as an unknown job', () => {

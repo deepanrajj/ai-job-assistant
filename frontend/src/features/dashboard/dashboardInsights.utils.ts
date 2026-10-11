@@ -1,6 +1,7 @@
 import type { TJob } from '../../types';
 import type {
   IAgingApplication,
+  IApplicationHistory,
   IDashboardInsights,
   IRecordedApplication,
 } from './dashboardInsights.types';
@@ -136,11 +137,29 @@ export const getJobsWithdrawnFromWishlist = (
 };
 
 /**
+ * Derives the application facts the dashboard reads from status history,
+ * so the insights and recent activity share one derivation.
+ *
+ * @param {TJob[]} jobs Saved jobs.
+ * @param {TTimelineEventResponse[]} events Status history across every job.
+ * @returns {IApplicationHistory} Recorded applications and wishlist withdrawals.
+ */
+export const getApplicationHistory = (
+  jobs: TJob[],
+  events: TTimelineEventResponse[],
+): IApplicationHistory => ({
+  applications: getRecordedApplications(jobs, events),
+  withdrawnFromWishlist: getJobsWithdrawnFromWishlist(jobs, events),
+});
+
+/**
  * Derives every dashboard insight from saved jobs and their recorded status
  * history. Pure: the same inputs and `now` always give the same result.
  *
  * - Applications this week: distinct jobs whose recorded application falls
- *   in the current local week.
+ *   in the current local week, and the count for the same days of the
+ *   week before (Monday through today's weekday), so a week in progress is
+ *   compared like for like.
  * - Interview rate: of every job with a recorded application, those with a
  *   recorded INTERVIEW transition at or after it, whatever their status is
  *   now. `null` when no job has a recorded application.
@@ -156,22 +175,27 @@ export const getJobsWithdrawnFromWishlist = (
  * @param {TJob[]} jobs Saved jobs.
  * @param {TTimelineEventResponse[]} events Complete status history across every job.
  * @param {Date} now The current moment.
+ * @param {IApplicationHistory} history The same jobs' and events' application history, from `getApplicationHistory`.
  * @returns {IDashboardInsights} Dashboard insights.
  */
 export const getDashboardInsights = (
   jobs: TJob[],
   events: TTimelineEventResponse[],
   now: Date,
+  history: IApplicationHistory,
 ): IDashboardInsights => {
-  const applications = getRecordedApplications(jobs, events);
+  const { applications, withdrawnFromWishlist } = history;
   const week = getLocalWeek(now);
-  const withdrawnFromWishlist = getJobsWithdrawnFromWishlist(jobs, events);
   const isUnknownApplication = (job: TJob): boolean =>
     job.status !== 'WISHLIST' && !applications.has(job.id) && !withdrawnFromWishlist.has(job.id);
 
-  const applicationsThisWeek = [...applications.values()].filter(
-    ({ appliedAt }) => appliedAt >= week.start && appliedAt < week.end,
-  ).length;
+  const lastWeekStart = getLocalMidnight(week.start, -DAYS_PER_WEEK);
+  // Whole days, not the time of day: `now` refreshes only at midnight.
+  const lastWeekToDateEnd = getLocalMidnight(now, 1 - DAYS_PER_WEEK);
+  const countAppliedBetween = (start: Date, end: Date): number =>
+    [...applications.values()].filter(({ appliedAt }) => appliedAt >= start && appliedAt < end)
+      .length;
+  const applicationsThisWeek = countAppliedBetween(week.start, week.end);
 
   const interviewedJobIds = new Set(
     events
@@ -204,6 +228,7 @@ export const getDashboardInsights = (
     },
     applicationsThisWeek: {
       count: applicationsThisWeek,
+      lastWeekToDateCount: countAppliedBetween(lastWeekStart, lastWeekToDateEnd),
       unknownDateCount: jobs.filter(isUnknownApplication).length,
       weekEnd: week.end,
       weekStart: week.start,

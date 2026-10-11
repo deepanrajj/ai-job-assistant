@@ -66,7 +66,9 @@ numbered task before implementation.
 
 For frontend work independent of those pending backend endpoints,
 [task 084: refresh frontend theme and shell](../../tasks/roadmap/084-refresh-frontend-theme-and-shell.md)
-is complete. Continue with the
+and
+[task 085: refresh dashboard layout](../../tasks/roadmap/085-refresh-dashboard-layout.md)
+are complete. Continue with the
 [visual refresh task sequence](./phase-8-portfolio-polish.md#tasks).
 The [HTML design preview](../mockups/smart-job-tracker.html) is the
 visual reference; it is not production behavior or data.
