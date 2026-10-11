@@ -9,7 +9,7 @@ import {
 
 describe('useMediaQuery utils', () => {
   it('builds breakpoint queries and default snapshots', () => {
-    expect(getBreakpointMediaQuery('md')).toBe('(min-width: 768px)');
+    expect(getBreakpointMediaQuery('md')).toBe('(min-width: 48rem)');
     expect(getDefaultMediaQuerySnapshot()).toBe(false);
   });
 
@@ -22,16 +22,16 @@ describe('useMediaQuery utils', () => {
       addEventListener,
       addListener: vi.fn(),
       dispatchEvent: vi.fn(),
-      matches: query === '(min-width: 768px)',
+      matches: query === '(min-width: 48rem)',
       media: query,
       onchange: null,
       removeEventListener,
       removeListener: vi.fn(),
     }));
 
-    expect(getMediaQuerySnapshot('(min-width: 768px)')).toBe(true);
+    expect(getMediaQuerySnapshot('(min-width: 48rem)')).toBe(true);
 
-    const unsubscribe = subscribeToMediaQuery('(min-width: 768px)', onStoreChange);
+    const unsubscribe = subscribeToMediaQuery('(min-width: 48rem)', onStoreChange);
     const handleChange = addEventListener.mock.calls[0][1] as () => void;
 
     handleChange();

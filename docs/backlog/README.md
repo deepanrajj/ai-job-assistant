@@ -64,6 +64,13 @@ numbered task before implementation.
   backend `POST /api/import-candidates/import` with 047's. Tasks 048 and
   050 are complete (frontend only).
 
+For frontend work independent of those pending backend endpoints,
+[task 084: refresh frontend theme and shell](../../tasks/roadmap/084-refresh-frontend-theme-and-shell.md)
+is complete. Continue with the
+[visual refresh task sequence](./phase-8-portfolio-polish.md#tasks).
+The [HTML design preview](../mockups/smart-job-tracker.html) is the
+visual reference; it is not production behavior or data.
+
 Task 040's frontend is on `main` behind `REMINDERS_FEATURE_ENABLED`,
 with a dev-server mock; its backend, then the removal of the mock and
 the flag, completes it. Task 043 added dashboard insights computed from

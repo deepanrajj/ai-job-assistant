@@ -1,29 +1,33 @@
 import type { TNavClassNameParams } from './appShell.types';
 
 /**
- * Builds the desktop navigation link class name from the active route state.
+ * Checks whether an element is rendered, i.e. neither it nor an ancestor up to `root` is
+ * `display: none`. Works in every browser, unlike `Element.checkVisibility`.
  *
- * @param {TNavClassNameParams} params Navigation link state from React Router.
- * @param {boolean} params.isActive Whether the link matches the current route.
- * @returns {string} Desktop navigation link class name.
+ * @param {HTMLElement} element Element to check.
+ * @param {HTMLElement} root Ancestor where the check stops.
+ * @returns {boolean} Whether the element is displayed.
  */
-export const navClassName = ({ isActive }: TNavClassNameParams): string =>
-  `flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface ${
-    isActive
-      ? 'bg-primary-50 text-primary-700'
-      : 'text-app-textSoft hover:bg-app-surface2 hover:text-app-text'
-  }`;
+export const isDisplayed = (element: HTMLElement, root: HTMLElement): boolean => {
+  for (let node: HTMLElement | null = element; node && node !== root; node = node.parentElement) {
+    if (window.getComputedStyle(node).display === 'none') return false;
+  }
+  return true;
+};
 
 /**
- * Builds the mobile navigation link class name from the active route state.
+ * Builds a sidebar navigation link class name from its active and collapsed state.
  *
  * @param {TNavClassNameParams} params Navigation link state from React Router.
  * @param {boolean} params.isActive Whether the link matches the current route.
- * @returns {string} Mobile navigation link class name.
+ * @param {boolean} params.collapsed Whether the sidebar hides visible labels.
+ * @returns {string} Sidebar navigation link class name.
  */
-export const mobileNavClassName = ({ isActive }: TNavClassNameParams): string =>
-  `flex h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface ${
+export const navClassName = ({ collapsed = false, isActive }: TNavClassNameParams): string =>
+  `flex h-11 items-center gap-3 rounded-xl text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface ${
+    collapsed ? 'justify-center px-2' : 'px-3'
+  } ${
     isActive
-      ? 'bg-primary-50 text-primary-700'
-      : 'border border-app-border bg-app-surface text-app-textSoft'
+      ? 'bg-primary-100 font-semibold text-primary-900'
+      : 'text-app-textSoft hover:bg-primary-50 hover:text-primary-800'
   }`;

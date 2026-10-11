@@ -9,14 +9,14 @@ describe('useMediaQuery', () => {
       addEventListener: vi.fn(),
       addListener: vi.fn(),
       dispatchEvent: vi.fn(),
-      matches: query === '(min-width: 768px)',
+      matches: query === '(min-width: 48rem)',
       media: query,
       onchange: null,
       removeEventListener: vi.fn(),
       removeListener: vi.fn(),
     }));
 
-    expect(renderHook(() => useMediaQuery('(min-width: 768px)')).result.current).toBe(true);
+    expect(renderHook(() => useMediaQuery('(min-width: 48rem)')).result.current).toBe(true);
     expect(renderHook(() => useBreakpoint('lg')).result.current).toBe(false);
   });
 });

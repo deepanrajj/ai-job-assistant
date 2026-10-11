@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import {
-  createJobsActions,
   createJobsColumns,
   createJobsFilters,
   createJobsSearchConfig,
@@ -131,23 +130,16 @@ describe('jobs config', () => {
     expect(screen.getByText('Jan 2, 2026')).toBeInTheDocument();
   });
 
-  it('creates actions and filters', () => {
-    const handleAddJob = vi.fn();
+  it('creates status filters', () => {
     const handleStatusFilterChange = vi.fn();
     render(
-      <>
-        {createJobsActions({ onAddJob: handleAddJob, t })}
-        {createJobsFilters({
-          onStatusFilterChange: handleStatusFilterChange,
-          statusFilter: 'ALL',
-          t,
-        })}
-      </>,
+      createJobsFilters({
+        onStatusFilterChange: handleStatusFilterChange,
+        statusFilter: 'ALL',
+        t,
+      }),
     );
 
-    screen.getByRole('button', { name: 'Add Job' }).click();
-
-    expect(handleAddJob).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('combobox', { name: 'Status' })).toHaveValue('ALL');
     expect(screen.getByRole('option', { name: 'All statuses' })).toBeInTheDocument();
   });

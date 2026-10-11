@@ -18,6 +18,15 @@ Goal: make the project presentable for GitHub, interviews, and deployment.
 - [x] [Run the API collection in CI](../../tasks/roadmap/079-run-api-collection-in-ci.md).
 - [ ] [Add Playwright harness and first journey](../../tasks/roadmap/080-add-playwright-harness-and-first-journey.md).
 - [ ] [Expand browser journey coverage](../../tasks/roadmap/081-expand-browser-journey-coverage.md).
+- [x] [Refresh frontend theme and shell](../../tasks/roadmap/084-refresh-frontend-theme-and-shell.md).
+- [ ] [Refresh dashboard layout](../../tasks/roadmap/085-refresh-dashboard-layout.md).
+- [ ] [Refresh Jobs list and board](../../tasks/roadmap/086-refresh-jobs-list-and-board.md).
+- [ ] [Refresh Discover workflow](../../tasks/roadmap/087-refresh-discover-workflow.md).
+- [ ] [Refresh Applications page](../../tasks/roadmap/088-refresh-applications-page.md).
+- [ ] [Refresh Calendar page](../../tasks/roadmap/089-refresh-calendar-page.md).
+- [ ] [Refresh Profile page](../../tasks/roadmap/090-refresh-profile-page.md).
+- [ ] [Refresh Job Detail page](../../tasks/roadmap/091-refresh-job-detail-page.md).
+- [ ] [Refresh job forms and review design](../../tasks/roadmap/092-refresh-job-forms-and-review-design.md).
 
 Tasks 077 to 081 are numbered into this phase because testing
 infrastructure belongs with task 068, but they are **not** meant to run
@@ -32,6 +41,13 @@ exists. Bring it and task 080 forward; task 080's tests still own their
 isolated records. Advanced demo scenarios follow their domain schemas
 under R-12 in the
 [product improvements plan](../business/product-improvements-and-recommendations-plan.md#delivery-sequence).
+
+Tasks 084-092 follow the
+[frontend visual refresh plan](../business/084-frontend-visual-refresh-plan.md).
+Shared theme and shell task 084 is complete; tasks 085-091 can now be
+implemented one at a time in any order, and task 092 closes the visual
+pass. These tasks use existing frontend data and feature flags, so they
+do not wait for the pending backend tasks 040-049.
 
 ## Acceptance Criteria
 

@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 /**
- * Renders the app logo icon used in the sidebar brand block.
+ * Renders the app logo icon used in the header brand block.
  *
  * @returns {JSX.Element} Decorative app logo icon.
  */
@@ -114,6 +114,58 @@ export const ProfileIcon: FC = () => (
       stroke="currentColor"
       strokeWidth="1.8"
       strokeLinecap="round"
+    />
+  </svg>
+);
+
+/**
+ * Renders the menu (hamburger) icon that opens the compact-screen drawer.
+ *
+ * @returns {JSX.Element} Decorative menu icon.
+ */
+export const MenuIcon: FC = () => (
+  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
+    <path
+      d="M4 6h16M4 12h16M4 18h16"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="1.8"
+    />
+  </svg>
+);
+
+/**
+ * Renders the close (X) icon used by the compact-screen drawer.
+ *
+ * @returns {JSX.Element} Decorative close icon.
+ */
+export const CloseIcon: FC = () => (
+  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
+    <path d="M5 5 19 19M19 5 5 19" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+  </svg>
+);
+
+/**
+ * Props for the sidebar chevron icon.
+ */
+interface IChevronIconProps {
+  direction: 'left' | 'right';
+}
+
+/**
+ * Renders a left or right chevron, used by the sidebar collapse toggle.
+ *
+ * @param {IChevronIconProps} props Chevron direction.
+ * @returns {JSX.Element} Decorative chevron icon.
+ */
+export const ChevronIcon: FC<IChevronIconProps> = ({ direction }) => (
+  <svg aria-hidden="true" className="h-5 w-5" fill="none" focusable="false" viewBox="0 0 24 24">
+    <path
+      d={direction === 'right' ? 'm9 6 6 6-6 6' : 'm15 6-6 6 6 6'}
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
     />
   </svg>
 );

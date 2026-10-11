@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Tooltip } from './Tooltip';
@@ -46,6 +46,41 @@ describe('Tooltip', () => {
     await user.hover(trigger);
     await user.unhover(trigger);
 
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('places a right tooltip beside its trigger with fixed positioning', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <Tooltip content="Jobs" placement="right">
+        <button type="button">Jobs icon</button>
+      </Tooltip>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Jobs icon' });
+    trigger.getBoundingClientRect = () =>
+      ({ bottom: 64, height: 44, left: 16, right: 60, top: 20, width: 44 }) as DOMRect;
+    await user.hover(trigger);
+
+    const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).toHaveClass('fixed');
+    expect(tooltip).toHaveStyle({ left: '72px', top: '42px' });
+  });
+
+  it('hides a right tooltip when a container scrolls', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <Tooltip content="Jobs" placement="right">
+        <button type="button">Jobs icon</button>
+      </Tooltip>,
+    );
+
+    await user.hover(screen.getByRole('button', { name: 'Jobs icon' }));
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+
+    act(() => {
+      document.body.dispatchEvent(new Event('scroll'));
+    });
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 });
