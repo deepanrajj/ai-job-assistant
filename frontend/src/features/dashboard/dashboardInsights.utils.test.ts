@@ -104,6 +104,7 @@ describe('getDashboardInsights', () => {
       agingApplications: { items: [], total: 0, unknownDateCount: 0 },
       applicationsThisWeek: {
         count: 0,
+        lastWeekToDateCount: 0,
         unknownDateCount: 0,
         weekEnd: local(10, 12, 0),
         weekStart: local(10, 5, 0),
@@ -136,6 +137,30 @@ describe('getDashboardInsights', () => {
     expect(applicationsThisWeek.count).toBe(2);
     // saved-as-applied and skipped-applied: past WISHLIST, no APPLIED event.
     expect(applicationsThisWeek.unknownDateCount).toBe(2);
+    // last-week fell on last Sunday, after last week's Wednesday, so a
+    // Wednesday does not compare against it.
+    expect(applicationsThisWeek.lastWeekToDateCount).toBe(0);
+  });
+
+  it('compares a week in progress with the same days of last week', () => {
+    // Wednesday 7 October: last week to date is Monday 28 September through
+    // the end of Wednesday 30 September.
+    const jobs = [
+      job('first-minute', 'APPLIED'),
+      job('last-minute', 'APPLIED'),
+      job('too-early', 'APPLIED'),
+      job('too-late', 'APPLIED'),
+    ];
+    const events = [
+      statusEvent('first-minute', 'APPLIED', local(9, 28, 0)),
+      statusEvent('last-minute', 'APPLIED', local(9, 30, 23, 59)),
+      statusEvent('too-early', 'APPLIED', local(9, 27, 23, 59)),
+      statusEvent('too-late', 'APPLIED', local(10, 1, 0)),
+    ];
+
+    const { applicationsThisWeek } = getDashboardInsights(jobs, events, local(10, 7, 9));
+
+    expect(applicationsThisWeek.lastWeekToDateCount).toBe(2);
   });
 
   it('counts a repeated APPLIED transition once, from its first date', () => {

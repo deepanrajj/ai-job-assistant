@@ -21,7 +21,7 @@ describe('dashboardRoute', () => {
   it('renders dashboard content from the jobs the backend returns', async () => {
     renderWithRouter(<DashboardRoute />);
 
-    expect(await screen.findByText('Total jobs')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Pipeline' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
 
     // A company name proves the rows came from the response rather than from
@@ -56,7 +56,7 @@ describe('dashboardRoute', () => {
     renderWithRouter(<DashboardRoute />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Reminders could not be loaded');
-    expect(screen.getByText('Total jobs')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Pipeline' })).toBeInTheDocument();
   });
 
   it('uses the variant with reminders while the feature is on, as it is under test', () => {

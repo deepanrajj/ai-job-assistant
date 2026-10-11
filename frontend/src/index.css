@@ -32,10 +32,12 @@
 
   --color-warning-50: #fffbeb;
   --color-warning-100: #fef3c7;
+  --color-warning-500: #f59e0b;
   --color-warning-800: #92400e;
 
   --color-danger-50: #fef2f2;
   --color-danger-100: #fee2e2;
+  --color-danger-500: #ef4444;
   --color-danger-700: #b91c1c;
 
   /* Application surface colors */

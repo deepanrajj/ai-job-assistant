@@ -48,7 +48,7 @@ const events = [
 ];
 
 const getCard = (label: string): HTMLElement =>
-  screen.getByRole('heading', { name: label }).parentElement as HTMLElement;
+  screen.getByRole('heading', { name: label }).closest('section') as HTMLElement;
 
 const renderInsights = (overrides: Partial<ComponentProps<typeof DashboardInsights>> = {}) =>
   renderWithProviders(
@@ -71,6 +71,34 @@ describe('DashboardInsights', () => {
     expect(within(card).getByText('1')).toBeInTheDocument();
     expect(
       within(card).getByText(/ - .*Not counted, no recorded application date: 1/),
+    ).toBeInTheDocument();
+  });
+
+  it('compares this week with last week in words, not only with an arrow', () => {
+    // Seven days ago is today's weekday last week, inside last week to date.
+    const twoLastWeek = [
+      statusEvent('celonis', 'APPLIED', daysAgo(7)),
+      statusEvent('personio', 'APPLIED', daysAgo(7)),
+    ];
+    const { unmount } = renderInsights();
+
+    expect(
+      within(getCard('Applications this week')).getByText('1 more than last week'),
+    ).toBeInTheDocument();
+    unmount();
+
+    const fewer = renderInsights({ events: twoLastWeek });
+
+    expect(
+      within(getCard('Applications this week')).getByText('2 fewer than last week'),
+    ).toBeInTheDocument();
+    fewer.unmount();
+
+    renderInsights({
+      events: [statusEvent('celonis', 'APPLIED', new Date().toISOString()), twoLastWeek[1]],
+    });
+    expect(
+      within(getCard('Applications this week')).getByText('Same as last week'),
     ).toBeInTheDocument();
   });
 

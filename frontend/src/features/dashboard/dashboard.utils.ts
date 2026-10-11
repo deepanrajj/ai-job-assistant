@@ -1,7 +1,7 @@
 import type { TLanguage } from '../../i18n';
 import { inactiveJobStatuses, RECENT_JOBS_LIMIT } from './dashboard.constants';
-import type { TJob } from '../../types';
-import type { IDashboardData, TJobStatusCounts } from './dashboard.types';
+import type { TJob, TReminderItem } from '../../types';
+import type { IDashboardData, IReminderGroup, TJobStatusCounts } from './dashboard.types';
 
 /**
  * Creates an empty count map for every supported job status.
@@ -61,6 +61,24 @@ export const formatDashboardDate = (date: string, language: TLanguage): string =
   }).format(new Date(date));
 
 /**
+ * Formats a `YYYY-MM-DD` day as a short weekday and date for the reminder
+ * agenda, reading it as a local calendar day rather than UTC midnight.
+ *
+ * @param {string} isoDate Local calendar date as `YYYY-MM-DD`.
+ * @param {TLanguage} language Active app language.
+ * @returns {string} Localized day label, such as "Wed, Oct 14".
+ */
+export const formatAgendaDay = (isoDate: string, language: TLanguage): string => {
+  const [year, month, day] = isoDate.split('-').map(Number);
+
+  return new Intl.DateTimeFormat(language === 'de' ? 'de-DE' : 'en-US', {
+    day: 'numeric',
+    month: 'short',
+    weekday: 'short',
+  }).format(new Date(year, month - 1, day));
+};
+
+/**
  * Calculates the visual width for a job status meter.
  *
  * @param {number} count Jobs assigned to the status.
@@ -69,3 +87,45 @@ export const formatDashboardDate = (date: string, language: TLanguage): string =
  */
 export const getStatusMeterWidth = (count: number, totalJobCount: number): string =>
   totalJobCount > 0 ? `${(count / totalJobCount) * 100}%` : '0%';
+
+/**
+ * Groups reminders for the dashboard's weekly agenda: overdue first, then
+ * one group per day of the current week that has reminders, then later.
+ * Reminders keep their incoming order, which is earliest first, so day
+ * groups come out in date order without sorting.
+ *
+ * Days without reminders get no group: the dashboard loads only the next
+ * few reminders, so it cannot tell that such a day is free.
+ *
+ * @param {TReminderItem[]} reminders Open reminders, earliest due first.
+ * @param {string} today Today's local date as `YYYY-MM-DD`.
+ * @param {string} weekEnd First day after the current week as `YYYY-MM-DD`.
+ * @returns {IReminderGroup[]} Non-empty reminder groups in display order.
+ */
+export const groupRemindersByWeek = (
+  reminders: TReminderItem[],
+  today: string,
+  weekEnd: string,
+): IReminderGroup[] => {
+  const overdue: IReminderGroup = { date: null, kind: 'overdue', reminders: [] };
+  const later: IReminderGroup = { date: null, kind: 'later', reminders: [] };
+  const days = new Map<string, IReminderGroup>();
+
+  // `YYYY-MM-DD` strings compare as dates, as in `getReminderDueState`.
+  reminders.forEach((reminder) => {
+    if (reminder.dueDate < today) overdue.reminders.push(reminder);
+    else if (reminder.dueDate >= weekEnd) later.reminders.push(reminder);
+    else {
+      const day = days.get(reminder.dueDate) ?? {
+        date: reminder.dueDate,
+        kind: 'day',
+        reminders: [],
+      };
+
+      day.reminders.push(reminder);
+      days.set(reminder.dueDate, day);
+    }
+  });
+
+  return [overdue, ...days.values(), later].filter((group) => group.reminders.length > 0);
+};

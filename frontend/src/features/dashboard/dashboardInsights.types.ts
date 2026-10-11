@@ -20,6 +20,9 @@ export interface IAgingApplication {
 /**
  * Every dashboard insight, as `getDashboardInsights` derives it.
  * `weekEnd` is exclusive: local midnight on the following Monday.
+ * `lastWeekToDateCount` counts last week from its Monday through the same
+ * weekday as today, so a week in progress is compared with the same span
+ * of the week before rather than with all of it.
  * `interviewRate.rate` is null when no job has a recorded application, so
  * an empty cohort can never read as 0%.
  */
@@ -31,6 +34,7 @@ export interface IDashboardInsights {
   };
   applicationsThisWeek: {
     count: number;
+    lastWeekToDateCount: number;
     unknownDateCount: number;
     weekEnd: Date;
     weekStart: Date;

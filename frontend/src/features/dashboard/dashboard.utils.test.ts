@@ -1,7 +1,26 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDashboardDate, getDashboardData, getStatusMeterWidth } from './dashboard.utils';
+import {
+  formatDashboardDate,
+  getDashboardData,
+  getStatusMeterWidth,
+  groupRemindersByWeek,
+} from './dashboard.utils';
 import { createMockJob } from '../../test/mockJobs';
+import type { TReminderItem } from '../../types';
+
+/**
+ * Builds an open reminder due on the given day.
+ */
+const reminderDue = (id: string, dueDate: string): TReminderItem => ({
+  dueDate,
+  id,
+  isComplete: false,
+  jobId: 'job-1',
+  source: 'REMINDER',
+  title: id,
+  type: null,
+});
 
 describe('getDashboardData', () => {
   it('counts statuses, active jobs, and recent jobs', () => {
@@ -45,5 +64,43 @@ describe('getStatusMeterWidth', () => {
   it('returns proportional meter widths and handles empty totals', () => {
     expect(getStatusMeterWidth(2, 4)).toBe('50%');
     expect(getStatusMeterWidth(2, 0)).toBe('0%');
+  });
+});
+
+describe('groupRemindersByWeek', () => {
+  // Wednesday 2026-10-14, in the week of Monday 12 to Sunday 18 October.
+  const today = '2026-10-14';
+  const weekEnd = '2026-10-19';
+
+  it('groups overdue, this week by day, and later, in that order', () => {
+    const groups = groupRemindersByWeek(
+      [
+        reminderDue('overdue', '2026-10-13'),
+        reminderDue('today-a', '2026-10-14'),
+        reminderDue('today-b', '2026-10-14'),
+        reminderDue('sunday', '2026-10-18'),
+        reminderDue('next-week', '2026-10-19'),
+      ],
+      today,
+      weekEnd,
+    );
+
+    expect(
+      groups.map(({ date, kind, reminders }) => [kind, date, reminders.map((r) => r.id)]),
+    ).toEqual([
+      ['overdue', null, ['overdue']],
+      ['day', '2026-10-14', ['today-a', 'today-b']],
+      ['day', '2026-10-18', ['sunday']],
+      ['later', null, ['next-week']],
+    ]);
+  });
+
+  it('leaves out empty groups and days without reminders', () => {
+    const groups = groupRemindersByWeek([reminderDue('friday', '2026-10-16')], today, weekEnd);
+
+    expect(groups).toEqual([
+      { date: '2026-10-16', kind: 'day', reminders: [reminderDue('friday', '2026-10-16')] },
+    ]);
+    expect(groupRemindersByWeek([], today, weekEnd)).toEqual([]);
   });
 });

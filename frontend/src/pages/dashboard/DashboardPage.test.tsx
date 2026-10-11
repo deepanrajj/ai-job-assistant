@@ -7,17 +7,10 @@ import { DashboardPage } from './DashboardPage';
 import { AppError } from '../../errors';
 import { renderWithRouter } from '../../test/renderWithRouter';
 import { MOCK_JOB_IDS, createMockJobs } from '../../test/mockJobs';
+import { createMockTimelineEventResponse } from '../../test/mockTimeline';
 import { APP_ERROR_CODES } from '../../types';
 
 const loadError = () => new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_REQUEST_FAILED);
-
-const getMetricValue = (label: string): Element => {
-  const valueElement = screen.getByText(label).nextElementSibling;
-
-  if (!valueElement) throw new Error(`Metric value not found for ${label}`);
-
-  return valueElement;
-};
 
 /**
  * Next reminders as `useNextReminders` reports a settled, empty load.
@@ -53,13 +46,28 @@ const renderDashboardPage = (overrides: Partial<ComponentProps<typeof DashboardP
   );
 
 describe('DashboardPage', () => {
-  it('renders summary metrics from the provided jobs', () => {
+  it('renders the job totals and per-status counts in the pipeline card', () => {
     renderDashboardPage();
 
-    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
-    expect(getMetricValue('Active pipeline')).toHaveTextContent('3');
-    expect(getMetricValue('Interviews')).toHaveTextContent('1');
-    expect(getMetricValue('Offers')).toHaveTextContent('1');
+    expect(screen.getByRole('heading', { name: 'Pipeline' })).toBeInTheDocument();
+    expect(screen.getByText('3 saved · 3 active')).toBeInTheDocument();
+    expect(screen.getByRole('meter', { name: 'Interview' })).toHaveAttribute('aria-valuenow', '1');
+    expect(screen.getByRole('meter', { name: 'Offer' })).toHaveAttribute('aria-valuenow', '1');
+  });
+
+  it('puts the insights first, then the pipeline and reminders, then recent activity', () => {
+    renderDashboardPage();
+
+    const headings = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((heading) => heading.textContent);
+
+    expect(headings).toEqual([
+      'Job search insights',
+      'Pipeline',
+      'Next reminders',
+      'Recent activity',
+    ]);
   });
 
   it('renders status meters and recent activity in updated date order', () => {
@@ -76,7 +84,8 @@ describe('DashboardPage', () => {
 
     if (!recentActivitySection) throw new Error('Recent activity section not found');
 
-    const recentJobs = within(recentActivitySection).getAllByRole('listitem');
+    // The first row is the table header.
+    const recentJobs = within(recentActivitySection).getAllByRole('row').slice(1);
 
     expect(recentJobs[0]).toHaveTextContent('Celonis');
     expect(recentJobs[1]).toHaveTextContent('Miro');
@@ -120,8 +129,7 @@ describe('DashboardPage', () => {
       jobs: [],
     });
 
-    expect(getMetricValue('Total jobs')).toHaveTextContent('0');
-    expect(getMetricValue('Active pipeline')).toHaveTextContent('0');
+    expect(screen.getByText('0 saved · 0 active')).toBeInTheDocument();
     expect(screen.getByRole('meter', { name: 'Interview' })).toHaveAttribute('aria-valuenow', '0');
     expect(screen.getByText('No activity yet')).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -147,7 +155,7 @@ describe('DashboardPage', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('renders the next reminders alongside the job metrics', () => {
+  it('renders the next reminders alongside the job counts', () => {
     renderDashboardPage({
       nextReminders: {
         ...noNextReminders,
@@ -171,7 +179,7 @@ describe('DashboardPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps the metrics on screen when only the reminders fail to load', () => {
+  it('keeps the job counts on screen when only the reminders fail to load', () => {
     renderDashboardPage({
       nextReminders: {
         ...noNextReminders,
@@ -183,25 +191,29 @@ describe('DashboardPage', () => {
     });
 
     expect(screen.getByRole('alert')).toHaveTextContent('Reminders could not be loaded');
-    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
+    expect(screen.getByText('3 saved · 3 active')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Recent activity' })).toBeInTheDocument();
   });
 
-  it('leaves the reminders card out when no reminders are passed', () => {
+  it('leaves the reminders card out, and moves recent activity beside the pipeline, when no reminders are passed', () => {
     renderDashboardPage({ nextReminders: undefined });
 
-    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
     expect(screen.queryByRole('heading', { name: 'Next reminders' })).not.toBeInTheDocument();
+
+    const pipeline = screen.getByRole('heading', { name: 'Pipeline' }).closest('section');
+    const recent = screen.getByRole('heading', { name: 'Recent activity' }).closest('section');
+
+    expect(pipeline?.parentElement).toBe(recent?.parentElement);
   });
 
-  it('renders the insights from the status history alongside the job metrics', () => {
+  it('renders the insights from the status history alongside the job counts', () => {
     renderDashboardPage();
 
     expect(screen.getByRole('heading', { name: 'Job search insights' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Response rate' })).toBeInTheDocument();
   });
 
-  it('keeps the job metrics when only the status history fails to load', () => {
+  it('keeps the job counts when only the status history fails to load', () => {
     renderDashboardPage({
       statusHistory: {
         ...emptyStatusHistory,
@@ -214,6 +226,28 @@ describe('DashboardPage', () => {
     });
 
     expect(screen.getByRole('alert')).toHaveTextContent('Insights could not be loaded');
-    expect(getMetricValue('Total jobs')).toHaveTextContent('3');
+    expect(screen.getByText('3 saved · 3 active')).toBeInTheDocument();
+  });
+
+  it('dates recent applications from settled status history only', () => {
+    const appliedEvent = createMockTimelineEventResponse({
+      createdAt: '2026-05-02T09:00:00.000Z',
+      jobId: MOCK_JOB_IDS.celonis,
+      nextStatus: 'APPLIED',
+      previousStatus: 'WISHLIST',
+    });
+    const { unmount } = renderDashboardPage({
+      statusHistory: { ...emptyStatusHistory, events: [appliedEvent] },
+    });
+    const celonisRow = (): HTMLElement =>
+      screen.getByRole('link', { name: 'Celonis' }).closest('tr') as HTMLElement;
+
+    expect(within(celonisRow()).getByText('May 2')).toBeInTheDocument();
+    unmount();
+
+    renderDashboardPage({
+      statusHistory: { ...emptyStatusHistory, events: [appliedEvent], isLoading: true },
+    });
+    expect(within(celonisRow()).getByText('Not available')).toBeInTheDocument();
   });
 });
