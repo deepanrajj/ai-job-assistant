@@ -3,7 +3,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   AGING_APPLICATIONS_LIMIT,
   formatInsightRate,
-  getApplicationHistory,
   getDashboardInsights,
   getLocalCalendarDayDifference,
   getLocalWeek,
@@ -12,6 +11,7 @@ import { createMockJob } from '../../test/mockJobs';
 import { createMockTimelineEventResponse } from '../../test/mockTimeline';
 import type { TJob, TJobStatus } from '../../types';
 import type { TTimelineEventResponse } from '../../services';
+import { getApplicationHistory } from '../statusHistory';
 
 /**
  * Week and age rules are defined in the browser's local time, so the file

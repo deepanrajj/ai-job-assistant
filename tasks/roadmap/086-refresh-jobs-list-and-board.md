@@ -1,6 +1,6 @@
 # Task 086 - Refresh Jobs List And Board
 
-Status: Not started
+Status: Completed
 
 Related plan: [Frontend visual refresh](../../docs/business/084-frontend-visual-refresh-plan.md).
 
@@ -32,6 +32,13 @@ In scope:
 - Bring Kanban columns and job cards into the same palette and spacing.
 - Use the existing `WISHLIST`, `APPLIED`, `INTERVIEW`, `OFFER`,
   `REJECTED`, and `WITHDRAWN` statuses and the existing source data.
+- Added at the owner's request after the first pass, from a reference
+  image: a status stats bar above the toolbar, a "Sort by" select over
+  the existing sorts, one card holding the table and view switch, a
+  "Date applied" column from the existing status history, a clickable
+  status pill on each board card that moves the job to another status
+  with the existing job update request, and the shared search and sort on the board. See D6-D12 in the
+  plan.
 
 Out of scope:
 
@@ -74,12 +81,16 @@ Report focused local checks and actual CI E2E status in the PR.
 
 ## Acceptance Criteria
 
-- [ ] Jobs list and board use the approved visual system.
-- [ ] Existing search, filters, sorting, status coverage, and actions
+- [x] Jobs list and board use the approved visual system.
+- [x] Existing search, filters, sorting, status coverage, and actions
       retain their behavior.
-- [ ] Loading, error, and empty states remain useful.
-- [ ] Desktop and mobile layouts are accessible.
-- [ ] Focused tests and frontend verification pass.
+- [x] Loading, error, and empty states remain useful.
+- [x] Desktop and mobile layouts are accessible.
+- [x] Focused tests and frontend verification pass.
+
+Local verification: `npm run frontend:verify` passed 999 tests, lint,
+format check, coverage, and build. The board's page overflow fix was
+measured in the running app.
 
 ## Commit
 

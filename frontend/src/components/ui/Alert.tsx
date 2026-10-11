@@ -10,6 +10,8 @@ import type { TAlertVariant } from './ui.types';
 interface IAlertProps {
   children: ReactNode;
   className?: string;
+  /** False renders a plain notice, not a live region, such as one holding a button. */
+  live?: boolean;
   role?: 'alert' | 'status';
   variant?: TAlertVariant;
 }
@@ -23,12 +25,13 @@ interface IAlertProps {
 const AlertComponent: FC<IAlertProps> = ({
   children,
   className = '',
+  live = true,
   role = 'alert',
   variant = 'error',
 }) => (
   <div
     className={classNames('rounded-lg border p-3 text-sm', alertVariantClasses[variant], className)}
-    role={role}
+    role={live ? role : undefined}
   >
     {children}
   </div>

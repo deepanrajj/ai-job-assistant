@@ -19,4 +19,11 @@ describe('Alert', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('Job saved successfully.');
   });
+
+  it('renders a plain notice without a live role when not live', () => {
+    render(<Alert live={false}>Dates unavailable</Alert>);
+
+    expect(screen.getByText('Dates unavailable')).not.toHaveAttribute('role');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 });

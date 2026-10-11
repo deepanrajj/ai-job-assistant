@@ -66,6 +66,7 @@ describe('jobs config', () => {
   it('creates localized columns that render job cell content', () => {
     const job = createMockJob();
     const columns = createJobsColumns({
+      applicationHistory: null,
       language: 'en',
       t,
     });
@@ -94,6 +95,7 @@ describe('jobs config', () => {
       'status',
       'location',
       'salary',
+      'applied',
       'updated',
       'actions',
     ]);
@@ -158,5 +160,33 @@ describe('jobs config', () => {
 
     expect(handleViewModeChange).toHaveBeenCalledTimes(1);
     expect(handleViewModeChange).toHaveBeenCalledWith('kanban');
+  });
+
+  it('dates applications from the history, and explains a missing date', () => {
+    const applied = createMockJob({ id: 'applied-job' });
+    const wishlist = createMockJob({ company: 'Saved', id: 'saved-job', status: 'WISHLIST' });
+    const appliedAt = new Date(2026, 0, 5);
+    const history = {
+      applications: new Map([[applied.id, { appliedAt, job: applied }]]),
+      withdrawnFromWishlist: new Set<string>(),
+    };
+    const column = createJobsColumns({ applicationHistory: history, language: 'en', t }).find(
+      (candidate) => candidate.id === 'applied',
+    );
+
+    if (!column) throw new Error('Expected the applied column');
+
+    expect(column.sortValue?.(applied)).toBe(appliedAt);
+    renderWithRouter(
+      <>
+        <span>{column.cell(applied)}</span>
+        <span>{column.cell(wishlist)}</span>
+        <span>{column.cell(createMockJob({ id: 'undated' }))}</span>
+      </>,
+    );
+
+    expect(screen.getByText('Jan 5, 2026')).toBeInTheDocument();
+    expect(screen.getByText('Not applied')).toBeInTheDocument();
+    expect(screen.getByText('Not recorded')).toBeInTheDocument();
   });
 });

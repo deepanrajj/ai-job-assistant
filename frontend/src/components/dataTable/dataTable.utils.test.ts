@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  filterDataTableRows,
   compareDataTableSortValues,
   getDataTableAriaSort,
   getDataTableSortDirection,
@@ -100,5 +101,50 @@ describe('dataTable utils', () => {
     expect(sortDataTableRows(rows, columns, null)).toBe(rows);
     expect(sortDataTableRows(rows, columns, { columnId: 'missing', direction: 'asc' })).toBe(rows);
     expect(paginateDataTableRows(rows, 1, 2).map((row) => row.id)).toEqual(['3']);
+  });
+});
+
+describe('filterDataTableRows', () => {
+  const rows = [
+    { name: 'Alpha', status: 'open' },
+    { name: 'Beta', status: 'closed' },
+  ];
+  const search = { getSearchText: (row: { name: string }) => row.name, label: 'Search' };
+
+  it('applies the filter, then the trimmed, case-insensitive search', () => {
+    expect(filterDataTableRows(rows, { search, searchQuery: '  ALP ' })).toEqual([rows[0]]);
+    expect(
+      filterDataTableRows(rows, {
+        filterPredicate: (row) => row.status === 'closed',
+        search,
+        searchQuery: '',
+      }),
+    ).toEqual([rows[1]]);
+    expect(filterDataTableRows(rows, { searchQuery: 'beta' })).toEqual(rows);
+  });
+});
+
+describe('sortDataTableRows with blank values', () => {
+  it('puts blank values last in both directions', () => {
+    const rows = [{ value: 2 }, { value: undefined }, { value: 5 }];
+    const columns = [
+      {
+        cell: () => null,
+        header: 'Value',
+        id: 'value',
+        sortValue: (row: { value?: number }) => row.value,
+      },
+    ];
+
+    expect(
+      sortDataTableRows(rows, columns, { columnId: 'value', direction: 'desc' }).map(
+        (row) => row.value,
+      ),
+    ).toEqual([5, 2, undefined]);
+    expect(
+      sortDataTableRows(rows, columns, { columnId: 'value', direction: 'asc' }).map(
+        (row) => row.value,
+      ),
+    ).toEqual([2, 5, undefined]);
   });
 });

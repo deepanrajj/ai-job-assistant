@@ -1,5 +1,6 @@
 import type {
   IDataTableColumn,
+  IDataTableSearchConfig,
   TDataTableAriaSortValue,
   TDataTableSortDirection,
   TDataTableSortState,
@@ -13,6 +14,39 @@ import type {
  * @returns {string} Search-ready text.
  */
 export const normalizeTableSearchText = (value: string): string => value.trim().toLowerCase();
+
+/**
+ * Keeps the rows that pass the optional filter and contain the search
+ * text, the same way wherever a table's rows are shown.
+ *
+ * @param {TData[]} rows Rows to filter.
+ * @param {object} options Filter, search config, and search text.
+ * @param {(row: TData) => boolean} [options.filterPredicate] Extra row filter.
+ * @param {IDataTableSearchConfig<TData>} [options.search] How a row is searched.
+ * @param {string} options.searchQuery Text typed into the search.
+ * @returns {TData[]} Matching rows, in their original order.
+ */
+export const filterDataTableRows = <TData>(
+  rows: TData[],
+  {
+    filterPredicate,
+    search,
+    searchQuery,
+  }: {
+    filterPredicate?: (row: TData) => boolean;
+    search?: IDataTableSearchConfig<TData>;
+    searchQuery: string;
+  },
+): TData[] => {
+  const filteredByControls = filterPredicate ? rows.filter(filterPredicate) : rows;
+  const normalizedSearchQuery = normalizeTableSearchText(searchQuery);
+
+  if (!search || !normalizedSearchQuery) return filteredByControls;
+
+  return filteredByControls.filter((row) =>
+    normalizeTableSearchText(search.getSearchText(row)).includes(normalizedSearchQuery),
+  );
+};
 
 /**
  * Returns the next sort state when a sortable column header is activated.
@@ -115,7 +149,20 @@ export const sortDataTableRows = <TData>(
   if (!sortValue) return rows;
 
   return [...rows].sort((firstRow, secondRow) => {
-    const result = compareDataTableSortValues(sortValue(firstRow), sortValue(secondRow));
+    const first = sortValue(firstRow);
+    const second = sortValue(secondRow);
+    const isFirstBlank = first === null || first === undefined;
+    const isSecondBlank = second === null || second === undefined;
+
+    // Blank values go last in both directions, so a descending sort still
+    // leads with real values rather than every row that has none.
+    if (isFirstBlank || isSecondBlank) {
+      if (isFirstBlank === isSecondBlank) return 0;
+
+      return isFirstBlank ? 1 : -1;
+    }
+
+    const result = compareDataTableSortValues(first, second);
 
     return sortState.direction === 'asc' ? result : result * -1;
   });

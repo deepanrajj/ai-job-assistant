@@ -5,11 +5,10 @@ import { DashboardInsights } from '../../features/dashboard/components/Dashboard
 import { DashboardNextReminders } from '../../features/dashboard/components/DashboardNextReminders';
 import { DashboardRecentActivity } from '../../features/dashboard/components/DashboardRecentActivity';
 import { DashboardStatusOverview } from '../../features/dashboard/components/DashboardStatusOverview';
+import { getApplicationHistory, type IStatusHistoryState } from '../../features/statusHistory';
 import type { INextRemindersState } from '../../features/dashboard/useNextReminders';
-import type { IStatusHistoryState } from '../../features/dashboard/useStatusHistory';
 import { useTranslation } from '../../i18n';
 import { getDashboardData } from '../../features/dashboard/dashboard.utils';
-import { getApplicationHistory } from '../../features/dashboard/dashboardInsights.utils';
 import type { AppError } from '../../errors';
 import type { TJob } from '../../types';
 

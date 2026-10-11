@@ -70,7 +70,7 @@ export const DataTableDesktop = <TData,>({
                 <th
                   aria-sort={column.sortValue ? getDataTableAriaSort(sortDirection) : undefined}
                   className={classNames(
-                    'px-4 py-3 text-left text-xs font-semibold uppercase text-app-textMuted',
+                    'px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-app-textMuted',
                     column.headerClassName,
                   )}
                   key={column.id}
@@ -79,7 +79,7 @@ export const DataTableDesktop = <TData,>({
                   {column.sortValue ? (
                     <button
                       aria-label={getSortLabel(column)}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded text-left uppercase hover:text-app-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface2"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded text-left uppercase tracking-wide hover:text-app-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface2"
                       onClick={() => onSort(column.id)}
                       type="button"
                     >
@@ -103,13 +103,13 @@ export const DataTableDesktop = <TData,>({
 
         <tbody className="divide-y divide-app-border bg-app-surface">
           {rows.map((row) => (
-            <tr key={getRowId(row)} className="hover:bg-app-surface2">
+            <tr key={getRowId(row)} className="transition-colors hover:bg-primary-50/40">
               {columns.map((column) => {
                 const CellElement = column.isRowHeader ? 'th' : 'td';
 
                 return (
                   <CellElement
-                    className={classNames('px-4 py-4 align-top', column.className)}
+                    className={classNames('px-5 py-4 align-middle', column.className)}
                     key={column.id}
                     scope={column.isRowHeader ? 'row' : undefined}
                   >

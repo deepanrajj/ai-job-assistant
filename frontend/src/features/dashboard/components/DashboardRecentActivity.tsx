@@ -10,7 +10,11 @@ import { formatDashboardDate } from '../dashboard.utils';
 import { APP_PATH_BUILDERS } from '../../../routes/paths';
 import { RECENT_ACTIVITY_TABLE_MIN_WIDTH } from '../dashboard.constants';
 import type { TJob } from '../../../types';
-import type { IApplicationHistory } from '../dashboardInsights.types';
+import {
+  MISSING_APPLICATION_KEYS,
+  getMissingApplicationReason,
+  type IApplicationHistory,
+} from '../../statusHistory';
 
 /**
  * Props used by the dashboard recent activity list.
@@ -64,20 +68,13 @@ const DashboardRecentActivityComponent: FC<IDashboardRecentActivityProps> = ({
     applicationHistory?.applications.get(job.id)?.appliedAt;
 
   /**
-   * Picks what a missing application date means for screen readers: a
-   * wishlist job, or one withdrawn straight from the wishlist, was never
-   * applied for; otherwise the date is not recorded, or the history that
-   * would hold it is unavailable.
+   * Names a missing application date for screen readers and the cards.
    *
    * @param {TJob} job Job without a recorded application date.
    * @returns {string} Translation key for the missing date.
    */
-  const getMissingAppliedKey = (job: TJob): string => {
-    if (job.status === 'WISHLIST' || applicationHistory?.withdrawnFromWishlist.has(job.id))
-      return 'dashboard.notApplied';
-
-    return applicationHistory ? 'dashboard.notRecorded' : 'dashboard.appliedUnavailable';
-  };
+  const getMissingAppliedKey = (job: TJob): string =>
+    MISSING_APPLICATION_KEYS[getMissingApplicationReason(job, applicationHistory)];
 
   /**
    * Renders a job's recorded application date, or a dash that tells screen

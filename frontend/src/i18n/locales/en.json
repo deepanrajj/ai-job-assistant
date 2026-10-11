@@ -139,9 +139,6 @@
     "pipelineSummary": "{{total}} saved · {{active}} active",
     "viewAll": "View all",
     "appliedColumn": "Applied",
-    "notRecorded": "Not recorded",
-    "appliedUnavailable": "Not available",
-    "notApplied": "Not applied",
     "appliedOn": "Applied {{date}}",
     "appliedMissing": "Applied: {{reason}}"
   },
@@ -416,7 +413,20 @@
       "createJob": "Failed to create job",
       "updateJob": "Failed to update job",
       "deleteJob": "Failed to delete job"
-    }
+    },
+    "updatedOn": "Updated {{date}}",
+    "dateApplied": "Date applied",
+    "summaryLabel": "Jobs by status",
+    "summaryTotal": "Total jobs",
+    "moveStatus": {
+      "toggle": "{{status}}, change status for {{company}}",
+      "listLabel": "Statuses to move {{company}} to",
+      "moved": "Moved {{company}} to {{status}}.",
+      "failed": "{{company}} could not be moved to {{status}}.",
+      "dismiss": "Dismiss"
+    },
+    "kanbanColumnNoMatch": "No matching jobs in this status",
+    "historyUnavailable": "Application dates could not be loaded, so the Date applied column is empty."
   },
   "notes": {
     "fallbackError": {
@@ -718,7 +728,11 @@
     "sortDirection": {
       "asc": "Asc",
       "desc": "Desc"
-    }
+    },
+    "sortBy": "Sort by",
+    "sortNone": "Default order",
+    "sortOptionAsc": "{{column}}, ascending",
+    "sortOptionDesc": "{{column}}, descending"
   },
   "status": {
     "wishlist": "Wishlist",
@@ -761,5 +775,10 @@
     "asking": "Asking...",
     "askButton": "Ask",
     "answer": "AI Answer"
+  },
+  "statusHistory": {
+    "notApplied": "Not applied",
+    "notRecorded": "Not recorded",
+    "unavailable": "Not available"
   }
 }

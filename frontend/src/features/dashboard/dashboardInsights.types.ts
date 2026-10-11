@@ -1,25 +1,6 @@
 import type { TJob } from '../../types';
 
 /**
- * A job's recorded application: the moment of its first transition into
- * APPLIED.
- */
-export interface IRecordedApplication {
-  appliedAt: Date;
-  job: TJob;
-}
-
-/**
- * What status history says about applications, derived once and shared by
- * the insights and recent activity: each job's recorded application, and
- * the jobs withdrawn straight from WISHLIST, which were never applied for.
- */
-export interface IApplicationHistory {
-  applications: Map<string, IRecordedApplication>;
-  withdrawnFromWishlist: Set<string>;
-}
-
-/**
  * A job still in APPLIED, with how many local calendar days ago it applied.
  */
 export interface IAgingApplication {

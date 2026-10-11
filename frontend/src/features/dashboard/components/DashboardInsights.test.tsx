@@ -4,12 +4,12 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
 import { DashboardInsights } from './DashboardInsights';
-import { getApplicationHistory } from '../dashboardInsights.utils';
 import { AppError } from '../../../errors';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import { createMockJob } from '../../../test/mockJobs';
 import { createMockTimelineEventResponse } from '../../../test/mockTimeline';
 import { APP_ERROR_CODES, type TJobStatus } from '../../../types';
+import { getApplicationHistory } from '../../statusHistory';
 
 /**
  * A moment `days` local calendar days before now, at the same time of day.

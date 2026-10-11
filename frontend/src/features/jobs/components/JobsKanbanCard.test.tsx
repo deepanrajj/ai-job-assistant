@@ -24,15 +24,20 @@ describe('JobsKanbanCard', () => {
     ).toHaveAttribute('href', '/jobs/job-042');
   });
 
-  it('falls back to "Not set" when location and salary are missing', () => {
+  it('prints only the details that are set, and the last update', () => {
     const job = createMockJob({
       location: undefined,
       salaryMax: undefined,
       salaryMin: undefined,
+      updatedAt: '2026-05-09T15:20:00.000Z',
     });
+    const { unmount } = renderWithRouter(<JobsKanbanCard job={job} />);
 
-    renderWithRouter(<JobsKanbanCard job={job} />);
+    expect(screen.queryByText(/Not set/)).not.toBeInTheDocument();
+    expect(screen.getByText(/^Updated /)).toBeInTheDocument();
+    unmount();
 
-    expect(screen.getByText('Not set - Not set')).toBeInTheDocument();
+    renderWithRouter(<JobsKanbanCard job={{ ...job, location: 'Berlin' }} />);
+    expect(screen.getByText('Berlin')).toBeInTheDocument();
   });
 });

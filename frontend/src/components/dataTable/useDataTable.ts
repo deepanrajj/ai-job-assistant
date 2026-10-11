@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState, type ChangeEvent, type ChangeEventHandler } from 'react';
 
 import {
+  filterDataTableRows,
   getNextDataTableSortState,
-  normalizeTableSearchText,
   paginateDataTableRows,
   sortDataTableRows,
 } from './dataTable.utils';
@@ -22,7 +22,13 @@ interface IUseDataTableOptions<TData> {
   defaultPageSize: number;
   filterPredicate?: (row: TData) => boolean;
   initialSort: TDataTableSortState;
+  onSearchQueryChange?: (searchQuery: string) => void;
+  onSortStateChange?: (sortState: TDataTableSortState) => void;
   search?: IDataTableSearchConfig<TData>;
+  /** Controlled search text; the hook keeps its own when omitted. */
+  searchQuery?: string;
+  /** Controlled sort; the hook keeps its own when omitted. */
+  sortState?: TDataTableSortState;
 }
 
 /**
@@ -36,6 +42,7 @@ interface IUseDataTableResult<TData> {
   handlePreviousPage: () => void;
   handleSearchChange: ChangeEventHandler<HTMLInputElement>;
   handleSort: (columnId: string) => void;
+  handleSortChange: (sort: TDataTableSortState) => void;
   lastVisibleRow: number;
   pageCount: number;
   pageRows: TData[];
@@ -58,23 +65,24 @@ export const useDataTable = <TData>({
   defaultPageSize,
   filterPredicate,
   initialSort,
+  onSearchQueryChange,
+  onSortStateChange,
   search,
+  searchQuery: controlledSearchQuery,
+  sortState: controlledSortState,
 }: IUseDataTableOptions<TData>): IUseDataTableResult<TData> => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortState, setSortState] = useState<TDataTableSortState>(initialSort);
+  const [ownSearchQuery, setOwnSearchQuery] = useState('');
+  const [ownSortState, setOwnSortState] = useState<TDataTableSortState>(initialSort);
+  const searchQuery = controlledSearchQuery ?? ownSearchQuery;
+  const sortState = controlledSortState === undefined ? ownSortState : controlledSortState;
+  const setSearchQuery = onSearchQueryChange ?? setOwnSearchQuery;
+  const setSortState = onSortStateChange ?? setOwnSortState;
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [pageIndex, setPageIndex] = useState(0);
-  const normalizedSearchQuery = normalizeTableSearchText(searchQuery);
-
-  const filteredRows = useMemo(() => {
-    const filteredByControls = filterPredicate ? data.filter(filterPredicate) : data;
-
-    if (!search || !normalizedSearchQuery) return filteredByControls;
-
-    return filteredByControls.filter((row) =>
-      normalizeTableSearchText(search.getSearchText(row)).includes(normalizedSearchQuery),
-    );
-  }, [data, filterPredicate, normalizedSearchQuery, search]);
+  const filteredRows = useMemo(
+    () => filterDataTableRows(data, { filterPredicate, search, searchQuery }),
+    [data, filterPredicate, search, searchQuery],
+  );
 
   const sortedRows = useMemo(
     () => sortDataTableRows(filteredRows, columns, sortState),
@@ -97,10 +105,13 @@ export const useDataTable = <TData>({
     total: data.length,
   };
 
-  const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-    setPageIndex(0);
-  }, []);
+  const handleSearchChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(event.target.value);
+      setPageIndex(0);
+    },
+    [setSearchQuery],
+  );
 
   const handlePageSizeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
     setPageSize(Number(event.target.value));
@@ -115,10 +126,21 @@ export const useDataTable = <TData>({
     setPageIndex((currentPageIndex) => Math.min(pageCount - 1, currentPageIndex + 1));
   }, [pageCount]);
 
-  const handleSort = useCallback((columnId: string) => {
-    setSortState((currentSort) => getNextDataTableSortState(currentSort, columnId));
-    setPageIndex(0);
-  }, []);
+  const handleSort = useCallback(
+    (columnId: string) => {
+      setSortState(getNextDataTableSortState(sortState, columnId));
+      setPageIndex(0);
+    },
+    [setSortState, sortState],
+  );
+
+  const handleSortChange = useCallback(
+    (sort: TDataTableSortState) => {
+      setSortState(sort);
+      setPageIndex(0);
+    },
+    [setSortState],
+  );
 
   return {
     currentPageIndex,
@@ -128,6 +150,7 @@ export const useDataTable = <TData>({
     handlePreviousPage,
     handleSearchChange,
     handleSort,
+    handleSortChange,
     lastVisibleRow,
     pageCount,
     pageRows,
