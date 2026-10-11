@@ -82,10 +82,11 @@ its job and its due badge. Empty days are not shown.
 The card has only the five earliest open reminders, so it cannot know
 that a day without one is free. A seven-day grid would print "No plans"
 on days that may have reminders beyond the fifth. When exactly
-`NEXT_REMINDERS_LIMIT` reminders arrive, the card says it shows the next
-five, so a full list is not read as the whole week. It states only that,
-not that more exist: exactly five open reminders also arrive as five, and
-telling the cases apart would need a sixth from the request.
+more reminders exist than it shows, the card says it shows the next five,
+so a partial list is not read as the whole week. To know that, the
+dashboard asks for `NEXT_REMINDERS_LIMIT + 1` and shows five: the sixth
+arriving is the only signal that more exist. The endpoint already takes
+the limit, so this changes the requested number, not the API.
 
 Rejected:
 
@@ -163,10 +164,11 @@ loads or after it fails, and "Not recorded" when it holds no application
 for the job. Only the recent jobs' events are read.
 
 The table needs about 640 px. Recent activity measures its own width
-with a new `useElementWidth` hook (a `ResizeObserver`) and uses the
-cards when narrower, such as in half of the middle row when reminders
+with a new `useElementWidth` hook, first before paint so the layout never
+flashes, then with a `ResizeObserver`, and uses the cards when narrower, such as in half of the middle row when reminders
 are off, the production default. The cards then show the applied date
-too. Where the width cannot be measured, the `md` breakpoint decides.
+too, or the same reason as the table when there is none. Where the
+width cannot be measured, the `md` breakpoint decides.
 The page derives the application history once, with a new
 `getApplicationHistory`, and passes it to both the insights and recent
 activity. Dates from another year include the year. Rows are not links as a whole, so
@@ -228,7 +230,8 @@ the dev server at desktop and phone widths.
 
 ## Scope Boundaries
 
-- No API, request, or flag change; `NEXT_REMINDERS_LIMIT` stays 5.
+- No API or flag change; `NEXT_REMINDERS_LIMIT` stays 5, and the
+  reminders request asks for one more to detect a longer list (D3).
 - No new status stages, no prototype counts or companies.
 - The page heading and other pages are untouched.
 
@@ -262,6 +265,6 @@ phase backlog's next-task line.
 - The insight cards have icon tiles and a soft blue response-rate card;
   applications this week compares with last week; recent activity is a
   table from `md` up with recorded applied dates.
-- `npm run frontend:verify`: 964 tests in 179 files, lint, format check,
+- `npm run frontend:verify`: 966 tests in 179 files, lint, format check,
   coverage, and build passed. Checked in the running app at 320 px in
   German and at 1280 px in English, the latter in a 1280 px iframe.

@@ -160,6 +160,12 @@ describe('DashboardRecentActivity', () => {
 
       expect(celonisLink).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.celonis}`);
       expect(within(celonisLink).getByText(/^Applied May 2.* · Updated May 9/)).toBeInTheDocument();
+      // The same reasons as the table, for jobs without a recorded date.
+      expect(
+        within(screen.getByRole('link', { name: /Personio/ })).getByText(
+          /^Applied: Not recorded · Updated/,
+        ),
+      ).toBeInTheDocument();
     } finally {
       restoreViewport();
     }

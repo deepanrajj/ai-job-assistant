@@ -15,17 +15,22 @@ import type { TReminderItem } from '../../types';
  */
 export interface INextRemindersState {
   error: AppError | null;
+  /** True when more open reminders exist than `reminders` holds. */
+  hasMore: boolean;
   isLoading: boolean;
   reload: () => void;
   reminders: TReminderItem[];
 }
 
 /**
+ * Asks for one more reminder than the dashboard shows: whether that extra
+ * one arrives is the only way to know if more exist.
+ *
  * Declared at module level so `mutate` keeps a stable identity, as
  * `useJobsList` relies on for its own effect.
  */
 const loadNextReminders = (): Promise<TNextReminderResponse[]> =>
-  getNextReminders(NEXT_REMINDERS_LIMIT);
+  getNextReminders(NEXT_REMINDERS_LIMIT + 1);
 
 /**
  * Loads the earliest open reminders across every job for the dashboard,
@@ -52,13 +57,15 @@ export const useNextReminders = (): INextRemindersState => {
     reload();
   }, [reload]);
 
+  const items = useMemo(() => (Array.isArray(data) ? data : []), [data]);
   const reminders = useMemo(
-    () => (Array.isArray(data) ? data.map(mapNextReminderResponseToReminderItem) : []),
-    [data],
+    () => items.slice(0, NEXT_REMINDERS_LIMIT).map(mapNextReminderResponseToReminderItem),
+    [items],
   );
 
   return {
     error,
+    hasMore: items.length > NEXT_REMINDERS_LIMIT,
     isLoading: isIdle || isLoading,
     reload,
     reminders,

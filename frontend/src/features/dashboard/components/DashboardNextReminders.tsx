@@ -19,6 +19,8 @@ import type { IReminderGroup } from '../dashboard.types';
  */
 interface IDashboardNextRemindersProps {
   error: AppError | null;
+  /** True when more open reminders exist than `reminders` holds. */
+  hasMore: boolean;
   isLoading: boolean;
   jobs: TJob[];
   onRetry: () => void;
@@ -31,9 +33,9 @@ interface IDashboardNextRemindersProps {
  * reminder links to its job. Loading, failure, and the empty case are
  * handled inside the card, so none of them hides the rest of the dashboard.
  *
- * Only the next `NEXT_REMINDERS_LIMIT` reminders are loaded, so days
- * without reminders are left out rather than shown as free, and a full
- * list says that it is limited.
+ * Only the next `NEXT_REMINDERS_LIMIT` reminders are shown, so days
+ * without reminders are left out rather than shown as free, and the card
+ * says so when more exist.
  *
  * Company and role come from the job list the dashboard already has,
  * rather than from the reminders response, so they are never staler than
@@ -44,6 +46,7 @@ interface IDashboardNextRemindersProps {
  */
 const DashboardNextRemindersComponent: FC<IDashboardNextRemindersProps> = ({
   error,
+  hasMore,
   isLoading,
   jobs,
   onRetry,
@@ -163,7 +166,7 @@ const DashboardNextRemindersComponent: FC<IDashboardNextRemindersProps> = ({
           );
         })}
       </div>
-      {reminders.length >= NEXT_REMINDERS_LIMIT && (
+      {hasMore && (
         <p className="border-t border-app-border px-5 py-3 text-xs text-app-textMuted">
           {t('dashboard.agenda.limitNote', { count: NEXT_REMINDERS_LIMIT })}
         </p>

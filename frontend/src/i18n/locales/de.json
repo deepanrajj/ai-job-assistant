@@ -142,7 +142,8 @@
     "notRecorded": "Nicht erfasst",
     "appliedUnavailable": "Nicht verfügbar",
     "notApplied": "Nicht beworben",
-    "appliedOn": "Beworben {{date}}"
+    "appliedOn": "Beworben {{date}}",
+    "appliedMissing": "Beworben: {{reason}}"
   },
   "applications": {
     "title": "Bewerbungen",

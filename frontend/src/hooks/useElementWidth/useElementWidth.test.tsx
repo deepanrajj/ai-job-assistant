@@ -19,6 +19,21 @@ describe('useElementWidth', () => {
     globalThis.ResizeObserver = originalResizeObserver;
   });
 
+  it('measures before paint, without waiting for an observer', () => {
+    globalThis.ResizeObserver = undefined as unknown as typeof ResizeObserver;
+    const getRect = HTMLElement.prototype.getBoundingClientRect;
+
+    HTMLElement.prototype.getBoundingClientRect = () => ({ width: 700 }) as DOMRect;
+
+    try {
+      render(<WidthProbe />);
+
+      expect(screen.getByText('700')).toBeInTheDocument();
+    } finally {
+      HTMLElement.prototype.getBoundingClientRect = getRect;
+    }
+  });
+
   it('stays unknown where ResizeObserver does not exist', () => {
     // jsdom has no ResizeObserver; make that explicit for this case.
     globalThis.ResizeObserver = undefined as unknown as typeof ResizeObserver;

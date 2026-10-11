@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 
 import { DashboardInsights } from './DashboardInsights';
+import { getApplicationHistory } from '../dashboardInsights.utils';
 import { AppError } from '../../../errors';
 import { renderWithProviders } from '../../../test/renderWithProviders';
 import { createMockJob } from '../../../test/mockJobs';
@@ -50,17 +51,21 @@ const events = [
 const getCard = (label: string): HTMLElement =>
   screen.getByRole('heading', { name: label }).closest('section') as HTMLElement;
 
-const renderInsights = (overrides: Partial<ComponentProps<typeof DashboardInsights>> = {}) =>
-  renderWithProviders(
+const renderInsights = (overrides: Partial<ComponentProps<typeof DashboardInsights>> = {}) => {
+  const props = { error: null, events, isLoading: false, jobs, onRetry: () => {}, ...overrides };
+
+  return renderWithProviders(
     <DashboardInsights
-      error={null}
-      events={events}
-      isLoading={false}
-      jobs={jobs}
-      onRetry={() => {}}
-      {...overrides}
+      // Derived as the page derives it, unless a case passes its own.
+      applicationHistory={
+        props.events && !props.isLoading && !props.error
+          ? getApplicationHistory(props.jobs, props.events)
+          : null
+      }
+      {...props}
     />,
   );
+};
 
 describe('DashboardInsights', () => {
   it('shows applications this week with its date range and the unknown dates left out', () => {

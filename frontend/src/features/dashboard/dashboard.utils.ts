@@ -60,7 +60,7 @@ export const getDashboardData = (jobs: TJob[]): IDashboardData => {
 export const formatDashboardDate = (
   date: string | Date,
   language: TLanguage,
-  today: Date = new Date(),
+  today: Date,
 ): string => {
   const value = new Date(date);
 

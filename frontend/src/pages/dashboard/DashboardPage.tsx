@@ -79,6 +79,11 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
       />
     );
 
+  // One element, placed beside the pipeline or below it.
+  const recentActivity = (
+    <DashboardRecentActivity applicationHistory={applicationHistory} jobs={recentJobs} />
+  );
+
   return (
     <div className="space-y-6">
       <DashboardInsights
@@ -103,19 +108,18 @@ export const DashboardPage: FC<IDashboardPageProps> = ({
         {nextReminders ? (
           <DashboardNextReminders
             error={nextReminders.error}
+            hasMore={nextReminders.hasMore}
             isLoading={nextReminders.isLoading}
             jobs={jobs}
             onRetry={nextReminders.reload}
             reminders={nextReminders.reminders}
           />
         ) : (
-          <DashboardRecentActivity applicationHistory={applicationHistory} jobs={recentJobs} />
+          recentActivity
         )}
       </div>
 
-      {nextReminders && (
-        <DashboardRecentActivity applicationHistory={applicationHistory} jobs={recentJobs} />
-      )}
+      {nextReminders && recentActivity}
     </div>
   );
 };

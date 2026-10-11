@@ -16,10 +16,11 @@ import type { TTimelineEventResponse } from '../../../services';
  */
 interface IDashboardInsightsProps {
   /**
-   * The application history the page already derived from these events,
-   * so it is not derived twice. Derived here when absent.
+   * The application history the page derived from these events, or null
+   * while they load or after they fail. Insights need it, so without it
+   * the section shows its loading or error state.
    */
-  applicationHistory?: IApplicationHistory | null;
+  applicationHistory: IApplicationHistory | null;
   error: AppError | null;
   events: TTimelineEventResponse[] | null;
   isLoading: boolean;
@@ -192,7 +193,9 @@ const DashboardInsightsComponent: FC<IDashboardInsightsProps> = ({
   const today = useLocalToday();
   const insights = useMemo(
     () =>
-      events ? getDashboardInsights(jobs, events, today, applicationHistory ?? undefined) : null,
+      events && applicationHistory
+        ? getDashboardInsights(jobs, events, today, applicationHistory)
+        : null,
     [applicationHistory, events, jobs, today],
   );
 

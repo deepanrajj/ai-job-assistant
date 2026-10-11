@@ -168,10 +168,14 @@ const DashboardRecentActivityComponent: FC<IDashboardRecentActivityProps> = ({
                       <StatusPill status={job.status} />
                     </div>
                     <p className="text-sm text-app-textSoft">
-                      {appliedAt &&
-                        `${t('dashboard.appliedOn', {
-                          date: formatDashboardDate(appliedAt, language, today),
-                        })} · `}
+                      {appliedAt
+                        ? t('dashboard.appliedOn', {
+                            date: formatDashboardDate(appliedAt, language, today),
+                          })
+                        : t('dashboard.appliedMissing', {
+                            reason: t(getMissingAppliedKey(job)),
+                          })}
+                      {' · '}
                       {t('dashboard.updated', {
                         date: formatDashboardDate(job.updatedAt, language, today),
                       })}

@@ -142,7 +142,8 @@
     "notRecorded": "Not recorded",
     "appliedUnavailable": "Not available",
     "notApplied": "Not applied",
-    "appliedOn": "Applied {{date}}"
+    "appliedOn": "Applied {{date}}",
+    "appliedMissing": "Applied: {{reason}}"
   },
   "applications": {
     "title": "Applications",

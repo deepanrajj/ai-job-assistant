@@ -175,14 +175,14 @@ export const getApplicationHistory = (
  * @param {TJob[]} jobs Saved jobs.
  * @param {TTimelineEventResponse[]} events Complete status history across every job.
  * @param {Date} now The current moment.
- * @param {IApplicationHistory} history The same jobs' and events' application history, when the caller already has it.
+ * @param {IApplicationHistory} history The same jobs' and events' application history, from `getApplicationHistory`.
  * @returns {IDashboardInsights} Dashboard insights.
  */
 export const getDashboardInsights = (
   jobs: TJob[],
   events: TTimelineEventResponse[],
   now: Date,
-  history: IApplicationHistory = getApplicationHistory(jobs, events),
+  history: IApplicationHistory,
 ): IDashboardInsights => {
   const { applications, withdrawnFromWishlist } = history;
   const week = getLocalWeek(now);

@@ -34,6 +34,7 @@ const renderCard = (overrides: Partial<ComponentProps<typeof DashboardNextRemind
   renderWithRouter(
     <DashboardNextReminders
       error={null}
+      hasMore={false}
       isLoading={false}
       jobs={createMockJobs()}
       onRetry={() => {}}
@@ -81,12 +82,8 @@ describe('DashboardNextReminders', () => {
     );
   });
 
-  it('says the list is limited only when the full number of reminders arrived', () => {
-    const fullList = Array.from({ length: 5 }, (_, index) => ({
-      ...taskReminder,
-      id: `task-${index}`,
-    }));
-    const { unmount } = renderCard({ reminders: fullList });
+  it('says the list is limited only when more reminders exist than it shows', () => {
+    const { unmount } = renderCard({ hasMore: true });
 
     expect(screen.getByText(/^Showing the next 5 reminders/)).toBeInTheDocument();
     unmount();

@@ -17,6 +17,7 @@ const loadError = () => new AppError('Failed to load jobs', APP_ERROR_CODES.JOB_
  */
 const noNextReminders: ComponentProps<typeof DashboardPage>['nextReminders'] = {
   error: null,
+  hasMore: false,
   isLoading: false,
   reload: () => {},
   reminders: [],

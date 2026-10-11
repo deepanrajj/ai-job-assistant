@@ -9,7 +9,7 @@ import { server } from '../../test/server';
 const nextRemindersEndpoint = '/api/reminders/next';
 
 describe('useNextReminders', () => {
-  it('asks for five reminders and maps them as open items', async () => {
+  it('asks for one more than the five it shows, and maps them as open items', async () => {
     let requestedUrl = '';
     server.use(
       http.get(nextRemindersEndpoint, ({ request }) => {
@@ -25,10 +25,29 @@ describe('useNextReminders', () => {
     expect(result.current.isLoading).toBe(true);
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(new URL(requestedUrl).searchParams.get('limit')).toBe('5');
+    expect(new URL(requestedUrl).searchParams.get('limit')).toBe('6');
+    expect(result.current.hasMore).toBe(false);
     expect(result.current.reminders).toEqual([
       expect.objectContaining({ isComplete: false, jobId: 'job-1', source: 'TASK', type: null }),
     ]);
+  });
+
+  it('shows five and reports more when a sixth arrives', async () => {
+    server.use(
+      http.get(nextRemindersEndpoint, () =>
+        HttpResponse.json(
+          Array.from({ length: 6 }, (_, index) =>
+            createMockNextReminderResponse({ id: `reminder-${index}`, jobId: 'job-1' }),
+          ),
+        ),
+      ),
+    );
+    const { result } = renderHook(() => useNextReminders());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reminders).toHaveLength(5);
+    expect(result.current.hasMore).toBe(true);
   });
 
   it('treats a non-array body as no reminders', async () => {
