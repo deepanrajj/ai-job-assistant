@@ -127,7 +127,12 @@ recorded as a status-change event (`savedMoveEvents`) and merged into
 the loaded history, and the history is read against the jobs as shown,
 moves included. So a move to Applied is dated at once, a move from the
 wishlist to Withdrawn reads "Not applied", and moving never blanks the
-dates, reorders a date sort, or downloads the whole history again.
+dates, reorders a date sort, or downloads the whole history again. A
+history loaded after some moves already holds them, so only moves saved
+since it arrived are merged, and none counts twice. Its failure notice
+is a plain notice, not a live region, since it holds a button. Blank
+values, such as jobs with no application date, sort last in both
+directions.
 
 ### D9 - Move a job to another status from its board card
 
@@ -164,6 +169,11 @@ pill keeps the current status visible and takes no extra space.
   starts or the view changes.
 - **References.** The pill points at its list with `aria-controls` only
   while the list exists.
+- **Edge cases.** Tabbing out of an open list closes it. A failure that
+  arrives late only takes focus back if focus was lost when the card
+  returned, never from wherever the user has moved on to. A queued move
+  is recorded from the job's last saved status. Choosing the view already
+  shown does not clear a failure alert.
 
 Rejected:
 
@@ -278,6 +288,6 @@ phase backlog's next-task line.
   rather than reloading it, and a failed history load offers a retry;
   every move failure is reported and its alert can be dismissed; the board offers the status sort; both views share one
   search filter; the history helpers live in `features/statusHistory`.
-- `npm run frontend:verify` passed 992 tests in 184 files, lint, format
+- `npm run frontend:verify` passed 998 tests in 184 files, lint, format
   check, coverage, and build. The page overflow fix was measured in the
   running app at 1536 px, and the status pill at 768 px in German.

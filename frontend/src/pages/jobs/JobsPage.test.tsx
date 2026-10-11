@@ -473,4 +473,18 @@ describe('JobsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Pipeline' }));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
+
+  it('keeps a move failure when the current view is chosen again', async () => {
+    const user = userEvent.setup();
+    server.use(http.put('/api/jobs/:jobId', () => new HttpResponse(null, { status: 500 })));
+    renderJobsPage();
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+    await user.click(screen.getByRole('button', { name: 'Applied, change status for Personio' }));
+    await user.click(screen.getByRole('button', { name: 'Offer' }));
+    await screen.findByRole('alert');
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
 });

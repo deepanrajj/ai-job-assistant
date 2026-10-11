@@ -20,6 +20,12 @@ interface IJobStatusMenuProps {
   currentStatus: TJobStatus;
   /** Focuses the pill once on mount, such as after the card moved column. */
   focusOnMount?: boolean;
+  /**
+   * Limits `focusOnMount` to when nothing else has focus, such as after a
+   * failed move sent the card back, so a late failure never takes focus
+   * from wherever the user has moved on to.
+   */
+  focusOnlyIfLost?: boolean;
   /** Content beside the pill, such as the card's link; the status list spans below both. */
   leading?: ReactNode;
   onFocused?: () => void;
@@ -45,6 +51,7 @@ export const JobStatusMenu: FC<IJobStatusMenuProps> = ({
   company,
   currentStatus,
   focusOnMount = false,
+  focusOnlyIfLost = false,
   leading,
   onFocused,
   onSelect,
@@ -60,9 +67,11 @@ export const JobStatusMenu: FC<IJobStatusMenuProps> = ({
   useEffect(() => {
     if (!focusOnMount) return;
 
-    toggleRef.current?.focus();
+    const isFocusLost = !document.activeElement || document.activeElement === document.body;
+
+    if (!focusOnlyIfLost || isFocusLost) toggleRef.current?.focus();
     onFocused?.();
-  }, [focusOnMount, onFocused]);
+  }, [focusOnMount, focusOnlyIfLost, onFocused]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -87,7 +96,13 @@ export const JobStatusMenu: FC<IJobStatusMenuProps> = ({
   };
 
   return (
-    <div ref={containerRef}>
+    <div
+      // Tabbing out of the control closes it, like a press outside does.
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false);
+      }}
+      ref={containerRef}
+    >
       <div className="flex items-start justify-between gap-3">
         {leading}
         <button

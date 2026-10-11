@@ -123,3 +123,28 @@ describe('filterDataTableRows', () => {
     expect(filterDataTableRows(rows, { searchQuery: 'beta' })).toEqual(rows);
   });
 });
+
+describe('sortDataTableRows with blank values', () => {
+  it('puts blank values last in both directions', () => {
+    const rows = [{ value: 2 }, { value: undefined }, { value: 5 }];
+    const columns = [
+      {
+        cell: () => null,
+        header: 'Value',
+        id: 'value',
+        sortValue: (row: { value?: number }) => row.value,
+      },
+    ];
+
+    expect(
+      sortDataTableRows(rows, columns, { columnId: 'value', direction: 'desc' }).map(
+        (row) => row.value,
+      ),
+    ).toEqual([5, 2, undefined]);
+    expect(
+      sortDataTableRows(rows, columns, { columnId: 'value', direction: 'asc' }).map(
+        (row) => row.value,
+      ),
+    ).toEqual([2, 5, undefined]);
+  });
+});

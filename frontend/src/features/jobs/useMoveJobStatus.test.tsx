@@ -200,4 +200,29 @@ describe('useMoveJobStatus', () => {
     act(() => result.current.dismissLastMove());
     expect(result.current.lastMove).toBeNull();
   });
+
+  it('records a queued move from the last saved status, not a failed optimistic one', async () => {
+    server.use(
+      http.put('/api/jobs/job-1', async ({ request }) => {
+        const body = (await request.json()) as { status: string };
+
+        return body.status === 'INTERVIEW'
+          ? new HttpResponse(null, { status: 500 })
+          : HttpResponse.json(createMockJobResponse({ id: 'job-1', status: 'WITHDRAWN' }));
+      }),
+    );
+    const { result } = renderHook(() => useMoveJobStatus(loadedJobs));
+
+    await act(async () => {
+      const first = result.current.moveJob(job, 'INTERVIEW');
+      const second = result.current.moveJob({ ...job, status: 'INTERVIEW' }, 'WITHDRAWN');
+
+      await first;
+      await second;
+    });
+
+    expect(result.current.savedMoveEvents).toEqual([
+      expect.objectContaining({ nextStatus: 'WITHDRAWN', previousStatus: 'APPLIED' }),
+    ]);
+  });
 });

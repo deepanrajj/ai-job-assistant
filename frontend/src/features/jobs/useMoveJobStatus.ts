@@ -125,6 +125,10 @@ export const useMoveJobStatus = (jobs: TJob[]): IMoveJobStatusState => {
       const isCurrent = () => !isReloaded() && latestRequestByJob.current.get(job.id) === requestId;
 
       const send = async () => {
+        // Read when sent, after earlier moves of this job settled: the last
+        // saved status, not an optimistic one that may have failed.
+        const previousStatus = (savedJobById.current.get(job.id) ?? job).status;
+
         try {
           const response = await updateJob(job.id, mapJobToUpdateRequest({ ...job, status }));
 
@@ -145,7 +149,7 @@ export const useMoveJobStatus = (jobs: TJob[]): IMoveJobStatusState => {
               id: `saved-move-${requestId}`,
               jobId: job.id,
               nextStatus: status,
-              previousStatus: job.status,
+              previousStatus,
               type: 'STATUS_CHANGE',
             },
           ]);

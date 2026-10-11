@@ -86,4 +86,49 @@ describe('JobStatusMenu', () => {
     ).toHaveFocus();
     expect(onFocused).toHaveBeenCalledOnce();
   });
+
+  it('closes when focus tabs out of it', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <>
+        <JobStatusMenu company="Celonis" currentStatus="APPLIED" onSelect={() => {}} />
+        <button type="button">Next card</button>
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Applied, change status for Celonis' }));
+    screen.getByRole('button', { name: 'Next card' }).focus();
+    await user.tab({ shift: true });
+    await user.tab();
+
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+  });
+
+  it('only takes focus back when asked to focus if lost and nothing has focus', () => {
+    const renderMenu = (focusOnMount: boolean) => (
+      <>
+        <input aria-label="Search" />
+        <JobStatusMenu
+          company="Celonis"
+          currentStatus="APPLIED"
+          focusOnMount={focusOnMount}
+          focusOnlyIfLost
+          onSelect={() => {}}
+        />
+      </>
+    );
+    const { rerender } = renderWithProviders(renderMenu(false));
+    const search = screen.getByRole('textbox', { name: 'Search' });
+
+    search.focus();
+    rerender(renderMenu(true));
+    expect(search).toHaveFocus();
+
+    search.blur();
+    rerender(renderMenu(false));
+    rerender(renderMenu(true));
+    expect(
+      screen.getByRole('button', { name: 'Applied, change status for Celonis' }),
+    ).toHaveFocus();
+  });
 });

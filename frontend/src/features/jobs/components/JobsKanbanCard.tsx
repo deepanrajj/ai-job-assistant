@@ -13,6 +13,8 @@ import type { TJob, TJobStatus } from '../../../types';
 interface IJobsKanbanCardProps {
   /** Focuses the card's status pill once, after the card changed column. */
   focusMoveControl?: boolean;
+  /** Limits that focus to when nothing else has it. */
+  focusMoveControlOnlyIfLost?: boolean;
   job: TJob;
   onMove?: (job: TJob, status: TJobStatus) => void;
   onMoveControlFocused?: () => void;
@@ -31,6 +33,7 @@ interface IJobsKanbanCardProps {
  */
 const JobsKanbanCardComponent: FC<IJobsKanbanCardProps> = ({
   focusMoveControl = false,
+  focusMoveControlOnlyIfLost = false,
   job,
   onMove,
   onMoveControlFocused,
@@ -60,6 +63,7 @@ const JobsKanbanCardComponent: FC<IJobsKanbanCardProps> = ({
           company={job.company}
           currentStatus={job.status}
           focusOnMount={focusMoveControl}
+          focusOnlyIfLost={focusMoveControlOnlyIfLost}
           leading={link}
           onFocused={onMoveControlFocused}
           onSelect={(status) => onMove(job, status)}

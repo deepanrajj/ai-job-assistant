@@ -67,11 +67,13 @@ const JobsKanbanBoardComponent: FC<IJobsKanbanBoardProps> = ({
   const [followedMove, setFollowedMove] = useState(lastMove);
   const clearFocusJob = useCallback(() => setFocusJobId(null), []);
 
-  // Each new move, and its failure, sends focus to the card in its column.
+  // A new move sends focus to the card in its new column. A failure, which
+  // can arrive late, only does if focus was lost when the card went back.
   if (lastMove !== followedMove) {
     setFollowedMove(lastMove);
     setFocusJobId(lastMove?.jobId ?? null);
   }
+  const isFocusAfterFailure = Boolean(lastMove?.error);
 
   const moveStatusLabel = lastMove ? t(JOB_STATUS_TRANSLATION_KEYS[lastMove.status]) : '';
 
@@ -134,6 +136,7 @@ const JobsKanbanBoardComponent: FC<IJobsKanbanBoardProps> = ({
                   statusJobs.map((job) => (
                     <JobsKanbanCard
                       focusMoveControl={job.id === focusJobId}
+                      focusMoveControlOnlyIfLost={isFocusAfterFailure}
                       job={job}
                       key={job.id}
                       onMove={onMove}

@@ -149,7 +149,20 @@ export const sortDataTableRows = <TData>(
   if (!sortValue) return rows;
 
   return [...rows].sort((firstRow, secondRow) => {
-    const result = compareDataTableSortValues(sortValue(firstRow), sortValue(secondRow));
+    const first = sortValue(firstRow);
+    const second = sortValue(secondRow);
+    const isFirstBlank = first === null || first === undefined;
+    const isSecondBlank = second === null || second === undefined;
+
+    // Blank values go last in both directions, so a descending sort still
+    // leads with real values rather than every row that has none.
+    if (isFirstBlank || isSecondBlank) {
+      if (isFirstBlank === isSecondBlank) return 0;
+
+      return isFirstBlank ? 1 : -1;
+    }
+
+    const result = compareDataTableSortValues(first, second);
 
     return sortState.direction === 'asc' ? result : result * -1;
   });

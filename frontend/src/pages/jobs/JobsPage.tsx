@@ -76,10 +76,12 @@ export const JobsPage: FC<IJobsPageProps> = ({
   // A move's alert belongs to the board it happened on, not the next visit.
   const changeViewMode = useCallback(
     (nextViewMode: TJobsViewMode) => {
+      if (nextViewMode === viewMode) return;
+
       dismissLastMove();
       setViewMode(nextViewMode);
     },
-    [dismissLastMove],
+    [dismissLastMove, viewMode],
   );
 
   const jobsInitialSort = useMemo<TDataTableSortState>(
@@ -112,6 +114,17 @@ export const JobsPage: FC<IJobsPageProps> = ({
   const searchConfig = useMemo(() => createJobsSearchConfig(t), [t]);
   // Only a settled, complete history may date an application.
   const historyEvents = statusHistory?.events ?? null;
+  // A history loaded after some moves already holds them, so only moves
+  // saved since it arrived are merged in; otherwise they would count twice.
+  const [historyBase, setHistoryBase] = useState({
+    events: historyEvents,
+    savedMoveCount: savedMoveEvents.length,
+  });
+
+  if (historyBase.events !== historyEvents)
+    setHistoryBase({ events: historyEvents, savedMoveCount: savedMoveEvents.length });
+
+  const movesSinceHistory = savedMoveEvents.slice(historyBase.savedMoveCount);
   const isHistorySettled = Boolean(
     statusHistory && !statusHistory.isLoading && !statusHistory.error,
   );
@@ -121,9 +134,9 @@ export const JobsPage: FC<IJobsPageProps> = ({
     // without downloading the history again.
     () =>
       historyEvents && isHistorySettled
-        ? getApplicationHistory(displayedJobs, [...historyEvents, ...savedMoveEvents])
+        ? getApplicationHistory(displayedJobs, [...historyEvents, ...movesSinceHistory])
         : null,
-    [displayedJobs, historyEvents, isHistorySettled, savedMoveEvents],
+    [displayedJobs, historyEvents, isHistorySettled, movesSinceHistory],
   );
   const columns = useMemo(
     () => createJobsColumns({ applicationHistory, language, t }),
@@ -217,7 +230,7 @@ export const JobsPage: FC<IJobsPageProps> = ({
       {statusHistory?.error && (
         <Alert
           className="flex flex-wrap items-center justify-between gap-3"
-          role="status"
+          live={false}
           variant="warning"
         >
           <span>{t('jobs.historyUnavailable')}</span>
