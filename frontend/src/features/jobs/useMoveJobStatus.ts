@@ -5,6 +5,7 @@ import {
   mapJobResponseToJob,
   mapJobToUpdateRequest,
   updateJob,
+  type TTimelineEventResponse,
 } from '../../services';
 import { AppError } from '../../errors';
 import { APP_ERROR_CODES, type TJob, type TJobStatus } from '../../types';
@@ -23,18 +24,18 @@ export interface IJobStatusMove {
  * Job status moves returned by useMoveJobStatus.
  */
 export interface IMoveJobStatusState {
+  /** Clears the latest move, such as when its alert is dismissed. */
+  dismissLastMove: () => void;
   /** The jobs with every move applied, optimistically until it settles. */
   jobs: TJob[];
   lastMove: IJobStatusMove | null;
   moveJob: (job: TJob, status: TJobStatus) => Promise<void>;
-}
-
-/**
- * Options for useMoveJobStatus.
- */
-interface IMoveJobStatusOptions {
-  /** Called after each saved move, such as to reload what depends on status. */
-  onMoved?: () => void;
+  /**
+   * One status-change event per saved move, shaped like the server's
+   * status history, so a caller can merge them into a history it loaded
+   * before the moves instead of downloading it again.
+   */
+  savedMoveEvents: TTimelineEventResponse[];
 }
 
 /**
@@ -65,28 +66,28 @@ const toMoveError = (caught: unknown): AppError =>
  * - **Display.** A moved job shows its new status at once and takes the
  *   saved job from the response of its latest move. A failure of the
  *   latest move restores the job as last saved, or as loaded if no move
- *   of it has saved yet.
+ *   of it has saved yet. Every failure is reported, including one of an
+ *   earlier move that a later one has since replaced.
  * - **Reloads.** Moves are forgotten whenever `jobs` itself changes, such
  *   as after a reload, and a move still in flight then is ignored when it
  *   settles, so fresher data from the server always wins.
+ * - **History.** Each saved move is also recorded as a status-change
+ *   event (`savedMoveEvents`). These are kept across reloads: the server
+ *   accepted them, and the history a caller loaded does not have them.
  *
  * @param {TJob[]} jobs Jobs as loaded.
- * @param {IMoveJobStatusOptions} options Optional callbacks.
- * @returns {IMoveJobStatusState} Jobs with moves applied, the latest move, and the move trigger.
+ * @returns {IMoveJobStatusState} Jobs with moves applied, the latest move, saved move events, and the move trigger.
  */
-export const useMoveJobStatus = (
-  jobs: TJob[],
-  { onMoved }: IMoveJobStatusOptions = {},
-): IMoveJobStatusState => {
+export const useMoveJobStatus = (jobs: TJob[]): IMoveJobStatusState => {
   const [moved, setMoved] = useState<Map<string, TJob>>(() => new Map());
   const [lastMove, setLastMove] = useState<IJobStatusMove | null>(null);
+  const [savedMoveEvents, setSavedMoveEvents] = useState<TTimelineEventResponse[]>([]);
   const [loadedJobs, setLoadedJobs] = useState(jobs);
   const jobsRef = useRef(jobs);
   const latestRequestByJob = useRef(new Map<string, number>());
   const savedJobById = useRef(new Map<string, TJob>());
   const queueByJob = useRef(new Map<string, Promise<void>>());
   const requestCounter = useRef(0);
-  const onMovedRef = useRef(onMoved);
 
   // Adjusted during render, React's pattern for resetting state on a prop
   // change: an effect would show the stale moves for one extra render.
@@ -102,13 +103,11 @@ export const useMoveJobStatus = (
     savedJobById.current.clear();
   }, [jobs]);
 
-  useEffect(() => {
-    onMovedRef.current = onMoved;
-  }, [onMoved]);
-
   const setMovedJob = useCallback((job: TJob) => {
     setMoved((current) => new Map(current).set(job.id, job));
   }, []);
+
+  const dismissLastMove = useCallback(() => setLastMove(null), []);
 
   const moveJob = useCallback(
     (job: TJob, status: TJobStatus) => {
@@ -121,9 +120,9 @@ export const useMoveJobStatus = (
       setMovedJob({ ...job, status });
       setLastMove({ company: job.company, error: null, jobId: job.id, status });
 
+      const isReloaded = () => jobsRef.current !== loadedAtStart;
       // Still the latest move of this job, and its jobs have not reloaded.
-      const isCurrent = () =>
-        jobsRef.current === loadedAtStart && latestRequestByJob.current.get(job.id) === requestId;
+      const isCurrent = () => !isReloaded() && latestRequestByJob.current.get(job.id) === requestId;
 
       const send = async () => {
         try {
@@ -138,13 +137,26 @@ export const useMoveJobStatus = (
 
           const savedJob = mapJobResponseToJob(response);
 
-          if (jobsRef.current === loadedAtStart) savedJobById.current.set(job.id, savedJob);
+          setSavedMoveEvents((current) => [
+            ...current,
+            {
+              createdAt: savedJob.updatedAt,
+              description: '',
+              id: `saved-move-${requestId}`,
+              jobId: job.id,
+              nextStatus: status,
+              previousStatus: job.status,
+              type: 'STATUS_CHANGE',
+            },
+          ]);
+          if (!isReloaded()) savedJobById.current.set(job.id, savedJob);
           if (isCurrent()) setMovedJob(savedJob);
-          onMovedRef.current?.();
         } catch (caught) {
-          if (!isCurrent()) return;
+          if (isReloaded()) return;
 
-          setMovedJob(savedJobById.current.get(job.id) ?? job);
+          // Only the latest move decides what the card shows, but the user
+          // hears about every failure.
+          if (isCurrent()) setMovedJob(savedJobById.current.get(job.id) ?? job);
           setLastMove({
             company: job.company,
             error: toMoveError(caught),
@@ -165,5 +177,5 @@ export const useMoveJobStatus = (
 
   const displayedJobs = useMemo(() => jobs.map((job) => moved.get(job.id) ?? job), [jobs, moved]);
 
-  return { jobs: displayedJobs, lastMove, moveJob };
+  return { dismissLastMove, jobs: displayedJobs, lastMove, moveJob, savedMoveEvents };
 };

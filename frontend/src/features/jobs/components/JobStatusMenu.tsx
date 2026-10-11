@@ -91,7 +91,8 @@ export const JobStatusMenu: FC<IJobStatusMenuProps> = ({
       <div className="flex items-start justify-between gap-3">
         {leading}
         <button
-          aria-controls={listId}
+          // Only while the list exists, so the reference never dangles.
+          aria-controls={isOpen ? listId : undefined}
           aria-expanded={isOpen}
           aria-label={t('jobs.moveStatus.toggle', { company, status: currentLabel })}
           className={`inline-flex h-7 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-semibold ring-1 ring-inset transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${statusPillClasses[currentStatus]}`}

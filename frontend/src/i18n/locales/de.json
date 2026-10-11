@@ -422,7 +422,8 @@
       "toggle": "{{status}}, Status ändern für {{company}}",
       "listLabel": "Status für {{company}}",
       "moved": "{{company}} nach {{status}} verschoben.",
-      "failed": "{{company}} konnte nicht nach {{status}} verschoben werden."
+      "failed": "{{company}} konnte nicht nach {{status}} verschoben werden.",
+      "dismiss": "Schließen"
     },
     "kanbanColumnNoMatch": "Keine passenden Jobs in diesem Status",
     "historyUnavailable": "Bewerbungsdaten konnten nicht geladen werden, daher ist die Spalte „Beworben am“ leer."

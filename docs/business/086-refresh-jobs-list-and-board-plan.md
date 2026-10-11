@@ -121,8 +121,13 @@ date shows a dash that tells screen readers why ("Not applied",
 "Not recorded", "Not available"), using one shared
 `getMissingApplicationReason` that the dashboard now uses too. The
 history is a separate request, so it never holds up or replaces the
-list. It reloads after each saved board move, since a move can record an
-application; if it fails, the table shows a notice with "Try again".
+list. It loads once per visit; if it fails, the table shows a notice
+with "Try again". A board move does not reload it: each saved move is
+recorded as a status-change event (`savedMoveEvents`) and merged into
+the loaded history, and the history is read against the jobs as shown,
+moves included. So a move to Applied is dated at once, a move from the
+wishlist to Withdrawn reads "Not applied", and moving never blanks the
+dates, reorders a date sort, or downloads the whole history again.
 
 ### D9 - Move a job to another status from its board card
 
@@ -153,7 +158,12 @@ pill keeps the current status visible and takes no extra space.
   the card to its status pill in the new column. Moves apply to the
   table and counts too. A reload drops them, and a move still in flight
   then is ignored when it settles, so it cannot overwrite fresher data.
-  A failed move restores the job as last saved.
+  A failed move restores the job as last saved. Every failure is
+  reported, including an earlier queued move that a later one replaced.
+  The failure alert has a Dismiss button and clears when the next move
+  starts or the view changes.
+- **References.** The pill points at its list with `aria-controls` only
+  while the list exists.
 
 Rejected:
 
@@ -264,9 +274,10 @@ phase backlog's next-task line.
   keyboard- and screen-reader-friendly disclosure, optimistically, with an
   announcement, focus that follows the card, and an alert on failure.
 - PR review fixes: moves of one job are queued and a reload drops
-  in-flight results; the history reloads after a move and offers a retry
-  when it fails; the board offers the status sort; both views share one
+  in-flight results; saved moves are merged into the loaded history
+  rather than reloading it, and a failed history load offers a retry;
+  every move failure is reported and its alert can be dismissed; the board offers the status sort; both views share one
   search filter; the history helpers live in `features/statusHistory`.
-- `npm run frontend:verify` passed 990 tests in 184 files, lint, format
+- `npm run frontend:verify` passed 992 tests in 184 files, lint, format
   check, coverage, and build. The page overflow fix was measured in the
   running app at 1536 px, and the status pill at 768 px in German.

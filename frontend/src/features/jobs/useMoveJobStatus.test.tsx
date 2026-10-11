@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 
@@ -145,17 +145,59 @@ describe('useMoveJobStatus', () => {
     expect(result.current.lastMove?.error ?? null).toBeNull();
   });
 
-  it('reports each saved move', async () => {
-    const onMoved = vi.fn();
+  it('records each saved move as a status-change event for the history', async () => {
     server.use(
       http.put('/api/jobs/job-1', () =>
-        HttpResponse.json(createMockJobResponse({ id: 'job-1', status: 'OFFER' })),
+        HttpResponse.json(
+          createMockJobResponse({
+            id: 'job-1',
+            status: 'OFFER',
+            updatedAt: '2026-10-11T10:00:00Z',
+          }),
+        ),
       ),
     );
-    const { result } = renderHook(() => useMoveJobStatus(loadedJobs, { onMoved }));
+    const { result } = renderHook(() => useMoveJobStatus(loadedJobs));
 
     await act(() => result.current.moveJob(job, 'OFFER'));
 
-    expect(onMoved).toHaveBeenCalledOnce();
+    expect(result.current.savedMoveEvents).toEqual([
+      expect.objectContaining({
+        createdAt: '2026-10-11T10:00:00Z',
+        jobId: 'job-1',
+        nextStatus: 'OFFER',
+        previousStatus: 'APPLIED',
+        type: 'STATUS_CHANGE',
+      }),
+    ]);
+  });
+
+  it('reports an earlier queued move that failed, while showing the later one', async () => {
+    server.use(
+      http.put('/api/jobs/job-1', async ({ request }) => {
+        const body = (await request.json()) as { status: string };
+
+        return body.status === 'INTERVIEW'
+          ? new HttpResponse(null, { status: 409 })
+          : HttpResponse.json(createMockJobResponse({ id: 'job-1', status: 'OFFER' }));
+      }),
+    );
+    const { result } = renderHook(() => useMoveJobStatus(loadedJobs));
+
+    await act(async () => {
+      const first = result.current.moveJob(job, 'INTERVIEW');
+      const second = result.current.moveJob({ ...job, status: 'INTERVIEW' }, 'OFFER');
+
+      await first;
+      await second;
+    });
+
+    expect(result.current.jobs[0].status).toBe('OFFER');
+    expect(result.current.lastMove).toEqual(
+      expect.objectContaining({ error: expect.anything(), status: 'INTERVIEW' }),
+    );
+
+    act(() => result.current.dismissLastMove());
+    expect(result.current.lastMove).toBeNull();
   });
 });

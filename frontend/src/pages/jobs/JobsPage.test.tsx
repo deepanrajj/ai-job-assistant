@@ -407,22 +407,70 @@ describe('JobsPage', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 
-  it('reloads the status history after a saved move, so application dates follow it', async () => {
+  it('dates a board move to Applied, and names a wishlist withdrawal, without reloading history', async () => {
     const user = userEvent.setup();
     const reload = vi.fn();
     server.use(
       http.put('/api/jobs/:jobId', async ({ params, request }) => {
         const body = (await request.json()) as Record<string, unknown>;
 
-        return HttpResponse.json(createMockJobResponse({ ...body, id: String(params.jobId) }));
+        return HttpResponse.json(
+          createMockJobResponse({
+            ...body,
+            id: String(params.jobId),
+            updatedAt: '2026-03-04T09:00:00.000Z',
+          }),
+        );
       }),
     );
-    renderJobsPage({ statusHistory: { error: null, events: [], isLoading: false, reload } });
+    renderJobsPage({
+      jobs: [
+        createMockJob({ company: 'Apply Co', id: 'apply', status: 'WISHLIST' }),
+        createMockJob({ company: 'Drop Co', id: 'drop', status: 'WISHLIST' }),
+      ],
+      statusHistory: { error: null, events: [], isLoading: false, reload },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+    await user.click(screen.getByRole('button', { name: 'Wishlist, change status for Apply Co' }));
+    await user.click(screen.getByRole('button', { name: 'Applied' }));
+    await user.click(screen.getByRole('button', { name: 'Wishlist, change status for Drop Co' }));
+    await user.click(screen.getByRole('button', { name: 'Withdrawn' }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Withdrawn, change status for Drop Co' }),
+      ).toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole('button', { name: 'Table' }));
+
+    const rowFor = (company: string) =>
+      within(screen.getByRole('table')).getByText(company).closest('tr') as HTMLElement;
+
+    // The save is both the application and the last update, so both cells show it.
+    await waitFor(() =>
+      expect(within(rowFor('Apply Co')).getAllByText('Mar 4, 2026')).toHaveLength(2),
+    );
+    expect(within(rowFor('Apply Co')).queryByText(/^Not /)).not.toBeInTheDocument();
+    expect(within(rowFor('Drop Co')).getByText('Not applied')).toBeInTheDocument();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('lets a move failure be dismissed, and clears it on leaving the board', async () => {
+    const user = userEvent.setup();
+    server.use(http.put('/api/jobs/:jobId', () => new HttpResponse(null, { status: 500 })));
+    renderJobsPage();
 
     await user.click(screen.getByRole('button', { name: 'Pipeline' }));
     await user.click(screen.getByRole('button', { name: 'Applied, change status for Personio' }));
     await user.click(screen.getByRole('button', { name: 'Offer' }));
+    await user.click(await screen.findByRole('button', { name: 'Dismiss' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
-    await waitFor(() => expect(reload).toHaveBeenCalledOnce());
+    await user.click(screen.getByRole('button', { name: 'Applied, change status for Personio' }));
+    await user.click(screen.getByRole('button', { name: 'Offer' }));
+    await screen.findByRole('alert');
+    await user.click(screen.getByRole('button', { name: 'Table' }));
+    await user.click(screen.getByRole('button', { name: 'Pipeline' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

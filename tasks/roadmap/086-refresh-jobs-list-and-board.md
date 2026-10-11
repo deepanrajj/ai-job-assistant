@@ -88,7 +88,7 @@ Report focused local checks and actual CI E2E status in the PR.
 - [x] Desktop and mobile layouts are accessible.
 - [x] Focused tests and frontend verification pass.
 
-Local verification: `npm run frontend:verify` passed 990 tests, lint,
+Local verification: `npm run frontend:verify` passed 992 tests, lint,
 format check, coverage, and build. The board's page overflow fix was
 measured in the running app.
 

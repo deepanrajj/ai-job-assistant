@@ -15,8 +15,10 @@ describe('JobStatusMenu', () => {
     const toggle = screen.getByRole('button', { name: 'Applied, change status for Celonis' });
 
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).not.toHaveAttribute('aria-controls');
     await user.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(document.getElementById(toggle.getAttribute('aria-controls') ?? '')).toBeInTheDocument();
 
     const list = screen.getByRole('list', { name: 'Statuses to move Celonis to' });
     const options = within(list).getAllByRole('button');

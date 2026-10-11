@@ -422,7 +422,8 @@
       "toggle": "{{status}}, change status for {{company}}",
       "listLabel": "Statuses to move {{company}} to",
       "moved": "Moved {{company}} to {{status}}.",
-      "failed": "{{company}} could not be moved to {{status}}."
+      "failed": "{{company}} could not be moved to {{status}}.",
+      "dismiss": "Dismiss"
     },
     "kanbanColumnNoMatch": "No matching jobs in this status",
     "historyUnavailable": "Application dates could not be loaded, so the Date applied column is empty."

@@ -62,18 +62,25 @@ export const JobsPage: FC<IJobsPageProps> = ({
 }) => {
   const { language, t } = useTranslation();
   // Moves apply to every view, so the table and counts agree with the board.
-  // A saved move can record an application, so the history reloads after it.
   const {
+    dismissLastMove,
     jobs: displayedJobs,
     lastMove,
     moveJob,
-  } = useMoveJobStatus(jobs, {
-    onMoved: statusHistory?.reload,
-  });
+    savedMoveEvents,
+  } = useMoveJobStatus(jobs);
   const navigate = useNavigate();
   const isSmallUp = useBreakpoint('sm');
   const [statusFilter, setStatusFilter] = useState<TStatusFilter>('ALL');
   const [viewMode, setViewMode] = useState<TJobsViewMode>('table');
+  // A move's alert belongs to the board it happened on, not the next visit.
+  const changeViewMode = useCallback(
+    (nextViewMode: TJobsViewMode) => {
+      dismissLastMove();
+      setViewMode(nextViewMode);
+    },
+    [dismissLastMove],
+  );
 
   const jobsInitialSort = useMemo<TDataTableSortState>(
     () => ({
@@ -109,8 +116,14 @@ export const JobsPage: FC<IJobsPageProps> = ({
     statusHistory && !statusHistory.isLoading && !statusHistory.error,
   );
   const applicationHistory = useMemo(
-    () => (historyEvents && isHistorySettled ? getApplicationHistory(jobs, historyEvents) : null),
-    [historyEvents, isHistorySettled, jobs],
+    // From the jobs as shown, moves included, and the loaded history plus
+    // each saved move, so a move dates or undates an application at once
+    // without downloading the history again.
+    () =>
+      historyEvents && isHistorySettled
+        ? getApplicationHistory(displayedJobs, [...historyEvents, ...savedMoveEvents])
+        : null,
+    [displayedJobs, historyEvents, isHistorySettled, savedMoveEvents],
   );
   const columns = useMemo(
     () => createJobsColumns({ applicationHistory, language, t }),
@@ -134,8 +147,8 @@ export const JobsPage: FC<IJobsPageProps> = ({
   const summaryCards =
     displayedJobs.length > 0 ? <JobsSummaryCards jobs={displayedJobs} /> : undefined;
   const actions = useMemo(
-    () => createJobsViewToggle({ onViewModeChange: setViewMode, t, viewMode }),
-    [t, viewMode],
+    () => createJobsViewToggle({ onViewModeChange: changeViewMode, t, viewMode }),
+    [changeViewMode, t, viewMode],
   );
   const filters = useMemo(
     () =>
@@ -189,6 +202,7 @@ export const JobsPage: FC<IJobsPageProps> = ({
               isFiltered={isBoardFiltered}
               jobs={boardJobs}
               lastMove={lastMove}
+              onDismissMove={dismissLastMove}
               onMove={moveJob}
             />
           </div>

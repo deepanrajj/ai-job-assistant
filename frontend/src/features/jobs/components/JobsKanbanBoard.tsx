@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo, useState, type FC } from 'react';
 
-import { Alert } from '../../../components/ui';
+import { Alert, Button } from '../../../components/ui';
 import { JobsKanbanCard } from './JobsKanbanCard';
 import type { IJobStatusMove } from '../useMoveJobStatus';
 import { useTranslation } from '../../../i18n';
@@ -16,6 +16,8 @@ interface IJobsKanbanBoardProps {
   jobs: TJob[];
   /** The latest status move, announced and followed by focus. */
   lastMove?: IJobStatusMove | null;
+  /** Dismisses the latest move's failure alert. */
+  onDismissMove?: () => void;
   /** Adds a move-to-status control to every card when given. */
   onMove?: (job: TJob, status: TJobStatus) => void;
 }
@@ -56,6 +58,7 @@ const JobsKanbanBoardComponent: FC<IJobsKanbanBoardProps> = ({
   isFiltered = false,
   jobs,
   lastMove = null,
+  onDismissMove,
   onMove,
 }) => {
   const { t } = useTranslation();
@@ -80,9 +83,20 @@ const JobsKanbanBoardComponent: FC<IJobsKanbanBoardProps> = ({
           : ''}
       </p>
       {lastMove?.error && (
-        <Alert role="alert" variant="error">
-          {t('jobs.moveStatus.failed', { company: lastMove.company, status: moveStatusLabel })}{' '}
-          {lastMove.error.message}
+        <Alert
+          className="flex flex-wrap items-center justify-between gap-3"
+          role="alert"
+          variant="error"
+        >
+          <span>
+            {t('jobs.moveStatus.failed', { company: lastMove.company, status: moveStatusLabel })}{' '}
+            {lastMove.error.message}
+          </span>
+          {onDismissMove && (
+            <Button onClick={onDismissMove} size="sm" variant="secondary">
+              {t('jobs.moveStatus.dismiss')}
+            </Button>
+          )}
         </Alert>
       )}
       {/* `relative` keeps the columns' screen-reader-only count text, which is
