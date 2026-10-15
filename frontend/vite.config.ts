@@ -1,10 +1,19 @@
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
+import { mockJobsApi } from './dev/mockJobsApi';
+
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ mode }) => ({
+  // TEMPORARY: MOCK_JOBS_API=true in .env.development.local serves the jobs
+  // API from memory in the dev server; see dev/mockJobsApi.ts.
+  plugins: [
+    react(),
+    tailwindcss(),
+    ...(loadEnv(mode, process.cwd(), '').MOCK_JOBS_API === 'true' ? [mockJobsApi()] : []),
+  ],
   server: {
     proxy: {
       '/api': 'http://localhost:4000',
@@ -49,4 +58,4 @@ export default defineConfig({
     // and should be split, as JobDetailActivePanel.test.tsx was.
     testTimeout: 15000,
   },
-});
+}));
