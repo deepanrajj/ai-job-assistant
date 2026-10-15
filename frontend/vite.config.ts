@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -12,7 +13,9 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
-    ...(loadEnv(mode, process.cwd(), '').MOCK_JOBS_API === 'true' ? [mockJobsApi()] : []),
+    ...(loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), '').MOCK_JOBS_API === 'true'
+      ? [mockJobsApi()]
+      : []),
   ],
   server: {
     proxy: {

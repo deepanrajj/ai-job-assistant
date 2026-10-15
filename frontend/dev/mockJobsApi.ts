@@ -316,14 +316,28 @@ const send = (res: ServerResponse, status: number, body?: unknown) => {
 
 const notFound = (res: ServerResponse) => send(res, 404, { message: 'Not found' });
 
+/**
+ * Thrown for a body that is not valid JSON, answered with a 400.
+ */
+class BadRequestError extends Error {}
+
 const readBody = (req: IncomingMessage): Promise<Record<string, unknown>> =>
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
     let raw = '';
 
     req.on('data', (chunk) => {
       raw += chunk;
     });
-    req.on('end', () => resolve(raw ? (JSON.parse(raw) as Record<string, unknown>) : {}));
+    req.on('error', reject);
+    req.on('end', () => {
+      // Parsed in a try, since a throw inside this listener would escape the
+      // promise and crash the dev server.
+      try {
+        resolve(raw ? (JSON.parse(raw) as Record<string, unknown>) : {});
+      } catch {
+        reject(new BadRequestError('Request body is not valid JSON.'));
+      }
+    });
   });
 
 /**
@@ -441,7 +455,12 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<boolea
       addEvent(jobId, previous, body.status as TStatus, now);
     send(res, 200, jobs[index]);
   } else if (req.method === 'DELETE') {
+    // Like the backend's cascade: the job's history and children go too.
     jobs.splice(index, 1);
+    for (let i = events.length - 1; i >= 0; i -= 1) {
+      if (events[i].jobId === jobId) events.splice(i, 1);
+    }
+    [notesByJob, tasksByJob, contactsByJob].forEach((store) => store.delete(jobId));
     send(res, 204);
   } else notFound(res);
 
@@ -463,7 +482,10 @@ export const mockJobsApi = (): Plugin => ({
         .then((handled) => {
           if (!handled) next();
         })
-        .catch(next);
+        .catch((error: unknown) => {
+          if (error instanceof BadRequestError) send(res, 400, { message: error.message });
+          else next(error);
+        });
     });
   },
   name: 'mock-jobs-api',

@@ -455,6 +455,11 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     new Map(),
   );
   const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
+  // Saves and deletes share one mutationError; this says which one set it,
+  // so each failure shows beside the control that caused it.
+  const [mutationSource, setMutationSource] = useState<'delete' | 'save'>('save');
+  const saveError = mutationSource === 'save' ? mutationError : null;
+  const deleteError = mutationSource === 'delete' ? mutationError : null;
   const editing =
     candidates.find(
       (candidate) => candidate.id === editingCandidateId && candidate.reviewStatus !== 'IMPORTED',
@@ -560,6 +565,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   const handleSave = async (values: IImportCandidateFormValues) => {
     const payload = buildImportCandidateRequest(values);
 
+    setMutationSource('save');
     if (editing) await updateCandidate(editing.id, payload);
     else await createCandidate(payload);
 
@@ -567,6 +573,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   };
 
   const handleDelete = (candidate: TImportCandidateResponse) => {
+    setMutationSource('delete');
     deleteCandidate(candidate.id).then(
       () => setEditingCandidateId((current) => (current === candidate.id ? null : current)),
       () => {
@@ -577,6 +584,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
 
   const renderImportFeedback = () => (
     <>
+      {deleteError && <Alert>{deleteError.message}</Alert>}
       {importRequestError && <Alert>{importRequestError}</Alert>}
       {feedback && feedback.importedCount > 0 && (
         <Alert role="status" variant="success">
@@ -602,7 +610,9 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   );
 
   const hasImportFeedback = Boolean(
-    importRequestError || (feedback && (feedback.importedCount > 0 || feedback.failed.length > 0)),
+    deleteError ||
+    importRequestError ||
+    (feedback && (feedback.importedCount > 0 || feedback.failed.length > 0)),
   );
 
   /**
@@ -749,17 +759,20 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     // the content beside it.
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-rows-[auto_1fr]">
       {beside && <div className="min-w-0 xl:col-start-1">{beside}</div>}
-      {/* Sticky only on screens tall enough to show the whole form. */}
-      <div className="@container xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:[@media(min-height:56rem)]:sticky xl:[@media(min-height:56rem)]:top-20">
+      {/* Sticky under the header, and never taller than the screen: a
+          form grown by field errors scrolls inside itself, so Save stays
+          reachable. */}
+      <div className="@container xl:sticky xl:top-20 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto">
         <Card
           subtitle={t('importCandidates.form.subtitle')}
           title={
             editing ? t('importCandidates.form.editTitle') : t('importCandidates.form.newTitle')
           }
+          titleId="candidate-intake-heading"
         >
           <CandidateIntakeForm
             editing={editing}
-            error={mutationError}
+            error={saveError}
             isSaving={isMutating}
             key={editing?.id ?? 'new'}
             onCancelEdit={() => switchEditing(null)}

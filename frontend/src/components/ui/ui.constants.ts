@@ -4,6 +4,7 @@ import type {
   TButtonVariant,
   TCardPadding,
   TMetricCardTone,
+  TTileTone,
 } from './ui.types';
 
 /**
@@ -50,4 +51,15 @@ export const cardPaddingClasses: Record<TCardPadding, string> = {
 export const metricValueClasses: Record<TMetricCardTone, string> = {
   default: 'text-app-text',
   success: 'text-success-700',
+};
+
+/**
+ * Tailwind classes for decorative icon tiles, shared so every page's
+ * tiles use the same palette.
+ */
+export const tileToneClasses: Record<TTileTone, string> = {
+  blue: 'bg-sky-100 text-sky-700',
+  lavender: 'bg-primary-100 text-primary-700',
+  mint: 'bg-success-100 text-success-700',
+  peach: 'bg-orange-100 text-orange-700',
 };

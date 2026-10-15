@@ -31,6 +31,12 @@ export type TCardPadding = 'none' | 'sm' | 'md';
 export type TMetricCardTone = 'default' | 'success';
 
 /**
+ * Decorative tones for icon tiles, such as dashboard insights and saved
+ * search icons.
+ */
+export type TTileTone = 'blue' | 'lavender' | 'mint' | 'peach';
+
+/**
  * Props for the shared input component.
  */
 export interface IInputProps extends InputHTMLAttributes<HTMLInputElement> {

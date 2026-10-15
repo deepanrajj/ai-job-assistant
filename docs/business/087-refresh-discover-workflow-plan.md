@@ -59,9 +59,12 @@ Read on `feat/task-087-refresh-discover-workflow` at `1ccd76e` (tasks
 
 From `xl` up, the page has two columns: saved searches and the review
 fill the wider main column (two thirds), and the intake sits in a
-sidebar (one third) spanning both rows. On screens tall enough to show
-the whole form (56rem), the sidebar is sticky under the header, so a
-candidate can be added while reviewing a long list. Below `xl` the three
+sidebar (one third) spanning both rows. The sidebar is sticky under the
+header, so a candidate can be added while reviewing a long list, and is
+never taller than the screen: a form grown by field errors scrolls
+inside itself, so Save and Cancel stay reachable. (A first version made
+it sticky only on screens at least 56rem tall, which still cut off a
+form with errors on a 900px screen.) Below `xl` the three
 cards stack in DOM order: saved searches, intake, review, so the empty
 state's "paste a job description above" stays true.
 
@@ -95,6 +98,12 @@ Rejected:
   "Import candidates" region.
 - **Lifting the editing state into the route.** It moves behaviour to
   change a layout.
+
+Saves and deletes share the hook's one `mutationError`, so the section
+remembers which of the two set it: a failed save shows in the intake,
+and a failed delete shows in the review card beside the list, not in a
+sidebar that may be out of view. The intake card has its own `titleId`,
+so it stays a named region now that it is outside the review.
 
 ### D2 - Saved searches as one card of rows
 
@@ -227,7 +236,8 @@ passes, and update the phase backlog file.
 ## Verified State
 
 - From `xl` up, saved searches and the review fill the main column and
-  the intake is a right sidebar, sticky on tall screens; below `xl` they
+  the intake is a right sidebar, sticky and capped at the screen height;
+  below `xl` they
   stack. With the candidate flag off, the saved searches render alone.
 - Saved searches are one named card of rows with tinted icons, skill
   chips, and ghost Edit and Delete; loading, error, and empty states sit

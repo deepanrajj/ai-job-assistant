@@ -1,6 +1,14 @@
 import { useState, type FC } from 'react';
 
-import { Alert, Button, Card, EmptyState, ErrorState, LoadingState } from '../../components/ui';
+import {
+  Alert,
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  tileToneClasses,
+} from '../../components/ui';
 import { SavedSearchEditor } from '../../features/discover/components/SavedSearchEditor';
 import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from '../../components/icons';
 import {
@@ -29,11 +37,7 @@ type TEditorTarget = { kind: 'closed' } | { kind: 'new' } | { kind: 'existing'; 
  * Tints for the saved search icons, used in turn down the list; the
  * dashboard's lavender, mint, and peach tiles.
  */
-const SEARCH_ICON_TONES = [
-  'bg-primary-100 text-primary-700',
-  'bg-success-100 text-success-700',
-  'bg-orange-100 text-orange-700',
-];
+const SEARCH_ICON_TONES = [tileToneClasses.lavender, tileToneClasses.mint, tileToneClasses.peach];
 
 /**
  * Props used by one saved search row.

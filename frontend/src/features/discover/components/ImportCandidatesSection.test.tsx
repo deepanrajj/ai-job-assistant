@@ -337,6 +337,41 @@ describe('ImportCandidatesSection', () => {
     expect(props.deleteCandidate).toHaveBeenCalledWith('c2');
   });
 
+  it('shows a failed delete beside the list and a failed save in the intake', async () => {
+    const user = userEvent.setup();
+    const deleteError = new AppError(
+      'Failed to delete candidate',
+      APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
+    );
+    const { props, rerender } = renderSection({
+      deleteCandidate: vi.fn(async () => {
+        throw deleteError;
+      }),
+    });
+    const review = screen.getByRole('region', { name: 'Import candidates' });
+    const intake = screen.getByRole('region', { name: 'Add a candidate' });
+
+    await user.click(screen.getByRole('button', { name: 'Delete Backend Engineer at Zalando' }));
+    rerender(<ImportCandidatesSection {...props} mutationError={deleteError} />);
+
+    expect(within(review).getByRole('alert')).toHaveTextContent('Failed to delete candidate');
+    expect(within(intake).queryByRole('alert')).not.toBeInTheDocument();
+
+    await fillRequired(user);
+    await user.click(screen.getByRole('button', { name: 'Save candidate' }));
+    rerender(
+      <ImportCandidatesSection
+        {...props}
+        mutationError={
+          new AppError('Failed to save candidate', APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED)
+        }
+      />,
+    );
+
+    expect(within(intake).getByRole('alert')).toHaveTextContent('Failed to save candidate');
+    expect(within(review).queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('clears a stale error when switching between editing and adding', async () => {
     const user = userEvent.setup();
     const { props } = renderSection({
