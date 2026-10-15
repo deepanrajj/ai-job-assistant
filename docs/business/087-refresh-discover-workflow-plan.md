@@ -103,7 +103,9 @@ Rejected:
 delete (`deleteError`) separately, in place of one shared
 `mutationError`: a failed save shows in the intake, and a failed delete
 in the review card beside the list, not in a sidebar that may be out of
-view. Rejected: guessing in the component which action set the shared
+view. A delete error clears on the next successful write of any kind, a
+reload, or when an import starts, so it never sits beside a later,
+unrelated import result. Rejected: guessing in the component which action set the shared
 error, which showed a stale error under the other control while the
 next request ran. The intake card has its own `titleId`,
 so it stays a named region now that it is outside the review.

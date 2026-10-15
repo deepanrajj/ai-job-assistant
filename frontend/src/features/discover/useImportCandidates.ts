@@ -30,11 +30,14 @@ type TErrorSetter = Dispatch<SetStateAction<AppError | null>>;
  * Resume candidates state returned by useImportCandidates.
  *
  * A rejected save (create or correct) is recorded in `saveError` and a
- * rejected delete in `deleteError`, each cleared by the next success of
- * its kind, so each can be shown beside the control that caused it.
- * Imports reject for the import controls to display the request error.
+ * rejected delete in `deleteError`, so each can be shown beside the
+ * control that caused it. `saveError` clears on the next successful save;
+ * `deleteError` on the next successful write of any kind or reload, so
+ * it never outlives the list it was about. Imports reject for the import
+ * controls to display the request error.
  */
 export interface IImportCandidatesState {
+  clearDeleteError: () => void;
   clearSaveError: () => void;
   /**
    * Imports the given candidates as jobs and resolves with each outcome.
@@ -90,6 +93,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
         if (currentLoad !== loadVersion.current) return;
 
         loadIsPending.current = false;
+        setDeleteError(null);
         const changes = changesDuringLoad.current;
         changesDuringLoad.current = [];
         setCandidates(
@@ -127,6 +131,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
         .then(
           (result) => {
             setError?.(null);
+            setDeleteError(null);
             const change = apply(result);
             if (loadIsPending.current) changesDuringLoad.current.push(change);
             setCandidates(change);
@@ -199,8 +204,10 @@ export const useImportCandidates = (): IImportCandidatesState => {
   );
 
   const clearSaveError = useCallback(() => setSaveError(null), []);
+  const clearDeleteError = useCallback(() => setDeleteError(null), []);
 
   return {
+    clearDeleteError,
     clearSaveError,
     createCandidate,
     deleteCandidate,

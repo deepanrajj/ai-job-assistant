@@ -437,6 +437,7 @@ const CandidateRow: FC<ICandidateRowProps> = ({
 export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   beside,
   candidates,
+  clearDeleteError,
   clearSaveError,
   createCandidate,
   deleteCandidate,
@@ -575,38 +576,33 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     );
   };
 
-  const renderImportFeedback = () => (
-    <>
-      {deleteError && <Alert>{deleteError.message}</Alert>}
-      {importRequestError && <Alert>{importRequestError}</Alert>}
-      {feedback && feedback.importedCount > 0 && (
-        <Alert role="status" variant="success">
-          {t('importCandidates.import.success', { count: feedback.importedCount })}
-        </Alert>
-      )}
-      {feedback && feedback.failed.length > 0 && (
-        <Alert>
-          <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
-          <ul className="mt-1 list-inside list-disc">
-            {feedback.failed.map((failure) => (
-              <li key={failure.label}>
-                {t('importCandidates.import.failedItem', {
-                  candidate: failure.label,
-                  reason: t(importErrorTranslationKey(failure.errorCode)),
-                })}
-              </li>
-            ))}
-          </ul>
-        </Alert>
-      )}
-    </>
-  );
-
-  const hasImportFeedback = Boolean(
-    deleteError ||
-    importRequestError ||
-    (feedback && (feedback.importedCount > 0 || feedback.failed.length > 0)),
-  );
+  // Built once, so whether there is any feedback is read from the same
+  // conditions that render it.
+  const importFeedback = [
+    deleteError && <Alert key="delete">{deleteError.message}</Alert>,
+    importRequestError && <Alert key="request">{importRequestError}</Alert>,
+    feedback && feedback.importedCount > 0 && (
+      <Alert key="imported" role="status" variant="success">
+        {t('importCandidates.import.success', { count: feedback.importedCount })}
+      </Alert>
+    ),
+    feedback && feedback.failed.length > 0 && (
+      <Alert key="failed">
+        <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
+        <ul className="mt-1 list-inside list-disc">
+          {feedback.failed.map((failure) => (
+            <li key={failure.label}>
+              {t('importCandidates.import.failedItem', {
+                candidate: failure.label,
+                reason: t(importErrorTranslationKey(failure.errorCode)),
+              })}
+            </li>
+          ))}
+        </ul>
+      </Alert>
+    ),
+  ].filter(Boolean);
+  const hasImportFeedback = importFeedback.length > 0;
 
   /**
    * The state shown instead of the list (loading, a failed first load, or
@@ -628,7 +624,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
           title={t('importCandidates.list.emptyTitle')}
         />
       )}
-      {hasImportFeedback && <div className="space-y-3 px-5 pb-5">{renderImportFeedback()}</div>}
+      {hasImportFeedback && <div className="space-y-3 px-5 pb-5">{importFeedback}</div>}
     </>
   );
 
@@ -663,6 +659,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             onClick={() => {
               setFeedback(null);
               setImportRequestError(null);
+              clearDeleteError();
               setIsConfirming(true);
             }}
             size="sm"
@@ -680,7 +677,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
                 </Button>
               </Alert>
             )}
-            {renderImportFeedback()}
+            {importFeedback}
             {isConfirming && (
               <div
                 aria-labelledby="import-confirm-heading"

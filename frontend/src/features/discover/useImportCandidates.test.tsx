@@ -183,6 +183,39 @@ describe('useImportCandidates', () => {
     expect(result.current.deleteError).toBeNull();
   });
 
+  it('clears a delete error after a later save or a reload', async () => {
+    server.use(
+      http.get(endpoint, () => HttpResponse.json([candidate('c1', 'N26')])),
+      http.delete(`${endpoint}/c1`, () => new HttpResponse(null, { status: 500 })),
+      http.post(endpoint, () => HttpResponse.json(candidate('c2', 'Zalando'))),
+    );
+    const { result } = renderHook(() => useImportCandidates());
+    const failDelete = async () =>
+      act(async () => {
+        await expect(result.current.deleteCandidate('c1')).rejects.toThrow();
+      });
+
+    await waitFor(() => expect(result.current.candidates).toHaveLength(1));
+    await failDelete();
+    expect(result.current.deleteError).not.toBeNull();
+
+    await act(async () => {
+      await result.current.createCandidate({
+        content: candidate('c2', 'Zalando').content,
+        sourceUrl: null,
+      });
+    });
+    expect(result.current.deleteError).toBeNull();
+
+    await failDelete();
+    act(() => result.current.reload());
+    await waitFor(() => expect(result.current.deleteError).toBeNull());
+
+    await failDelete();
+    act(() => result.current.clearDeleteError());
+    expect(result.current.deleteError).toBeNull();
+  });
+
   it('marks imported candidates and returns every result', async () => {
     server.use(
       http.get(endpoint, () =>

@@ -204,7 +204,16 @@ const daysAgo = (days: number, hour = 10): string => {
   date.setHours(hour, 0, 0, 0);
   return date.toISOString();
 };
-const daysAhead = (days: number): string => daysAgo(-days).slice(0, 10);
+/**
+ * A local calendar date, `days` from today, as `YYYY-MM-DD`; built from
+ * local parts so no timezone moves it to another day.
+ */
+const daysAhead = (days: number): string => {
+  const date = new Date(Date.now() + days * DAY);
+  const pad = (value: number) => String(value).padStart(2, '0');
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 
 let counter = 0;
 const nextId = (prefix: string): string => {
@@ -390,8 +399,11 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<boolea
   if (parts[0] !== 'api') return false;
 
   if (parts[1] === 'timeline-events' && parts.length === 2) {
-    const page = Number(url.searchParams.get('page') ?? 0);
-    const size = Math.min(Number(url.searchParams.get('size') ?? 100), 100);
+    // Clamped like the backend: page from 0, size from 1 to 100.
+    const toInt = (value: string | null, fallback: number) =>
+      Number.isInteger(Number(value)) && value !== null && value !== '' ? Number(value) : fallback;
+    const page = Math.max(toInt(url.searchParams.get('page'), 0), 0);
+    const size = Math.min(Math.max(toInt(url.searchParams.get('size'), 100), 1), 100);
     const sorted = [...events].sort((a, b) =>
       String(a.createdAt).localeCompare(String(b.createdAt)),
     );

@@ -35,6 +35,7 @@ const candidate = (
 const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidatesSection>> = {}) => {
   const props: ComponentProps<typeof ImportCandidatesSection> = {
     candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando')],
+    clearDeleteError: vi.fn(),
     clearSaveError: vi.fn(),
     createCandidate: vi.fn(async (payload: TSaveImportCandidateRequest) => ({
       ...candidate('c3', payload.content.company),
@@ -369,6 +370,9 @@ describe('ImportCandidatesSection', () => {
         }
       />,
     );
+
+    await user.click(screen.getByRole('button', { name: /^Import selected/ }));
+    expect(props.clearDeleteError).toHaveBeenCalledOnce();
 
     // Each failure stays beside its own control, even while both are set.
     expect(within(intake).getByRole('alert')).toHaveTextContent('Failed to save candidate');
