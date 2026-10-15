@@ -105,7 +105,9 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
   return (
     <Form className="space-y-3" form={form} noValidate onSubmit={handleSubmit}>
       {error && <Alert>{error.message}</Alert>}
-      <div className="grid gap-3 md:grid-cols-2">
+      {/* Two columns only when the card is wide enough, not the viewport,
+          so the fields stack when the form sits in the sidebar. */}
+      <div className="grid gap-3 @lg:grid-cols-2">
         <Input
           disabled={isSaving}
           error={errors.company?.message}
@@ -178,8 +180,8 @@ interface IDuplicateCheckJobs {
  */
 type TImportCandidatesSectionProps = IImportCandidatesState & {
   /**
-   * Shown beside the intake from `xl` up, such as the saved searches, so
-   * the two share one row above the review.
+   * Shown above the review, such as the saved searches; from `xl` up the
+   * two fill the main column and the intake becomes a sidebar.
    */
   beside?: ReactNode;
   jobs: IDuplicateCheckJobs;
@@ -741,9 +743,14 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className={classNames('grid items-start gap-6', beside ? 'xl:grid-cols-2' : '')}>
-        {beside}
+    // DOM order stays beside, intake, review, so narrow screens stack them
+    // that way. From `xl` the intake moves to a sidebar spanning both rows;
+    // the second row takes any extra height, so the review sits right under
+    // the content beside it.
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-rows-[auto_1fr]">
+      {beside && <div className="min-w-0 xl:col-start-1">{beside}</div>}
+      {/* Sticky only on screens tall enough to show the whole form. */}
+      <div className="@container xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:[@media(min-height:56rem)]:sticky xl:[@media(min-height:56rem)]:top-20">
         <Card
           subtitle={t('importCandidates.form.subtitle')}
           title={
@@ -760,14 +767,16 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
           />
         </Card>
       </div>
-      <Card
-        padding="none"
-        subtitle={t('importCandidates.subtitle')}
-        title={t('importCandidates.title')}
-        titleId="import-candidates-heading"
-      >
-        {renderList()}
-      </Card>
+      <div className="min-w-0 xl:col-start-1">
+        <Card
+          padding="none"
+          subtitle={t('importCandidates.subtitle')}
+          title={t('importCandidates.title')}
+          titleId="import-candidates-heading"
+        >
+          {renderList()}
+        </Card>
+      </div>
     </div>
   );
 };

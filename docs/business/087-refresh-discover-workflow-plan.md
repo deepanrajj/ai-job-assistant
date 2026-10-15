@@ -55,28 +55,46 @@ Read on `feat/task-087-refresh-discover-workflow` at `1ccd76e` (tasks
 
 ## Decisions
 
-### D1 - Two cards side by side, review full width below
+### D1 - The intake as a right sidebar
 
-From `xl` up, saved searches and the intake share one row, and the
-review spans the width under them, as in the reference image. Below
-`xl` all three stack.
+From `xl` up, the page has two columns: saved searches and the review
+fill the wider main column (two thirds), and the intake sits in a
+sidebar (one third) spanning both rows. On screens tall enough to show
+the whole form (56rem), the sidebar is sticky under the header, so a
+candidate can be added while reviewing a long list. Below `xl` the three
+cards stack in DOM order: saved searches, intake, review, so the empty
+state's "paste a job description above" stays true.
+
+This replaces the first arrangement, which followed the reference image:
+saved searches and the intake side by side above a full-width review.
+Running it showed the saved searches card at 262px beside a 598px form,
+leaving a large empty gap under the saved searches; the owner chose the
+sidebar over the alternatives below.
+
+The intake's fields use two columns only when the card itself is at
+least `@lg` (32rem) wide, a Tailwind container query, so they stack in
+the sidebar and pair up when the card spans the page.
 
 `ImportCandidatesSection` takes the saved searches as a `beside` slot
-and renders them next to its intake, because the intake and the review
-share state (the candidate being corrected) and must stay in one
-component. When the candidate flag is off, the route renders the saved
-searches alone at full width.
+and places them, because the intake and the review share state (the
+candidate being corrected) and must stay in one component. When the
+candidate flag is off, the route renders the saved searches alone at
+full width.
 
 Rejected:
 
+- **Side by side above the review** (the first version). Leaves the gap
+  described above whenever few searches are saved.
+- **Equal-height cards.** Moves the gap inside the saved searches card.
+- **Everything stacked.** No gap, but a long page on wide screens.
+- **A compacted form.** Narrows the gap without removing it, and a
+  shorter description box makes pasting harder.
 - **`display: contents` on the candidate section** so a route-level grid
   could place its children. Browsers have dropped elements with
   `display: contents` from the accessibility tree, which would lose the
   "Import candidates" region.
 - **Lifting the editing state into the route.** It moves behaviour to
   change a layout.
-- **Two columns from `lg`.** With the sidebar open, each column is about
-  350px at 1024px, too narrow for the editor's two-column fields.
 
 ### D2 - Saved searches as one card of rows
 
@@ -208,9 +226,9 @@ passes, and update the phase backlog file.
 
 ## Verified State
 
-- Saved searches and the intake share a row from `xl` up, with the
-  review card full width below; below `xl` they stack. With the
-  candidate flag off, the saved searches render alone.
+- From `xl` up, saved searches and the review fill the main column and
+  the intake is a right sidebar, sticky on tall screens; below `xl` they
+  stack. With the candidate flag off, the saved searches render alone.
 - Saved searches are one named card of rows with tinted icons, skill
   chips, and ghost Edit and Delete; loading, error, and empty states sit
   inside it.
