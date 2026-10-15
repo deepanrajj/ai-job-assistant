@@ -38,7 +38,8 @@ const imported = (candidateId: string, jobId: string): TImportCandidateResult =>
 const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidatesSection>> = {}) => {
   const props: ComponentProps<typeof ImportCandidatesSection> = {
     candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando'), candidate('c3', 'Personio')],
-    clearMutationError: vi.fn(),
+    clearDeleteError: vi.fn(),
+    clearSaveError: vi.fn(),
     createCandidate: vi.fn(),
     deleteCandidate: vi.fn(),
     importCandidates: vi.fn(async (ids: string[]) => ids.map((id) => imported(id, `job-${id}`))),
@@ -46,7 +47,8 @@ const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidates
     isMutating: false,
     jobs: { error: null, isLoading: false, jobs: [], reload: vi.fn() },
     loadError: null,
-    mutationError: null,
+    deleteError: null,
+    saveError: null,
     reload: vi.fn(),
     updateCandidate: vi.fn(),
     ...overrides,
@@ -238,7 +240,10 @@ describe('ImportCandidatesSection import', () => {
 
     expect(checkbox).toBeDisabled();
     expect(checkbox).not.toBeChecked();
-    expect(screen.getByText('Berlin · Entered manually · Imported as a job')).toBeInTheDocument();
+    const row = checkbox.closest('li') as HTMLElement;
+
+    expect(within(row).getByText('Berlin · Entered manually')).toBeInTheDocument();
+    expect(within(row).getByText('Imported as a job')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Correct Engineer at N26' })).toBeDisabled();
     expect(screen.getByText('1 of 2 selected')).toBeInTheDocument();
   });

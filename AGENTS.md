@@ -92,25 +92,29 @@ in the change that found it.
 
 ## 3. Verification
 
-Use the narrowest relevant verification while iterating, then run the
-full project verification before finalizing a code change.
+**Owner preference: run focused checks only.** Verify a change by
+running the tests for the files it changed **and** the files, flows, and
+features it affects (callers, parent components, pages, and routes that
+use the changed code), plus lint and format on the changed files. Do not
+run the full suites (`npm run frontend:verify`, `npm run backend:verify`,
+`npm run verify`) unless the owner asks; CI runs them on every PR. Say in
+the report which focused checks ran, and that the full suites were left
+to CI.
 
 ```bash
-npm run frontend:verify
-npm run backend:verify
-npm run verify
+npm run frontend:verify   # only when asked; CI runs it
+npm run backend:verify    # only when asked; CI runs it
+npm run verify            # only when asked; CI runs it
 ```
 
 ### Always run the focused check for what you changed
 
-Pick the row matching the files in your diff and run it **before** the
-full verification, every time. The full run is slow and, for the
-infrastructure rows, does not exercise the changed thing at all.
+Pick the row matching the files in your diff and run it every time.
 
 | Changed area | Focused check |
 | --- | --- |
-| `frontend/**` | the affected Vitest file, then `npm run frontend:verify` |
-| `backend/**` | `npm run backend:test`, then `npm run backend:verify` |
+| `frontend/**` | the Vitest files of the changed and affected code (`npx vitest run <paths>` from `frontend/`), ESLint and Prettier on the changed files, and `npx tsc -b` when types or shared modules changed |
+| `backend/**` | the test classes of the changed and affected code |
 | `backend/**` touching entities, repositories, or `db/migration` | `npm run backend:test:integration` as well; it runs against a real PostgreSQL |
 | `infra/docker/compose.yaml`, `.env.example` | `npm run compose:config`, then `npm run dev:compose` and `npm run compose:smoke` |
 | `infra/docker/*.Dockerfile`, `nginx.conf` | `npm run docker:build`, then the compose row above; both runtimes share these files |

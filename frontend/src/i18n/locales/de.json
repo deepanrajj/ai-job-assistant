@@ -302,7 +302,7 @@
       "importCandidates": "Kandidaten konnten nicht importiert werden"
     },
     "title": "Import-Kandidaten",
-    "subtitle": "Gesammelte Stellen, die noch nicht als Jobs gespeichert sind. Prüfe sie hier; der Import folgt als Nächstes.",
+    "subtitle": "Gesammelte Stellen, die noch nicht als Jobs gespeichert sind. Wähle die aus, die du als Jobs importieren willst.",
     "loading": "Kandidaten werden geladen",
     "loadErrorTitle": "Kandidaten konnten nicht geladen werden",
     "source": {
@@ -322,6 +322,7 @@
     "form": {
       "newTitle": "Kandidat hinzufügen",
       "editTitle": "Kandidat korrigieren",
+      "subtitle": "Füge eine gefundene Stelle ein. Sie wird zur Prüfung gespeichert und erst beim Import zum Job.",
       "company": "Unternehmen",
       "roleTitle": "Rolle",
       "location": "Ort",

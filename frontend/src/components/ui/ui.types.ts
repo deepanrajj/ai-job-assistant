@@ -13,7 +13,7 @@ export type TAlertVariant = 'error' | 'info' | 'success' | 'warning';
 /**
  * Supported visual variants for buttons.
  */
-export type TButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type TButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerGhost';
 
 /**
  * Supported button sizing options.
@@ -29,6 +29,12 @@ export type TCardPadding = 'none' | 'sm' | 'md';
  * Supported visual tones for metric values.
  */
 export type TMetricCardTone = 'default' | 'success';
+
+/**
+ * Decorative tones for icon tiles, such as dashboard insights and saved
+ * search icons.
+ */
+export type TTileTone = 'blue' | 'lavender' | 'mint' | 'peach';
 
 /**
  * Props for the shared input component.

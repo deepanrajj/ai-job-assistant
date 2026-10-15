@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 
 import {
   createImportCandidate,
@@ -16,14 +23,22 @@ import type { AppError } from '../../errors';
 /** Applies one confirmed write to a candidate list. */
 type TCandidateChange = (current: TImportCandidateResponse[]) => TImportCandidateResponse[];
 
+/** Records, or clears, the error of one kind of write. */
+type TErrorSetter = Dispatch<SetStateAction<AppError | null>>;
+
 /**
  * Resume candidates state returned by useImportCandidates.
  *
- * Candidate edits record rejected writes in `mutationError`; imports
- * reject for the import controls to display the request error.
+ * A rejected save (create or correct) is recorded in `saveError` and a
+ * rejected delete in `deleteError`, so each can be shown beside the
+ * control that caused it. `saveError` clears on the next successful save;
+ * `deleteError` on the next successful write of any kind or reload, so
+ * it never outlives the list it was about. Imports reject for the import
+ * controls to display the request error.
  */
 export interface IImportCandidatesState {
-  clearMutationError: () => void;
+  clearDeleteError: () => void;
+  clearSaveError: () => void;
   /**
    * Imports the given candidates as jobs and resolves with each outcome.
    * Candidates reported imported are marked so in the list. Rejects only
@@ -32,10 +47,11 @@ export interface IImportCandidatesState {
   importCandidates: (candidateIds: string[]) => Promise<TImportCandidateResult[]>;
   createCandidate: (payload: TSaveImportCandidateRequest) => Promise<TImportCandidateResponse>;
   deleteCandidate: (candidateId: string) => Promise<void>;
+  deleteError: AppError | null;
   isLoading: boolean;
   isMutating: boolean;
   loadError: AppError | null;
-  mutationError: AppError | null;
+  saveError: AppError | null;
   candidates: TImportCandidateResponse[];
   reload: () => void;
   updateCandidate: (
@@ -60,7 +76,8 @@ export const useImportCandidates = (): IImportCandidatesState => {
     request: { error: loadError, isIdle, isLoading },
   } = useAsyncMutation<void, TImportCandidateResponse[]>(getImportCandidates);
   const [candidates, setCandidates] = useState<TImportCandidateResponse[]>([]);
-  const [mutationError, setMutationError] = useState<AppError | null>(null);
+  const [saveError, setSaveError] = useState<AppError | null>(null);
+  const [deleteError, setDeleteError] = useState<AppError | null>(null);
   const [pendingWrites, setPendingWrites] = useState(0);
   const loadVersion = useRef(0);
   const loadIsPending = useRef(false);
@@ -76,6 +93,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
         if (currentLoad !== loadVersion.current) return;
 
         loadIsPending.current = false;
+        setDeleteError(null);
         const changes = changesDuringLoad.current;
         changesDuringLoad.current = [];
         setCandidates(
@@ -97,22 +115,23 @@ export const useImportCandidates = (): IImportCandidatesState => {
   }, [reload]);
 
   /**
-   * Runs a write: tracks it as pending, clears or records the mutation
-   * error for candidate edits, applies the confirmed result, and re-throws
-   * a failure. Import errors are displayed by the import controls instead.
+   * Runs a write: tracks it as pending, clears or records its error with
+   * `setError`, applies the confirmed result, and re-throws a failure.
+   * Imports pass no setter; the import controls display their errors.
    */
   const runWrite = useCallback(
     <T>(
       write: () => Promise<T>,
       apply: (result: T) => TCandidateChange,
-      recordMutationError = true,
+      setError: TErrorSetter | null,
     ) => {
       setPendingWrites((count) => count + 1);
 
       return write()
         .then(
           (result) => {
-            if (recordMutationError) setMutationError(null);
+            setError?.(null);
+            setDeleteError(null);
             const change = apply(result);
             if (loadIsPending.current) changesDuringLoad.current.push(change);
             setCandidates(change);
@@ -120,7 +139,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
             return result;
           },
           (error: AppError) => {
-            if (recordMutationError) setMutationError(error);
+            setError?.(error);
             throw error;
           },
         )
@@ -137,6 +156,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
           ...current.filter((candidate) => candidate.id !== created.id),
           created,
         ],
+        setSaveError,
       ),
     [runWrite],
   );
@@ -147,6 +167,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
         () => updateImportCandidate(candidateId, payload),
         (updated) => (current) =>
           current.map((candidate) => (candidate.id === updated.id ? updated : candidate)),
+        setSaveError,
       ),
     [runWrite],
   );
@@ -167,7 +188,7 @@ export const useImportCandidates = (): IImportCandidatesState => {
               imported.has(candidate.id) ? { ...candidate, reviewStatus: 'IMPORTED' } : candidate,
             );
         },
-        false,
+        null,
       ),
     [runWrite],
   );
@@ -177,21 +198,25 @@ export const useImportCandidates = (): IImportCandidatesState => {
       runWrite(
         () => deleteImportCandidate(candidateId),
         () => (current) => current.filter((candidate) => candidate.id !== candidateId),
+        setDeleteError,
       ),
     [runWrite],
   );
 
-  const clearMutationError = useCallback(() => setMutationError(null), []);
+  const clearSaveError = useCallback(() => setSaveError(null), []);
+  const clearDeleteError = useCallback(() => setDeleteError(null), []);
 
   return {
-    clearMutationError,
+    clearDeleteError,
+    clearSaveError,
     createCandidate,
     deleteCandidate,
+    deleteError,
     importCandidates,
     isLoading: isIdle || isLoading,
     isMutating: pendingWrites > 0,
     loadError,
-    mutationError,
+    saveError,
     candidates,
     reload,
     updateCandidate,

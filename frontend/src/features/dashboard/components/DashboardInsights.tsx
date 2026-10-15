@@ -1,6 +1,13 @@
 import { memo, useMemo, type FC, type ReactNode } from 'react';
 
-import { Button, Card, ErrorState, LoadingState } from '../../../components/ui';
+import {
+  Button,
+  Card,
+  ErrorState,
+  LoadingState,
+  tileToneClasses,
+  type TTileTone,
+} from '../../../components/ui';
 import { CalendarIcon } from '../../../components/icons';
 import { AgingInsightIcon, ApplicationsInsightIcon, ResponseInsightIcon } from '../dashboard.icons';
 import { useLocalToday } from '../../../hooks';
@@ -29,31 +36,26 @@ interface IDashboardInsightsProps {
 }
 
 /**
- * Background tint of an insight card.
- */
-type TInsightTone = 'blue' | 'lavender' | 'mint' | 'peach';
-
-/**
  * Card gradient and icon tile per insight tone. The gradient is a
  * background image, so it layers over the card's own background colour
  * instead of competing with it.
  */
-const insightToneClasses: Record<TInsightTone, { card: string; tile: string }> = {
+const insightToneClasses: Record<TTileTone, { card: string; tile: string }> = {
   blue: {
     card: 'bg-linear-to-br from-sky-50 to-app-surface',
-    tile: 'bg-sky-100 text-sky-700',
+    tile: tileToneClasses.blue,
   },
   lavender: {
     card: 'bg-linear-to-br from-primary-50 to-app-surface',
-    tile: 'bg-primary-100 text-primary-700',
+    tile: tileToneClasses.lavender,
   },
   mint: {
     card: 'bg-linear-to-br from-accent-mint to-app-surface',
-    tile: 'bg-success-100 text-success-700',
+    tile: tileToneClasses.mint,
   },
   peach: {
     card: 'bg-linear-to-br from-accent-peach to-app-surface',
-    tile: 'bg-orange-100 text-orange-700',
+    tile: tileToneClasses.peach,
   },
 };
 
@@ -65,7 +67,7 @@ interface IInsightCardProps {
   detail: string;
   icon: ReactNode;
   label: string;
-  tone: TInsightTone;
+  tone: TTileTone;
   trend?: ReactNode;
   // Greys the value out for a card that holds an explanation, not a result.
   unavailable?: boolean;

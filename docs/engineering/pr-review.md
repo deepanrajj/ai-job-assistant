@@ -297,9 +297,10 @@ instruction ("apply the review", "fix these"). The implementing rules in
 - **Reviewer suggestions are hypotheses.** Check a suggested fix against
   `backend/AGENTS.md`, `frontend/AGENTS.md`, and the linked plan before
   applying it. A suggestion can itself violate the conventions.
-- **Run the gate before pushing** — `npm run verify`, or the narrower
-  `npm run backend:verify` / `npm run frontend:verify` when only one app
-  changed (`AGENTS.md` §3).
+- **Run the focused checks before pushing** — the tests of the changed
+  and affected files, plus lint and format on the changed files
+  (`AGENTS.md` §3). The full `verify` scripts run only when the owner
+  asks; CI runs them on every PR.
 - **Stop and ask** before auto-fixing anything touching a hotspot (§6) —
   migrations, the AI boundary, gate configuration, or a locked decision
   in `docs/context.md`. Even an obvious-looking change there is a

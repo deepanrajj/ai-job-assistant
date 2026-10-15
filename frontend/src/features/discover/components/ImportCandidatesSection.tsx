@@ -1,10 +1,11 @@
-import { useMemo, useState, type FC } from 'react';
+import { useMemo, useState, type FC, type ReactNode } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 import { Form } from '../../../components/form';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   EmptyState,
@@ -13,6 +14,7 @@ import {
   LoadingState,
   Textarea,
 } from '../../../components/ui';
+import { EditIcon, ExternalLinkIcon, TrashIcon } from '../../../components/icons';
 import {
   buildImportCandidateRequest,
   createEmptyImportCandidateForm,
@@ -45,7 +47,7 @@ const toFormValues = (candidate: TImportCandidateResponse): IImportCandidateForm
  */
 interface ICandidateIntakeFormProps {
   editing: TImportCandidateResponse | null;
-  error: IImportCandidatesState['mutationError'];
+  error: IImportCandidatesState['saveError'];
   isSaving: boolean;
   onCancelEdit: () => void;
   onSave: (values: IImportCandidateFormValues) => Promise<void>;
@@ -103,7 +105,9 @@ const CandidateIntakeForm: FC<ICandidateIntakeFormProps> = ({
   return (
     <Form className="space-y-3" form={form} noValidate onSubmit={handleSubmit}>
       {error && <Alert>{error.message}</Alert>}
-      <div className="grid gap-3 md:grid-cols-2">
+      {/* Two columns only when the card is wide enough, not the viewport,
+          so the fields stack when the form sits in the sidebar. */}
+      <div className="grid gap-3 @lg:grid-cols-2">
         <Input
           disabled={isSaving}
           error={errors.company?.message}
@@ -175,6 +179,11 @@ interface IDuplicateCheckJobs {
  * Props used by the candidate review section.
  */
 type TImportCandidatesSectionProps = IImportCandidatesState & {
+  /**
+   * Shown above the review, such as the saved searches; from `xl` up the
+   * two fill the main column and the intake becomes a sidebar.
+   */
+  beside?: ReactNode;
   jobs: IDuplicateCheckJobs;
 };
 
@@ -238,17 +247,17 @@ interface IImportFeedback {
 }
 
 /**
- * Tailwind text colour for a duplicate state.
+ * Tailwind tint for a duplicate state's flag.
  *
  * @param {TCandidateDuplicateState} duplicate Candidate's duplicate state.
- * @returns {string} Text colour classes.
+ * @returns {string} Background and text colour classes.
  */
 const duplicateToneClasses = (duplicate: TCandidateDuplicateState): string => {
-  if (typeof duplicate !== 'object') return 'text-app-textMuted';
-  if (duplicate.classification === 'LIKELY_DUPLICATE') return 'text-danger-700';
-  if (duplicate.classification === 'POSSIBLE_DUPLICATE') return 'text-warning-800';
+  if (typeof duplicate !== 'object') return 'bg-app-surface2 text-app-textMuted';
+  if (duplicate.classification === 'LIKELY_DUPLICATE') return 'bg-danger-50 text-danger-700';
+  if (duplicate.classification === 'POSSIBLE_DUPLICATE') return 'bg-warning-50 text-warning-800';
 
-  return 'text-success-700';
+  return 'bg-success-50 text-success-700';
 };
 
 /**
@@ -319,73 +328,95 @@ const CandidateRow: FC<ICandidateRowProps> = ({
   return (
     <li
       className={classNames(
-        'rounded-lg border border-app-borderSoft p-4',
-        isImported ? 'bg-app-surface2' : '',
+        'flex items-start gap-3 px-5 py-4',
+        isImported ? 'bg-app-surface2' : isSelected ? 'bg-primary-50/60' : '',
       )}
     >
-      <div className="flex items-start gap-3">
-        <input
-          aria-label={t('importCandidates.list.select', { candidate: label })}
-          checked={isSelected}
-          className="mt-1 h-4 w-4 rounded border-app-border text-primary-600"
-          disabled={isImported}
-          onChange={() => onToggle(candidate.id)}
-          type="checkbox"
-        />
-        <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-app-text">{label}</h3>
-          <p className="text-sm text-app-textMuted">
-            {[
-              location || t('importCandidates.list.noLocation'),
-              t('importCandidates.source.manual'),
+      <input
+        aria-label={t('importCandidates.list.select', { candidate: label })}
+        checked={isSelected}
+        className="mt-1 h-4 w-4 shrink-0 rounded border-app-border accent-primary-600"
+        disabled={isImported}
+        onChange={() => onToggle(candidate.id)}
+        type="checkbox"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h3 className="break-words font-semibold text-app-text">{label}</h3>
+            <p className="break-words text-sm text-app-textMuted">
+              {[
+                location || t('importCandidates.list.noLocation'),
+                t('importCandidates.source.manual'),
+              ].join(' · ')}
+            </p>
+          </div>
+          <div className="-ml-3 flex shrink-0 gap-1 sm:ml-0">
+            <Button
+              aria-label={t('importCandidates.list.editLabel', { candidate: label })}
+              disabled={isDisabled || isImported}
+              leftIcon={<EditIcon />}
+              onClick={() => onEdit(candidate)}
+              size="sm"
+              variant="ghost"
+            >
+              {t('importCandidates.list.edit')}
+            </Button>
+            <Button
+              aria-label={t('importCandidates.list.deleteLabel', { candidate: label })}
+              disabled={isDisabled}
+              leftIcon={<TrashIcon />}
+              onClick={() => onDelete(candidate)}
+              size="sm"
+              variant="dangerGhost"
+            >
+              {t('importCandidates.list.delete')}
+            </Button>
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap items-start gap-2">
+          <Badge
+            className={classNames(
+              'px-2.5 py-0.5 text-xs ring-1 ring-inset',
               isImported
-                ? t('importCandidates.reviewStatus.imported')
-                : t('importCandidates.reviewStatus.pending'),
-            ].join(' · ')}
-          </p>
+                ? 'bg-success-50 text-success-700 ring-success-100'
+                : 'bg-primary-50 text-primary-700 ring-primary-100',
+            )}
+          >
+            {isImported
+              ? t('importCandidates.reviewStatus.imported')
+              : t('importCandidates.reviewStatus.pending')}
+          </Badge>
           {!isImported && (
-            <p className={classNames('mt-1 text-sm', duplicateToneClasses(duplicate))}>
+            <p
+              className={classNames(
+                'rounded-lg px-2 py-0.5 text-xs font-medium',
+                duplicateToneClasses(duplicate),
+              )}
+            >
               {describeDuplicate(duplicate, t)}
             </p>
           )}
-          {candidate.sourceUrl && (
-            <a
-              className="mt-1 inline-block break-all text-sm text-primary-700 hover:underline"
-              href={candidate.sourceUrl}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              {candidate.sourceUrl}
-            </a>
-          )}
-          <details className="mt-2">
-            <summary className="cursor-pointer text-sm font-medium text-app-textSoft">
-              {t('importCandidates.list.description')}
-            </summary>
-            <p className="mt-2 whitespace-pre-wrap break-words text-sm text-app-text">
-              {description}
-            </p>
-          </details>
         </div>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button
-          aria-label={t('importCandidates.list.editLabel', { candidate: label })}
-          disabled={isDisabled || isImported}
-          onClick={() => onEdit(candidate)}
-          size="sm"
-        >
-          {t('importCandidates.list.edit')}
-        </Button>
-        <Button
-          aria-label={t('importCandidates.list.deleteLabel', { candidate: label })}
-          disabled={isDisabled}
-          onClick={() => onDelete(candidate)}
-          size="sm"
-          variant="danger"
-        >
-          {t('importCandidates.list.delete')}
-        </Button>
+        {candidate.sourceUrl && (
+          <a
+            className="mt-2 inline-flex max-w-full items-start gap-1 text-sm text-primary-700 hover:underline"
+            href={candidate.sourceUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <span className="min-w-0 break-all">{candidate.sourceUrl}</span>
+            <ExternalLinkIcon className="mt-1 h-3 w-3 shrink-0" />
+          </a>
+        )}
+        <details className="mt-2">
+          <summary className="cursor-pointer text-sm font-medium text-app-textSoft hover:text-app-text">
+            {t('importCandidates.list.description')}
+          </summary>
+          <p className="mt-2 whitespace-pre-wrap break-words rounded-lg bg-app-surface2 p-3 text-sm text-app-text">
+            {description}
+          </p>
+        </details>
       </div>
     </li>
   );
@@ -404,17 +435,20 @@ const CandidateRow: FC<ICandidateRowProps> = ({
  * @returns {JSX.Element} Candidate review section.
  */
 export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
+  beside,
   candidates,
-  clearMutationError,
+  clearDeleteError,
+  clearSaveError,
   createCandidate,
   deleteCandidate,
+  deleteError,
   importCandidates,
   isLoading,
   isMutating,
   jobs,
   loadError,
-  mutationError,
   reload,
+  saveError,
   updateCandidate,
 }) => {
   const { t } = useTranslation();
@@ -474,7 +508,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     });
 
   const switchEditing = (candidate: TImportCandidateResponse | null) => {
-    clearMutationError();
+    clearSaveError();
     setEditingCandidateId(candidate?.id ?? null);
   };
 
@@ -542,76 +576,65 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     );
   };
 
-  const renderImportFeedback = () => (
+  // Built once, so whether there is any feedback is read from the same
+  // conditions that render it.
+  const importFeedback = [
+    deleteError && <Alert key="delete">{deleteError.message}</Alert>,
+    importRequestError && <Alert key="request">{importRequestError}</Alert>,
+    feedback && feedback.importedCount > 0 && (
+      <Alert key="imported" role="status" variant="success">
+        {t('importCandidates.import.success', { count: feedback.importedCount })}
+      </Alert>
+    ),
+    feedback && feedback.failed.length > 0 && (
+      <Alert key="failed">
+        <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
+        <ul className="mt-1 list-inside list-disc">
+          {feedback.failed.map((failure) => (
+            <li key={failure.label}>
+              {t('importCandidates.import.failedItem', {
+                candidate: failure.label,
+                reason: t(importErrorTranslationKey(failure.errorCode)),
+              })}
+            </li>
+          ))}
+        </ul>
+      </Alert>
+    ),
+  ].filter(Boolean);
+  const hasImportFeedback = importFeedback.length > 0;
+
+  /**
+   * The state shown instead of the list (loading, a failed first load, or
+   * no candidates), with any import feedback under it.
+   */
+  const renderListPlaceholder = () => (
     <>
-      {importRequestError && <Alert>{importRequestError}</Alert>}
-      {feedback && feedback.importedCount > 0 && (
-        <p className="text-sm text-success-700" role="status">
-          {t('importCandidates.import.success', { count: feedback.importedCount })}
-        </p>
+      {isLoading && <LoadingState label={t('importCandidates.loading')} />}
+      {!isLoading && loadError && (
+        <ErrorState
+          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+          description={loadError.message}
+          title={t('importCandidates.loadErrorTitle')}
+        />
       )}
-      {feedback && feedback.failed.length > 0 && (
-        <Alert>
-          <p>{t('importCandidates.import.failedTitle', { count: feedback.failed.length })}</p>
-          <ul className="mt-1 list-inside list-disc">
-            {feedback.failed.map((failure) => (
-              <li key={failure.label}>
-                {t('importCandidates.import.failedItem', {
-                  candidate: failure.label,
-                  reason: t(importErrorTranslationKey(failure.errorCode)),
-                })}
-              </li>
-            ))}
-          </ul>
-        </Alert>
+      {!isLoading && !loadError && (
+        <EmptyState
+          description={t('importCandidates.list.emptyDescription')}
+          title={t('importCandidates.list.emptyTitle')}
+        />
       )}
+      {hasImportFeedback && <div className="space-y-3 px-5 pb-5">{importFeedback}</div>}
     </>
   );
 
   const renderList = () => {
-    if (isLoading)
-      return (
-        <div className="space-y-3">
-          <LoadingState label={t('importCandidates.loading')} />
-          {renderImportFeedback()}
-        </div>
-      );
-
-    if (loadError && candidates.length === 0)
-      return (
-        <div className="space-y-3">
-          <ErrorState
-            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-            description={loadError.message}
-            title={t('importCandidates.loadErrorTitle')}
-          />
-          {renderImportFeedback()}
-        </div>
-      );
-
-    if (candidates.length === 0)
-      return (
-        <div className="space-y-3">
-          <EmptyState
-            description={t('importCandidates.list.emptyDescription')}
-            title={t('importCandidates.list.emptyTitle')}
-          />
-          {renderImportFeedback()}
-        </div>
-      );
+    if (isLoading || candidates.length === 0) return renderListPlaceholder();
 
     return (
-      <div className="space-y-3">
-        {loadError && (
-          <Alert>
-            <p>{loadError.message}</p>
-            <Button onClick={reload} size="sm" variant="ghost">
-              {t('jobs.loadErrorRetry')}
-            </Button>
-          </Alert>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          <p aria-live="polite" className="text-sm text-app-textSoft">
+      <>
+        <div className="flex flex-wrap items-center gap-2 border-b border-app-borderSoft bg-app-surface2/60 px-5 py-3">
+          <p aria-live="polite" className="mr-1 text-sm font-medium text-app-textSoft">
             {t('importCandidates.list.selectedCount', {
               count: selectedCount,
               total: candidates.length,
@@ -631,10 +654,12 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             {t('importCandidates.list.clearSelection')}
           </Button>
           <Button
+            className="sm:ml-auto"
             disabled={selectedCount === 0 || isMutating || isConfirming}
             onClick={() => {
               setFeedback(null);
               setImportRequestError(null);
+              clearDeleteError();
               setIsConfirming(true);
             }}
             size="sm"
@@ -642,43 +667,64 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             {t('importCandidates.import.start', { count: selectedCount })}
           </Button>
         </div>
-        {renderImportFeedback()}
-        {isConfirming && (
-          <div
-            aria-labelledby="import-confirm-heading"
-            className="rounded-lg border border-primary-200 bg-primary-50 p-4"
-            role="group"
-          >
-            <h3 className="font-medium text-app-text" id="import-confirm-heading">
-              {t('importCandidates.import.confirmTitle')}
-            </h3>
-            <ul className="mt-2 list-inside list-disc text-sm text-app-text">
-              {selectedCandidates.map((candidate) => (
-                <li key={candidate.id}>{labelOf(candidate)}</li>
-              ))}
-            </ul>
-            {selectedLikelyDuplicates > 0 && (
-              <p className="mt-2 text-sm text-danger-700">
-                {t('importCandidates.import.likelyDuplicateWarning', {
-                  count: selectedLikelyDuplicates,
-                })}
-              </p>
+        {(loadError || hasImportFeedback || isConfirming) && (
+          <div className="space-y-3 border-b border-app-borderSoft px-5 py-4">
+            {loadError && (
+              <Alert live={false}>
+                <p>{loadError.message}</p>
+                <Button onClick={reload} size="sm" variant="ghost">
+                  {t('jobs.loadErrorRetry')}
+                </Button>
+              </Alert>
             )}
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                aria-busy={isMutating}
-                disabled={isMutating || selectedCount === 0}
-                onClick={handleImport}
+            {importFeedback}
+            {isConfirming && (
+              <div
+                aria-labelledby="import-confirm-heading"
+                className="rounded-xl border border-primary-200 bg-primary-50 p-4"
+                role="group"
               >
-                {t('importCandidates.import.confirm', { count: selectedCount })}
-              </Button>
-              <Button disabled={isMutating} onClick={() => setIsConfirming(false)} variant="ghost">
-                {t('importCandidates.import.cancel')}
-              </Button>
-            </div>
+                <h3 className="font-semibold text-app-text" id="import-confirm-heading">
+                  {t('importCandidates.import.confirmTitle')}
+                </h3>
+                <ul className="mt-2 list-inside list-disc text-sm text-app-text">
+                  {selectedCandidates.map((candidate) => (
+                    <li className="break-words" key={candidate.id}>
+                      {labelOf(candidate)}
+                    </li>
+                  ))}
+                </ul>
+                {selectedLikelyDuplicates > 0 && (
+                  <p className="mt-2 text-sm font-medium text-danger-700">
+                    {t('importCandidates.import.likelyDuplicateWarning', {
+                      count: selectedLikelyDuplicates,
+                    })}
+                  </p>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    aria-busy={isMutating}
+                    disabled={isMutating || selectedCount === 0}
+                    onClick={handleImport}
+                  >
+                    {t('importCandidates.import.confirm', { count: selectedCount })}
+                  </Button>
+                  <Button
+                    disabled={isMutating}
+                    onClick={() => setIsConfirming(false)}
+                    variant="ghost"
+                  >
+                    {t('importCandidates.import.cancel')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
-        <ul aria-label={t('importCandidates.list.title')} className="space-y-3">
+        <ul
+          aria-label={t('importCandidates.list.title')}
+          className="divide-y divide-app-borderSoft"
+        >
           {candidates.map((candidate) => (
             <CandidateRow
               candidate={candidate}
@@ -692,31 +738,48 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
             />
           ))}
         </ul>
-      </div>
+      </>
     );
   };
 
   return (
-    <section aria-labelledby="import-candidates-heading" className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold text-app-text" id="import-candidates-heading">
-          {t('importCandidates.title')}
-        </h2>
-        <p className="text-sm text-app-textMuted">{t('importCandidates.subtitle')}</p>
+    // DOM order stays beside, intake, review, so narrow screens stack them
+    // that way. From `xl` the intake moves to a sidebar spanning both rows;
+    // the second row takes any extra height, so the review sits right under
+    // the content beside it.
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-rows-[auto_1fr]">
+      {beside && <div className="min-w-0 xl:col-start-1">{beside}</div>}
+      {/* Sticky under the header, and never taller than the screen: a
+          form grown by field errors scrolls inside itself, so Save stays
+          reachable. */}
+      <div className="@container xl:sticky xl:top-20 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto">
+        <Card
+          subtitle={t('importCandidates.form.subtitle')}
+          title={
+            editing ? t('importCandidates.form.editTitle') : t('importCandidates.form.newTitle')
+          }
+          titleId="candidate-intake-heading"
+        >
+          <CandidateIntakeForm
+            editing={editing}
+            error={saveError}
+            isSaving={isMutating}
+            key={editing?.id ?? 'new'}
+            onCancelEdit={() => switchEditing(null)}
+            onSave={handleSave}
+          />
+        </Card>
       </div>
-      <Card
-        title={editing ? t('importCandidates.form.editTitle') : t('importCandidates.form.newTitle')}
-      >
-        <CandidateIntakeForm
-          editing={editing}
-          error={mutationError}
-          isSaving={isMutating}
-          key={editing?.id ?? 'new'}
-          onCancelEdit={() => switchEditing(null)}
-          onSave={handleSave}
-        />
-      </Card>
-      <Card title={t('importCandidates.list.title')}>{renderList()}</Card>
-    </section>
+      <div className="min-w-0 xl:col-start-1">
+        <Card
+          padding="none"
+          subtitle={t('importCandidates.subtitle')}
+          title={t('importCandidates.title')}
+          titleId="import-candidates-heading"
+        >
+          {renderList()}
+        </Card>
+      </div>
+    </div>
   );
 };
