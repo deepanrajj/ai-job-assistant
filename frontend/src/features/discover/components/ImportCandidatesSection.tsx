@@ -47,7 +47,7 @@ const toFormValues = (candidate: TImportCandidateResponse): IImportCandidateForm
  */
 interface ICandidateIntakeFormProps {
   editing: TImportCandidateResponse | null;
-  error: IImportCandidatesState['mutationError'];
+  error: IImportCandidatesState['saveError'];
   isSaving: boolean;
   onCancelEdit: () => void;
   onSave: (values: IImportCandidateFormValues) => Promise<void>;
@@ -364,12 +364,11 @@ const CandidateRow: FC<ICandidateRowProps> = ({
             </Button>
             <Button
               aria-label={t('importCandidates.list.deleteLabel', { candidate: label })}
-              className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
               disabled={isDisabled}
               leftIcon={<TrashIcon />}
               onClick={() => onDelete(candidate)}
               size="sm"
-              variant="ghost"
+              variant="dangerGhost"
             >
               {t('importCandidates.list.delete')}
             </Button>
@@ -438,16 +437,17 @@ const CandidateRow: FC<ICandidateRowProps> = ({
 export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   beside,
   candidates,
-  clearMutationError,
+  clearSaveError,
   createCandidate,
   deleteCandidate,
+  deleteError,
   importCandidates,
   isLoading,
   isMutating,
   jobs,
   loadError,
-  mutationError,
   reload,
+  saveError,
   updateCandidate,
 }) => {
   const { t } = useTranslation();
@@ -455,11 +455,6 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     new Map(),
   );
   const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
-  // Saves and deletes share one mutationError; this says which one set it,
-  // so each failure shows beside the control that caused it.
-  const [mutationSource, setMutationSource] = useState<'delete' | 'save'>('save');
-  const saveError = mutationSource === 'save' ? mutationError : null;
-  const deleteError = mutationSource === 'delete' ? mutationError : null;
   const editing =
     candidates.find(
       (candidate) => candidate.id === editingCandidateId && candidate.reviewStatus !== 'IMPORTED',
@@ -512,7 +507,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
     });
 
   const switchEditing = (candidate: TImportCandidateResponse | null) => {
-    clearMutationError();
+    clearSaveError();
     setEditingCandidateId(candidate?.id ?? null);
   };
 
@@ -565,7 +560,6 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   const handleSave = async (values: IImportCandidateFormValues) => {
     const payload = buildImportCandidateRequest(values);
 
-    setMutationSource('save');
     if (editing) await updateCandidate(editing.id, payload);
     else await createCandidate(payload);
 
@@ -573,7 +567,6 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
   };
 
   const handleDelete = (candidate: TImportCandidateResponse) => {
-    setMutationSource('delete');
     deleteCandidate(candidate.id).then(
       () => setEditingCandidateId((current) => (current === candidate.id ? null : current)),
       () => {
@@ -680,7 +673,7 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
         {(loadError || hasImportFeedback || isConfirming) && (
           <div className="space-y-3 border-b border-app-borderSoft px-5 py-4">
             {loadError && (
-              <Alert>
+              <Alert live={false}>
                 <p>{loadError.message}</p>
                 <Button onClick={reload} size="sm" variant="ghost">
                   {t('jobs.loadErrorRetry')}

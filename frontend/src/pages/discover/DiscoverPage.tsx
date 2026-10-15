@@ -34,16 +34,28 @@ type TDiscoverPageProps = ISavedSearchesState;
 type TEditorTarget = { kind: 'closed' } | { kind: 'new' } | { kind: 'existing'; searchId: string };
 
 /**
- * Tints for the saved search icons, used in turn down the list; the
- * dashboard's lavender, mint, and peach tiles.
+ * Tints for the saved search icons: the dashboard's lavender, mint, and
+ * peach tiles.
  */
 const SEARCH_ICON_TONES = [tileToneClasses.lavender, tileToneClasses.mint, tileToneClasses.peach];
+
+/**
+ * Picks a search's icon tint from its id, so a search keeps its colour
+ * when others are added or deleted.
+ *
+ * @param {string} searchId Saved search id.
+ * @returns {string} Tint classes.
+ */
+const searchIconTone = (searchId: string): string => {
+  const hash = [...searchId].reduce((sum, character) => sum + character.charCodeAt(0), 0);
+
+  return SEARCH_ICON_TONES[hash % SEARCH_ICON_TONES.length];
+};
 
 /**
  * Props used by one saved search row.
  */
 interface ISavedSearchRowProps {
-  index: number;
   isDisabled: boolean;
   onDelete: (search: TSavedSearchResponse) => void;
   onEdit: (search: TSavedSearchResponse) => void;
@@ -57,13 +69,7 @@ interface ISavedSearchRowProps {
  * @param {ISavedSearchRowProps} props Component props.
  * @returns {JSX.Element} Saved search row.
  */
-const SavedSearchRow: FC<ISavedSearchRowProps> = ({
-  index,
-  isDisabled,
-  onDelete,
-  onEdit,
-  search,
-}) => {
+const SavedSearchRow: FC<ISavedSearchRowProps> = ({ isDisabled, onDelete, onEdit, search }) => {
   const { t } = useTranslation();
   const { location, name, notes, role, seniority, skills, workModes } = search.criteria;
   const roleAndLocation = [role, location].filter(Boolean).join(' · ');
@@ -77,7 +83,7 @@ const SavedSearchRow: FC<ISavedSearchRowProps> = ({
       <div className="flex min-w-0 flex-1 gap-3">
         <span
           aria-hidden="true"
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${SEARCH_ICON_TONES[index % SEARCH_ICON_TONES.length]}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${searchIconTone(search.id)}`}
         >
           <SearchIcon className="h-5 w-5" />
         </span>
@@ -120,12 +126,11 @@ const SavedSearchRow: FC<ISavedSearchRowProps> = ({
         </Button>
         <Button
           aria-label={t('discover.list.deleteLabel', { name })}
-          className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
           disabled={isDisabled}
           leftIcon={<TrashIcon />}
           onClick={() => onDelete(search)}
           size="sm"
-          variant="ghost"
+          variant="dangerGhost"
         >
           {t('discover.list.delete')}
         </Button>
@@ -218,9 +223,8 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
 
     return (
       <ul className="divide-y divide-app-borderSoft">
-        {searches.map((search, index) => (
+        {searches.map((search) => (
           <SavedSearchRow
-            index={index}
             isDisabled={isMutating}
             key={search.id}
             onDelete={handleDelete}

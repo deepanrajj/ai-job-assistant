@@ -35,7 +35,7 @@ const candidate = (
 const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidatesSection>> = {}) => {
   const props: ComponentProps<typeof ImportCandidatesSection> = {
     candidates: [candidate('c1', 'N26'), candidate('c2', 'Zalando')],
-    clearMutationError: vi.fn(),
+    clearSaveError: vi.fn(),
     createCandidate: vi.fn(async (payload: TSaveImportCandidateRequest) => ({
       ...candidate('c3', payload.content.company),
       ...payload,
@@ -46,7 +46,8 @@ const renderSection = (overrides: Partial<ComponentProps<typeof ImportCandidates
     importCandidates: vi.fn(async () => []),
     jobs: { error: null, isLoading: false, jobs: [], reload: vi.fn() },
     loadError: null,
-    mutationError: null,
+    deleteError: null,
+    saveError: null,
     reload: vi.fn(),
     updateCandidate: vi.fn(async (_id: string, payload: TSaveImportCandidateRequest) => ({
       ...candidate('c1', payload.content.company),
@@ -267,7 +268,7 @@ describe('ImportCandidatesSection', () => {
     const user = userEvent.setup();
     renderSection({
       createCandidate: vi.fn(async () => Promise.reject(new Error('x'))),
-      mutationError: new AppError(
+      saveError: new AppError(
         'Failed to save candidate',
         APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
       ),
@@ -352,7 +353,7 @@ describe('ImportCandidatesSection', () => {
     const intake = screen.getByRole('region', { name: 'Add a candidate' });
 
     await user.click(screen.getByRole('button', { name: 'Delete Backend Engineer at Zalando' }));
-    rerender(<ImportCandidatesSection {...props} mutationError={deleteError} />);
+    rerender(<ImportCandidatesSection {...props} deleteError={deleteError} />);
 
     expect(within(review).getByRole('alert')).toHaveTextContent('Failed to delete candidate');
     expect(within(intake).queryByRole('alert')).not.toBeInTheDocument();
@@ -362,31 +363,33 @@ describe('ImportCandidatesSection', () => {
     rerender(
       <ImportCandidatesSection
         {...props}
-        mutationError={
+        deleteError={deleteError}
+        saveError={
           new AppError('Failed to save candidate', APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED)
         }
       />,
     );
 
+    // Each failure stays beside its own control, even while both are set.
     expect(within(intake).getByRole('alert')).toHaveTextContent('Failed to save candidate');
-    expect(within(review).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(review).getByRole('alert')).toHaveTextContent('Failed to delete candidate');
   });
 
   it('clears a stale error when switching between editing and adding', async () => {
     const user = userEvent.setup();
     const { props } = renderSection({
-      mutationError: new AppError(
+      saveError: new AppError(
         'Failed to save candidate changes',
         APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED,
       ),
     });
 
     await user.click(screen.getByRole('button', { name: 'Correct Backend Engineer at N26' }));
-    expect(props.clearMutationError).toHaveBeenCalledOnce();
+    expect(props.clearSaveError).toHaveBeenCalledOnce();
     await user.click(screen.getByRole('button', { name: 'Correct Backend Engineer at Zalando' }));
-    expect(props.clearMutationError).toHaveBeenCalledTimes(2);
+    expect(props.clearSaveError).toHaveBeenCalledTimes(2);
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(props.clearMutationError).toHaveBeenCalledTimes(3);
+    expect(props.clearSaveError).toHaveBeenCalledTimes(3);
   });
 
   it('leaves edit mode after deleting the candidate being edited', async () => {
@@ -430,7 +433,9 @@ describe('ImportCandidatesSection', () => {
 
     expect(screen.getByRole('list', { name: 'Candidates to review' })).toBeInTheDocument();
     expect(screen.getByText('Backend Engineer at N26')).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('Failed to load import candidates');
+    // A plain notice, not a live region, since it holds the Try again button.
+    expect(screen.getByText('Failed to load import candidates')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(props.reload).toHaveBeenCalledOnce();

@@ -99,10 +99,13 @@ Rejected:
 - **Lifting the editing state into the route.** It moves behaviour to
   change a layout.
 
-Saves and deletes share the hook's one `mutationError`, so the section
-remembers which of the two set it: a failed save shows in the intake,
-and a failed delete shows in the review card beside the list, not in a
-sidebar that may be out of view. The intake card has its own `titleId`,
+`useImportCandidates` reports a failed save (`saveError`) and a failed
+delete (`deleteError`) separately, in place of one shared
+`mutationError`: a failed save shows in the intake, and a failed delete
+in the review card beside the list, not in a sidebar that may be out of
+view. Rejected: guessing in the component which action set the shared
+error, which showed a stale error under the other control while the
+next request ran. The intake card has its own `titleId`,
 so it stays a named region now that it is outside the review.
 
 ### D2 - Saved searches as one card of rows

@@ -95,7 +95,8 @@ missing trailing newlines.
 
 Take the work over end to end - components, hooks, translations for both
 `en` and `de`, and Vitest and React Testing Library tests - then run
-`npm run frontend:verify` and report the result. Follow
+the focused checks for the changed and affected files (`AGENTS.md`
+section 3) and report the result. Follow
 `frontend/AGENTS.md`.
 
 ### Tests
@@ -133,11 +134,10 @@ npm run frontend:verify
 npm run verify
 ```
 
-Narrowest check while iterating, the app-level check before finishing,
-`npm run verify` when the change spans both.
-
-**Before any of those, run the focused check for the files you actually
-changed.** `AGENTS.md` section 3 carries the full map. The rows agents
+**Owner preference: run only the focused checks** for the files you
+changed and the code, flows, and pages they affect. Run the full suites
+above only when the owner asks; CI runs them on every PR. `AGENTS.md`
+section 3 carries the full map. The rows agents
 miss most often:
 
 | Changed | Run |

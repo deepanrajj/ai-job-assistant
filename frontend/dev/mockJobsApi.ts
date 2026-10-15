@@ -444,7 +444,7 @@ const handle = async (req: IncomingMessage, res: ServerResponse): Promise<boolea
   if (child === 'notes') await handleChildren(req, res, notesByJob, jobId, childId);
   else if (child === 'tasks') await handleChildren(req, res, tasksByJob, jobId, childId);
   else if (child === 'contacts') await handleChildren(req, res, contactsByJob, jobId, childId);
-  else if (child) notFound(res);
+  else if (child) return false;
   else if (req.method === 'GET') send(res, 200, jobs[index]);
   else if (req.method === 'PUT') {
     const body = await readBody(req);

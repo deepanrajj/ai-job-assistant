@@ -183,13 +183,19 @@ interface IJobDetailHeaderProps {
 
 ## 8. Verification
 
-Run frontend verification after frontend behavior changes:
+Run focused checks only, as the root `AGENTS.md` section 3 sets out:
+the Vitest files of the changed code and of the components, pages,
+routes, and flows that use it, plus ESLint and Prettier on the changed
+files, and `npx tsc -b` when types or shared modules changed. Run
+`npm run frontend:verify` only when the owner asks; CI runs it.
 
 ```bash
-npm run frontend:verify
+npx vitest run src/features/discover src/pages/discover
+npx eslint <changed files>
+npx prettier --check <changed files>
 ```
 
-For focused iteration:
+The app-wide scripts, for when they are asked for:
 
 ```bash
 npm run frontend:lint
