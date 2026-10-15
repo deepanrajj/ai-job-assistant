@@ -260,15 +260,20 @@ describe('DiscoverPage', () => {
     unmount();
 
     const loading = renderPage({ isLoading: true });
+    const loadingRegion = screen.getByRole('region', { name: 'Saved searches' });
 
-    expect(screen.getByRole('status')).toHaveTextContent('Loading saved searches');
+    expect(within(loadingRegion).getByRole('status')).toHaveTextContent('Loading saved searches');
+    expect(screen.queryByRole('button', { name: 'New search' })).not.toBeInTheDocument();
     loading.unmount();
 
     const { props } = renderPage({
       loadError: new AppError('Failed', APP_ERROR_CODES.SAVED_SEARCH_REQUEST_FAILED),
     });
+    const errorRegion = screen.getByRole('region', { name: 'Saved searches' });
 
-    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(within(errorRegion).getByText('Saved searches could not be loaded')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'New search' })).not.toBeInTheDocument();
+    await user.click(within(errorRegion).getByRole('button', { name: 'Try again' }));
     expect(props.reload).toHaveBeenCalledOnce();
   });
 });

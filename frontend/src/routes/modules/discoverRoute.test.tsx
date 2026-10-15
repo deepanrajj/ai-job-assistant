@@ -22,10 +22,12 @@ describe('discoverRoute', () => {
     expect(await screen.findByText('No saved searches yet')).toBeInTheDocument();
   });
 
-  it('shows the candidate review below the saved searches, checked against the saved jobs', async () => {
+  it('shows the saved searches, the intake, and the candidate review checked against the saved jobs', async () => {
     server.use(http.get('/api/jobs', () => HttpResponse.json(createMockJobResponses())));
     renderWithProviders(<DiscoverRoute />);
 
+    expect(await screen.findByRole('region', { name: 'Saved searches' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Add a candidate' })).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Import candidates' })).toBeInTheDocument();
     expect(await screen.findByText('No candidates yet')).toBeInTheDocument();
   });

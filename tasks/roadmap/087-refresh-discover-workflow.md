@@ -1,6 +1,6 @@
 # Task 087 - Refresh Discover Workflow
 
-Status: Not started
+Status: Completed
 
 Related plan: [Frontend visual refresh](../../docs/business/084-frontend-visual-refresh-plan.md).
 
@@ -75,11 +75,11 @@ checks and actual CI E2E status in the PR.
 
 ## Acceptance Criteria
 
-- [ ] Discover follows the approved layout and palette.
-- [ ] Existing review/import behavior and failure feedback remain clear.
-- [ ] Flagged and fallback variants remain correct.
-- [ ] Desktop and mobile layouts are accessible.
-- [ ] Focused tests and frontend verification pass.
+- [x] Discover follows the approved layout and palette.
+- [x] Existing review/import behavior and failure feedback remain clear.
+- [x] Flagged and fallback variants remain correct.
+- [x] Desktop and mobile layouts are accessible.
+- [x] Focused tests and frontend verification pass.
 
 ## Commit
 

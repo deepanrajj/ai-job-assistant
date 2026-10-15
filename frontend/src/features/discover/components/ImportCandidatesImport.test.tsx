@@ -238,7 +238,10 @@ describe('ImportCandidatesSection import', () => {
 
     expect(checkbox).toBeDisabled();
     expect(checkbox).not.toBeChecked();
-    expect(screen.getByText('Berlin · Entered manually · Imported as a job')).toBeInTheDocument();
+    const row = checkbox.closest('li') as HTMLElement;
+
+    expect(within(row).getByText('Berlin · Entered manually')).toBeInTheDocument();
+    expect(within(row).getByText('Imported as a job')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Correct Engineer at N26' })).toBeDisabled();
     expect(screen.getByText('1 of 2 selected')).toBeInTheDocument();
   });

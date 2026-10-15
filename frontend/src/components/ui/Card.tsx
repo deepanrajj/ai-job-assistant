@@ -16,6 +16,11 @@ interface ICardProps {
   padding?: TCardPadding;
   subtitle?: string;
   title?: string;
+  /**
+   * Gives the title this id and names the card's section by it, making the
+   * card a named region. Opt-in, so not every titled card is a landmark.
+   */
+  titleId?: string;
 }
 
 /**
@@ -33,11 +38,13 @@ export const Card: FC<ICardProps> = ({
   padding = 'md',
   subtitle,
   title,
+  titleId,
 }) => {
   const hasHeader = Boolean(title || subtitle || action);
 
   return (
     <section
+      aria-labelledby={title && titleId ? titleId : undefined}
       className={classNames(
         'overflow-hidden rounded-2xl border border-app-border bg-app-surface shadow-sm',
         className,
@@ -51,7 +58,11 @@ export const Card: FC<ICardProps> = ({
           )}
         >
           <div>
-            {title && <h2 className="font-display text-xl font-semibold text-app-text">{title}</h2>}
+            {title && (
+              <h2 className="font-display text-xl font-semibold text-app-text" id={titleId}>
+                {title}
+              </h2>
+            )}
             {subtitle && <p className="mt-1 text-sm text-app-textMuted">{subtitle}</p>}
           </div>
           {action}

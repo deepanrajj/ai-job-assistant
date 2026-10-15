@@ -2,6 +2,7 @@ import { useState, type FC } from 'react';
 
 import { Alert, Button, Card, EmptyState, ErrorState, LoadingState } from '../../components/ui';
 import { SavedSearchEditor } from '../../features/discover/components/SavedSearchEditor';
+import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from '../../components/icons';
 import {
   createEmptySavedSearchCriteria,
   type TSavedSearchCriteria,
@@ -25,9 +26,20 @@ type TDiscoverPageProps = ISavedSearchesState;
 type TEditorTarget = { kind: 'closed' } | { kind: 'new' } | { kind: 'existing'; searchId: string };
 
 /**
- * Props used by one saved search card.
+ * Tints for the saved search icons, used in turn down the list; the
+ * dashboard's lavender, mint, and peach tiles.
  */
-interface ISavedSearchCardProps {
+const SEARCH_ICON_TONES = [
+  'bg-primary-100 text-primary-700',
+  'bg-success-100 text-success-700',
+  'bg-orange-100 text-orange-700',
+];
+
+/**
+ * Props used by one saved search row.
+ */
+interface ISavedSearchRowProps {
+  index: number;
   isDisabled: boolean;
   onDelete: (search: TSavedSearchResponse) => void;
   onEdit: (search: TSavedSearchResponse) => void;
@@ -38,10 +50,16 @@ interface ISavedSearchCardProps {
  * Shows one saved search's name, role and location, and the criteria it
  * narrows by, with Edit and Delete.
  *
- * @param {ISavedSearchCardProps} props Component props.
- * @returns {JSX.Element} Saved search card.
+ * @param {ISavedSearchRowProps} props Component props.
+ * @returns {JSX.Element} Saved search row.
  */
-const SavedSearchCard: FC<ISavedSearchCardProps> = ({ isDisabled, onDelete, onEdit, search }) => {
+const SavedSearchRow: FC<ISavedSearchRowProps> = ({
+  index,
+  isDisabled,
+  onDelete,
+  onEdit,
+  search,
+}) => {
   const { t } = useTranslation();
   const { location, name, notes, role, seniority, skills, workModes } = search.criteria;
   const roleAndLocation = [role, location].filter(Boolean).join(' · ');
@@ -51,58 +69,72 @@ const SavedSearchCard: FC<ISavedSearchCardProps> = ({ isDisabled, onDelete, onEd
   ];
 
   return (
-    <li>
-      <Card
-        action={
-          <div className="flex gap-2">
-            <Button
-              aria-label={t('discover.list.editLabel', { name })}
-              disabled={isDisabled}
-              onClick={() => onEdit(search)}
-              size="sm"
+    <li className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start">
+      <div className="flex min-w-0 flex-1 gap-3">
+        <span
+          aria-hidden="true"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${SEARCH_ICON_TONES[index % SEARCH_ICON_TONES.length]}`}
+        >
+          <SearchIcon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="break-words font-semibold text-app-text">{name}</h3>
+          <p className="break-words text-sm text-app-textMuted">
+            {roleAndLocation || t('discover.list.anyRoleOrLocation')}
+          </p>
+          {details.length > 0 && (
+            <p className="mt-1 text-sm text-app-textSoft">{details.join(' · ')}</p>
+          )}
+          {skills.length > 0 && (
+            <ul
+              aria-label={t('discover.list.skillsLabel', { name })}
+              className="mt-2 flex flex-wrap gap-1.5"
             >
-              {t('discover.list.edit')}
-            </Button>
-            <Button
-              aria-label={t('discover.list.deleteLabel', { name })}
-              disabled={isDisabled}
-              onClick={() => onDelete(search)}
-              size="sm"
-              variant="danger"
-            >
-              {t('discover.list.delete')}
-            </Button>
-          </div>
-        }
-        subtitle={roleAndLocation || t('discover.list.anyRoleOrLocation')}
-        title={name}
-      >
-        {details.length > 0 && <p className="text-sm text-app-textSoft">{details.join(' · ')}</p>}
-        {skills.length > 0 && (
-          <ul
-            aria-label={t('discover.list.skillsLabel', { name })}
-            className="mt-2 flex flex-wrap gap-2"
-          >
-            {skills.map((skill) => (
-              <li
-                className="rounded-full bg-app-surface2 px-3 py-1 text-sm text-app-text"
-                key={skill}
-              >
-                {skill}
-              </li>
-            ))}
-          </ul>
-        )}
-        {notes && <p className="mt-2 text-sm text-app-textMuted">{notes}</p>}
-      </Card>
+              {skills.map((skill) => (
+                <li
+                  className="rounded-full bg-app-surface2 px-2.5 py-0.5 text-xs font-medium text-app-textSoft ring-1 ring-inset ring-app-borderSoft"
+                  key={skill}
+                >
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          )}
+          {notes && <p className="mt-2 break-words text-sm text-app-textMuted">{notes}</p>}
+        </div>
+      </div>
+      <div className="flex shrink-0 gap-1 pl-13 sm:pl-0">
+        <Button
+          aria-label={t('discover.list.editLabel', { name })}
+          disabled={isDisabled}
+          leftIcon={<EditIcon />}
+          onClick={() => onEdit(search)}
+          size="sm"
+          variant="ghost"
+        >
+          {t('discover.list.edit')}
+        </Button>
+        <Button
+          aria-label={t('discover.list.deleteLabel', { name })}
+          className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
+          disabled={isDisabled}
+          leftIcon={<TrashIcon />}
+          onClick={() => onDelete(search)}
+          size="sm"
+          variant="ghost"
+        >
+          {t('discover.list.delete')}
+        </Button>
+      </div>
     </li>
   );
 };
 
 /**
- * The Discover page: reusable job search criteria, saved under a name,
- * ready for later import and discovery flows. Nothing here runs a search
- * or calls a provider.
+ * The Discover page's saved searches: reusable job search criteria, saved
+ * under a name, ready for later import and discovery flows, as one card of
+ * rows. Nothing here runs a search or calls a provider. The editor takes
+ * the card's place while open.
  *
  * @param {TDiscoverPageProps} props Component props.
  * @returns {JSX.Element} Discover page.
@@ -126,17 +158,6 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
     clearMutationError();
     setEditor(target);
   };
-
-  if (isLoading) return <LoadingState label={t('discover.loading')} />;
-
-  if (loadError)
-    return (
-      <ErrorState
-        action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-        description={loadError.message}
-        title={t('discover.loadErrorTitle')}
-      />
-    );
 
   if (editor.kind !== 'closed') {
     const existing =
@@ -170,40 +191,71 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
     });
   };
 
-  return (
-    <section aria-labelledby="saved-searches-heading" className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-app-text" id="saved-searches-heading">
-            {t('discover.list.title')}
-          </h2>
-          <p className="text-sm text-app-textMuted">{t('discover.list.subtitle')}</p>
-        </div>
-        <Button disabled={isMutating} onClick={() => switchEditor({ kind: 'new' })}>
-          {t('discover.list.newSearch')}
-        </Button>
-      </div>
-      {mutationError && <Alert>{mutationError.message}</Alert>}
-      {searches.length === 0 ? (
-        <Card>
-          <EmptyState
-            description={t('discover.list.emptyDescription')}
-            title={t('discover.list.emptyTitle')}
+  const renderBody = () => {
+    if (isLoading) return <LoadingState label={t('discover.loading')} />;
+
+    if (loadError)
+      return (
+        <ErrorState
+          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+          description={loadError.message}
+          title={t('discover.loadErrorTitle')}
+        />
+      );
+
+    if (searches.length === 0)
+      return (
+        <EmptyState
+          description={t('discover.list.emptyDescription')}
+          icon={<SearchIcon className="h-5 w-5" />}
+          title={t('discover.list.emptyTitle')}
+        />
+      );
+
+    return (
+      <ul className="divide-y divide-app-borderSoft">
+        {searches.map((search, index) => (
+          <SavedSearchRow
+            index={index}
+            isDisabled={isMutating}
+            key={search.id}
+            onDelete={handleDelete}
+            onEdit={(selected) => switchEditor({ kind: 'existing', searchId: selected.id })}
+            search={search}
           />
-        </Card>
-      ) : (
-        <ul className="grid gap-4 lg:grid-cols-2">
-          {searches.map((search) => (
-            <SavedSearchCard
-              isDisabled={isMutating}
-              key={search.id}
-              onDelete={handleDelete}
-              onEdit={(selected) => switchEditor({ kind: 'existing', searchId: selected.id })}
-              search={search}
-            />
-          ))}
-        </ul>
+        ))}
+      </ul>
+    );
+  };
+
+  return (
+    <Card
+      action={
+        !isLoading &&
+        !loadError && (
+          <Button
+            className="shrink-0"
+            disabled={isMutating}
+            leftIcon={<PlusIcon />}
+            onClick={() => switchEditor({ kind: 'new' })}
+            size="sm"
+            variant="secondary"
+          >
+            {t('discover.list.newSearch')}
+          </Button>
+        )
+      }
+      padding="none"
+      subtitle={t('discover.list.subtitle')}
+      title={t('discover.list.title')}
+      titleId="saved-searches-heading"
+    >
+      {mutationError && (
+        <div className="px-5 pt-4">
+          <Alert>{mutationError.message}</Alert>
+        </div>
       )}
-    </section>
+      {renderBody()}
+    </Card>
   );
 };

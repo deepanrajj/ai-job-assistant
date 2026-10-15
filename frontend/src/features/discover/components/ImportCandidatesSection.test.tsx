@@ -71,9 +71,17 @@ describe('ImportCandidatesSection', () => {
     const list = screen.getByRole('list', { name: 'Candidates to review' });
 
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
-    expect(
-      within(list).getAllByText('Berlin · Entered manually · Waiting for review'),
-    ).toHaveLength(2);
+    expect(within(list).getAllByText('Berlin · Entered manually')).toHaveLength(2);
+    expect(within(list).getAllByText('Waiting for review')).toHaveLength(2);
+  });
+
+  it('lays out content beside the intake, outside the review region', () => {
+    renderSection({ beside: <p>Saved searches here</p> });
+
+    const beside = screen.getByText('Saved searches here');
+
+    expect(screen.getByRole('heading', { name: 'Add a candidate' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Import candidates' })).not.toContainElement(beside);
   });
 
   it('starts with new candidates selected, and selects and clears by hand', async () => {
