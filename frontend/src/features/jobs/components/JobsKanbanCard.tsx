@@ -1,4 +1,4 @@
-import { memo, type FC } from 'react';
+import { memo, useId, type FC } from 'react';
 import { Link } from 'react-router-dom';
 
 import { JobStatusMenu } from './JobStatusMenu';
@@ -40,14 +40,22 @@ const JobsKanbanCardComponent: FC<IJobsKanbanCardProps> = ({
 }) => {
   const { language, t } = useTranslation();
   const details = [job.location, formatJobSalary(job)].filter(Boolean).join(' · ');
+  const nameId = useId();
 
   const link = (
+    // Named by company and role only: short, yet two cards from one
+    // company still differ. The details and date stay readable inside.
     <Link
+      aria-labelledby={`${nameId}-company ${nameId}-role`}
       className="block min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
       to={APP_PATH_BUILDERS.jobDetail(job.id)}
     >
-      <p className="font-semibold text-app-text">{job.company}</p>
-      <p className="mt-0.5 text-sm text-app-textSoft">{job.roleTitle}</p>
+      <p className="font-semibold text-app-text" id={`${nameId}-company`}>
+        {job.company}
+      </p>
+      <p className="mt-0.5 text-sm text-app-textSoft" id={`${nameId}-role`}>
+        {job.roleTitle}
+      </p>
       {details && <p className="mt-2 text-xs text-app-textMuted">{details}</p>}
       <p className="mt-3 text-xs text-app-textMuted">
         {t('jobs.updatedOn', { date: formatJobDate(job.updatedAt, language) })}

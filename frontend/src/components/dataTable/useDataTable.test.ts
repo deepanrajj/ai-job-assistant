@@ -60,6 +60,31 @@ describe('useDataTable', () => {
     expect(result.current.currentPageIndex).toBe(0);
   });
 
+  it('goes back to the first page when a caller-held search changes', () => {
+    const { rerender, result } = renderHook(
+      ({ searchQuery }) =>
+        useDataTable<TRow>({
+          columns,
+          data: rows,
+          defaultPageSize: 1,
+          initialSort: null,
+          onSearchQueryChange: () => undefined,
+          search: { getSearchText: (row) => row.name, label: 'Search' },
+          searchQuery,
+        }),
+      { initialProps: { searchQuery: 'a' } },
+    );
+
+    act(() => {
+      result.current.handleNextPage();
+    });
+    expect(result.current.currentPageIndex).toBe(1);
+
+    // Cleared by the caller, not through handleSearchChange.
+    rerender({ searchQuery: '' });
+    expect(result.current.currentPageIndex).toBe(0);
+  });
+
   it('steps back from the page shown after the rows shrink', () => {
     const { rerender, result } = renderHook(
       ({ data }) =>

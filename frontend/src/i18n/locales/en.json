@@ -175,7 +175,7 @@
     "filter": {
       "label": "Show",
       "all": "All jobs",
-      "unsent": "Jobs with unsent documents"
+      "unsent": "With unsent documents"
     },
     "noMatchTitle": "No matching applications",
     "noMatchDescription": "Try another search, or show all jobs.",

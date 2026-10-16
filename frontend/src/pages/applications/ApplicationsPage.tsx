@@ -1,8 +1,9 @@
-import { useMemo, useState, type FC, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type FC, type ReactNode } from 'react';
 
 import {
   DataTablePagination,
   DataTableToolbar,
+  normalizeTableSearchText,
   useDataTable,
   type IDataTableColumn,
   type IDataTableSearchConfig,
@@ -13,8 +14,8 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  SegmentedControl,
   Select,
-  getSegmentClassName,
 } from '../../components/ui';
 import { ApplicationCards } from '../../features/applications/components/ApplicationCards';
 import { ApplicationsMatrix } from '../../features/applications/components/ApplicationsMatrix';
@@ -100,6 +101,7 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
   const [filter, setFilter] = useState<TApplicationsFilter>('all');
   // Held here, not in the table hook, so "Show all jobs" can clear it.
   const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   // Built once per data change, so each keystroke is a lookup per job.
   const searchTexts = useMemo(
     () =>
@@ -153,7 +155,11 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
   // select stay put while searching and filtering. A size the user picked
   // keeps them shown, so it never lingers out of sight.
   const hasPaging = groups.length > PAGE_SIZE_OPTIONS[0] || table.pageSize !== PAGE_SIZE_OPTIONS[0];
-  const isNarrowed = searchQuery.trim() !== '' || filter !== 'all';
+  const matchSummary = t('applications.matchSummary', {
+    shown: table.sortedRows.length,
+    total: groups.length,
+  });
+  const isNarrowed = Boolean(normalizeTableSearchText(searchQuery)) || filter !== 'all';
 
   if (isLoading) return <LoadingState label={t('applications.loading')} />;
 
@@ -187,34 +193,23 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
     );
 
   const viewSwitch = isWide && (
-    <div
-      aria-label={t('applications.view.label')}
-      className="inline-flex w-fit shrink-0 rounded-full border border-app-border bg-app-surface2 p-1"
-      role="group"
-    >
-      {(
-        [
-          ['matrix', <TableIcon />, t('applications.view.matrix')],
-          ['cards', <GridIcon />, t('applications.view.cards')],
-        ] as const
-      ).map(([option, icon, label]) => (
-        <button
-          aria-pressed={view === option}
-          className={getSegmentClassName(view === option)}
-          key={option}
-          onClick={() => setView(option)}
-          type="button"
-        >
-          {icon}
-          {label}
-        </button>
-      ))}
-    </div>
+    <SegmentedControl<TApplicationsView>
+      label={t('applications.view.label')}
+      onChange={setView}
+      options={[
+        { icon: <TableIcon />, label: t('applications.view.matrix'), value: 'matrix' },
+        { icon: <GridIcon />, label: t('applications.view.cards'), value: 'cards' },
+      ]}
+      value={view}
+    />
   );
 
+  // The button leaves with the empty state, so focus goes to the search
+  // box it just cleared rather than falling back to the page start.
   const showAllJobs = () => {
     setSearchQuery('');
     setFilter('all');
+    searchInputRef.current?.focus();
   };
 
   const renderList = () => {
@@ -260,14 +255,12 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
         )}
         {/* Without paging, a narrowed list still says how much it shows. */}
         {!hasPaging && isNarrowed && (
+          // Hidden from screen readers, which hear the status line instead.
           <p
-            aria-live="polite"
+            aria-hidden="true"
             className="border-t border-app-border px-5 py-4 text-sm text-app-textMuted"
           >
-            {t('applications.matchSummary', {
-              shown: table.sortedRows.length,
-              total: groups.length,
-            })}
+            {matchSummary}
           </p>
         )}
       </>
@@ -276,6 +269,12 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Always mounted, so screen readers announce each new count; a live
+          region added together with its text is usually not read. */}
+      <p className="sr-only" role="status">
+        {isNarrowed &&
+          (table.sortedRows.length === 0 ? t('applications.noMatchTitle') : matchSummary)}
+      </p>
       <ApplicationsSummary counts={counts} />
       <DataTableToolbar<IApplicationGroup>
         filters={
@@ -290,6 +289,7 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
         }
         onSearchChange={table.handleSearchChange}
         search={search}
+        searchInputRef={searchInputRef}
         searchQuery={table.searchQuery}
       />
       {materials(renderList(), viewSwitch)}

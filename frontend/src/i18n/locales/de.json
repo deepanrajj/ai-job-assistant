@@ -175,7 +175,7 @@
     "filter": {
       "label": "Anzeigen",
       "all": "Alle Jobs",
-      "unsent": "Jobs mit nicht verschickten Unterlagen"
+      "unsent": "Mit offenen Unterlagen"
     },
     "noMatchTitle": "Keine passenden Bewerbungen",
     "noMatchDescription": "Versuche eine andere Suche oder zeige alle Jobs.",

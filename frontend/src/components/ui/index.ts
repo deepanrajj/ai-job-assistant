@@ -8,6 +8,7 @@ export * from './ErrorState';
 export * from './Input';
 export * from './LoadingState';
 export * from './MetricCard';
+export * from './SegmentedControl';
 export * from './Select';
 export * from './StatsBar';
 export * from './Textarea';

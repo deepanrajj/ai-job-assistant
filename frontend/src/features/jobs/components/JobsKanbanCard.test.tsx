@@ -25,7 +25,7 @@ describe('JobsKanbanCard', () => {
     );
   });
 
-  it('names its link by the card content, so two cards from one company differ', () => {
+  it('names its link by company and role only, so two cards from one company differ', () => {
     renderWithRouter(
       <>
         <JobsKanbanCard job={createMockJob({ company: 'Acme', id: 'a', roleTitle: 'Designer' })} />
@@ -33,8 +33,8 @@ describe('JobsKanbanCard', () => {
       </>,
     );
 
-    expect(screen.getByRole('link', { name: /^Acme Designer/ })).toHaveAttribute('href', '/jobs/a');
-    expect(screen.getByRole('link', { name: /^Acme Engineer/ })).toHaveAttribute('href', '/jobs/b');
+    expect(screen.getByRole('link', { name: 'Acme Designer' })).toHaveAttribute('href', '/jobs/a');
+    expect(screen.getByRole('link', { name: 'Acme Engineer' })).toHaveAttribute('href', '/jobs/b');
   });
 
   it('prints only the details that are set, and the last update', () => {

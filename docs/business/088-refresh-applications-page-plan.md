@@ -295,3 +295,18 @@ and update the phase backlog.
   sideways scroll. Focused checks: 407 tests in 104 files, ESLint,
   Prettier, and `tsc -b`. Kept: the `filterKey` contract and the
   pager's `summary` override, which still needs `totalRows`.
+- Seventh review round (PR 73): `useDataTable` returns to the first page
+  whenever the search text changes, however it was set, so "Show all
+  jobs" and the Jobs page's own search box (which set the text directly)
+  no longer leave a stale page. The match count moved to an
+  always-mounted `role="status"` line, so screen readers announce it and
+  the no-match state; the visible line is `aria-hidden`. "Show all jobs"
+  moves focus to the cleared search box (a new optional
+  `searchInputRef` on the toolbar). Board cards are named by company and
+  role through `aria-labelledby`: short, yet distinct. Both view
+  switches use a new shared `SegmentedControl`. The narrowed check uses
+  `normalizeTableSearchText`. The "unsent" option needed 259 px in
+  German against 198 px of room, so it is now "With unsent documents" /
+  "Mit offenen Unterlagen" (157 and 152 px). Focused checks: 409 tests
+  in 105 files, ESLint, Prettier, and `tsc -b`. Kept: the `filterKey`
+  contract and the left-aligned Jobs Actions column (owner request).

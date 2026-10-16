@@ -167,8 +167,9 @@ describe('ApplicationsPage', () => {
 
     expect(within(table).getAllByRole('rowheader')).toHaveLength(1);
     expect(within(table).getByRole('rowheader')).toHaveTextContent('Celonis');
-    // Without paging, the narrowed list still says how much it shows.
-    expect(screen.getByText('1 of 2 jobs')).toBeInTheDocument();
+    // Without paging, the narrowed list still says how much it shows, and
+    // the always-present status line announces it.
+    expect(screen.getByRole('status')).toHaveTextContent('1 of 2 jobs');
 
     const summary = screen.getByRole('group', { name: 'Documents by status' });
 
@@ -186,7 +187,8 @@ describe('ApplicationsPage', () => {
     await user.clear(screen.getByRole('textbox', { name: 'Search' }));
     await user.type(screen.getByRole('textbox', { name: 'Search' }), 'nothing like this');
 
-    expect(screen.getByText('No matching applications')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show all jobs' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('No matching applications');
   });
 
   it('clears the search and filter from the no-match state', async () => {
@@ -195,10 +197,12 @@ describe('ApplicationsPage', () => {
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Show' }), 'unsent');
     await user.type(screen.getByRole('textbox', { name: 'Search' }), 'personio');
-    expect(screen.getByText('No matching applications')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show all jobs' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Show all jobs' }));
 
+    // The button left with the empty state; focus lands on the cleared box.
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveFocus();
     expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('');
     expect(screen.getByRole('combobox', { name: 'Show' })).toHaveValue('all');
     expect(

@@ -1,6 +1,6 @@
 import type { ChangeEventHandler, ReactNode } from 'react';
 
-import { Select, getSegmentClassName } from '../../components/ui';
+import { SegmentedControl, Select } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
 import { StatusPill } from './components/StatusPill';
@@ -181,30 +181,15 @@ export const createJobsViewToggle = ({
   t,
   viewMode,
 }: ICreateJobsViewToggleParams): ReactNode => (
-  <div
-    aria-label={t('jobs.viewToggleLabel')}
-    className="inline-flex w-fit rounded-full border border-app-border bg-app-surface2 p-1"
-    role="group"
-  >
-    <button
-      aria-pressed={viewMode === 'table'}
-      className={getSegmentClassName(viewMode === 'table')}
-      onClick={() => onViewModeChange('table')}
-      type="button"
-    >
-      <TableIcon />
-      {t('jobs.tableView')}
-    </button>
-    <button
-      aria-pressed={viewMode === 'kanban'}
-      className={getSegmentClassName(viewMode === 'kanban')}
-      onClick={() => onViewModeChange('kanban')}
-      type="button"
-    >
-      <KanbanIcon />
-      {t('jobs.kanbanView')}
-    </button>
-  </div>
+  <SegmentedControl
+    label={t('jobs.viewToggleLabel')}
+    onChange={onViewModeChange}
+    options={[
+      { icon: <TableIcon />, label: t('jobs.tableView'), value: 'table' },
+      { icon: <KanbanIcon />, label: t('jobs.kanbanView'), value: 'kanban' },
+    ]}
+    value={viewMode}
+  />
 );
 
 /**

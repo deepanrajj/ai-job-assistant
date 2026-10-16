@@ -1,4 +1,4 @@
-import type { ChangeEvent, ChangeEventHandler, ReactNode } from 'react';
+import type { ChangeEvent, ChangeEventHandler, ReactNode, Ref } from 'react';
 
 import { Input, Select } from '../../ui';
 import { SearchIcon } from '../../icons';
@@ -19,6 +19,8 @@ interface IDataTableToolbarProps<TData> {
   onSearchChange: ChangeEventHandler<HTMLInputElement>;
   onSortChange?: (sort: TDataTableSortState) => void;
   search?: IDataTableSearchConfig<TData>;
+  /** Lets the page move focus to the search box, such as after clearing it. */
+  searchInputRef?: Ref<HTMLInputElement>;
   searchQuery: string;
   showSortSelect?: boolean;
   sortState?: TDataTableSortState;
@@ -53,6 +55,7 @@ export const DataTableToolbar = <TData,>({
   onSearchChange,
   onSortChange,
   search,
+  searchInputRef,
   searchQuery,
   showSortSelect = false,
   sortState = null,
@@ -79,6 +82,7 @@ export const DataTableToolbar = <TData,>({
           leftIcon={<SearchIcon />}
           onChange={onSearchChange}
           placeholder={search.placeholder}
+          ref={searchInputRef}
           value={searchQuery}
         />
       )}

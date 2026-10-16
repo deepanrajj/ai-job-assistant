@@ -93,12 +93,16 @@ export const useDataTable = <TData>({
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [pageIndex, setPageIndex] = useState(0);
   const [pagedFilterKey, setPagedFilterKey] = useState(filterKey);
+  const [pagedSearchQuery, setPagedSearchQuery] = useState(searchQuery);
 
-  // A new filter value starts again from the first page. Adjusted during
-  // render, React's pattern for resetting state on a prop change; a string
-  // compares by value, so this runs only when the filter really changes.
-  if (pagedFilterKey !== filterKey) {
+  // A new filter value or search starts again from the first page,
+  // however the search was set: by this hook's handler, or by a caller
+  // that holds it. Adjusted during render, React's pattern for resetting
+  // state on a prop change; strings compare by value, so this runs only
+  // when the filter or search really changes.
+  if (pagedFilterKey !== filterKey || pagedSearchQuery !== searchQuery) {
     setPagedFilterKey(filterKey);
+    setPagedSearchQuery(searchQuery);
     setPageIndex(0);
   }
   const filteredRows = useMemo(
