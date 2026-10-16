@@ -16,6 +16,8 @@ interface IDataTablePaginationProps {
   pageCount: number;
   pageSize: number;
   pageSizeOptions: number[];
+  /** Replaces the "x-y of z rows" summary, such as to count jobs instead. */
+  summary?: string;
   totalRows: number;
 }
 
@@ -35,6 +37,7 @@ export const DataTablePagination = ({
   pageCount,
   pageSize,
   pageSizeOptions,
+  summary,
   totalRows,
 }: IDataTablePaginationProps) => {
   const { t } = useTranslation();
@@ -44,11 +47,12 @@ export const DataTablePagination = ({
   return (
     <div className="flex flex-col gap-3 border-t border-app-border bg-app-surface px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="text-sm text-app-textMuted">
-        {t('dataTable.rowsSummary', {
-          from: firstVisibleRow,
-          to: lastVisibleRow,
-          total: totalRows,
-        })}
+        {summary ??
+          t('dataTable.rowsSummary', {
+            from: firstVisibleRow,
+            to: lastVisibleRow,
+            total: totalRows,
+          })}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">

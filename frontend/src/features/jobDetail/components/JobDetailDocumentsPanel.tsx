@@ -20,6 +20,7 @@ import { useJobDocuments } from '../useJobDocuments';
 import { useTranslation } from '../../../i18n';
 import { formatCalendarDate } from '../../jobs/jobs.utils';
 import {
+  DOCUMENT_TYPES,
   DOCUMENT_TYPE_TRANSLATION_KEYS,
   type TJobDocument,
   type TJobDocumentType,
@@ -31,16 +32,6 @@ import {
 interface IJobDetailDocumentsPanelProps {
   jobId: string;
 }
-
-/**
- * The document type options offered by the type select, in display order.
- */
-const documentTypeOptions: readonly TJobDocumentType[] = [
-  'CV',
-  'COVER_LETTER',
-  'PORTFOLIO',
-  'OTHER',
-];
 
 /**
  * Empty form values used to seed the add-document form.
@@ -94,7 +85,7 @@ const DocumentFields: FC<IDocumentFieldsProps> = ({ disabled, onChange, values }
         onChange={(event) => onChange({ ...values, type: event.target.value as TJobDocumentType })}
         value={values.type}
       >
-        {documentTypeOptions.map((type) => (
+        {DOCUMENT_TYPES.map((type) => (
           <option key={type} value={type}>
             {t(DOCUMENT_TYPE_TRANSLATION_KEYS[type])}
           </option>

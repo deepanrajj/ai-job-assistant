@@ -9,6 +9,7 @@ export * from './Input';
 export * from './LoadingState';
 export * from './MetricCard';
 export * from './Select';
+export * from './StatsBar';
 export * from './Textarea';
 export * from './Tooltip';
 export { tileToneClasses } from './ui.constants';

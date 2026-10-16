@@ -84,9 +84,16 @@ export type TJobContact = {
 };
 
 /**
- * Supported kinds of application document.
+ * Supported kinds of application document, in display order. The type is
+ * derived from this list, so a new kind added here reaches every select,
+ * matrix column, and `Record` keyed by it.
  */
-export type TJobDocumentType = 'CV' | 'COVER_LETTER' | 'PORTFOLIO' | 'OTHER';
+export const DOCUMENT_TYPES = ['CV', 'COVER_LETTER', 'PORTFOLIO', 'OTHER'] as const;
+
+/**
+ * A kind of application document.
+ */
+export type TJobDocumentType = (typeof DOCUMENT_TYPES)[number];
 
 /**
  * Maps each document type to its translation resource key.

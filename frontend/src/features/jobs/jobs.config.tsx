@@ -1,12 +1,11 @@
 import type { ChangeEventHandler, ReactNode } from 'react';
 
-import { Select } from '../../components/ui';
+import { Select, getSegmentClassName } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
 import { StatusPill } from './components/StatusPill';
 import { KanbanIcon, TableIcon } from '../../components/icons';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
-import { classNames } from '../../utils';
 import { formatJobDate, formatJobSalary } from './jobs.utils';
 import { APP_PATH_BUILDERS } from '../../routes/paths';
 import { statusOptions } from './jobs.constants';
@@ -165,23 +164,6 @@ export const createJobsColumns = ({
 ];
 
 /**
- * Classes for one segment of the jobs view switch. The selected segment is
- * a light, raised tab rather than a solid button, so the switch does not
- * compete with Add Job, the page's primary action.
- *
- * @param {boolean} isSelected Whether the segment's view is shown.
- * @returns {string} Segment class name.
- */
-const getViewSegmentClassName = (isSelected: boolean): string =>
-  classNames(
-    'inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-semibold transition',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2',
-    isSelected
-      ? 'bg-app-surface text-primary-800 shadow-sm'
-      : 'text-app-textSoft hover:text-primary-800',
-  );
-
-/**
  * Creates the jobs page view switch, a segmented control choosing between
  * the table and Kanban layouts.
  *
@@ -200,7 +182,7 @@ export const createJobsViewToggle = ({
   >
     <button
       aria-pressed={viewMode === 'table'}
-      className={getViewSegmentClassName(viewMode === 'table')}
+      className={getSegmentClassName(viewMode === 'table')}
       onClick={() => onViewModeChange('table')}
       type="button"
     >
@@ -209,7 +191,7 @@ export const createJobsViewToggle = ({
     </button>
     <button
       aria-pressed={viewMode === 'kanban'}
-      className={getViewSegmentClassName(viewMode === 'kanban')}
+      className={getSegmentClassName(viewMode === 'kanban')}
       onClick={() => onViewModeChange('kanban')}
       type="button"
     >

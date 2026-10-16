@@ -35,6 +35,31 @@ const columns: IDataTableColumn<TRow>[] = [
 ];
 
 describe('useDataTable', () => {
+  it('goes back to the first page when the filter value changes', () => {
+    const { rerender, result } = renderHook(
+      ({ filterKey }) =>
+        useDataTable<TRow>({
+          columns,
+          data: rows,
+          defaultPageSize: 1,
+          // A new function every render must not reset the page on its own.
+          filterPredicate: (row) => filterKey === 'all' || row.name !== 'Beta',
+          filterKey,
+          initialSort: null,
+        }),
+      { initialProps: { filterKey: 'all' } },
+    );
+
+    act(() => {
+      result.current.handleNextPage();
+    });
+    rerender({ filterKey: 'all' });
+    expect(result.current.currentPageIndex).toBe(1);
+
+    rerender({ filterKey: 'noBeta' });
+    expect(result.current.currentPageIndex).toBe(0);
+  });
+
   it('stores search, sorting, and pagination state', () => {
     const { result } = renderHook(() =>
       useDataTable<TRow>({

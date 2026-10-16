@@ -9,6 +9,15 @@ export type TApplicationDocument = TJobDocument & {
 };
 
 /**
+ * Document counts for the Applications stats bar.
+ */
+export interface IApplicationDocumentCounts {
+  jobs: number;
+  notSent: number;
+  submitted: number;
+}
+
+/**
  * One job and its documents, in the order the page lists them.
  */
 export interface IApplicationGroup {

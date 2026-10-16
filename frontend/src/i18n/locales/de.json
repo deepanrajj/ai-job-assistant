@@ -143,14 +143,45 @@
     "appliedMissing": "Beworben: {{reason}}"
   },
   "applications": {
-    "title": "Bewerbungen",
     "loading": "Bewerbungen werden geladen",
     "loadErrorTitle": "Bewerbungen konnten nicht geladen werden",
     "emptyTitle": "Noch keine Bewerbungsunterlagen",
     "emptyDescription": "Öffne einen Job und halte im Tab Unterlagen fest, was du mit jeder Bewerbung verschickt hast.",
     "openJob": "Job öffnen",
     "openLink": "Link öffnen",
-    "documentsFor": "Unterlagen für {{company}}"
+    "documentsFor": "Unterlagen für {{company}}",
+    "materialsTitle": "Bewerbungsunterlagen",
+    "materialsSubtitle": "Was du mit jeder Bewerbung verschickt hast. Unterlagen fügst du im Tab Unterlagen eines Jobs hinzu.",
+    "summary": {
+      "label": "Unterlagen nach Status",
+      "submitted": "Verschickt",
+      "notSent": "Noch nicht verschickt",
+      "jobs": "Jobs mit Unterlagen"
+    },
+    "openLinkFor": "Link für {{title}} öffnen",
+    "matrix": {
+      "job": "Job",
+      "none": "Keine",
+      "label": "Unterlagen nach Job und Art",
+      "actions": "Aktionen"
+    },
+    "view": {
+      "label": "Ansicht der Bewerbungen",
+      "matrix": "Matrix",
+      "cards": "Karten"
+    },
+    "search": {
+      "label": "Suche",
+      "placeholder": "Unternehmen, Rolle oder Unterlage suchen"
+    },
+    "filter": {
+      "label": "Anzeigen",
+      "all": "Alle Jobs",
+      "unsent": "Jobs mit nicht verschickten Unterlagen"
+    },
+    "noMatchTitle": "Keine passenden Bewerbungen",
+    "noMatchDescription": "Versuche eine andere Suche oder zeige alle Jobs.",
+    "pageSummary": "{{from}}-{{to}} von {{total}} Jobs"
   },
   "calendar": {
     "fallbackError": {

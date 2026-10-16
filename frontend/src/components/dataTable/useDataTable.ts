@@ -21,6 +21,18 @@ interface IUseDataTableOptions<TData> {
   data: TData[];
   defaultPageSize: number;
   filterPredicate?: (row: TData) => boolean;
+  /**
+   * The filter's current value, such as the selected status. When it
+   * changes, paging returns to the first page, as it does for a new
+   * search. A plain value rather than the predicate, whose identity can
+   * change on every render.
+   *
+   * It must change whenever `filterPredicate` would match different rows:
+   * a predicate that reads two values needs both in the key, such as
+   * `${status}|${owner}`. A value left out keeps the current page, clamped
+   * to the last one, instead of returning to the first.
+   */
+  filterKey?: string;
   initialSort: TDataTableSortState;
   onSearchQueryChange?: (searchQuery: string) => void;
   onSortStateChange?: (sortState: TDataTableSortState) => void;
@@ -64,6 +76,7 @@ export const useDataTable = <TData>({
   data,
   defaultPageSize,
   filterPredicate,
+  filterKey,
   initialSort,
   onSearchQueryChange,
   onSortStateChange,
@@ -79,6 +92,15 @@ export const useDataTable = <TData>({
   const setSortState = onSortStateChange ?? setOwnSortState;
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [pageIndex, setPageIndex] = useState(0);
+  const [pagedFilterKey, setPagedFilterKey] = useState(filterKey);
+
+  // A new filter value starts again from the first page. Adjusted during
+  // render, React's pattern for resetting state on a prop change; a string
+  // compares by value, so this runs only when the filter really changes.
+  if (pagedFilterKey !== filterKey) {
+    setPagedFilterKey(filterKey);
+    setPageIndex(0);
+  }
   const filteredRows = useMemo(
     () => filterDataTableRows(data, { filterPredicate, search, searchQuery }),
     [data, filterPredicate, search, searchQuery],

@@ -1,6 +1,6 @@
 # Task 088 - Refresh Applications Page
 
-Status: Not started
+Status: Completed
 
 Related plan: [Frontend visual refresh](../../docs/business/084-frontend-visual-refresh-plan.md).
 
@@ -55,6 +55,21 @@ Out of scope:
 3. Preserve the feature-disabled route and independent error/empty
    presentation.
 
+## Scope Notes
+
+Agreed with the owner during the work and recorded in the plan
+([D3 and D3a](../../docs/business/088-refresh-applications-page-plan.md)):
+
+- A switchable matrix of jobs by document type and a card grid, with a
+  stats bar above, as the grouped overview.
+- Search, an "unsent only" filter, and paging for long lists, reusing
+  the Jobs page's data table pieces.
+- Because those pieces are shared, the filter reset in `useDataTable`
+  (`filterKey`) also fixes the Jobs page's status filter, which kept a
+  stale page; the stats bar became the shared `StatsBar`, used by both
+  pages; and the document types now come from one ordered
+  `DOCUMENT_TYPES` list, also used by the job detail type select.
+
 ## Data And Contracts
 
 No API, document schema, storage, or feature-flag changes.
@@ -63,7 +78,9 @@ No API, document schema, storage, or feature-flag changes.
 
 - Grouped documents render with accurate labels, dates, and links.
 - Empty, loading, error/retry, and disabled states remain visible.
-- Long titles and URLs do not break the narrow layout.
+- Long titles and URLs do not break the narrow layout. Checked in the
+  running app at 1040 px and 390 px with long text injected, not by a
+  unit test: jsdom has no layout, so a test could only assert class names.
 
 ## Validation
 
@@ -73,11 +90,11 @@ states. Report focused local checks and actual CI E2E status in the PR.
 
 ## Acceptance Criteria
 
-- [ ] Applications uses the approved design with real metadata.
-- [ ] Existing links and document grouping still work.
-- [ ] Flagged, empty, loading, and error states remain clear.
-- [ ] Desktop and mobile layouts are accessible.
-- [ ] Focused tests and frontend verification pass.
+- [x] Applications uses the approved design with real metadata.
+- [x] Existing links and document grouping still work.
+- [x] Flagged, empty, loading, and error states remain clear.
+- [x] Desktop and mobile layouts are accessible.
+- [x] Focused tests and frontend verification pass.
 
 ## Commit
 

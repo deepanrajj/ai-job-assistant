@@ -75,6 +75,25 @@ describe('JobsPage', () => {
     expect(screen.queryByRole('rowheader', { name: /Miro/i })).not.toBeInTheDocument();
   });
 
+  it('goes back to the first page when the status filter changes', async () => {
+    const user = userEvent.setup();
+    const jobs = Array.from({ length: 12 }, (_, index) =>
+      createMockJob({
+        company: `Company ${index + 1}`,
+        id: `job-${index + 1}`,
+        status: index < 8 ? 'APPLIED' : 'INTERVIEW',
+      }),
+    );
+    renderJobsPage({ jobs });
+
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'APPLIED');
+
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
+  });
+
   it('leaves the global Add Job action to the app shell', () => {
     renderJobsPage();
 
