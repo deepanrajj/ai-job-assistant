@@ -122,7 +122,7 @@ describe('jobs config', () => {
     );
 
     expect(screen.getByText('Acme GmbH')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View details for Acme GmbH' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Open job for Acme GmbH' })).toHaveAttribute(
       'href',
       '/jobs/job-001',
     );

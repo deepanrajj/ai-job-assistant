@@ -54,6 +54,11 @@ Out of scope:
    per-tab error feedback.
 3. Ensure long descriptions, URLs, notes, and document names remain
    readable on desktop and mobile.
+4. Apply the button variants in `../../frontend/AGENTS.md` §3 "Button variants". Found
+   in task 088's audit: Edit in the contacts, documents, and reminders
+   panels is `primary` (should be `ghost`), and Delete in the contacts,
+   documents, notes, reminders, and tasks panels is solid `danger`
+   (should be `dangerGhost` unless it is the final confirmation).
 
 ## Data And Contracts
 

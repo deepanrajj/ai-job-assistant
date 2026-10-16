@@ -22,7 +22,7 @@ Goal: make the project presentable for GitHub, interviews, and deployment.
 - [x] [Refresh dashboard layout](../../tasks/roadmap/085-refresh-dashboard-layout.md).
 - [x] [Refresh Jobs list and board](../../tasks/roadmap/086-refresh-jobs-list-and-board.md).
 - [x] [Refresh Discover workflow](../../tasks/roadmap/087-refresh-discover-workflow.md).
-- [ ] [Refresh Applications page](../../tasks/roadmap/088-refresh-applications-page.md).
+- [x] [Refresh Applications page](../../tasks/roadmap/088-refresh-applications-page.md).
 - [ ] [Refresh Calendar page](../../tasks/roadmap/089-refresh-calendar-page.md).
 - [ ] [Refresh Profile page](../../tasks/roadmap/090-refresh-profile-page.md).
 - [ ] [Refresh Job Detail page](../../tasks/roadmap/091-refresh-job-detail-page.md).
@@ -45,7 +45,7 @@ under R-12 in the
 Tasks 084-092 follow the
 [frontend visual refresh plan](../business/084-frontend-visual-refresh-plan.md).
 Tasks 084 (theme and shell), 085 (dashboard), 086 (jobs list and
-board), and 087 (Discover) are complete; tasks 088-091 can be implemented one at a time in
+board), 087 (Discover), and 088 (Applications) are complete; tasks 089-091 can be implemented one at a time in
 any order, and task 092 closes the visual pass. These tasks use existing frontend data and feature flags, so they
 do not wait for the pending backend tasks 040-049.
 

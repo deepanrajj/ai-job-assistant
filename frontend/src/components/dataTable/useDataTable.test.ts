@@ -35,6 +35,86 @@ const columns: IDataTableColumn<TRow>[] = [
 ];
 
 describe('useDataTable', () => {
+  it('goes back to the first page when the filter value changes', () => {
+    const { rerender, result } = renderHook(
+      ({ filterKey }) =>
+        useDataTable<TRow>({
+          columns,
+          data: rows,
+          defaultPageSize: 1,
+          // A new function every render must not reset the page on its own.
+          filterPredicate: (row) => filterKey === 'all' || row.name !== 'Beta',
+          filterKey,
+          initialSort: null,
+        }),
+      { initialProps: { filterKey: 'all' } },
+    );
+
+    act(() => {
+      result.current.handleNextPage();
+    });
+    rerender({ filterKey: 'all' });
+    expect(result.current.currentPageIndex).toBe(1);
+
+    rerender({ filterKey: 'noBeta' });
+    expect(result.current.currentPageIndex).toBe(0);
+  });
+
+  it('goes back to the first page when a caller-held search changes', () => {
+    const { rerender, result } = renderHook(
+      ({ searchQuery }) =>
+        useDataTable<TRow>({
+          columns,
+          data: rows,
+          defaultPageSize: 1,
+          initialSort: null,
+          onSearchQueryChange: () => undefined,
+          search: { getSearchText: (row) => row.name, label: 'Search' },
+          searchQuery,
+        }),
+      { initialProps: { searchQuery: 'a' } },
+    );
+
+    act(() => {
+      result.current.handleNextPage();
+    });
+    expect(result.current.currentPageIndex).toBe(1);
+
+    // Cleared by the caller, not through handleSearchChange.
+    rerender({ searchQuery: '' });
+    expect(result.current.currentPageIndex).toBe(0);
+  });
+
+  it('steps back from the page shown after the rows shrink', () => {
+    const { rerender, result } = renderHook(
+      ({ data }) =>
+        useDataTable<TRow>({
+          columns,
+          data,
+          defaultPageSize: 1,
+          initialSort: null,
+        }),
+      { initialProps: { data: rows } },
+    );
+
+    act(() => {
+      result.current.handleNextPage();
+    });
+    act(() => {
+      result.current.handleNextPage();
+    });
+    expect(result.current.currentPageIndex).toBe(2);
+
+    // Two rows left: the third page is gone, so page 2 is shown.
+    rerender({ data: rows.slice(0, 2) });
+    expect(result.current.currentPageIndex).toBe(1);
+
+    act(() => {
+      result.current.handlePreviousPage();
+    });
+    expect(result.current.currentPageIndex).toBe(0);
+  });
+
   it('stores search, sorting, and pagination state', () => {
     const { result } = renderHook(() =>
       useDataTable<TRow>({

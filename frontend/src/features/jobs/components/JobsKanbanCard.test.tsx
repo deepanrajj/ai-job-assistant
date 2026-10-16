@@ -19,9 +19,22 @@ describe('JobsKanbanCard', () => {
     expect(screen.getByText('Northwind Systems')).toBeInTheDocument();
     expect(screen.getByText('Platform Engineer')).toBeInTheDocument();
     expect(screen.getByText('Hamburg', { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: 'View details for Northwind Systems' }),
-    ).toHaveAttribute('href', '/jobs/job-042');
+    expect(screen.getByRole('link', { name: /^Northwind Systems/ })).toHaveAttribute(
+      'href',
+      '/jobs/job-042',
+    );
+  });
+
+  it('names its link by company and role only, so two cards from one company differ', () => {
+    renderWithRouter(
+      <>
+        <JobsKanbanCard job={createMockJob({ company: 'Acme', id: 'a', roleTitle: 'Designer' })} />
+        <JobsKanbanCard job={createMockJob({ company: 'Acme', id: 'b', roleTitle: 'Engineer' })} />
+      </>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Acme Designer' })).toHaveAttribute('href', '/jobs/a');
+    expect(screen.getByRole('link', { name: 'Acme Engineer' })).toHaveAttribute('href', '/jobs/b');
   });
 
   it('prints only the details that are set, and the last update', () => {

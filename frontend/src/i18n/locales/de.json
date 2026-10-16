@@ -12,7 +12,6 @@
     "skipToContent": "Zum Hauptinhalt springen",
     "jobsTableCaption": "Gespeicherte Jobs mit Firma, Rolle, Status, Standort, Gehalt und letztem Aktualisierungsdatum.",
     "openPostingFor": "Anzeige für {{company}} öffnen",
-    "viewJobDetailsFor": "Details für {{company}} anzeigen",
     "jobDescriptionInput": "Eingabe für Stellenbeschreibung",
     "askQuestionInput": "Frage an den KI-Assistenten"
   },
@@ -143,14 +142,47 @@
     "appliedMissing": "Beworben: {{reason}}"
   },
   "applications": {
-    "title": "Bewerbungen",
     "loading": "Bewerbungen werden geladen",
     "loadErrorTitle": "Bewerbungen konnten nicht geladen werden",
     "emptyTitle": "Noch keine Bewerbungsunterlagen",
     "emptyDescription": "Öffne einen Job und halte im Tab Unterlagen fest, was du mit jeder Bewerbung verschickt hast.",
-    "openJob": "Job öffnen",
     "openLink": "Link öffnen",
-    "documentsFor": "Unterlagen für {{company}}"
+    "documentsFor": "Unterlagen für {{company}}",
+    "materialsTitle": "Bewerbungsunterlagen",
+    "materialsSubtitle": "Was du mit jeder Bewerbung verschickt hast. Unterlagen fügst du im Tab Unterlagen eines Jobs hinzu.",
+    "summary": {
+      "label": "Unterlagen nach Status",
+      "submitted": "Verschickt",
+      "notSent": "Noch nicht verschickt",
+      "jobs": "Jobs mit Unterlagen"
+    },
+    "openLinkFor": "Link für {{title}} öffnen",
+    "matrix": {
+      "job": "Job",
+      "none": "Keine",
+      "label": "Unterlagen nach Job und Art",
+      "actions": "Aktionen"
+    },
+    "view": {
+      "label": "Ansicht der Bewerbungen",
+      "matrix": "Matrix",
+      "cards": "Karten"
+    },
+    "search": {
+      "label": "Suche",
+      "placeholder": "Unternehmen, Rolle oder Unterlage suchen"
+    },
+    "filter": {
+      "label": "Anzeigen",
+      "all": "Alle Jobs",
+      "unsent": "Mit offenen Unterlagen"
+    },
+    "noMatchTitle": "Keine passenden Bewerbungen",
+    "noMatchDescription": "Versuche eine andere Suche oder zeige alle Jobs.",
+    "matchSummary": "{{shown}} von {{total}} Jobs",
+    "pageSize": "Jobs pro Seite",
+    "showAll": "Alle Jobs zeigen",
+    "pageSummary": "{{from}}-{{to}} von {{total}} Jobs"
   },
   "calendar": {
     "fallbackError": {
@@ -394,6 +426,8 @@
     "salary": "Gehalt",
     "updated": "Aktualisiert",
     "actions": "Aktionen",
+    "openJob": "Job öffnen",
+    "openJobFor": "Job bei {{company}} öffnen",
     "openPosting": "Anzeige öffnen",
     "notSet": "Nicht angegeben",
     "noJobsFound": "Keine Jobs gefunden",

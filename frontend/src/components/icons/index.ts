@@ -3,6 +3,7 @@ export * from './CalendarIcon';
 export * from './DetailsIcon';
 export * from './EditIcon';
 export * from './ExternalLinkIcon';
+export * from './GridIcon';
 export * from './KanbanIcon';
 export * from './PlusIcon';
 export * from './SearchIcon';

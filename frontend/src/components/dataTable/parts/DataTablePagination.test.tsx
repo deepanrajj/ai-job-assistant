@@ -25,6 +25,26 @@ describe('DataTablePagination', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('shows a custom summary in place of the row summary', () => {
+    renderWithProviders(
+      <DataTablePagination
+        currentPageIndex={0}
+        firstVisibleRow={1}
+        lastVisibleRow={10}
+        onNextPage={() => undefined}
+        onPageSizeChange={() => undefined}
+        onPreviousPage={() => undefined}
+        pageCount={2}
+        pageSize={10}
+        pageSizeOptions={[10, 25]}
+        summary="1-10 of 11 jobs"
+        totalRows={11}
+      />,
+    );
+
+    expect(screen.getByText('1-10 of 11 jobs')).toBeInTheDocument();
+  });
+
   it('renders pagination summary and controls', async () => {
     const user = userEvent.setup();
     const handleNextPage = vi.fn();

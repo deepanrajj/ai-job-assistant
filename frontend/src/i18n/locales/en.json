@@ -12,7 +12,6 @@
     "skipToContent": "Skip to main content",
     "jobsTableCaption": "Saved jobs with company, role, status, location, salary, and last updated date.",
     "openPostingFor": "Open posting for {{company}}",
-    "viewJobDetailsFor": "View details for {{company}}",
     "jobDescriptionInput": "Job description input",
     "askQuestionInput": "Question for AI assistant"
   },
@@ -143,14 +142,47 @@
     "appliedMissing": "Applied: {{reason}}"
   },
   "applications": {
-    "title": "Applications",
     "loading": "Loading applications",
     "loadErrorTitle": "Applications could not be loaded",
     "emptyTitle": "No application documents yet",
     "emptyDescription": "Open a job and use its Documents tab to record what you sent with each application.",
-    "openJob": "Open job",
     "openLink": "Open link",
-    "documentsFor": "Documents for {{company}}"
+    "documentsFor": "Documents for {{company}}",
+    "materialsTitle": "Application materials",
+    "materialsSubtitle": "What you sent with each application. Add documents from a job's Documents tab.",
+    "summary": {
+      "label": "Documents by status",
+      "submitted": "Submitted",
+      "notSent": "Not sent yet",
+      "jobs": "Jobs with documents"
+    },
+    "openLinkFor": "Open link for {{title}}",
+    "matrix": {
+      "job": "Job",
+      "none": "None",
+      "label": "Documents by job and type",
+      "actions": "Actions"
+    },
+    "view": {
+      "label": "Applications view",
+      "matrix": "Matrix",
+      "cards": "Cards"
+    },
+    "search": {
+      "label": "Search",
+      "placeholder": "Search company, role, or document"
+    },
+    "filter": {
+      "label": "Show",
+      "all": "All jobs",
+      "unsent": "With unsent documents"
+    },
+    "noMatchTitle": "No matching applications",
+    "noMatchDescription": "Try another search, or show all jobs.",
+    "matchSummary": "{{shown}} of {{total}} jobs",
+    "pageSize": "Jobs per page",
+    "showAll": "Show all jobs",
+    "pageSummary": "{{from}}-{{to}} of {{total}} jobs"
   },
   "calendar": {
     "fallbackError": {
@@ -394,6 +426,8 @@
     "salary": "Salary",
     "updated": "Updated",
     "actions": "Actions",
+    "openJob": "Open job",
+    "openJobFor": "Open job for {{company}}",
     "openPosting": "Open posting",
     "notSet": "Not set",
     "noJobsFound": "No jobs found",

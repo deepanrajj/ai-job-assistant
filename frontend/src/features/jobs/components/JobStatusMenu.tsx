@@ -138,7 +138,7 @@ export const JobStatusMenu: FC<IJobStatusMenuProps> = ({
           {otherStatuses.map((status) => (
             <li key={status}>
               <button
-                className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-app-surface2 px-3 text-xs font-medium text-app-textSoft ring-1 ring-inset ring-app-border transition hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                className="inline-flex min-h-8 items-center gap-1 rounded-full bg-app-surface2 px-3 text-xs font-medium text-app-textSoft ring-1 ring-inset ring-app-border transition hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
                 onClick={() => {
                   setIsOpen(false);
                   onSelect(status);

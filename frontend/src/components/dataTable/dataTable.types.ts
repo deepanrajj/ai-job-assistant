@@ -83,6 +83,8 @@ export interface IDataTableProps<TData> {
   defaultPageSize?: number;
   emptyState: IDataTableEmptyState;
   filterPredicate?: (row: TData) => boolean;
+  /** The filter's current value; a change returns paging to the first page. */
+  filterKey?: string;
   filters?: ReactNode;
   getRowId: (row: TData) => string;
   initialSort?: TDataTableSortState;

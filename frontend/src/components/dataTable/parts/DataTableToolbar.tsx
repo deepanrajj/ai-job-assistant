@@ -1,4 +1,4 @@
-import type { ChangeEvent, ChangeEventHandler, ReactNode } from 'react';
+import type { ChangeEvent, ChangeEventHandler, ReactNode, Ref } from 'react';
 
 import { Input, Select } from '../../ui';
 import { SearchIcon } from '../../icons';
@@ -13,14 +13,17 @@ import type {
  * Props used by the data table toolbar.
  */
 interface IDataTableToolbarProps<TData> {
-  columns: IDataTableColumn<TData>[];
+  /** Sortable columns for the "Sort by" select; leave out for search and filters only. */
+  columns?: IDataTableColumn<TData>[];
   filters?: ReactNode;
   onSearchChange: ChangeEventHandler<HTMLInputElement>;
-  onSortChange: (sort: TDataTableSortState) => void;
+  onSortChange?: (sort: TDataTableSortState) => void;
   search?: IDataTableSearchConfig<TData>;
+  /** Lets the page move focus to the search box, such as after clearing it. */
+  searchInputRef?: Ref<HTMLInputElement>;
   searchQuery: string;
-  showSortSelect: boolean;
-  sortState: TDataTableSortState;
+  showSortSelect?: boolean;
+  sortState?: TDataTableSortState;
 }
 
 /** Select value for "no sorting". */
@@ -39,6 +42,9 @@ const toSortValue = (sort: TDataTableSortState): string =>
  * Renders search, filter, and optional sort controls in their own card
  * above the data table. The sort select offers both directions of every
  * sortable column, so it always reflects the sort the column headers set.
+ * From `lg` up the controls share one row: the first takes the spare
+ * width and each further one a 14rem column, so no empty column is left
+ * whichever controls are shown.
  *
  * @param {IDataTableToolbarProps<TData>} props Component props.
  * @returns {JSX.Element | null} Data table toolbar.
@@ -49,30 +55,34 @@ export const DataTableToolbar = <TData,>({
   onSearchChange,
   onSortChange,
   search,
+  searchInputRef,
   searchQuery,
-  showSortSelect,
-  sortState,
+  showSortSelect = false,
+  sortState = null,
 }: IDataTableToolbarProps<TData>) => {
   const { t } = useTranslation();
-  const sortableColumns = columns.filter((column) => column.sortValue);
-  const hasSortSelect = showSortSelect && sortableColumns.length > 0;
+  const sortableColumns = columns?.filter((column) => column.sortValue) ?? [];
+  const hasSortSelect = showSortSelect && sortableColumns.length > 0 && Boolean(onSortChange);
 
   if (!search && !filters && !hasSortSelect) return null;
 
   const handleSortChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const [columnId, direction] = event.target.value.split(':');
 
-    onSortChange(columnId ? { columnId, direction: direction === 'desc' ? 'desc' : 'asc' } : null);
+    onSortChange?.(
+      columnId ? { columnId, direction: direction === 'desc' ? 'desc' : 'asc' } : null,
+    );
   };
 
   return (
-    <div className="grid gap-3 rounded-2xl border border-app-border bg-app-surface p-4 shadow-sm sm:p-5 lg:grid-cols-[minmax(0,1fr)_repeat(2,14rem)] lg:items-end">
+    <div className="grid gap-3 rounded-2xl border border-app-border bg-app-surface p-4 shadow-sm sm:p-5 lg:auto-cols-[14rem] lg:grid-flow-col lg:grid-cols-[minmax(0,1fr)] lg:items-end">
       {search && (
         <Input
           label={search.label}
           leftIcon={<SearchIcon />}
           onChange={onSearchChange}
           placeholder={search.placeholder}
+          ref={searchInputRef}
           value={searchQuery}
         />
       )}

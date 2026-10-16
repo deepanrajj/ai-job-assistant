@@ -262,6 +262,7 @@ export const JobsPage: FC<IJobsPageProps> = ({
                 title: t('jobs.noJobsFound'),
               }
         }
+        filterKey={statusFilter}
         filterPredicate={filterJobsByStatus}
         filters={filters}
         getRowId={getJobRowId}

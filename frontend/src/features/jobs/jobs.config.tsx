@@ -1,12 +1,11 @@
 import type { ChangeEventHandler, ReactNode } from 'react';
 
-import { Select } from '../../components/ui';
+import { SegmentedControl, Select } from '../../components/ui';
 import { JobCompanyCell } from './components/JobCompanyCell';
 import { JobDetailAction } from './components/JobDetailAction';
 import { StatusPill } from './components/StatusPill';
 import { KanbanIcon, TableIcon } from '../../components/icons';
 import type { TLanguage, TTranslationContextValue } from '../../i18n';
-import { classNames } from '../../utils';
 import { formatJobDate, formatJobSalary } from './jobs.utils';
 import { APP_PATH_BUILDERS } from '../../routes/paths';
 import { statusOptions } from './jobs.constants';
@@ -90,7 +89,8 @@ export const createJobsColumns = ({
     mobileHeading: true,
     sortLabel: t('jobs.role'),
     sortValue: (job) => job.roleTitle,
-    widthClassName: 'w-[22%]',
+    // Gives Actions room for its label from 2xl, where the label shows.
+    widthClassName: 'w-[22%] 2xl:w-[16%]',
   },
   {
     cell: (job) => <StatusPill status={job.status} />,
@@ -153,33 +153,21 @@ export const createJobsColumns = ({
   },
   {
     cell: (job) => (
-      <JobDetailAction company={job.company} detailPath={APP_PATH_BUILDERS.jobDetail(job.id)} />
+      // The table renders from md; below 2xl it has no room for the label
+      // without scrolling sideways, so the button shows its icon only.
+      // The phone list, below md, keeps the label.
+      <JobDetailAction
+        company={job.company}
+        detailPath={APP_PATH_BUILDERS.jobDetail(job.id)}
+        labelClassName="md:hidden 2xl:inline"
+      />
     ),
-    className: 'text-right',
     header: t('jobs.actions'),
-    headerClassName: 'text-right',
     id: 'actions',
     mobileLabel: t('jobs.actions'),
-    widthClassName: 'w-[8%]',
+    widthClassName: 'w-[8%] 2xl:w-[14%]',
   },
 ];
-
-/**
- * Classes for one segment of the jobs view switch. The selected segment is
- * a light, raised tab rather than a solid button, so the switch does not
- * compete with Add Job, the page's primary action.
- *
- * @param {boolean} isSelected Whether the segment's view is shown.
- * @returns {string} Segment class name.
- */
-const getViewSegmentClassName = (isSelected: boolean): string =>
-  classNames(
-    'inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-semibold transition',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2',
-    isSelected
-      ? 'bg-app-surface text-primary-800 shadow-sm'
-      : 'text-app-textSoft hover:text-primary-800',
-  );
 
 /**
  * Creates the jobs page view switch, a segmented control choosing between
@@ -193,30 +181,15 @@ export const createJobsViewToggle = ({
   t,
   viewMode,
 }: ICreateJobsViewToggleParams): ReactNode => (
-  <div
-    aria-label={t('jobs.viewToggleLabel')}
-    className="inline-flex w-fit rounded-full border border-app-border bg-app-surface2 p-1"
-    role="group"
-  >
-    <button
-      aria-pressed={viewMode === 'table'}
-      className={getViewSegmentClassName(viewMode === 'table')}
-      onClick={() => onViewModeChange('table')}
-      type="button"
-    >
-      <TableIcon />
-      {t('jobs.tableView')}
-    </button>
-    <button
-      aria-pressed={viewMode === 'kanban'}
-      className={getViewSegmentClassName(viewMode === 'kanban')}
-      onClick={() => onViewModeChange('kanban')}
-      type="button"
-    >
-      <KanbanIcon />
-      {t('jobs.kanbanView')}
-    </button>
-  </div>
+  <SegmentedControl
+    label={t('jobs.viewToggleLabel')}
+    onChange={onViewModeChange}
+    options={[
+      { icon: <TableIcon />, label: t('jobs.tableView'), value: 'table' },
+      { icon: <KanbanIcon />, label: t('jobs.kanbanView'), value: 'kanban' },
+    ]}
+    value={viewMode}
+  />
 );
 
 /**

@@ -31,7 +31,7 @@ describe('applicationsRoute', () => {
     );
     renderWithRouter(<ApplicationsRoute />);
 
-    expect(await screen.findByRole('heading', { name: 'Celonis' })).toBeInTheDocument();
+    expect(await screen.findByRole('rowheader', { name: /Celonis/ })).toBeInTheDocument();
     expect(screen.getByText('CV - backend v3')).toBeInTheDocument();
     expect(screen.getByText('Submitted May 10, 2026')).toBeInTheDocument();
   });

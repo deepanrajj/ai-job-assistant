@@ -35,6 +35,19 @@ describe('DataTableToolbar', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('needs no sort props for search and filters only', () => {
+    renderWithProviders(
+      <DataTableToolbar<TRow>
+        onSearchChange={() => undefined}
+        search={{ getSearchText: (row) => row.name, label: 'Search rows' }}
+        searchQuery=""
+      />,
+    );
+
+    expect(screen.getByRole('textbox', { name: 'Search rows' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Sort by' })).not.toBeInTheDocument();
+  });
+
   it('renders search and filter controls', async () => {
     const user = userEvent.setup();
     const handleSearchChange = vi.fn();

@@ -21,6 +21,18 @@ interface IUseDataTableOptions<TData> {
   data: TData[];
   defaultPageSize: number;
   filterPredicate?: (row: TData) => boolean;
+  /**
+   * The filter's current value, such as the selected status. When it
+   * changes, paging returns to the first page, as it does for a new
+   * search. A plain value rather than the predicate, whose identity can
+   * change on every render.
+   *
+   * It must change whenever `filterPredicate` would match different rows:
+   * a predicate that reads two values needs both in the key, such as
+   * `${status}|${owner}`. A value left out keeps the current page, clamped
+   * to the last one, instead of returning to the first.
+   */
+  filterKey?: string;
   initialSort: TDataTableSortState;
   onSearchQueryChange?: (searchQuery: string) => void;
   onSortStateChange?: (sortState: TDataTableSortState) => void;
@@ -64,6 +76,7 @@ export const useDataTable = <TData>({
   data,
   defaultPageSize,
   filterPredicate,
+  filterKey,
   initialSort,
   onSearchQueryChange,
   onSortStateChange,
@@ -79,6 +92,19 @@ export const useDataTable = <TData>({
   const setSortState = onSortStateChange ?? setOwnSortState;
   const [pageSize, setPageSize] = useState(defaultPageSize);
   const [pageIndex, setPageIndex] = useState(0);
+  const [pagedFilterKey, setPagedFilterKey] = useState(filterKey);
+  const [pagedSearchQuery, setPagedSearchQuery] = useState(searchQuery);
+
+  // A new filter value or search starts again from the first page,
+  // however the search was set: by this hook's handler, or by a caller
+  // that holds it. Adjusted during render, React's pattern for resetting
+  // state on a prop change; strings compare by value, so this runs only
+  // when the filter or search really changes.
+  if (pagedFilterKey !== filterKey || pagedSearchQuery !== searchQuery) {
+    setPagedFilterKey(filterKey);
+    setPagedSearchQuery(searchQuery);
+    setPageIndex(0);
+  }
   const filteredRows = useMemo(
     () => filterDataTableRows(data, { filterPredicate, search, searchQuery }),
     [data, filterPredicate, search, searchQuery],
@@ -118,12 +144,14 @@ export const useDataTable = <TData>({
     setPageIndex(0);
   }, []);
 
+  // Steps from the page shown: the stored index can sit past the last
+  // page after the rows shrink, so it is clamped first.
   const handlePreviousPage = useCallback(() => {
-    setPageIndex((currentPageIndex) => Math.max(0, currentPageIndex - 1));
-  }, []);
+    setPageIndex((index) => Math.max(0, Math.min(index, pageCount - 1) - 1));
+  }, [pageCount]);
 
   const handleNextPage = useCallback(() => {
-    setPageIndex((currentPageIndex) => Math.min(pageCount - 1, currentPageIndex + 1));
+    setPageIndex((index) => Math.min(pageCount - 1, Math.min(index, pageCount - 1) + 1));
   }, [pageCount]);
 
   const handleSort = useCallback(

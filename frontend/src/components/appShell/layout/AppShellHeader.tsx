@@ -79,7 +79,7 @@ export const AppShellHeader: FC<IAppShellHeaderProps> = ({
           </div>
           <Link
             aria-label={t('nav.profile')}
-            className="flex h-10 items-center gap-2 rounded-full border border-app-border bg-app-surface2 px-2 text-app-textSoft hover:bg-primary-50 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:px-3"
+            className="flex h-10 items-center gap-1 rounded-full border border-app-border bg-app-surface2 px-2 text-app-textSoft hover:bg-primary-50 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:px-3"
             to={APP_PATHS.PROFILE}
           >
             <ProfileIcon />
