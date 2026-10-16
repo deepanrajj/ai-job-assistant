@@ -1,4 +1,4 @@
-import { memo, type FC, type ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 
 import { classNames } from '../../utils';
 
@@ -35,7 +35,7 @@ interface IStatsBarProps {
  * @param {IStatsBarProps} props Component props.
  * @returns {JSX.Element} Stats bar.
  */
-const StatsBarComponent: FC<IStatsBarProps> = ({ className, items, label }) => (
+export const StatsBar: FC<IStatsBarProps> = ({ className, items, label }) => (
   <dl
     // A dl has no role of its own, so the group carries the name.
     aria-label={label}
@@ -67,5 +67,3 @@ const StatsBarComponent: FC<IStatsBarProps> = ({ className, items, label }) => (
     ))}
   </dl>
 );
-
-export const StatsBar = memo(StatsBarComponent);

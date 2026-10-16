@@ -179,6 +179,9 @@
     },
     "noMatchTitle": "Keine passenden Bewerbungen",
     "noMatchDescription": "Versuche eine andere Suche oder zeige alle Jobs.",
+    "matchSummary": "{{shown}} von {{total}} Jobs",
+    "pageSize": "Jobs pro Seite",
+    "showAll": "Alle Jobs zeigen",
     "pageSummary": "{{from}}-{{to}} von {{total}} Jobs"
   },
   "calendar": {

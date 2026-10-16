@@ -167,6 +167,8 @@ describe('ApplicationsPage', () => {
 
     expect(within(table).getAllByRole('rowheader')).toHaveLength(1);
     expect(within(table).getByRole('rowheader')).toHaveTextContent('Celonis');
+    // Without paging, the narrowed list still says how much it shows.
+    expect(screen.getByText('1 of 2 jobs')).toBeInTheDocument();
 
     const summary = screen.getByRole('group', { name: 'Documents by status' });
 
@@ -185,6 +187,26 @@ describe('ApplicationsPage', () => {
     await user.type(screen.getByRole('textbox', { name: 'Search' }), 'nothing like this');
 
     expect(screen.getByText('No matching applications')).toBeInTheDocument();
+  });
+
+  it('clears the search and filter from the no-match state', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Show' }), 'unsent');
+    await user.type(screen.getByRole('textbox', { name: 'Search' }), 'personio');
+    expect(screen.getByText('No matching applications')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show all jobs' }));
+
+    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('');
+    expect(screen.getByRole('combobox', { name: 'Show' })).toHaveValue('all');
+    expect(
+      within(screen.getByRole('table', { name: 'Documents by job and type' })).getAllByRole(
+        'rowheader',
+      ),
+    ).toHaveLength(2);
+    expect(screen.queryByText(/of 2 jobs/)).not.toBeInTheDocument();
   });
 
   it('shows only jobs with an unsent document when filtered', async () => {
@@ -272,11 +294,11 @@ describe('ApplicationsPage', () => {
     }));
     renderPage({ documents: manyDocuments, jobs: manyJobs });
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Rows per page' }), '25');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Jobs per page' }), '25');
     await user.type(screen.getByRole('textbox', { name: 'Search' }), 'Company 12');
 
     expect(screen.getByText('1-1 of 1 jobs')).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Rows per page' })).toHaveValue('25');
+    expect(screen.getByRole('combobox', { name: 'Jobs per page' })).toHaveValue('25');
   });
 
   it('keeps paging shown for a picked page size once the list fits one page', async () => {
@@ -304,11 +326,11 @@ describe('ApplicationsPage', () => {
     );
     const { rerender } = renderPage({ documents: documentsFor(manyJobs), jobs: manyJobs });
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Rows per page' }), '25');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Jobs per page' }), '25');
     // One job loses its documents, leaving ten: they fit the smallest page.
     rerender(pageFor(manyJobs.slice(0, 10)));
 
-    expect(screen.getByRole('combobox', { name: 'Rows per page' })).toHaveValue('25');
+    expect(screen.getByRole('combobox', { name: 'Jobs per page' })).toHaveValue('25');
   });
 
   it('counts submitted and unsent documents and their jobs, leaving out deleted jobs', () => {

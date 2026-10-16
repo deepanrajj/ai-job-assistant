@@ -43,7 +43,6 @@ const JobsKanbanCardComponent: FC<IJobsKanbanCardProps> = ({
 
   const link = (
     <Link
-      aria-label={t('jobs.openJobFor', { company: job.company })}
       className="block min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
       to={APP_PATH_BUILDERS.jobDetail(job.id)}
     >

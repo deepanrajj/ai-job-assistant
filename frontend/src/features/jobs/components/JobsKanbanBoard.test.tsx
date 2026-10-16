@@ -65,7 +65,7 @@ describe('JobsKanbanBoard', () => {
 
     renderWithRouter(<JobsKanbanBoard jobs={jobs} />);
 
-    expect(screen.getByRole('link', { name: 'Open job for Acme GmbH' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Acme GmbH/ })).toHaveAttribute(
       'href',
       '/jobs/job-777',
     );

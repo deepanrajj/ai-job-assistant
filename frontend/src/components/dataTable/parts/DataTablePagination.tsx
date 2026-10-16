@@ -15,6 +15,8 @@ interface IDataTablePaginationProps {
   onPreviousPage: () => void;
   pageCount: number;
   pageSize: number;
+  /** Replaces "Rows per page", such as to count jobs instead. */
+  pageSizeLabel?: string;
   pageSizeOptions: number[];
   /** Replaces the "x-y of z rows" summary, such as to count jobs instead. */
   summary?: string;
@@ -36,6 +38,7 @@ export const DataTablePagination = ({
   onPreviousPage,
   pageCount,
   pageSize,
+  pageSizeLabel,
   pageSizeOptions,
   summary,
   totalRows,
@@ -56,7 +59,11 @@ export const DataTablePagination = ({
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <Select label={t('dataTable.rowsPerPage')} onChange={onPageSizeChange} value={pageSize}>
+        <Select
+          label={pageSizeLabel ?? t('dataTable.rowsPerPage')}
+          onChange={onPageSizeChange}
+          value={pageSize}
+        >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
               {size}

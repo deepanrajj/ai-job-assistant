@@ -51,7 +51,7 @@ export const ApplicationsMatrix: FC<IApplicationsMatrixProps> = ({ columns, grou
               {t(DOCUMENT_TYPE_TRANSLATION_KEYS[type])}
             </th>
           ))}
-          <th className="w-16 px-5 py-3 2xl:w-44" scope="col">
+          <th className="w-[4.5rem] px-3 py-3 2xl:w-44 2xl:px-5" scope="col">
             <span className="sr-only">{t('applications.matrix.actions')}</span>
           </th>
         </tr>
@@ -85,7 +85,7 @@ export const ApplicationsMatrix: FC<IApplicationsMatrixProps> = ({ columns, grou
                 </td>
               );
             })}
-            <td className="px-5 py-4 text-right">
+            <td className="px-3 py-4 text-right 2xl:px-5">
               {/* Below 2xl the type columns need the width, so only the icon shows. */}
               <JobDetailAction
                 company={job.company}

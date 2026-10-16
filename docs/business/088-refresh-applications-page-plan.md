@@ -280,3 +280,18 @@ and update the phase backlog.
   `getSegmentClassName`, sort headers, the status-change chips (was
   6px), the header's Profile button, and the sidebar's collapse button.
   Sidebar navigation links keep their 12px.
+- Sixth review round (PR 73): the matrix's action cell was 24 px of
+  content for a 42 px icon button; it is now `w-[4.5rem] px-3` below
+  `2xl`. The Jobs widths are responsive (Role `w-[22%] 2xl:w-[16%]`,
+  Actions `w-[8%] 2xl:w-[14%]`), so the label's room exists only where
+  the label shows. Previous and Next use clamped functional updaters.
+  Applications names its page-size select "Jobs per page" (a new
+  optional `pageSizeLabel`), offers "Show all jobs" in the no-match
+  state, and says "{shown} of {total} jobs" under a narrowed list when
+  there is no paging. `StatsBar` drops `memo`, which never skipped a
+  render. Board cards drop their `aria-label`, so their content names
+  the link and two cards from one company stay apart. Measured: the
+  action fits its cell at 1280 and 1536 px on both pages, with no
+  sideways scroll. Focused checks: 407 tests in 104 files, ESLint,
+  Prettier, and `tsc -b`. Kept: the `filterKey` contract and the
+  pager's `summary` override, which still needs `totalRows`.

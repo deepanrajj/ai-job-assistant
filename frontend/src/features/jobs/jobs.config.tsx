@@ -89,7 +89,8 @@ export const createJobsColumns = ({
     mobileHeading: true,
     sortLabel: t('jobs.role'),
     sortValue: (job) => job.roleTitle,
-    widthClassName: 'w-[16%]',
+    // Gives Actions room for its label from 2xl, where the label shows.
+    widthClassName: 'w-[22%] 2xl:w-[16%]',
   },
   {
     cell: (job) => <StatusPill status={job.status} />,
@@ -164,7 +165,7 @@ export const createJobsColumns = ({
     header: t('jobs.actions'),
     id: 'actions',
     mobileLabel: t('jobs.actions'),
-    widthClassName: 'w-[14%]',
+    widthClassName: 'w-[8%] 2xl:w-[14%]',
   },
 ];
 

@@ -179,6 +179,9 @@
     },
     "noMatchTitle": "No matching applications",
     "noMatchDescription": "Try another search, or show all jobs.",
+    "matchSummary": "{{shown}} of {{total}} jobs",
+    "pageSize": "Jobs per page",
+    "showAll": "Show all jobs",
     "pageSummary": "{{from}}-{{to}} of {{total}} jobs"
   },
   "calendar": {

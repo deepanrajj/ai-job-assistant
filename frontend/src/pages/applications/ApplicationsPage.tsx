@@ -98,6 +98,8 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
   const isWide = useBreakpoint('xl');
   const [view, setView] = useState<TApplicationsView>('matrix');
   const [filter, setFilter] = useState<TApplicationsFilter>('all');
+  // Held here, not in the table hook, so "Show all jobs" can clear it.
+  const [searchQuery, setSearchQuery] = useState('');
   // Built once per data change, so each keystroke is a lookup per job.
   const searchTexts = useMemo(
     () =>
@@ -140,7 +142,9 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
     filterKey: filter,
     filterPredicate,
     initialSort: null,
+    onSearchQueryChange: setSearchQuery,
     search,
+    searchQuery,
   });
   // From every job, not this page's, so columns stay put while paging.
   const typeColumns = useMemo(() => getDocumentTypeColumns(groups), [groups]);
@@ -149,6 +153,7 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
   // select stay put while searching and filtering. A size the user picked
   // keeps them shown, so it never lingers out of sight.
   const hasPaging = groups.length > PAGE_SIZE_OPTIONS[0] || table.pageSize !== PAGE_SIZE_OPTIONS[0];
+  const isNarrowed = searchQuery.trim() !== '' || filter !== 'all';
 
   if (isLoading) return <LoadingState label={t('applications.loading')} />;
 
@@ -207,10 +212,20 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
     </div>
   );
 
+  const showAllJobs = () => {
+    setSearchQuery('');
+    setFilter('all');
+  };
+
   const renderList = () => {
     if (table.sortedRows.length === 0)
       return (
         <EmptyState
+          action={
+            <Button onClick={showAllJobs} size="sm" variant="secondary">
+              {t('applications.showAll')}
+            </Button>
+          }
           description={t('applications.noMatchDescription')}
           title={t('applications.noMatchTitle')}
         />
@@ -233,6 +248,7 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
             onPreviousPage={table.handlePreviousPage}
             pageCount={table.pageCount}
             pageSize={table.pageSize}
+            pageSizeLabel={t('applications.pageSize')}
             pageSizeOptions={PAGE_SIZE_OPTIONS}
             summary={t('applications.pageSummary', {
               from: table.firstVisibleRow,
@@ -241,6 +257,18 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
             })}
             totalRows={table.sortedRows.length}
           />
+        )}
+        {/* Without paging, a narrowed list still says how much it shows. */}
+        {!hasPaging && isNarrowed && (
+          <p
+            aria-live="polite"
+            className="border-t border-app-border px-5 py-4 text-sm text-app-textMuted"
+          >
+            {t('applications.matchSummary', {
+              shown: table.sortedRows.length,
+              total: groups.length,
+            })}
+          </p>
         )}
       </>
     );

@@ -140,15 +140,15 @@ export const useDataTable = <TData>({
     setPageIndex(0);
   }, []);
 
-  // Steps from the page shown, not the stored index, which can sit past
-  // the last page after the rows shrink.
+  // Steps from the page shown: the stored index can sit past the last
+  // page after the rows shrink, so it is clamped first.
   const handlePreviousPage = useCallback(() => {
-    setPageIndex(Math.max(0, currentPageIndex - 1));
-  }, [currentPageIndex]);
+    setPageIndex((index) => Math.max(0, Math.min(index, pageCount - 1) - 1));
+  }, [pageCount]);
 
   const handleNextPage = useCallback(() => {
-    setPageIndex(Math.min(pageCount - 1, currentPageIndex + 1));
-  }, [currentPageIndex, pageCount]);
+    setPageIndex((index) => Math.min(pageCount - 1, Math.min(index, pageCount - 1) + 1));
+  }, [pageCount]);
 
   const handleSort = useCallback(
     (columnId: string) => {

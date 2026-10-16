@@ -236,7 +236,7 @@ describe('JobsPage', () => {
       'false',
     );
     companies.forEach((company) =>
-      expect(screen.getByRole('link', { name: `Open job for ${company}` })).toBeInTheDocument(),
+      expect(screen.getByRole('link', { name: new RegExp(`^${company}`) })).toBeInTheDocument(),
     );
   });
 
@@ -289,7 +289,7 @@ describe('JobsPage', () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     await user.click(screen.getByRole('button', { name: 'Pipeline' }));
-    await user.click(screen.getByRole('link', { name: 'Open job for Personio' }));
+    await user.click(screen.getByRole('link', { name: /^Personio/ }));
 
     expect(await screen.findByText('Job detail route')).toBeInTheDocument();
   });
@@ -308,7 +308,7 @@ describe('JobsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Pipeline' }));
 
     const personioCard = within(screen.getByRole('region', { name: 'Applied' }))
-      .getByRole('link', { name: 'Open job for Personio' })
+      .getByRole('link', { name: /^Personio/ })
       .closest('article') as HTMLElement;
 
     await user.click(
@@ -318,9 +318,7 @@ describe('JobsPage', () => {
 
     const offerColumn = screen.getByRole('region', { name: 'Offer' });
 
-    expect(
-      within(offerColumn).getByRole('link', { name: 'Open job for Personio' }),
-    ).toBeInTheDocument();
+    expect(within(offerColumn).getByRole('link', { name: /^Personio/ })).toBeInTheDocument();
     expect(
       within(offerColumn).getByRole('button', { name: 'Offer, change status for Personio' }),
     ).toHaveFocus();
@@ -341,7 +339,7 @@ describe('JobsPage', () => {
     );
     expect(
       within(screen.getByRole('region', { name: 'Applied' })).getByRole('link', {
-        name: 'Open job for Personio',
+        name: /^Personio/,
       }),
     ).toBeInTheDocument();
   });
@@ -354,8 +352,8 @@ describe('JobsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Pipeline' }));
 
     expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('Celonis');
-    expect(screen.getByRole('link', { name: 'Open job for Celonis' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Open job for Personio' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^Celonis/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Personio/ })).not.toBeInTheDocument();
     expect(
       within(screen.getByRole('region', { name: 'Applied' })).getByText(
         'No matching jobs in this status',
@@ -381,13 +379,13 @@ describe('JobsPage', () => {
     const companiesInApplied = () =>
       within(screen.getByRole('region', { name: 'Applied' }))
         .getAllByRole('link')
-        .map((link) => link.getAttribute('aria-label'));
+        .map((link) => link.querySelector('p')?.textContent);
 
     await user.selectOptions(sortSelect, 'company:desc');
-    expect(companiesInApplied()).toEqual(['Open job for Zeta', 'Open job for Alpha']);
+    expect(companiesInApplied()).toEqual(['Zeta', 'Alpha']);
 
     await user.selectOptions(sortSelect, 'company:asc');
-    expect(companiesInApplied()).toEqual(['Open job for Alpha', 'Open job for Zeta']);
+    expect(companiesInApplied()).toEqual(['Alpha', 'Zeta']);
   });
 
   it('keeps a status sort chosen in the table selectable on the board', async () => {
