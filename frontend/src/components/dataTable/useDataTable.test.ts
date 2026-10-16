@@ -60,6 +60,36 @@ describe('useDataTable', () => {
     expect(result.current.currentPageIndex).toBe(0);
   });
 
+  it('steps back from the page shown after the rows shrink', () => {
+    const { rerender, result } = renderHook(
+      ({ data }) =>
+        useDataTable<TRow>({
+          columns,
+          data,
+          defaultPageSize: 1,
+          initialSort: null,
+        }),
+      { initialProps: { data: rows } },
+    );
+
+    act(() => {
+      result.current.handleNextPage();
+    });
+    act(() => {
+      result.current.handleNextPage();
+    });
+    expect(result.current.currentPageIndex).toBe(2);
+
+    // Two rows left: the third page is gone, so page 2 is shown.
+    rerender({ data: rows.slice(0, 2) });
+    expect(result.current.currentPageIndex).toBe(1);
+
+    act(() => {
+      result.current.handlePreviousPage();
+    });
+    expect(result.current.currentPageIndex).toBe(0);
+  });
+
   it('stores search, sorting, and pagination state', () => {
     const { result } = renderHook(() =>
       useDataTable<TRow>({

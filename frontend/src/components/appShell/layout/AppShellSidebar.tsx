@@ -89,7 +89,7 @@ export const AppShellSidebar: FC<IAppShellSidebarProps> = ({
           aria-controls="desktop-nav"
           aria-expanded={!collapsed}
           aria-label={t(collapsed ? 'nav.expandSidebar' : 'nav.collapseSidebar')}
-          className={`mb-5 flex h-10 w-full items-center gap-2 rounded-lg border border-app-border text-app-textSoft hover:bg-app-surface2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
+          className={`mb-5 flex h-10 w-full items-center gap-1 rounded-lg border border-app-border text-app-textSoft hover:bg-app-surface2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
             collapsed ? 'justify-center' : 'px-3'
           }`}
           onClick={onToggleCollapsed}

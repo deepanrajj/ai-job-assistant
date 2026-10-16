@@ -13,7 +13,7 @@ interface IJobDetailActionProps {
   detailPath: string;
   /**
    * Classes for the visible "Open job" text, such as
-   * `lg:hidden 2xl:inline` to show only the icon where space is short.
+   * `md:hidden 2xl:inline` to show only the icon where space is short.
    * The link's own label keeps its accessible name either way.
    */
   labelClassName?: string;

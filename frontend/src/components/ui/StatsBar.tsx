@@ -1,5 +1,7 @@
 import { memo, type FC, type ReactNode } from 'react';
 
+import { classNames } from '../../utils';
+
 /**
  * One count in the stats bar.
  */
@@ -33,23 +35,29 @@ interface IStatsBarProps {
  * @param {IStatsBarProps} props Component props.
  * @returns {JSX.Element} Stats bar.
  */
-const StatsBarComponent: FC<IStatsBarProps> = ({ className = '', items, label }) => (
+const StatsBarComponent: FC<IStatsBarProps> = ({ className, items, label }) => (
   <dl
     // A dl has no role of its own, so the group carries the name.
     aria-label={label}
     role="group"
-    className={`grid gap-px overflow-hidden rounded-2xl border border-app-border bg-app-border shadow-sm ${className}`}
+    className={classNames(
+      'grid gap-px overflow-hidden rounded-2xl border border-app-border bg-app-border shadow-sm',
+      className,
+    )}
   >
     {items.map((item) => (
       <div
-        className={`flex items-center justify-between gap-3 bg-app-surface px-4 py-3 sm:block sm:py-4 ${item.className ?? ''}`}
+        className={classNames(
+          'flex items-center justify-between gap-3 bg-app-surface px-4 py-3 sm:block sm:py-4',
+          item.className,
+        )}
         key={item.id}
       >
         <dt className="flex min-w-0 items-center gap-2 text-sm font-medium text-app-textMuted">
           {item.dotClassName && (
             <span
               aria-hidden="true"
-              className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.dotClassName}`}
+              className={classNames('h-2.5 w-2.5 shrink-0 rounded-full', item.dotClassName)}
             />
           )}
           <span className="truncate">{item.label}</span>

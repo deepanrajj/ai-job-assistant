@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { ApplicationsPage } from './ApplicationsPage';
 import { AppError } from '../../errors';
@@ -53,7 +54,7 @@ const renderPage = (overrides: Partial<ComponentProps<typeof ApplicationsPage>> 
   );
 
 describe('ApplicationsPage', () => {
-  it('shows a matrix of jobs by document type, latest submission first, from lg up', () => {
+  it('shows a matrix of jobs by document type, latest submission first, from xl up', () => {
     renderPage();
 
     const table = screen.getByRole('table', { name: 'Documents by job and type' });
@@ -91,7 +92,7 @@ describe('ApplicationsPage', () => {
     );
   });
 
-  it('shows job cards below lg, with each document’s type, status, and link', () => {
+  it('shows job cards below xl, with each document’s type, status, and link', () => {
     const originalMatchMedia = window.matchMedia;
 
     window.matchMedia = ((query: string) => ({
@@ -135,7 +136,7 @@ describe('ApplicationsPage', () => {
     }
   });
 
-  it('switches between the matrix and job cards from lg up', async () => {
+  it('switches between the matrix and job cards from xl up', async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -275,6 +276,38 @@ describe('ApplicationsPage', () => {
     await user.type(screen.getByRole('textbox', { name: 'Search' }), 'Company 12');
 
     expect(screen.getByText('1-1 of 1 jobs')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Rows per page' })).toHaveValue('25');
+  });
+
+  it('keeps paging shown for a picked page size once the list fits one page', async () => {
+    const user = userEvent.setup();
+    const manyJobs = Array.from({ length: 11 }, (_, index) =>
+      createMockJob({ company: `Company ${index + 1}`, id: `job-${index + 1}` }),
+    );
+    const documentsFor = (jobs: typeof manyJobs): TApplicationDocument[] =>
+      jobs.map((job, index) => ({
+        id: `doc-${index + 1}`,
+        jobId: job.id,
+        title: `CV ${index + 1}`,
+        type: 'CV',
+      }));
+    const pageFor = (jobs: typeof manyJobs) => (
+      <MemoryRouter>
+        <ApplicationsPage
+          documents={documentsFor(jobs)}
+          error={null}
+          isLoading={false}
+          jobs={jobs}
+          onRetry={() => {}}
+        />
+      </MemoryRouter>
+    );
+    const { rerender } = renderPage({ documents: documentsFor(manyJobs), jobs: manyJobs });
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Rows per page' }), '25');
+    // One job loses its documents, leaving ten: they fit the smallest page.
+    rerender(pageFor(manyJobs.slice(0, 10)));
+
     expect(screen.getByRole('combobox', { name: 'Rows per page' })).toHaveValue('25');
   });
 

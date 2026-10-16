@@ -76,9 +76,10 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50];
  * and unsent documents, a toolbar to search and filter, and one card of
  * materials, most recent submission first, a page of jobs at a time
  * once there are more jobs than the smallest page holds.
- * From `lg` up the card switches between a matrix of jobs by document
+ * From `xl` up the card switches between a matrix of jobs by document
  * type, showing which version went where, and a grid of job cards;
- * narrower screens always get the cards, since the matrix needs width.
+ * narrower screens always get the cards: below `xl` four type columns
+ * would each get under 100px beside the sidebar.
  * The counts cover every job, not the current search or filter.
  *
  * @param {IApplicationsPageProps} props Component props.
@@ -94,7 +95,7 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
   const { t } = useTranslation();
   const groups = useMemo(() => groupDocumentsByJob(jobs, documents), [documents, jobs]);
   const counts = useMemo(() => countApplicationDocuments(groups), [groups]);
-  const isWide = useBreakpoint('lg');
+  const isWide = useBreakpoint('xl');
   const [view, setView] = useState<TApplicationsView>('matrix');
   const [filter, setFilter] = useState<TApplicationsFilter>('all');
   // Built once per data change, so each keystroke is a lookup per job.
@@ -145,8 +146,9 @@ export const ApplicationsPage: FC<IApplicationsPageProps> = ({
   const typeColumns = useMemo(() => getDocumentTypeColumns(groups), [groups]);
   const shownView: TApplicationsView = isWide ? view : 'cards';
   // Decided by every job, not the matches, so paging and its page-size
-  // select stay put while searching and filtering.
-  const hasPaging = groups.length > PAGE_SIZE_OPTIONS[0];
+  // select stay put while searching and filtering. A size the user picked
+  // keeps them shown, so it never lingers out of sight.
+  const hasPaging = groups.length > PAGE_SIZE_OPTIONS[0] || table.pageSize !== PAGE_SIZE_OPTIONS[0];
 
   if (isLoading) return <LoadingState label={t('applications.loading')} />;
 

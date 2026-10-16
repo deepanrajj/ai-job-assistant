@@ -152,12 +152,13 @@ export const createJobsColumns = ({
   },
   {
     cell: (job) => (
-      // Between lg and 2xl the table has no room for the label without
-      // scrolling sideways, so the button shows its icon only there.
+      // The table renders from md; below 2xl it has no room for the label
+      // without scrolling sideways, so the button shows its icon only.
+      // The phone list, below md, keeps the label.
       <JobDetailAction
         company={job.company}
         detailPath={APP_PATH_BUILDERS.jobDetail(job.id)}
-        labelClassName="lg:hidden 2xl:inline"
+        labelClassName="md:hidden 2xl:inline"
       />
     ),
     header: t('jobs.actions'),

@@ -12,7 +12,6 @@
     "skipToContent": "Zum Hauptinhalt springen",
     "jobsTableCaption": "Gespeicherte Jobs mit Firma, Rolle, Status, Standort, Gehalt und letztem Aktualisierungsdatum.",
     "openPostingFor": "Anzeige für {{company}} öffnen",
-    "viewJobDetailsFor": "Details für {{company}} anzeigen",
     "jobDescriptionInput": "Eingabe für Stellenbeschreibung",
     "askQuestionInput": "Frage an den KI-Assistenten"
   },

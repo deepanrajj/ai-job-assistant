@@ -12,7 +12,6 @@
     "skipToContent": "Skip to main content",
     "jobsTableCaption": "Saved jobs with company, role, status, location, salary, and last updated date.",
     "openPostingFor": "Open posting for {{company}}",
-    "viewJobDetailsFor": "View details for {{company}}",
     "jobDescriptionInput": "Job description input",
     "askQuestionInput": "Question for AI assistant"
   },

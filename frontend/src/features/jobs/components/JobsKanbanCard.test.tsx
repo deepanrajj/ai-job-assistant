@@ -19,9 +19,10 @@ describe('JobsKanbanCard', () => {
     expect(screen.getByText('Northwind Systems')).toBeInTheDocument();
     expect(screen.getByText('Platform Engineer')).toBeInTheDocument();
     expect(screen.getByText('Hamburg', { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: 'View details for Northwind Systems' }),
-    ).toHaveAttribute('href', '/jobs/job-042');
+    expect(screen.getByRole('link', { name: 'Open job for Northwind Systems' })).toHaveAttribute(
+      'href',
+      '/jobs/job-042',
+    );
   });
 
   it('prints only the details that are set, and the last update', () => {

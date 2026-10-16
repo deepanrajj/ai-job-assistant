@@ -93,9 +93,11 @@ item), named "Open job for {company}" for screen readers. It replaced a
 first plain text link, which was small, had no focus ring, and matched
 nothing else in the app, and the Jobs table's icon-only button. The
 matrix column is sized for the German "Job öffnen". In the Jobs table,
-whose columns are already at their content minimum between `lg` and
-`2xl`, the text would add a sideways scroll at 1280 px, so there it is
-hidden (`lg:hidden 2xl:inline`) and only the icon shows; Role gives
+which renders from `md` and whose columns are already at their content
+minimum below `2xl`, the text would add a sideways scroll, so there it
+is hidden (`md:hidden 2xl:inline`) and only the icon shows; the phone
+list keeps it. The matrix does the same below `2xl` (`hidden 2xl:inline`,
+column `w-16 2xl:w-44`); Role gives
 Actions 6% of the width. `sr-only` was tried first and dropped: its
 absolute label escaped the table's scroller and widened the page, and
 `not-sr-only` resets `white-space`, so the label wrapped.
@@ -113,8 +115,9 @@ applies it only to Discover's "New search" (`secondary` to `primary`, as
 mismatches are listed in tasks 090, 091, and 092, which refresh those
 pages.
 
-The matrix needs width, so below `lg` the switch is hidden and the page
-shows cards. `useBreakpoint('lg')` decides, so only one layout is in the
+The matrix needs width, so below `xl` the switch is hidden and the page
+shows cards: at 1024 px beside the sidebar, four type columns got 88 px
+each and rows grew to 237 px. `useBreakpoint('xl')` decides, so only one layout is in the
 DOM, as `DataTable` does with `md`. Each "Open link" is named "Open link
 for {label}", since a matrix row or card can hold several.
 
@@ -238,7 +241,7 @@ and update the phase backlog.
 
 - A stats bar, a search-and-filter toolbar, and one "Application
   materials" card that switches between a matrix of jobs by document
-  type and a grid of job cards from `lg` up (cards only below), paged
+  type and a grid of job cards from `xl` up (cards only below), paged
   ten jobs at a time.
 - Focused checks: the Applications page, utility, and route tests, the
   Jobs page and config, the data table, and the icons (26 files, 108
@@ -258,3 +261,22 @@ and update the phase backlog.
   Applications toolbar at 1536 px is one wide column plus the "Show"
   select, the Jobs toolbar keeps its three controls, and both stats bars
   hold at 390 px (Jobs: the total across a 2x2 grid).
+- Fifth review round (PR 73): the Jobs table's label hides from `md`,
+  where the table starts, not `lg`; Previous and Next step from the page
+  shown, not a stored index past the last page; the board card is named
+  "Open job for {company}" like the table, and `a11y.viewJobDetailsFor`
+  is gone; a picked page size keeps paging shown when the list shrinks
+  to one page; `StatsBar` uses `classNames`; and the matrix moved to `xl`
+  with an icon-only action below `2xl`. Measured with a fourth type
+  column cloned in: 164 px per column and 105 px rows at 1280 px, 184 px
+  and 89 px at 1536 px, cards at 1024 px, the Jobs table icon-only at
+  800 to 1000 px. Focused checks: 345 tests in 97 files, ESLint,
+  Prettier, and `tsc -b`. Kept as they are, with reasons in the PR: the
+  `filterKey` contract (an inline predicate would reset every render),
+  the search-text map (asked for by the first review), and Discover's
+  "New search" as `primary` (one per card, per `frontend/AGENTS.md`).
+- Owner request in the same round: the icon-to-text gap is 4px
+  (`gap-1`, was 8px) in every button and switch: `getButtonClassName`,
+  `getSegmentClassName`, sort headers, the status-change chips (was
+  6px), the header's Profile button, and the sidebar's collapse button.
+  Sidebar navigation links keep their 12px.

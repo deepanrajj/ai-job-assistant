@@ -72,8 +72,10 @@ Agreed with the owner during the work and recorded in the plan
 - At the owner's request, "Open job" is one shared `JobDetailAction`
   (details icon plus text, in a new `soft` button tint) on both the
   Applications page and the Jobs table. The Jobs table shows its text
-  from `2xl` up and on phones, and only the icon between `lg` and `2xl`,
-  where the text would make the table scroll sideways.
+  from `2xl` up and on phones, and only the icon between `md` (where
+  the table starts) and `2xl`, where the text would make the table
+  scroll sideways. The Applications matrix shows from `xl` up, with
+  the same icon-only action below `2xl`, so its type columns keep room.
 - From the owner's review: the Jobs Actions column is left-aligned like
   the others, and view switches and sortable table headers take the
   primary tint on hover. A button audit led to the variant rules in

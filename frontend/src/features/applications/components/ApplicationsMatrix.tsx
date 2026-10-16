@@ -25,7 +25,7 @@ interface IApplicationsMatrixProps {
  * cell lists that job's documents of that type, or a dash with "None"
  * for screen readers. The row header holds only the company and role, as
  * screen readers repeat it for every cell; the "Open job" button has
- * its own last column. One of the two Applications layouts from `lg` up;
+ * its own last column. One of the two Applications layouts from `xl` up;
  * narrower screens always get the job cards. The table has its own name,
  * distinct from the card's heading, so screen readers do not hear
  * "Application materials" twice.
@@ -51,7 +51,7 @@ export const ApplicationsMatrix: FC<IApplicationsMatrixProps> = ({ columns, grou
               {t(DOCUMENT_TYPE_TRANSLATION_KEYS[type])}
             </th>
           ))}
-          <th className="w-44 px-5 py-3" scope="col">
+          <th className="w-16 px-5 py-3 2xl:w-44" scope="col">
             <span className="sr-only">{t('applications.matrix.actions')}</span>
           </th>
         </tr>
@@ -86,9 +86,11 @@ export const ApplicationsMatrix: FC<IApplicationsMatrixProps> = ({ columns, grou
               );
             })}
             <td className="px-5 py-4 text-right">
+              {/* Below 2xl the type columns need the width, so only the icon shows. */}
               <JobDetailAction
                 company={job.company}
                 detailPath={APP_PATH_BUILDERS.jobDetail(job.id)}
+                labelClassName="hidden 2xl:inline"
               />
             </td>
           </tr>

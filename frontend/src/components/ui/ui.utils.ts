@@ -25,7 +25,7 @@ export const getButtonClassName = ({
   variant = 'primary',
 }: IButtonClassNameOptions = {}): string =>
   classNames(
-    'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-medium transition',
+    'inline-flex cursor-pointer items-center justify-center gap-1 rounded-lg font-medium transition',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg',
     'disabled:cursor-not-allowed disabled:opacity-60',
     buttonVariantClasses[variant],
@@ -46,7 +46,7 @@ export const getButtonClassName = ({
  */
 export const getSegmentClassName = (isSelected: boolean): string =>
   classNames(
-    'inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-semibold transition',
+    'inline-flex h-9 items-center gap-1 rounded-full px-4 text-sm font-semibold transition',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2',
     isSelected
       ? 'bg-app-surface text-primary-800 shadow-sm'
