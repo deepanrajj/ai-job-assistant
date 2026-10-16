@@ -60,6 +60,10 @@ Out of scope:
    Correct only styling gaps from this refresh.
 4. Summarize the finished design and remaining limitations for task 071
    README screenshots.
+5. Apply the button variants in `../../frontend/AGENTS.md` §3 "Button variants". Found
+   in task 088's audit: `JobForm`'s Cancel is `secondary` (should be
+   `ghost`, as every other Cancel). In the visual pass, check that every
+   page follows the table.
 
 ## Data And Contracts
 

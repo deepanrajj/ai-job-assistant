@@ -79,11 +79,39 @@ page's switch style, now `getSegmentClassName` in the shared UI utils):
   (amber ring) marker, the version label, "Submitted {date}" or "Not
   sent yet", and "Open link"; an empty cell shows a dash and "None" for
   screen readers. The row header holds only the company and role, since
-  screen readers repeat it for every cell; "Open job" has its own last
-  column. It answers "which CV went where" at a glance.
+  screen readers repeat it for every cell; the "Open job" button has
+  its own last column. It answers "which CV went where" at a glance.
 - **Cards**: a grid of job cards (one column on phones, two from `sm`,
   three from `2xl`) with the company, role, the job's status pill, its
-  documents with the same markers and a type badge, and "Open job".
+  documents with the same markers and a type badge, and the same "Open
+  job" button at the foot.
+
+Both layouts link to the job through `JobDetailAction`, the Jobs table's
+action, now a small button with the details icon and "Open job" in a new
+shared `soft` button variant (the primary tint of the active sidebar
+item), named "Open job for {company}" for screen readers. It replaced a
+first plain text link, which was small, had no focus ring, and matched
+nothing else in the app, and the Jobs table's icon-only button. The
+matrix column is sized for the German "Job öffnen". In the Jobs table,
+whose columns are already at their content minimum between `lg` and
+`2xl`, the text would add a sideways scroll at 1280 px, so there it is
+hidden (`lg:hidden 2xl:inline`) and only the icon shows; Role gives
+Actions 6% of the width. `sr-only` was tried first and dropped: its
+absolute label escaped the table's scroller and widened the page, and
+`not-sr-only` resets `white-space`, so the label wrapped.
+
+After that, from the owner's review: the Jobs Actions header and button
+are left-aligned like every other column (the header was `text-right`
+since before this task); unselected segments of the view switches take
+`hover:bg-primary-50`, as the language switch and sidebar do; and sort
+header buttons take the same tint as a small chip, with the arrow turning
+primary. A button audit across the app found Edit, Delete, Cancel, and
+"New ..." actions in different variants on different pages, so
+`frontend/AGENTS.md` §3 now has a "Button variants" table. This change
+applies it only to Discover's "New search" (`secondary` to `primary`, as
+"Add Job" and "New profile"); the Profile, Job Detail, and job form
+mismatches are listed in tasks 090, 091, and 092, which refresh those
+pages.
 
 The matrix needs width, so below `lg` the switch is hidden and the page
 shows cards. `useBreakpoint('lg')` decides, so only one layout is in the

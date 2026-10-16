@@ -69,6 +69,17 @@ Agreed with the owner during the work and recorded in the plan
   stale page; the stats bar became the shared `StatsBar`, used by both
   pages; and the document types now come from one ordered
   `DOCUMENT_TYPES` list, also used by the job detail type select.
+- At the owner's request, "Open job" is one shared `JobDetailAction`
+  (details icon plus text, in a new `soft` button tint) on both the
+  Applications page and the Jobs table. The Jobs table shows its text
+  from `2xl` up and on phones, and only the icon between `lg` and `2xl`,
+  where the text would make the table scroll sideways.
+- From the owner's review: the Jobs Actions column is left-aligned like
+  the others, and view switches and sortable table headers take the
+  primary tint on hover. A button audit led to the variant rules in
+  `frontend/AGENTS.md` §3; Discover's "New search" became `primary` to
+  follow them, and the remaining mismatches are listed in tasks 090,
+  091, and 092, which own those pages.
 
 ## Data And Contracts
 

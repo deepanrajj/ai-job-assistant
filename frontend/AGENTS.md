@@ -145,6 +145,25 @@ interface IJobDetailHeaderProps {
 - Use semantic HTML first.
 - Use icons from the existing icon components where available.
 
+### Button variants
+
+Pick a `Button` variant (or `getButtonClassName` for a link) by the
+action's role, not its look:
+
+| Variant       | Use for                                                                  | Examples                                                                               |
+| ------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `primary`     | The one action that commits or creates, at most one per card or form     | Save, Add note, Analyze, Import, a card's "New ..." action, Retry on a full-page error |
+| `secondary`   | Actions beside a primary that do not commit; paging; add-to-list helpers | Previous/Next, Add link, Add tag, Retry inside an inline alert                         |
+| `soft`        | Opening another record from a list                                       | "Open job" (`JobDetailAction`)                                                         |
+| `ghost`       | Cancel, and low-emphasis actions on a list item                          | Cancel, Edit, Up/Down, Select/Clear, Back to jobs                                      |
+| `dangerGhost` | Delete on a list item                                                    | Delete a saved search                                                                  |
+| `danger`      | Only the final confirmation of a destructive action                      | "Delete" inside the confirm step                                                       |
+
+Toggles and chips (view switches, the language switch, sortable table
+headers) are not buttons by variant: unselected or idle they take the
+primary tint on hover (`hover:bg-primary-50 hover:text-primary-800`), as
+`getSegmentClassName` does.
+
 ## 4. Forms
 
 - Use React Hook Form with Zod for form state and validation.

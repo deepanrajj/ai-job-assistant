@@ -92,7 +92,7 @@ describe('jobDetailRoute', () => {
     );
     renderJobDetailRoute(APP_PATHS.JOBS);
 
-    await user.click(await screen.findByRole('link', { name: 'View details for Miro' }));
+    await user.click(await screen.findByRole('link', { name: 'Open job for Miro' }));
 
     expect(
       await screen.findByRole('heading', { name: 'Senior Product Engineer' }),

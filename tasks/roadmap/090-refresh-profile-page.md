@@ -54,6 +54,10 @@ Out of scope:
 2. Preserve independent loading/error/empty behavior for resume
    profiles and preferences.
 3. Check long tags, form errors, and small screens.
+4. Apply the button variants in `../../frontend/AGENTS.md` §3 "Button variants". Found
+   in task 088's audit: the profile list's Edit is `primary` (should be
+   `ghost`), and its Delete and the editor's Remove are solid `danger`
+   (should be `dangerGhost` unless they are the final confirmation).
 
 ## Data And Contracts
 

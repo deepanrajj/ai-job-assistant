@@ -13,7 +13,7 @@ export type TAlertVariant = 'error' | 'info' | 'success' | 'warning';
 /**
  * Supported visual variants for buttons.
  */
-export type TButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'dangerGhost';
+export type TButtonVariant = 'primary' | 'secondary' | 'soft' | 'ghost' | 'danger' | 'dangerGhost';
 
 /**
  * Supported button sizing options.

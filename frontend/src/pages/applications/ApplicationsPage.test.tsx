@@ -85,7 +85,7 @@ describe('ApplicationsPage', () => {
     ).toHaveAttribute('href', 'https://github.com/example/portfolio');
     // Personio sent no portfolio.
     expect(within(rows[0]).getAllByRole('cell')[1]).toHaveTextContent('None');
-    expect(within(rows[1]).getByRole('link', { name: 'View details for Celonis' })).toHaveAttribute(
+    expect(within(rows[1]).getByRole('link', { name: 'Open job for Celonis' })).toHaveAttribute(
       'href',
       `/jobs/${MOCK_JOB_IDS.celonis}`,
     );
@@ -126,7 +126,7 @@ describe('ApplicationsPage', () => {
       expect(
         within(rows[1]).getByRole('link', { name: 'Open link for GitHub portfolio' }),
       ).toHaveAttribute('href', 'https://github.com/example/portfolio');
-      expect(screen.getByRole('link', { name: 'View details for Celonis' })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: 'Open job for Celonis' })).toHaveAttribute(
         'href',
         `/jobs/${MOCK_JOB_IDS.celonis}`,
       );

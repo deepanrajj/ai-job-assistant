@@ -1,6 +1,6 @@
 import type { FC } from 'react';
-import { Link } from 'react-router-dom';
 
+import { JobDetailAction } from '../../jobs/components/JobDetailAction';
 import { ApplicationDocumentItem } from './ApplicationDocumentItem';
 import { useTranslation } from '../../../i18n';
 import { APP_PATH_BUILDERS } from '../../../routes/paths';
@@ -24,8 +24,8 @@ interface IApplicationsMatrixProps {
  * per job and one column per document type in use across all jobs. A
  * cell lists that job's documents of that type, or a dash with "None"
  * for screen readers. The row header holds only the company and role, as
- * screen readers repeat it for every cell; "Open job" has its own last
- * column. One of the two Applications layouts from `lg` up;
+ * screen readers repeat it for every cell; the "Open job" button has
+ * its own last column. One of the two Applications layouts from `lg` up;
  * narrower screens always get the job cards. The table has its own name,
  * distinct from the card's heading, so screen readers do not hear
  * "Application materials" twice.
@@ -51,7 +51,7 @@ export const ApplicationsMatrix: FC<IApplicationsMatrixProps> = ({ columns, grou
               {t(DOCUMENT_TYPE_TRANSLATION_KEYS[type])}
             </th>
           ))}
-          <th className="w-28 px-5 py-3" scope="col">
+          <th className="w-44 px-5 py-3" scope="col">
             <span className="sr-only">{t('applications.matrix.actions')}</span>
           </th>
         </tr>
@@ -86,13 +86,10 @@ export const ApplicationsMatrix: FC<IApplicationsMatrixProps> = ({ columns, grou
               );
             })}
             <td className="px-5 py-4 text-right">
-              <Link
-                aria-label={t('a11y.viewJobDetailsFor', { company: job.company })}
-                className="inline-block text-xs font-medium text-primary-700 hover:underline"
-                to={APP_PATH_BUILDERS.jobDetail(job.id)}
-              >
-                {t('applications.openJob')}
-              </Link>
+              <JobDetailAction
+                company={job.company}
+                detailPath={APP_PATH_BUILDERS.jobDetail(job.id)}
+              />
             </td>
           </tr>
         ))}

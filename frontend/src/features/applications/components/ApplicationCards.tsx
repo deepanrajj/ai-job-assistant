@@ -1,6 +1,6 @@
 import type { FC } from 'react';
-import { Link } from 'react-router-dom';
 
+import { JobDetailAction } from '../../jobs/components/JobDetailAction';
 import { StatusPill } from '../../jobs/components/StatusPill';
 import { ApplicationDocumentItem } from './ApplicationDocumentItem';
 import { useTranslation } from '../../../i18n';
@@ -18,8 +18,8 @@ interface IApplicationCardsProps {
  * Shows each job with documents as a card in a grid: company, role, the
  * job's status, then its documents, each with a sent or not-sent marker,
  * the version label, a type badge, the submitted date or "Not sent yet",
- * and its link, and "Open job" at the foot. One column on phones, two
- * from `sm`, three from `2xl`.
+ * and its link, and an "Open job" button at the foot. One column on
+ * phones, two from `sm`, three from `2xl`.
  *
  * @param {IApplicationCardsProps} props Component props.
  * @returns {JSX.Element} Application cards.
@@ -59,13 +59,12 @@ export const ApplicationCards: FC<IApplicationCardsProps> = ({ groups }) => {
                 </li>
               ))}
             </ul>
-            <Link
-              aria-label={t('a11y.viewJobDetailsFor', { company: job.company })}
-              className="mt-4 self-end text-sm font-medium text-primary-700 hover:underline"
-              to={APP_PATH_BUILDERS.jobDetail(job.id)}
-            >
-              {t('applications.openJob')}
-            </Link>
+            <div className="mt-4 self-end">
+              <JobDetailAction
+                company={job.company}
+                detailPath={APP_PATH_BUILDERS.jobDetail(job.id)}
+              />
+            </div>
           </article>
         </li>
       ))}

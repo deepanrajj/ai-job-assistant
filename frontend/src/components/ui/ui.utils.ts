@@ -38,7 +38,8 @@ export const getButtonClassName = ({
  * Classes for one segment of a segmented view switch, such as the Jobs
  * and Applications views. The selected segment is a light, raised tab
  * rather than a solid button, so the switch does not compete with the
- * page's primary action.
+ * page's primary action; the others take the primary tint on hover, as
+ * the language switch and sidebar links do.
  *
  * @param {boolean} isSelected Whether the segment's view is shown.
  * @returns {string} Segment class name.
@@ -49,5 +50,5 @@ export const getSegmentClassName = (isSelected: boolean): string =>
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2',
     isSelected
       ? 'bg-app-surface text-primary-800 shadow-sm'
-      : 'text-app-textSoft hover:text-primary-800',
+      : 'text-app-textSoft hover:bg-primary-50 hover:text-primary-800',
   );

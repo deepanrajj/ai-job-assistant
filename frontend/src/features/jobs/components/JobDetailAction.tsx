@@ -1,35 +1,55 @@
 import { memo, type FC } from 'react';
 import { Link } from 'react-router-dom';
 
+import { getButtonClassName } from '../../../components/ui';
 import { DetailsIcon } from '../../../components/icons';
 import { useTranslation } from '../../../i18n';
 
 /**
- * Props used by the jobs table detail action.
+ * Props used by the job detail action.
  */
 interface IJobDetailActionProps {
   company: string;
   detailPath: string;
+  /**
+   * Classes for the visible "Open job" text, such as
+   * `lg:hidden 2xl:inline` to show only the icon where space is short.
+   * The link's own label keeps its accessible name either way.
+   */
+  labelClassName?: string;
 }
 
 /**
- * Renders an icon-only link to the internal job detail page.
+ * Renders "Open job" as a small soft primary button with the details
+ * icon, linking to the internal job detail page. Shared by the Jobs table
+ * and the Applications page. Its accessible name adds the company, as a
+ * list of jobs has one per row or card.
  *
  * @param {IJobDetailActionProps} props Component props.
  * @param {string} props.company Company name used in the accessible label.
  * @param {string} props.detailPath Internal job detail path.
- * @returns {JSX.Element} Icon-only detail action.
+ * @param {string} [props.labelClassName] Optional classes for the visible label.
+ * @returns {JSX.Element} Job detail action.
  */
-const JobDetailActionComponent: FC<IJobDetailActionProps> = ({ company, detailPath }) => {
+const JobDetailActionComponent: FC<IJobDetailActionProps> = ({
+  company,
+  detailPath,
+  labelClassName,
+}) => {
   const { t } = useTranslation();
 
   return (
     <Link
-      aria-label={t('a11y.viewJobDetailsFor', { company })}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app-border bg-app-surface text-app-textSoft transition hover:bg-app-surface2 hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface"
+      aria-label={t('jobs.openJobFor', { company })}
+      className={getButtonClassName({
+        className: 'whitespace-nowrap',
+        size: 'sm',
+        variant: 'soft',
+      })}
       to={detailPath}
     >
       <DetailsIcon />
+      <span className={labelClassName}>{t('jobs.openJob')}</span>
     </Link>
   );
 };

@@ -28,4 +28,13 @@ describe('Button', () => {
 
     expect(screen.getByRole('button', { name: 'Add Job' })).toBeInTheDocument();
   });
+
+  it('renders the soft variant in the primary tint', () => {
+    render(<Button variant="soft">Open job</Button>);
+
+    expect(screen.getByRole('button', { name: 'Open job' })).toHaveClass(
+      'bg-primary-50',
+      'text-primary-700',
+    );
+  });
 });

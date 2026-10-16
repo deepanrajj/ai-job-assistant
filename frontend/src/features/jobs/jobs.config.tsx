@@ -89,7 +89,7 @@ export const createJobsColumns = ({
     mobileHeading: true,
     sortLabel: t('jobs.role'),
     sortValue: (job) => job.roleTitle,
-    widthClassName: 'w-[22%]',
+    widthClassName: 'w-[16%]',
   },
   {
     cell: (job) => <StatusPill status={job.status} />,
@@ -152,14 +152,18 @@ export const createJobsColumns = ({
   },
   {
     cell: (job) => (
-      <JobDetailAction company={job.company} detailPath={APP_PATH_BUILDERS.jobDetail(job.id)} />
+      // Between lg and 2xl the table has no room for the label without
+      // scrolling sideways, so the button shows its icon only there.
+      <JobDetailAction
+        company={job.company}
+        detailPath={APP_PATH_BUILDERS.jobDetail(job.id)}
+        labelClassName="lg:hidden 2xl:inline"
+      />
     ),
-    className: 'text-right',
     header: t('jobs.actions'),
-    headerClassName: 'text-right',
     id: 'actions',
     mobileLabel: t('jobs.actions'),
-    widthClassName: 'w-[8%]',
+    widthClassName: 'w-[14%]',
   },
 ];
 

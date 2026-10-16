@@ -79,7 +79,7 @@ export const DataTableDesktop = <TData,>({
                   {column.sortValue ? (
                     <button
                       aria-label={getSortLabel(column)}
-                      className="inline-flex cursor-pointer items-center gap-2 rounded text-left uppercase tracking-wide hover:text-app-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface2"
+                      className="group -mx-1.5 inline-flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-left uppercase tracking-wide transition hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface2"
                       onClick={() => onSort(column.id)}
                       type="button"
                     >
@@ -87,7 +87,9 @@ export const DataTableDesktop = <TData,>({
                       <DataTableSortIcon
                         className={classNames(
                           'h-3.5 w-3.5',
-                          isSorted ? 'text-primary-700' : 'text-app-textMuted',
+                          isSorted
+                            ? 'text-primary-700'
+                            : 'text-app-textMuted group-hover:text-primary-700',
                         )}
                         direction={sortDirection}
                       />

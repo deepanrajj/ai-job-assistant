@@ -247,7 +247,6 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
             leftIcon={<PlusIcon />}
             onClick={() => switchEditor({ kind: 'new' })}
             size="sm"
-            variant="secondary"
           >
             {t('discover.list.newSearch')}
           </Button>
