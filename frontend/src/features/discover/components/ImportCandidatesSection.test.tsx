@@ -425,6 +425,25 @@ describe('ImportCandidatesSection', () => {
     expect(props.reload).toHaveBeenCalledOnce();
   });
 
+  // Bug 007: the card has no padding, for its rows, so the bordered
+  // loading and error boxes sat flush against its border.
+  it('pads the loading and error boxes inside the unpadded card', () => {
+    const { unmount } = renderSection({ candidates: [], isLoading: true });
+
+    expect(
+      screen.getByText('Loading candidates').closest('[role="status"]')?.parentElement,
+    ).toHaveClass('p-5');
+    unmount();
+    renderSection({
+      candidates: [],
+      loadError: new AppError('Failed', APP_ERROR_CODES.IMPORT_CANDIDATE_REQUEST_FAILED),
+    });
+
+    expect(
+      screen.getByText('Candidates could not be loaded').closest('[role="alert"]')?.parentElement,
+    ).toHaveClass('p-5');
+  });
+
   it('shows a confirmed candidate alongside a failed-load warning and retry', async () => {
     const user = userEvent.setup();
     const { props } = renderSection({

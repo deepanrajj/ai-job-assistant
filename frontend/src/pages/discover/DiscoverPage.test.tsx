@@ -276,4 +276,18 @@ describe('DiscoverPage', () => {
     await user.click(within(errorRegion).getByRole('button', { name: 'Try again' }));
     expect(props.reload).toHaveBeenCalledOnce();
   });
+
+  // Bug 007: the card has no padding, for its rows, so the bordered
+  // loading and error boxes sat flush against its border.
+  it('pads the loading and error boxes inside the unpadded card', () => {
+    const { unmount } = renderPage({ isLoading: true });
+
+    expect(screen.getByRole('status').parentElement).toHaveClass('p-5');
+    unmount();
+    renderPage({
+      loadError: new AppError('Failed', APP_ERROR_CODES.SAVED_SEARCH_REQUEST_FAILED),
+    });
+
+    expect(screen.getByRole('alert').parentElement).toHaveClass('p-5');
+  });
 });
