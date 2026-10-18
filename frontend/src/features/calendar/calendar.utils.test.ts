@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
   getCalendarMonth,
+  getDefaultSelectedDate,
   getMonthDateRange,
   getMonthGrid,
   groupCalendarItemsByDate,
@@ -135,5 +136,26 @@ describe('groupCalendarItemsByDate', () => {
 
   it('returns no groups for no items', () => {
     expect(groupCalendarItemsByDate([])).toEqual([]);
+  });
+});
+
+describe('getDefaultSelectedDate', () => {
+  const october = { month: 9, year: 2026 };
+  const groups = [
+    { date: '2026-09-30', items: [] },
+    { date: '2026-10-12', items: [] },
+    { date: '2026-10-20', items: [] },
+  ];
+
+  it('selects today when it falls in the month', () => {
+    expect(getDefaultSelectedDate(october, '2026-10-16', groups)).toBe('2026-10-16');
+  });
+
+  it('selects the first date of the month with items when today is in another month', () => {
+    expect(getDefaultSelectedDate(october, '2026-11-02', groups)).toBe('2026-10-12');
+  });
+
+  it('selects the first day of an empty month', () => {
+    expect(getDefaultSelectedDate(october, '2026-11-02', [])).toBe('2026-10-01');
   });
 });

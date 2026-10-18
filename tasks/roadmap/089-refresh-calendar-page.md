@@ -1,6 +1,6 @@
 # Task 089 - Refresh Calendar Page
 
-Status: Not started
+Status: Completed
 
 Related plan: [Frontend visual refresh](../../docs/business/084-frontend-visual-refresh-plan.md).
 
@@ -29,8 +29,10 @@ without losing date navigation or event details.
 In scope:
 
 - Restyle the existing month grid, event indicators, date controls, and
-  accessible full-month list. Arrange the list beside the grid at wide
-  widths where it fits, without reducing it to only upcoming items.
+  accessible item list. Arrange the list beside the grid at wide widths
+  where it fits. Owner decision (2026-10-16): the list shows the
+  selected day instead of the whole month, which was too long on busy
+  months; every day of the month is a button that selects it.
 - Preserve current date-only and timed event handling, localization,
   links, and available navigation.
 - Style loading, empty, error/retry, and feature-disabled states.
@@ -52,9 +54,9 @@ Out of scope:
 
 1. Apply shared cards, typography, status colors, and focus styling
    from task 084 to the calendar composition.
-2. Keep the full-month list available on every screen, retain the
-   non-duplicated accessibility tree, and keep event labels readable
-   without relying on color alone.
+2. Keep every loaded item reachable on every screen, through the
+   selected-day list, retain the non-duplicated accessibility tree, and
+   keep event labels readable without relying on color alone.
 3. Avoid horizontal clipping at narrow widths.
 4. Preserve real event data and all current loading/error/fallback
    behavior.
@@ -66,7 +68,7 @@ No API, date model, storage, or feature-flag changes.
 ## Tests
 
 - Month navigation and event links retain behavior; every loaded item
-  remains available in the grouped list.
+  is reachable by selecting its day.
 - Date-only events remain on the correct local calendar day.
 - Empty, loading, error, and flag-disabled views remain clear.
 
@@ -78,11 +80,11 @@ local checks and actual CI E2E status in the PR.
 
 ## Acceptance Criteria
 
-- [ ] Calendar follows the approved month-grid composition.
-- [ ] Dates and event types are accurate and readable.
-- [ ] Existing navigation and failure states still work.
-- [ ] Flagged and narrow-screen variants remain accessible.
-- [ ] Focused tests and frontend verification pass.
+- [x] Calendar follows the approved month-grid composition.
+- [x] Dates and event types are accurate and readable.
+- [x] Existing navigation and failure states still work.
+- [x] Flagged and narrow-screen variants remain accessible.
+- [x] Focused tests and frontend verification pass.
 
 ## Commit
 

@@ -47,12 +47,15 @@ describe('calendarRoute', () => {
     );
     renderWithRouter(<CalendarRoute />);
 
+    // The current month opens on today, so the item shows on its day.
+    expect(await screen.findByRole('button', { name: /, 1 item/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
+
+    // Another month opens on its first day with items, the item's.
     expect(
       await screen.findByRole('link', { name: 'Follow-up: Follow up, Celonis' }),
     ).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.celonis}`);
-
-    await user.click(screen.getByRole('button', { name: 'Next month' }));
-    await screen.findByRole('link', { name: 'Follow-up: Follow up, Celonis' });
 
     expect(requestedRanges).toEqual([thisMonthStart, nextMonthStart]);
   });
