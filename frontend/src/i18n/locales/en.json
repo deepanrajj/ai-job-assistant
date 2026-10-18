@@ -218,6 +218,10 @@
     }
   },
   "profile": {
+    "account": {
+      "label": "Account summary",
+      "sampleData": "Sample data"
+    },
     "loading": "Loading resume profiles",
     "loadErrorTitle": "Resume profiles could not be loaded",
     "targetRole": {
@@ -228,8 +232,9 @@
       "other": "Other"
     },
     "list": {
-      "title": "Resume profiles",
-      "subtitle": "Reusable versions of your experience for different target roles.",
+      "title": "Resume library",
+      "subtitle": "Profiles tailored to different roles.",
+      "updated": "Updated {{date}}",
       "newProfile": "New profile",
       "edit": "Edit",
       "editLabel": "Edit profile {{name}}",
@@ -302,9 +307,16 @@
     "listFull": "This list is full ({{maxItems}}). Remove one to add another.",
     "removeValue": "Remove {{value}}",
     "noneYet": "None yet",
+    "saveSkills": "Save skills",
+    "cancel": "Cancel",
+    "skillsSubtitle": "A reusable inventory for applications.",
+    "jobTitle": "Job preferences",
+    "jobSubtitle": "What you are looking for. Discover and later AI matching read this.",
+    "editSkills": "Edit skills",
+    "editPreferences": "Edit preferences",
     "save": "Save preferences",
     "saving": "Saving…",
-    "saved": "Preferences saved",
+    "saved": "Skills and preferences saved",
     "savedOn": "Saved {{date}}",
     "notSavedYet": "Not saved yet",
     "listLabel": "{{list}} added"

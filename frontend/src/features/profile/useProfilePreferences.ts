@@ -14,6 +14,7 @@ import type { AppError } from '../../errors';
  * Preferences state returned by useProfilePreferences.
  */
 export interface IProfilePreferencesState {
+  clearSaveError: () => void;
   isLoading: boolean;
   isSaving: boolean;
   loadError: AppError | null;
@@ -43,7 +44,7 @@ export const useProfilePreferences = (): IProfilePreferencesState => {
   } = useAsyncMutation<void, TProfilePreferencesResponse>(getProfilePreferences);
   const {
     mutate: putPreferences,
-    request: { error: saveError, isLoading: isSaving },
+    request: { error: saveError, isLoading: isSaving, reset: resetSave },
   } = useAsyncMutation<TProfilePreferences, TProfilePreferencesResponse>(saveProfilePreferences);
   const [preferences, setPreferences] = useState<TProfilePreferencesResponse | null>(null);
   const latestRequestIdRef = useRef(0);
@@ -79,6 +80,7 @@ export const useProfilePreferences = (): IProfilePreferencesState => {
   );
 
   return {
+    clearSaveError: resetSave,
     isLoading: (isIdle || isLoading) && !preferences,
     isSaving,
     loadError,

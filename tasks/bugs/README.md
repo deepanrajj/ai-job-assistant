@@ -61,6 +61,12 @@ deleting the knowledge with the file.
 
 ## Fixed
 
+- [x] [Bug 007: Discover loading and error boxes sit flush against their
+      card](./bug-007-discover-loading-and-error-boxes-flush-against-card.md)
+      — nit, found while reviewing the task 090 branch, which copied the
+      pattern. Pre-existing since task 087. Fixed by padding the two
+      states inside both unpadded Discover cards, with regression tests
+      seen to fail against the unfixed code.
 - [x] [Bug 005: JobRepository's list finder has no id tie-break](./bug-005-job-repository-finder-missing-id-tie-break.md)
       — nit, found while reviewing repository conventions during task
       014 planning. `Task` and `Note` repositories both tie-break their

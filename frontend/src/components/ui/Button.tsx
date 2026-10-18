@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, FC, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, FC, ReactNode, Ref } from 'react';
 
 import { getButtonClassName } from './ui.utils';
 import type { TButtonSize, TButtonVariant } from './ui.types';
@@ -11,6 +11,8 @@ interface IButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: TButtonSize;
   fullWidth?: boolean;
   leftIcon?: ReactNode;
+  /** The rendered button, for a caller that has to move focus to it. */
+  ref?: Ref<HTMLButtonElement>;
   rightIcon?: ReactNode;
 }
 

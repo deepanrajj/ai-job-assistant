@@ -201,15 +201,24 @@ export const DiscoverPage: FC<TDiscoverPageProps> = ({
   };
 
   const renderBody = () => {
-    if (isLoading) return <LoadingState label={t('discover.loading')} />;
+    // The card has no padding, for its rows; the loading and error boxes
+    // draw their own border, so they get the card's usual padding.
+    if (isLoading)
+      return (
+        <div className="p-5">
+          <LoadingState label={t('discover.loading')} />
+        </div>
+      );
 
     if (loadError)
       return (
-        <ErrorState
-          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-          description={loadError.message}
-          title={t('discover.loadErrorTitle')}
-        />
+        <div className="p-5">
+          <ErrorState
+            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+            description={loadError.message}
+            title={t('discover.loadErrorTitle')}
+          />
+        </div>
       );
 
     if (searches.length === 0)

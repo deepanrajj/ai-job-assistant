@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 
 import {
   Component as ProfileRoute,
@@ -9,7 +9,7 @@ import {
 } from './profileRoute';
 import { renderWithProviders } from '../../test/renderWithProviders';
 
-const PREFERENCES_REGION = { name: 'Skills and job preferences' };
+const PREFERENCES_REGION = { name: 'Job preferences' };
 
 describe('profileRoute', () => {
   it('uses the sections while the features are on, as they are under test', () => {
@@ -22,17 +22,36 @@ describe('profileRoute', () => {
     expect(await screen.findByText('No resume profiles yet')).toBeInTheDocument();
   });
 
-  it('shows the skills and preferences section below the profiles', async () => {
+  it('shows the sample account summary, marked as sample data', () => {
     renderWithProviders(<ProfileRoute />);
 
-    expect(await screen.findByRole('region', PREFERENCES_REGION)).toBeInTheDocument();
+    const account = screen.getByRole('region', { name: 'Account summary' });
+
+    expect(within(account).getByRole('heading', { name: 'Jordan Davis' })).toBeInTheDocument();
+    expect(account).toHaveTextContent('Sample data');
+  });
+
+  it('puts the library and Skills side by side, Job preferences below, from xl', async () => {
+    const { container } = renderWithProviders(<ProfileRoute />);
+
+    expect(await screen.findByRole('region', PREFERENCES_REGION)).toHaveClass('col-span-full');
     expect(await screen.findByText('Not saved yet')).toBeInTheDocument();
+
+    const grid = container.querySelector('.xl\\:grid-cols-2') as HTMLElement;
+
+    // One column while the profile editor (`data-editor`) is open.
+    expect(grid).toHaveClass('xl:has-[[data-editor]]:grid-cols-1');
+    expect(within(grid).getByRole('region', { name: 'Resume library' })).toBeInTheDocument();
+    expect(within(grid).getByRole('region', { name: 'Skills' })).toBeInTheDocument();
   });
 
   it('shows the preferences section on its own when only its feature is on', async () => {
-    renderWithProviders(<ProfileRouteSections showLibrary={false} showPreferences />);
+    const { container } = renderWithProviders(
+      <ProfileRouteSections showLibrary={false} showPreferences />,
+    );
 
-    expect(await screen.findByRole('region', PREFERENCES_REGION)).toBeInTheDocument();
+    expect(await screen.findByRole('region', PREFERENCES_REGION)).toHaveClass('col-span-full');
+    expect(container.querySelector('.xl\\:grid-cols-2')).toBeNull();
     expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
     expect(screen.queryByText('No resume profiles yet')).not.toBeInTheDocument();
   });

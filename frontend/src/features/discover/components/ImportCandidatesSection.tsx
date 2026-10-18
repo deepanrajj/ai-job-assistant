@@ -610,13 +610,21 @@ export const ImportCandidatesSection: FC<TImportCandidatesSectionProps> = ({
    */
   const renderListPlaceholder = () => (
     <>
-      {isLoading && <LoadingState label={t('importCandidates.loading')} />}
+      {/* The card has no padding, for its rows; the loading and error
+          boxes draw their own border, so they get the card's usual padding. */}
+      {isLoading && (
+        <div className="p-5">
+          <LoadingState label={t('importCandidates.loading')} />
+        </div>
+      )}
       {!isLoading && loadError && (
-        <ErrorState
-          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-          description={loadError.message}
-          title={t('importCandidates.loadErrorTitle')}
-        />
+        <div className="p-5">
+          <ErrorState
+            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+            description={loadError.message}
+            title={t('importCandidates.loadErrorTitle')}
+          />
+        </div>
       )}
       {!isLoading && !loadError && (
         <EmptyState

@@ -83,6 +83,11 @@ describe('useProfilePreferences', () => {
     });
 
     expect(result.current.saveError?.message).toBe('Failed to save skills and preferences');
+
+    act(() => result.current.clearSaveError());
+
+    expect(result.current.saveError).toBeNull();
+    expect(result.current.preferences).not.toBeNull();
   });
 
   it('reports a failed load and recovers on reload', async () => {

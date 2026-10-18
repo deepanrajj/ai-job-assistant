@@ -53,22 +53,37 @@ const renderPage = (overrides: Partial<ComponentProps<typeof ProfilePage>> = {})
 };
 
 describe('ProfilePage', () => {
-  it('lists saved profiles with their role, summary, and entry counts', () => {
+  it('lists saved profiles with their role, updated date, summary, and entry counts', () => {
     renderPage();
 
     const card = screen.getByRole('heading', { name: 'Base profile' }).closest('li') as HTMLElement;
 
-    expect(within(card).getByText('Base')).toBeInTheDocument();
+    expect(within(card).getByText('Base · Updated Oct 1, 2026')).toBeInTheDocument();
     expect(within(card).getByText('Full-stack engineer.')).toBeInTheDocument();
     expect(within(card).getByText('Highlights: 2 · Education: 1 · Links: 1')).toBeInTheDocument();
   });
 
-  it('shows an empty state inside the labelled Resume profiles region', () => {
+  it('shows an empty state inside the labelled Resume library region', () => {
     renderPage({ profiles: [] });
 
-    const region = screen.getByRole('region', { name: 'Resume profiles' });
+    const region = screen.getByRole('region', { name: 'Resume library' });
 
     expect(within(region).getByText('No resume profiles yet')).toBeInTheDocument();
+    expect(within(region).getByRole('button', { name: 'New profile' })).toBeInTheDocument();
+  });
+
+  it('gives each row a low-emphasis Edit and a red-text Delete', () => {
+    renderPage();
+
+    expect(screen.getByRole('button', { name: 'Edit profile Base profile' })).toHaveClass(
+      'text-app-textSoft',
+    );
+    expect(screen.getByRole('button', { name: 'Delete profile Base profile' })).toHaveClass(
+      'text-danger-700',
+    );
+    expect(screen.getByRole('button', { name: 'Delete profile Base profile' })).not.toHaveClass(
+      'bg-danger-700',
+    );
   });
 
   it('creates a profile with entries, each given its own id', async () => {
@@ -174,6 +189,19 @@ describe('ProfilePage', () => {
     expect(props.updateProfile).not.toHaveBeenCalled();
   });
 
+  it('marks the open editor, so the route can widen it to the full row', async () => {
+    const user = userEvent.setup();
+    const { container } = renderPage();
+
+    expect(container.querySelector('[data-editor]')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'New profile' }));
+
+    expect(container.querySelector('[data-editor]')).toContainElement(
+      screen.getByLabelText('Profile name'),
+    );
+  });
+
   it('deletes a profile', async () => {
     const user = userEvent.setup();
     const { props } = renderPage();
@@ -254,6 +282,18 @@ describe('ProfilePage', () => {
     expect(payload.profile).toMatchObject({ education: [], highlights: [], links: [] });
   });
 
+  it('pads the loading and error boxes inside the unpadded card', () => {
+    const { unmount } = renderPage({ isLoading: true });
+
+    expect(screen.getByRole('status').parentElement).toHaveClass('p-5');
+    unmount();
+    renderPage({
+      loadError: new AppError('Failed', APP_ERROR_CODES.PROFILE_REQUEST_FAILED),
+    });
+
+    expect(screen.getByRole('alert').parentElement).toHaveClass('p-5');
+  });
+
   it('shows loading and a retryable load error', async () => {
     const user = userEvent.setup();
     const { unmount } = renderPage({ isLoading: true });
@@ -271,5 +311,20 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Resume profiles could not be loaded');
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(props.reload).toHaveBeenCalledOnce();
+  });
+
+  it('shows the loading state, not an open editor, while the list reloads', async () => {
+    const user = userEvent.setup();
+    const { props, rerender } = renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Edit profile Base profile' }));
+    rerender(<ProfilePage {...props} isLoading profiles={[]} />);
+
+    expect(screen.getByRole('status')).toHaveTextContent('Loading resume profiles');
+    expect(screen.queryByLabelText('Profile name')).not.toBeInTheDocument();
+
+    rerender(<ProfilePage {...props} />);
+
+    expect(screen.getByLabelText('Profile name')).toHaveValue('Base profile');
   });
 });

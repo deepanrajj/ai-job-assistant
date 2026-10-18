@@ -218,6 +218,10 @@
     }
   },
   "profile": {
+    "account": {
+      "label": "Kontoübersicht",
+      "sampleData": "Beispieldaten"
+    },
     "loading": "Lebenslauf-Profile werden geladen",
     "loadErrorTitle": "Lebenslauf-Profile konnten nicht geladen werden",
     "targetRole": {
@@ -228,8 +232,9 @@
       "other": "Sonstiges"
     },
     "list": {
-      "title": "Lebenslauf-Profile",
-      "subtitle": "Wiederverwendbare Versionen deiner Erfahrung für verschiedene Zielrollen.",
+      "title": "Lebenslauf-Bibliothek",
+      "subtitle": "Profile für verschiedene Zielrollen.",
+      "updated": "Aktualisiert am {{date}}",
       "newProfile": "Neues Profil",
       "edit": "Bearbeiten",
       "editLabel": "Profil {{name}} bearbeiten",
@@ -302,9 +307,16 @@
     "listFull": "Diese Liste ist voll ({{maxItems}}). Entferne einen Eintrag, um einen neuen hinzuzufügen.",
     "removeValue": "{{value}} entfernen",
     "noneYet": "Noch keine",
+    "saveSkills": "Fähigkeiten speichern",
+    "cancel": "Abbrechen",
+    "skillsSubtitle": "Ein wiederverwendbarer Bestand für Bewerbungen.",
+    "jobTitle": "Jobpräferenzen",
+    "jobSubtitle": "Wonach du suchst. Discover und später der KI-Abgleich lesen das.",
+    "editSkills": "Fähigkeiten bearbeiten",
+    "editPreferences": "Präferenzen bearbeiten",
     "save": "Präferenzen speichern",
     "saving": "Wird gespeichert…",
-    "saved": "Präferenzen gespeichert",
+    "saved": "Fähigkeiten und Präferenzen gespeichert",
     "savedOn": "Gespeichert am {{date}}",
     "notSavedYet": "Noch nicht gespeichert",
     "listLabel": "{{list}} hinzugefügt"

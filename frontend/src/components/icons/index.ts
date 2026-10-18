@@ -3,6 +3,7 @@ export * from './CalendarIcon';
 export * from './ChevronLeftIcon';
 export * from './ChevronRightIcon';
 export * from './DetailsIcon';
+export * from './DocumentIcon';
 export * from './EditIcon';
 export * from './ExternalLinkIcon';
 export * from './GridIcon';
