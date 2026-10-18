@@ -299,6 +299,28 @@ describe('CalendarPage', () => {
     expect(dots.children[1]).toHaveClass('bg-orange-500');
   });
 
+  it('rounds the corner days to the grid border, so a selected corner day is not cut off', () => {
+    // February 2027 starts on a Monday and has 28 days, so all four
+    // corners are days of the month.
+    renderPage({ items: [], month: { month: 1, year: 2027 } });
+
+    expect(screen.getByRole('button', { name: 'Monday, February 1, no items' })).toHaveClass(
+      'rounded-tl-[11px]',
+    );
+    expect(screen.getByRole('button', { name: 'Sunday, February 7, no items' })).toHaveClass(
+      'rounded-tr-[11px]',
+    );
+    expect(screen.getByRole('button', { name: 'Monday, February 22, no items' })).toHaveClass(
+      'rounded-bl-[11px]',
+    );
+    expect(screen.getByRole('button', { name: 'Sunday, February 28, no items' })).toHaveClass(
+      'rounded-br-[11px]',
+    );
+    expect(screen.getByRole('button', { name: 'Monday, February 8, no items' })).not.toHaveClass(
+      'rounded-tl-[11px]',
+    );
+  });
+
   it('marks today in the grid', () => {
     renderPage();
 

@@ -295,10 +295,17 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
       </div>
       <div className="grid grid-cols-7 overflow-hidden rounded-xl border border-app-border">
         {weeks.flat().map((day, index) => {
+          const dayCount = weeks.length * 7;
+          // The corner cells follow the grid's rounded border (12px less
+          // its 1px width), so a selected corner day's ring is not cut off.
           const cellClassName = classNames(
             'relative min-h-12 min-w-0 p-1 md:min-h-24 md:p-1.5',
             index % 7 !== 0 && 'border-l border-app-borderSoft',
             index >= 7 && 'border-t border-app-borderSoft',
+            index === 0 && 'rounded-tl-[11px]',
+            index === 6 && 'rounded-tr-[11px]',
+            index === dayCount - 7 && 'rounded-bl-[11px]',
+            index === dayCount - 1 && 'rounded-br-[11px]',
           );
 
           // Only this month's items are loaded, so a day of a neighbouring
