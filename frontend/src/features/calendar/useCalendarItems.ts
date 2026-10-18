@@ -24,16 +24,17 @@ export interface ICalendarItemsState {
 }
 
 /**
- * Items loaded for one range, tagged with that range so a response is
- * never shown for a different one.
+ * The result of loading one range, items or an error, tagged with that
+ * range so it is never shown for a different one.
  */
 interface ILoadedCalendarItems {
+  error: AppError | null;
   items: TCalendarItemResponse[];
   rangeKey: string;
 }
 
 /**
- * Identifies a range, to tell whether loaded items belong to it.
+ * Identifies a range, to tell whether a result belongs to it.
  *
  * @param {ICalendarRange} range The range.
  * @returns {string} The range's key.
@@ -41,13 +42,15 @@ interface ILoadedCalendarItems {
 const getRangeKey = ({ from, to }: ICalendarRange): string => `${from}/${to}`;
 
 /**
- * Declared at module level so `mutate` keeps a stable identity.
+ * Loads one range, resolving a failure as a tagged error instead of
+ * rejecting, so an error carries its range as items do. Declared at
+ * module level so `mutate` keeps a stable identity.
  */
 const loadCalendarItems = (range: ICalendarRange): Promise<ILoadedCalendarItems> =>
-  getCalendarItems(range.from, range.to).then((items) => ({
-    items,
-    rangeKey: getRangeKey(range),
-  }));
+  getCalendarItems(range.from, range.to).then(
+    (items) => ({ error: null, items, rangeKey: getRangeKey(range) }),
+    (error: AppError) => ({ error, items: [], rangeKey: getRangeKey(range) }),
+  );
 
 /**
  * Loads every dated item across every job for one date range, and loads
@@ -63,12 +66,12 @@ const loadCalendarItems = (range: ICalendarRange): Promise<ILoadedCalendarItems>
 export const useCalendarItems = (from: string, to: string): ICalendarItemsState => {
   const {
     mutate: loadItems,
-    request: { data, error, isIdle, isLoading },
+    request: { data, isIdle, isLoading },
   } = useAsyncMutation<ICalendarRange, ILoadedCalendarItems>(loadCalendarItems);
 
   const reload = useCallback(() => {
     loadItems({ from, to }).catch(() => {
-      // Error is already recorded in request state and rendered from it.
+      // Never rejects: a failure resolves as a tagged error.
     });
   }, [from, loadItems, to]);
 
@@ -77,16 +80,17 @@ export const useCalendarItems = (from: string, to: string): ICalendarItemsState 
   }, [reload]);
 
   // The request for a new range starts in an effect, after the first
-  // render with that range; until then the loaded items are another
-  // range's, so they count as loading rather than as this range's items.
+  // render with that range; until then the result in hand, items or an
+  // error, is another range's, so it counts as loading instead.
   const isStale = data !== null && data.rangeKey !== getRangeKey({ from, to });
+  const result = isStale ? null : data;
   const items = useMemo(
-    () => (data !== null && Array.isArray(data.items) ? data.items : []),
-    [data],
+    () => (result !== null && Array.isArray(result.items) ? result.items : []),
+    [result],
   );
 
   return {
-    error,
+    error: result?.error ?? null,
     isLoading: isIdle || isLoading || isStale,
     items,
     reload,

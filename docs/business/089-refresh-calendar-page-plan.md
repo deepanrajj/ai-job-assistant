@@ -64,21 +64,27 @@ updated to match: every loaded item stays reachable, through its day.
 
 - A month opens on today when it is in the month, otherwise on its
   first day with items, otherwise on its first day
-  (`getDefaultSelectedDate`). Changing the month drops a day chosen in
-  the previous month, so paging back to a month opens it on its default
-  day again; a day chosen for the incoming month is kept, which is how
-  "Today" selects today from another month (second review). Keying the
-  choice by its month alone was rejected: paging away and back would
-  bring the old choice back.
-- The shown day and its count are repeated in a polite live region, as
-  below `xl` the panel is under the grid and often off screen. The
-  region sits outside the panel and stays mounted, empty while loading,
-  so a month's default day is announced too. The panel's list is named
-  by the panel heading rather than a second label.
-- `useCalendarItems` tags loaded items with their range and reports
-  loading while they belong to another one. Its request starts in an
-  effect, so without that the first render after a month change showed
-  the old month's items under the new month (second review).
+  (`getDefaultSelectedDate`). The month buttons clear a chosen day, so
+  paging back to a month opens it on its default day again, and
+  "Today" chooses today (PR review: simpler than resetting state during
+  render on a month change). Keying the choice by its month alone was
+  rejected: paging away and back would bring the old choice back.
+- After paging, the month's opening day and its count are announced in
+  a polite live region, as below `xl` the panel is under the grid and
+  often off screen. A day chosen by its button is not announced, since
+  the button already says it, and nothing is announced on the first
+  load. The region sits outside the panel and stays mounted, empty
+  while loading, so the text is a change screen readers announce. The
+  panel's list has no name of its own; the panel section is named by
+  its heading.
+- A completed item's link name ends in ", done", as its visible text
+  shows "Done".
+- `useCalendarItems` tags each result with its range, and resolves a
+  failure as a tagged error instead of rejecting, so items and errors
+  both count as loading while they belong to another range. Its request
+  starts in an effect, so without that the first render after a month
+  change showed the old month's items, or its error, under the new
+  month (reviews).
 - The panel's title is the day ("Monday, October 5"), its subtitle
   "Today · 2 items" or the count. An empty day says "Nothing on ...";
   an empty month keeps "Nothing dated in {month}".
@@ -124,9 +130,12 @@ colour by reminder type (four reminder types plus tasks and documents,
 too many tones to learn).
 
 Today's number sits in a filled primary circle; the selected day has a
-primary ring and tint and `aria-current="true"`, so the two never rely
-on the same mark. `aria-pressed` was rejected in review: it promises a
-toggle, and choosing the selected day again does not unselect it. The
+primary ring and tint and `aria-pressed`, as the app's other
+pick-one-of-several controls (`SegmentedControl`, the language switch)
+mark their choice. `aria-current` was tried after the first review,
+which objected that a pressed day does not unpress, and dropped in the
+PR review for consistency with those controls, which do not unpress
+either. The
 keyboard focus mark is a dark outline inset inside the cell, so a
 focused selected day stays distinct from its selection ring.
 
@@ -219,7 +228,7 @@ and update the phase backlog.
   under `xl`, listing the selected day's items with the kind label in
   the same tint and the company.
 - Focused checks: Calendar page, route, feature, and service tests, the
-  icons, and the routes (31 files, 98 tests), ESLint, Prettier, and
+  icons, and the routes (31 files, 99 tests), ESLint, Prettier, and
   `tsc -b` passed. The full suite and E2E are left to CI.
 - Checked in the dev server with the calendar mock: 1536 px opens on
   today (12 items) and choosing 13 October lists its 24 items; 390 px

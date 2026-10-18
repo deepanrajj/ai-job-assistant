@@ -65,4 +65,28 @@ describe('useCalendarItems', () => {
       shownBeforeLoaded.flatMap((render) => render.items).map((item) => item.date),
     ).not.toContain('2026-10-01');
   });
+
+  it("reports loading, not the old range's error, from the first render with a new range", async () => {
+    server.use(http.get('/api/calendar-items', () => new HttpResponse(null, { status: 500 })));
+    const renders: Array<ICalendarItemsState & { from: string }> = [];
+    const { result, rerender } = renderHook(
+      ({ from, to }) => {
+        const state = useCalendarItems(from, to);
+
+        renders.push({ ...state, from });
+
+        return state;
+      },
+      { initialProps: { from: '2026-10-01', to: '2026-10-31' } },
+    );
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    rerender({ from: '2026-11-01', to: '2026-11-30' });
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    const firstNovemberRender = renders.find((render) => render.from === '2026-11-01');
+
+    expect(firstNovemberRender?.isLoading).toBe(true);
+    expect(firstNovemberRender?.error).toBeNull();
+  });
 });

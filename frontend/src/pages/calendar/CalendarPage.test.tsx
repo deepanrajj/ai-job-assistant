@@ -108,20 +108,19 @@ describe('CalendarPage', () => {
 
     expect(within(panel).getByRole('heading', { name: 'Monday, October 5' })).toBeInTheDocument();
     expect(panel).toHaveTextContent('Today · 2 items');
-    expect(
-      within(screen.getByRole('list', { name: 'Monday, October 5' })).getAllByRole('link'),
-    ).toHaveLength(2);
+    expect(within(within(getDayPanel()).getByRole('list')).getAllByRole('link')).toHaveLength(2);
     expect(screen.queryByRole('link', { name: /Cover letter v2/ })).not.toBeInTheDocument();
   });
 
-  it('names every day button by its date and item count, and marks the selected one as current', () => {
+  it('names every day button by its date and item count, and presses the selected one', () => {
     renderPage();
 
     expect(
       screen.getByRole('button', { name: 'Monday, October 5, 2 items, today' }),
-    ).toHaveAttribute('aria-current', 'true');
-    expect(screen.getByRole('button', { name: 'Monday, October 12, 1 item' })).not.toHaveAttribute(
-      'aria-current',
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Monday, October 12, 1 item' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
     );
     expect(
       screen.getByRole('button', { name: 'Tuesday, October 6, no items' }),
@@ -137,7 +136,7 @@ describe('CalendarPage', () => {
     await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
 
     expect(screen.getByRole('button', { name: 'Monday, October 12, 1 item' })).toHaveAttribute(
-      'aria-current',
+      'aria-pressed',
       'true',
     );
     expect(
@@ -193,18 +192,24 @@ describe('CalendarPage', () => {
 
     expect(
       screen.getByRole('button', { name: 'Monday, October 5, 2 items, today' }),
-    ).toHaveAttribute('aria-current', 'true');
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('announces the chosen day and its count', async () => {
+  it("announces a month's opening day after paging, but not a day chosen by its button", async () => {
     const user = userEvent.setup();
-    const { container } = renderPage();
+    const { container } = renderWithRouter(<MonthPager />);
+    const live = () => container.querySelector('p.sr-only[aria-live="polite"]');
 
+    // Nothing on the first load, nor for a day button, which names itself.
+    expect(live()).toBeEmptyDOMElement();
     await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
+    expect(live()).toBeEmptyDOMElement();
 
-    expect(container.querySelector('p.sr-only[aria-live="polite"]')).toHaveTextContent(
-      'Monday, October 12, 1 item',
-    );
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
+    expect(live()).toHaveTextContent('Sunday, November 1, no items');
+
+    await user.click(screen.getByRole('button', { name: 'Tuesday, November 3, no items' }));
+    expect(live()).toHaveTextContent('Sunday, November 1, no items');
   });
 
   it('keeps the month buttons mounted, and focused, while the next month loads', async () => {
@@ -241,16 +246,15 @@ describe('CalendarPage', () => {
     expect(
       screen.getByRole('link', { name: 'Interview prep: Prepare system design, Celonis' }),
     ).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.celonis}`);
-    expect(screen.getByRole('link', { name: 'Task: Tailor CV bullets, Personio' })).toHaveAttribute(
-      'href',
-      `/jobs/${MOCK_JOB_IDS.personio}`,
-    );
+    expect(
+      screen.getByRole('link', { name: 'Task: Tailor CV bullets, Personio, done' }),
+    ).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.personio}`);
   });
 
   it('shows a completed item struck through and marked done', () => {
     renderPage();
 
-    const link = screen.getByRole('link', { name: 'Task: Tailor CV bullets, Personio' });
+    const link = screen.getByRole('link', { name: 'Task: Tailor CV bullets, Personio, done' });
 
     expect(within(link).getByText('Tailor CV bullets')).toHaveClass('line-through');
     expect(link).toHaveTextContent('Task · Done');
@@ -341,7 +345,7 @@ describe('CalendarPage', () => {
     renderPage({ items: [] });
 
     expect(screen.getByText('Nothing dated in October 2026')).toBeInTheDocument();
-    expect(screen.queryByRole('list', { name: /October/ })).not.toBeInTheDocument();
+    expect(within(getDayPanel()).queryByRole('list')).not.toBeInTheDocument();
   });
 
   it('moves between months', async () => {

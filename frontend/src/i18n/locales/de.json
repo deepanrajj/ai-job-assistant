@@ -202,6 +202,7 @@
     "unknownJob": "Unbekannter Job",
     "moreItems": "+{{count}} weitere",
     "itemLinkLabel": "{{kind}}: {{title}}, {{company}}",
+    "itemLinkDoneLabel": "{{kind}}: {{title}}, {{company}}, erledigt",
     "dayButtonLabel": "{{date}}, {{count}}",
     "dayButtonTodayLabel": "{{date}}, {{count}}, heute",
     "dayEmptyTitle": "Nichts am {{date}}",

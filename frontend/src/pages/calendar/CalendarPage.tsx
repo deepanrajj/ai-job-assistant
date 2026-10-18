@@ -57,8 +57,7 @@ const WEEKDAY_SAMPLE_DATES = Array.from(
 const DAY_PANEL_ID = 'calendar-day-panel';
 
 /**
- * Id of the selected-day panel's heading, which names the panel and its
- * list.
+ * Id of the selected-day panel's heading, which names the panel.
  */
 const DAY_HEADING_ID = 'calendar-day-heading';
 
@@ -96,14 +95,6 @@ const formatDate = (formatter: Intl.DateTimeFormat, date: string): string =>
   formatter.format(new Date(`${date}T00:00:00Z`));
 
 /**
- * A day the user chose, with its `YYYY-MM` month.
- */
-interface IChosenDay {
-  date: string;
-  monthKey: string;
-}
-
-/**
  * Returns the `YYYY-MM` month of a `YYYY-MM-DD` date.
  *
  * @param {string} date `YYYY-MM-DD` date.
@@ -133,7 +124,11 @@ const CalendarItemLink: FC<ICalendarItemLinkProps> = ({ company, item }) => {
 
   return (
     <Link
-      aria-label={t('calendar.itemLinkLabel', { company, kind, title: item.title })}
+      aria-label={t(item.isComplete ? 'calendar.itemLinkDoneLabel' : 'calendar.itemLinkLabel', {
+        company,
+        kind,
+        title: item.title,
+      })}
       className="block rounded-xl px-3 py-2.5 transition hover:bg-primary-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
       to={APP_PATH_BUILDERS.jobDetail(item.jobId)}
     >
@@ -194,19 +189,13 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
   today,
 }) => {
   const { language, t } = useTranslation();
-  const [chosen, setChosen] = useState<IChosenDay | null>(null);
+  // The month buttons clear a chosen day, so paging back to a month opens
+  // it on its default day; "Today" chooses today.
+  const [chosenDate, setChosenDate] = useState<string | null>(null);
+  // Set by the month buttons, so a month's opening day is announced after
+  // paging but not on the first load.
+  const [hasPaged, setHasPaged] = useState(false);
   const monthKey = getMonthKey(getMonthDateRange(month).from);
-  const [shownMonthKey, setShownMonthKey] = useState(monthKey);
-
-  // When the month changes, a day chosen in the previous month is dropped,
-  // so paging back to a month opens it on its default day. A day chosen
-  // for the incoming month, as "Today" does, is kept. Adjusted during
-  // render, as React recommends, rather than in an effect that would first
-  // paint the stale day.
-  if (shownMonthKey !== monthKey) {
-    setShownMonthKey(monthKey);
-    if (chosen?.monthKey !== monthKey) setChosen(null);
-  }
 
   // One formatter per language and pattern: the grid formats every day.
   const { dayFormatter, weekdayFormatter } = useMemo(
@@ -231,8 +220,10 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
     [groups],
   );
   const weeks = useMemo(() => getMonthGrid(month), [month]);
+  const openingDate = getDefaultSelectedDate(month, today, groups);
+  // The month key check keeps a chosen day from applying to another month.
   const selectedDate =
-    chosen?.monthKey === monthKey ? chosen.date : getDefaultSelectedDate(month, today, groups);
+    chosenDate !== null && getMonthKey(chosenDate) === monthKey ? chosenDate : openingDate;
   const monthHeading = formatMonthHeading(month, language);
   const companyOf = (item: TCalendarItem): string =>
     jobsById.get(item.jobId)?.company ?? t('calendar.unknownJob');
@@ -243,29 +234,28 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
         ? t('calendar.itemCountOne')
         : t('calendar.itemCountOther', { count });
 
-  const chooseDay = (date: string) => setChosen({ date, monthKey: getMonthKey(date) });
-
-  const handleThisMonth = () => {
-    chooseDay(today);
-    onThisMonth();
+  const pageTo = (chosen: string | null, onPage: () => void) => {
+    setChosenDate(chosen);
+    setHasPaged(true);
+    onPage();
   };
 
   const monthActions = (
     <div className="flex shrink-0 items-center gap-1">
       <Button
         aria-label={t('calendar.previousMonth')}
-        onClick={onPreviousMonth}
+        onClick={() => pageTo(null, onPreviousMonth)}
         size="sm"
         variant="secondary"
       >
         <ChevronLeftIcon />
       </Button>
-      <Button onClick={handleThisMonth} size="sm" variant="secondary">
+      <Button onClick={() => pageTo(today, onThisMonth)} size="sm" variant="secondary">
         {t('calendar.thisMonth')}
       </Button>
       <Button
         aria-label={t('calendar.nextMonth')}
-        onClick={onNextMonth}
+        onClick={() => pageTo(null, onNextMonth)}
         size="sm"
         variant="secondary"
       >
@@ -342,7 +332,7 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
                 count: countLabel(dayItems.length),
                 date: dateLabel,
               })}
-              aria-current={isSelected ? 'true' : undefined}
+              aria-pressed={isSelected}
               className={classNames(
                 cellClassName,
                 'flex flex-col items-center text-left transition focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-primary-800 md:items-stretch',
@@ -351,7 +341,7 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
                   : 'bg-app-surface hover:bg-primary-50/60',
               )}
               key={day.date}
-              onClick={() => chooseDay(day.date)}
+              onClick={() => setChosenDate(day.date)}
               type="button"
             >
               <span
@@ -436,15 +426,16 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
           </>
         )}
       </Card>
-      {/* Below xl the panel is under the grid, often off screen, so the
-          shown day and its count are announced when they change. The region
-          stays mounted, empty while loading, so a month's default day is
-          announced as well. */}
+      {/* Below xl the panel is under the grid, often off screen, so after
+          paging the month's opening day and its count are announced. A day
+          chosen by its button is not: the button already says it. The
+          region stays mounted, empty while loading, so the text is a change
+          that screen readers announce. */}
       <p aria-live="polite" className="sr-only">
-        {isLoaded
-          ? t(selectedDate === today ? 'calendar.dayButtonTodayLabel' : 'calendar.dayButtonLabel', {
-              count: countLabel(selectedItems.length),
-              date: selectedHeading,
+        {isLoaded && hasPaged
+          ? t(openingDate === today ? 'calendar.dayButtonTodayLabel' : 'calendar.dayButtonLabel', {
+              count: countLabel(itemsByDate.get(openingDate)?.length ?? 0),
+              date: formatDate(dayFormatter, openingDate),
             })
           : ''}
       </p>
@@ -469,7 +460,7 @@ export const CalendarPage: FC<ICalendarPageProps> = ({
                 />
               )
             ) : (
-              <ul aria-labelledby={DAY_HEADING_ID} className="space-y-0.5 p-2">
+              <ul className="space-y-0.5 p-2">
                 {selectedItems.map((item) => (
                   <li key={getCalendarItemKey(item)}>
                     <CalendarItemLink company={companyOf(item)} item={item} />
