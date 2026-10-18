@@ -1,6 +1,6 @@
 # Task 090 - Refresh Profile Page
 
-Status: Not started
+Status: Completed
 
 Related plan: [Frontend visual refresh](../../docs/business/084-frontend-visual-refresh-plan.md).
 
@@ -21,7 +21,8 @@ separate feature flags while their backend endpoints are pending.
 ## Goal
 
 Give the existing Profile sections the approved card hierarchy and
-palette without inventing account or preference data.
+palette without inventing preference data; account data is sample data
+only, marked as such.
 
 ## Scope
 
@@ -33,10 +34,15 @@ In scope:
 - Preserve existing add/edit/delete controls, validation, errors, and
   empty states.
 
+Owner decision (2026-10-18): follow the prototype's layout, including
+its account summary card, filled from clearly marked mock data in one
+`TEMPORARY` module until accounts exist. See the plan's D1.
+
 Out of scope:
 
-- Authentication/profile avatar data, actual resume file uploads, salary
-  preferences not in the model, AI extraction, or backend changes.
+- Authentication, stored account or avatar data, actual resume file
+  uploads, salary preferences not in the model, AI extraction, or
+  backend changes.
 - Turning on `PROFILES_FEATURE_ENABLED` or
   `PREFERENCES_FEATURE_ENABLED` in production.
 
@@ -78,11 +84,11 @@ focused local checks and actual CI E2E status in the PR.
 
 ## Acceptance Criteria
 
-- [ ] Profile follows the approved layout with actual stored fields.
-- [ ] Resume, skills, and preferences flows retain their behavior.
-- [ ] Independent flags and failure states remain correct.
-- [ ] Desktop and mobile layouts are accessible.
-- [ ] Focused tests and frontend verification pass.
+- [x] Profile follows the approved layout with actual stored fields.
+- [x] Resume, skills, and preferences flows retain their behavior.
+- [x] Independent flags and failure states remain correct.
+- [x] Desktop and mobile layouts are accessible.
+- [x] Focused tests and frontend verification pass.
 
 ## Commit
 

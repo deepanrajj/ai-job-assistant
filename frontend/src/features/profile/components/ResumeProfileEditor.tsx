@@ -109,7 +109,7 @@ const TextEntryListEditor: FC<ITextEntryListEditorProps> = ({
                   disabled={disabled}
                   onClick={() => onChange(removeProfileEntry(entries, entry.id))}
                   size="sm"
-                  variant="danger"
+                  variant="dangerGhost"
                 >
                   {t('profile.editor.removeShort')}
                 </Button>
@@ -211,7 +211,7 @@ const LinkListEditor: FC<ILinkListEditorProps> = ({ disabled, links, onChange })
                   disabled={disabled}
                   onClick={() => onChange(removeProfileEntry(links, link.id))}
                   size="sm"
-                  variant="danger"
+                  variant="dangerGhost"
                 >
                   {t('profile.editor.removeShort')}
                 </Button>

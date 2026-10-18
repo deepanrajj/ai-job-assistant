@@ -1,8 +1,9 @@
-import { useRef, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
+import { useEffect, useRef, useState, type FC, type SubmitEvent as ReactSubmitEvent } from 'react';
 
 import { Alert, Button, Card, ErrorState, LoadingState } from '../../../components/ui';
 import { CheckboxGroup } from './CheckboxGroup';
 import { TagListEditor } from './TagListEditor';
+import { EditIcon } from '../../../components/icons';
 import {
   createEmptyProfilePreferences,
   getPreferenceValueError,
@@ -24,7 +25,18 @@ import {
  */
 type TTagListKey = 'keywords' | 'locations' | 'roles' | 'skills';
 
-const TAG_LIST_KEYS: readonly TTagListKey[] = ['skills', 'roles', 'locations', 'keywords'];
+/**
+ * The two cards that edit the record, one at a time.
+ */
+type TPreferencesCard = 'preferences' | 'skills';
+
+/**
+ * The free-text lists each card edits, in form order.
+ */
+const CARD_TAG_LIST_KEYS: Record<TPreferencesCard, readonly TTagListKey[]> = {
+  preferences: ['roles', 'locations', 'keywords'],
+  skills: ['skills'],
+};
 
 const EMPTY_PENDING: Record<TTagListKey, string> = {
   keywords: '',
@@ -37,42 +49,35 @@ const EMPTY_PENDING: Record<TTagListKey, string> = {
  * Props used by the preferences form.
  */
 interface IPreferencesFormProps {
+  card: TPreferencesCard;
   initial: TProfilePreferences;
   isSaving: boolean;
+  onCancel: () => void;
   onSave: (preferences: TProfilePreferences) => Promise<void>;
   saveError: IProfilePreferencesState['saveError'];
-  updatedAt: string | null;
 }
 
 /**
- * Edits every preference at once and saves the whole record.
+ * Edits the fields of one card and saves the whole record: those fields
+ * over the stored values of the rest, since the endpoint replaces it.
  *
  * @param {IPreferencesFormProps} props Component props.
  * @returns {JSX.Element} Preferences form.
  */
 const PreferencesForm: FC<IPreferencesFormProps> = ({
+  card,
   initial,
   isSaving,
+  onCancel,
   onSave,
   saveError,
-  updatedAt,
 }) => {
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const [draft, setDraft] = useState(initial);
   const [pending, setPending] = useState(EMPTY_PENDING);
-  const [syncedUpdatedAt, setSyncedUpdatedAt] = useState(updatedAt);
-  const [hasSavedHere, setHasSavedHere] = useState(false);
   const inputRefs = useRef<Partial<Record<TTagListKey, HTMLInputElement | null>>>({});
   const isSubmittingRef = useRef(false);
-
-  // A save returns a new record. The form takes it over in place rather
-  // than remounting, so focus stays on Save and the status line below
-  // changes text, which is what a screen reader announces.
-  if (updatedAt !== syncedUpdatedAt) {
-    setSyncedUpdatedAt(updatedAt);
-    setDraft(initial);
-    setPending(EMPTY_PENDING);
-  }
+  const tagListKeys = CARD_TAG_LIST_KEYS[card];
 
   /**
    * Text typed into a list but not added would otherwise be left out of
@@ -87,7 +92,7 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
 
     if (isSaving || isSubmittingRef.current) return;
 
-    const blocked = TAG_LIST_KEYS.find((key) => getPreferenceValueError(draft[key], pending[key]));
+    const blocked = tagListKeys.find((key) => getPreferenceValueError(draft[key], pending[key]));
 
     if (blocked) {
       inputRefs.current[blocked]?.focus();
@@ -97,7 +102,7 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
 
     const next = { ...draft };
 
-    for (const key of TAG_LIST_KEYS)
+    for (const key of tagListKeys)
       if (normalizePreferenceValue(pending[key]))
         next[key] = [...draft[key], normalizePreferenceValue(pending[key])];
 
@@ -107,26 +112,11 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
 
     try {
       await onSave(next);
-      setHasSavedHere(true);
     } catch {
       // Error is already recorded in request state and rendered from it.
     } finally {
       isSubmittingRef.current = false;
     }
-  };
-
-  /**
-   * The status line. It reads "Saving" during a save and "Preferences
-   * saved" after one, so its text changes, and is announced, every time.
-   *
-   * @returns {string} Status text.
-   */
-  const getStatus = (): string => {
-    if (isSaving) return t('preferences.saving');
-    if (hasSavedHere) return t('preferences.saved');
-    if (updatedAt) return t('preferences.savedOn', { date: formatJobDate(updatedAt, language) });
-
-    return t('preferences.notSavedYet');
   };
 
   /**
@@ -149,51 +139,101 @@ const PreferencesForm: FC<IPreferencesFormProps> = ({
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       {saveError && <Alert>{saveError.message}</Alert>}
-      <TagListEditor label={t('preferences.skills')} {...tagListProps('skills')} />
-      <div className="grid gap-6 md:grid-cols-2">
-        <TagListEditor label={t('preferences.roles')} {...tagListProps('roles')} />
-        <TagListEditor label={t('preferences.locations')} {...tagListProps('locations')} />
-      </div>
-      <div className="grid gap-6 md:grid-cols-2">
-        <CheckboxGroup
-          disabled={isSaving}
-          label={(mode) => t(WORK_MODE_TRANSLATION_KEYS[mode])}
-          legend={t('preferences.workModes')}
-          onChange={(workModes) => setDraft({ ...draft, workModes })}
-          options={WORK_MODE_OPTIONS}
-          values={draft.workModes}
-        />
-        <CheckboxGroup
-          disabled={isSaving}
-          label={(level) => t(SENIORITY_TRANSLATION_KEYS[level])}
-          legend={t('preferences.seniorityLabel')}
-          onChange={(seniority) => setDraft({ ...draft, seniority })}
-          options={SENIORITY_OPTIONS}
-          values={draft.seniority}
-        />
-      </div>
-      <TagListEditor label={t('preferences.keywords')} {...tagListProps('keywords')} />
-      <div className="flex flex-wrap items-center gap-3">
+      {card === 'skills' ? (
+        <TagListEditor label={t('preferences.skills')} {...tagListProps('skills')} />
+      ) : (
+        <>
+          <div className="grid gap-6 md:grid-cols-2">
+            <TagListEditor label={t('preferences.roles')} {...tagListProps('roles')} />
+            <TagListEditor label={t('preferences.locations')} {...tagListProps('locations')} />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <CheckboxGroup
+              disabled={isSaving}
+              label={(mode) => t(WORK_MODE_TRANSLATION_KEYS[mode])}
+              legend={t('preferences.workModes')}
+              onChange={(workModes) => setDraft({ ...draft, workModes })}
+              options={WORK_MODE_OPTIONS}
+              values={draft.workModes}
+            />
+            <CheckboxGroup
+              disabled={isSaving}
+              label={(level) => t(SENIORITY_TRANSLATION_KEYS[level])}
+              legend={t('preferences.seniorityLabel')}
+              onChange={(seniority) => setDraft({ ...draft, seniority })}
+              options={SENIORITY_OPTIONS}
+              values={draft.seniority}
+            />
+          </div>
+          <TagListEditor label={t('preferences.keywords')} {...tagListProps('keywords')} />
+        </>
+      )}
+      <div className="flex flex-wrap gap-2">
         <Button aria-busy={isSaving} type="submit">
-          {t('preferences.save')}
+          {card === 'skills' ? t('preferences.saveSkills') : t('preferences.save')}
         </Button>
-        <p className="text-sm text-app-textMuted" role="status">
-          {getStatus()}
-        </p>
+        <Button disabled={isSaving} onClick={onCancel} variant="ghost">
+          {t('preferences.cancel')}
+        </Button>
       </div>
     </form>
   );
 };
 
 /**
- * The skills inventory and job preferences: skills, target roles,
- * locations, work modes, seniority, and keywords, saved as one record for
- * Discover and later AI matching to read.
+ * Props used by the read-only list of chips.
+ */
+interface IValueChipsProps {
+  values: string[];
+}
+
+/**
+ * Shows stored values as chips, or "None yet". Long values wrap.
+ *
+ * @param {IValueChipsProps} props Component props.
+ * @returns {JSX.Element} Value chips.
+ */
+const ValueChips: FC<IValueChipsProps> = ({ values }) => {
+  const { t } = useTranslation();
+
+  if (values.length === 0)
+    return <p className="text-sm text-app-textMuted">{t('preferences.noneYet')}</p>;
+
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {values.map((value) => (
+        <li
+          className="max-w-full break-words rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-800"
+          key={value}
+        >
+          {value}
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+/**
+ * The skills inventory and job preferences, saved as one record for
+ * Discover and later AI matching to read, as two cards: Skills, with the
+ * skills as chips, and Job preferences, with target roles, locations,
+ * work mode, seniority, and keywords. Each card has a view and an edit
+ * mode, and only one card edits at a time: a save returns a new record,
+ * which a second open editor would lose its unsaved edits to.
+ *
+ * Saving or cancelling returns focus to the card's edit button. The
+ * status line under Job preferences stays mounted in both modes, so a
+ * save from either card is announced.
+ *
+ * Loading and a load error show once, in one card. In the route's
+ * two-column grid, Job preferences takes the full row (`col-span-full`,
+ * which also fits a one-column grid).
  *
  * @param {IProfilePreferencesState} props Preferences state from the route.
- * @returns {JSX.Element} Preferences section.
+ * @returns {JSX.Element} Skills and Job preferences cards.
  */
 export const ProfilePreferencesSection: FC<IProfilePreferencesState> = ({
+  clearSaveError,
   isLoading,
   isSaving,
   loadError,
@@ -202,42 +242,170 @@ export const ProfilePreferencesSection: FC<IProfilePreferencesState> = ({
   save,
   saveError,
 }) => {
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
+  const [editing, setEditing] = useState<TPreferencesCard | null>(null);
+  // Whether the latest save from this section succeeded, so "Preferences
+  // saved" is never shown after a later save failed.
+  const [hasSavedHere, setHasSavedHere] = useState(false);
+  const editButtonRefs = useRef<Partial<Record<TPreferencesCard, HTMLButtonElement | null>>>({});
+  const focusAfterCloseRef = useRef<TPreferencesCard | null>(null);
 
-  const renderBody = () => {
-    if (isLoading) return <LoadingState label={t('preferences.loading')} />;
+  // The edit button renders again once its editor has closed, and is
+  // enabled once no save is in flight, so it is focused after that render.
+  useEffect(() => {
+    const card = focusAfterCloseRef.current;
+    const button = card === null ? null : editButtonRefs.current[card];
 
-    if (loadError || !preferences)
-      return (
-        <ErrorState
-          action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
-          description={loadError?.message}
-          title={t('preferences.loadErrorTitle')}
-        />
-      );
+    if (editing !== null || !button || button.disabled) return;
 
-    const { updatedAt, ...initial } = preferences;
+    focusAfterCloseRef.current = null;
 
+    // Only where focus fell to the page with the closed editor; focus the
+    // user has since put elsewhere stays there.
+    if (document.activeElement !== document.body && document.activeElement !== null) return;
+
+    button.focus();
+  }, [editing, isSaving]);
+
+  if (isLoading || loadError || !preferences)
     return (
-      <PreferencesForm
-        initial={{ ...createEmptyProfilePreferences(), ...initial }}
-        isSaving={isSaving}
-        onSave={save}
-        saveError={saveError}
-        updatedAt={updatedAt}
-      />
+      <Card
+        subtitle={t('preferences.subtitle')}
+        title={t('preferences.title')}
+        titleId="profile-preferences-heading"
+      >
+        {isLoading ? (
+          <LoadingState label={t('preferences.loading')} />
+        ) : (
+          <ErrorState
+            action={<Button onClick={reload}>{t('jobs.loadErrorRetry')}</Button>}
+            description={loadError?.message}
+            title={t('preferences.loadErrorTitle')}
+          />
+        )}
+      </Card>
     );
+
+  const { updatedAt, ...stored } = preferences;
+  const initial = { ...createEmptyProfilePreferences(), ...stored };
+
+  // A save error belongs to the editor it happened in, so it is cleared
+  // whenever an editor opens or closes.
+  const open = (card: TPreferencesCard) => {
+    clearSaveError();
+    setEditing(card);
   };
 
+  const close = (card: TPreferencesCard) => {
+    clearSaveError();
+    focusAfterCloseRef.current = card;
+    setEditing(null);
+  };
+
+  const handleSave = (card: TPreferencesCard) => async (next: TProfilePreferences) => {
+    setHasSavedHere(false);
+    await save(next);
+    setHasSavedHere(true);
+    close(card);
+  };
+
+  /**
+   * The status line. It reads "Saving" during a save and "Preferences
+   * saved" after one that succeeded, so its text changes, and is
+   * announced, every time. After a failed save it falls back to the
+   * stored record's date.
+   *
+   * @returns {string} Status text.
+   */
+  const getStatus = (): string => {
+    if (isSaving) return t('preferences.saving');
+    if (hasSavedHere) return t('preferences.saved');
+    if (updatedAt) return t('preferences.savedOn', { date: formatJobDate(updatedAt, language) });
+
+    return t('preferences.notSavedYet');
+  };
+
+  const editButton = (card: TPreferencesCard, label: string) =>
+    editing !== card && (
+      <Button
+        className="shrink-0"
+        disabled={editing !== null || isSaving}
+        leftIcon={<EditIcon />}
+        onClick={() => open(card)}
+        ref={(element) => {
+          editButtonRefs.current[card] = element;
+        }}
+        size="sm"
+        variant="ghost"
+      >
+        {label}
+      </Button>
+    );
+
+  const form = (card: TPreferencesCard) => (
+    <PreferencesForm
+      card={card}
+      initial={initial}
+      isSaving={isSaving}
+      onCancel={() => close(card)}
+      onSave={handleSave(card)}
+      saveError={saveError}
+    />
+  );
+
+  const translated = (values: string[], keys: Record<string, string>): string[] =>
+    values.map((value) => (Object.hasOwn(keys, value) ? t(keys[value] as string) : value));
+
+  const summary: Array<{ label: string; values: string[] }> = [
+    { label: t('preferences.roles'), values: initial.roles },
+    { label: t('preferences.locations'), values: initial.locations },
+    {
+      label: t('preferences.workModes'),
+      values: translated(initial.workModes, WORK_MODE_TRANSLATION_KEYS),
+    },
+    {
+      label: t('preferences.seniorityLabel'),
+      values: translated(initial.seniority, SENIORITY_TRANSLATION_KEYS),
+    },
+    { label: t('preferences.keywords'), values: initial.keywords },
+  ];
+
   return (
-    <section aria-labelledby="profile-preferences-heading">
-      <Card>
-        <h2 className="text-lg font-semibold text-app-text" id="profile-preferences-heading">
-          {t('preferences.title')}
-        </h2>
-        <p className="mb-6 text-sm text-app-textMuted">{t('preferences.subtitle')}</p>
-        {renderBody()}
+    <>
+      <Card
+        action={editButton('skills', t('preferences.editSkills'))}
+        className="min-w-0"
+        subtitle={t('preferences.skillsSubtitle')}
+        title={t('preferences.skills')}
+        titleId="profile-skills-heading"
+      >
+        {editing === 'skills' ? form('skills') : <ValueChips values={initial.skills} />}
       </Card>
-    </section>
+      <Card
+        action={editButton('preferences', t('preferences.editPreferences'))}
+        className="min-w-0 col-span-full"
+        subtitle={t('preferences.jobSubtitle')}
+        title={t('preferences.jobTitle')}
+        titleId="profile-preferences-heading"
+      >
+        {editing === 'preferences' ? (
+          form('preferences')
+        ) : (
+          <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+            {summary.map(({ label, values }) => (
+              <div className="min-w-0" key={label}>
+                <dt className="text-xs font-medium text-app-textMuted">{label}</dt>
+                <dd className="mt-1 break-words font-semibold text-app-text">
+                  {values.length > 0 ? values.join(', ') : t('preferences.noneYet')}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        <p className="mt-6 text-sm text-app-textMuted" role="status">
+          {getStatus()}
+        </p>
+      </Card>
+    </>
   );
 };

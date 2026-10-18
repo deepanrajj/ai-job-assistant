@@ -134,13 +134,13 @@ export const TagListEditor: FC<ITagListEditorProps> = ({
         >
           {values.map((value) => (
             <li
-              className="inline-flex items-center gap-1 rounded-full bg-app-surface2 py-1 pl-3 pr-1 text-sm text-app-text"
+              className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary-50 py-1 pl-3 pr-1 text-sm font-medium text-primary-800"
               key={value}
             >
-              {value}
+              <span className="min-w-0 break-words">{value}</span>
               <button
                 aria-label={t('preferences.removeValue', { value })}
-                className="cursor-pointer rounded-full px-1.5 text-app-textMuted hover:bg-app-border hover:text-app-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 disabled:cursor-not-allowed"
+                className="shrink-0 cursor-pointer rounded-full px-1.5 text-primary-700 hover:bg-primary-100 hover:text-primary-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 disabled:cursor-not-allowed"
                 disabled={disabled}
                 onClick={() => remove(value)}
                 ref={(element) => {
