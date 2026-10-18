@@ -24,14 +24,35 @@ export interface ICalendarItemsState {
 }
 
 /**
+ * Items loaded for one range, tagged with that range so a response is
+ * never shown for a different one.
+ */
+interface ILoadedCalendarItems {
+  items: TCalendarItemResponse[];
+  rangeKey: string;
+}
+
+/**
+ * Identifies a range, to tell whether loaded items belong to it.
+ *
+ * @param {ICalendarRange} range The range.
+ * @returns {string} The range's key.
+ */
+const getRangeKey = ({ from, to }: ICalendarRange): string => `${from}/${to}`;
+
+/**
  * Declared at module level so `mutate` keeps a stable identity.
  */
-const loadCalendarItems = ({ from, to }: ICalendarRange): Promise<TCalendarItemResponse[]> =>
-  getCalendarItems(from, to);
+const loadCalendarItems = (range: ICalendarRange): Promise<ILoadedCalendarItems> =>
+  getCalendarItems(range.from, range.to).then((items) => ({
+    items,
+    rangeKey: getRangeKey(range),
+  }));
 
 /**
  * Loads every dated item across every job for one date range, and loads
- * again whenever the range changes. `useAsyncMutation` drops a response
+ * again whenever the range changes, reporting loading from the first
+ * render with the new range. `useAsyncMutation` drops a response
  * that arrives after a newer request started, so paging quickly through
  * months never shows an earlier month's items under a later heading.
  *
@@ -43,7 +64,7 @@ export const useCalendarItems = (from: string, to: string): ICalendarItemsState 
   const {
     mutate: loadItems,
     request: { data, error, isIdle, isLoading },
-  } = useAsyncMutation<ICalendarRange, TCalendarItemResponse[]>(loadCalendarItems);
+  } = useAsyncMutation<ICalendarRange, ILoadedCalendarItems>(loadCalendarItems);
 
   const reload = useCallback(() => {
     loadItems({ from, to }).catch(() => {
@@ -55,11 +76,18 @@ export const useCalendarItems = (from: string, to: string): ICalendarItemsState 
     reload();
   }, [reload]);
 
-  const items = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  // The request for a new range starts in an effect, after the first
+  // render with that range; until then the loaded items are another
+  // range's, so they count as loading rather than as this range's items.
+  const isStale = data !== null && data.rangeKey !== getRangeKey({ from, to });
+  const items = useMemo(
+    () => (data !== null && Array.isArray(data.items) ? data.items : []),
+    [data],
+  );
 
   return {
     error,
-    isLoading: isIdle || isLoading,
+    isLoading: isIdle || isLoading || isStale,
     items,
     reload,
   };

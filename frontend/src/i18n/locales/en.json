@@ -193,7 +193,6 @@
     "previousMonth": "Previous month",
     "thisMonth": "Today",
     "nextMonth": "Next month",
-    "listLabel": "Dated items in {{month}}",
     "today": "Today",
     "emptyTitle": "Nothing dated in {{month}}",
     "emptyDescription": "Reminders, task due dates, and submitted documents appear here on their date.",
@@ -202,7 +201,20 @@
     "completed": "Done",
     "unknownJob": "Unknown job",
     "moreItems": "+{{count}} more",
-    "itemLinkLabel": "{{kind}}: {{title}}, {{company}}"
+    "itemLinkLabel": "{{kind}}: {{title}}, {{company}}",
+    "dayButtonLabel": "{{date}}, {{count}}",
+    "dayButtonTodayLabel": "{{date}}, {{count}}, today",
+    "dayEmptyTitle": "Nothing on {{date}}",
+    "dayEmptyDescription": "Pick a day with coloured items in the calendar to see what is due.",
+    "itemCountNone": "no items",
+    "itemCountOne": "1 item",
+    "itemCountOther": "{{count}} items",
+    "legendLabel": "Colour key",
+    "legend": {
+      "REMINDER": "Reminder",
+      "TASK": "Task",
+      "DOCUMENT": "Submitted document"
+    }
   },
   "profile": {
     "loading": "Loading resume profiles",

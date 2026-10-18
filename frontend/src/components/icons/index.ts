@@ -1,5 +1,7 @@
 export * from './ArrowLeftIcon';
 export * from './CalendarIcon';
+export * from './ChevronLeftIcon';
+export * from './ChevronRightIcon';
 export * from './DetailsIcon';
 export * from './EditIcon';
 export * from './ExternalLinkIcon';

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps, type FC } from 'react';
 
 import { CalendarPage } from './CalendarPage';
 import { AppError } from '../../errors';
@@ -45,45 +45,194 @@ const items: TCalendarItem[] = [
   },
 ];
 
-const renderPage = (overrides: Partial<ComponentProps<typeof CalendarPage>> = {}) =>
-  renderWithRouter(
-    <CalendarPage
-      error={null}
-      isLoading={false}
-      items={items}
-      jobs={createMockJobs()}
-      month={{ month: 9, year: 2026 }}
-      onNextMonth={() => {}}
-      onPreviousMonth={() => {}}
-      onRetry={() => {}}
-      onThisMonth={() => {}}
-      today="2026-10-05"
-      {...overrides}
-    />,
-  );
+const pageElement = (overrides: Partial<ComponentProps<typeof CalendarPage>> = {}) => (
+  <CalendarPage
+    error={null}
+    isLoading={false}
+    items={items}
+    jobs={createMockJobs()}
+    month={{ month: 9, year: 2026 }}
+    onNextMonth={() => {}}
+    onPreviousMonth={() => {}}
+    onRetry={() => {}}
+    onThisMonth={() => {}}
+    today="2026-10-05"
+    {...overrides}
+  />
+);
 
-const getDateGroups = (): HTMLElement[] =>
-  within(screen.getByRole('list', { name: 'Dated items in October 2026' }))
-    .getAllByRole('listitem')
-    .filter((element) => element.querySelector('h3'));
+const renderPage = (overrides: Partial<ComponentProps<typeof CalendarPage>> = {}) =>
+  renderWithRouter(pageElement(overrides));
+
+/**
+ * Owns the month, as the route does, so a test can page to the next one.
+ */
+const MonthPager: FC = () => {
+  const [month, setMonth] = useState({ month: 9, year: 2026 });
+
+  return pageElement({
+    items: month.month === 9 ? items : [],
+    month,
+    onNextMonth: () => setMonth({ month: 10, year: 2026 }),
+    onPreviousMonth: () => setMonth({ month: 9, year: 2026 }),
+    onThisMonth: () => setMonth({ month: 9, year: 2026 }),
+  });
+};
+
+/**
+ * Starts loading on "Next month", as the route does while the next
+ * month's items are requested.
+ */
+const LoadingPager: FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  return pageElement({ isLoading, onNextMonth: () => setIsLoading(true) });
+};
+
+const getDayPanel = (): HTMLElement => screen.getByRole('region', { name: /^[A-Z][a-z]+day, / });
+
+const getGrid = (container: HTMLElement): HTMLElement =>
+  container.querySelector('div.grid-cols-7.rounded-xl') as HTMLElement;
 
 describe('CalendarPage', () => {
-  it('titles the card with the month', () => {
+  it('titles the month card with the month', () => {
     renderPage();
 
     expect(screen.getByRole('heading', { name: 'October 2026' })).toBeInTheDocument();
   });
 
-  it('groups items by date, in date order, and marks today', () => {
+  it('opens on today and lists only its items in the day panel', () => {
     renderPage();
 
-    const groups = getDateGroups();
+    const panel = getDayPanel();
 
-    expect(groups.map((group) => within(group).getByRole('heading').textContent)).toEqual([
-      'Mon, Oct 5, 2026 · Today',
-      'Mon, Oct 12, 2026',
-    ]);
-    expect(within(groups[0] as HTMLElement).getAllByRole('link')).toHaveLength(2);
+    expect(within(panel).getByRole('heading', { name: 'Monday, October 5' })).toBeInTheDocument();
+    expect(panel).toHaveTextContent('Today · 2 items');
+    expect(
+      within(screen.getByRole('list', { name: 'Monday, October 5' })).getAllByRole('link'),
+    ).toHaveLength(2);
+    expect(screen.queryByRole('link', { name: /Cover letter v2/ })).not.toBeInTheDocument();
+  });
+
+  it('names every day button by its date and item count, and marks the selected one as current', () => {
+    renderPage();
+
+    expect(
+      screen.getByRole('button', { name: 'Monday, October 5, 2 items, today' }),
+    ).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('button', { name: 'Monday, October 12, 1 item' })).not.toHaveAttribute(
+      'aria-current',
+    );
+    expect(
+      screen.getByRole('button', { name: 'Tuesday, October 6, no items' }),
+    ).toBeInTheDocument();
+    // The 31 days of October; the neighbouring months' days are not buttons.
+    expect(screen.getAllByRole('button', { name: /^[A-Z][a-z]+day, / })).toHaveLength(31);
+  });
+
+  it('shows the chosen day in the panel', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
+
+    expect(screen.getByRole('button', { name: 'Monday, October 12, 1 item' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    expect(
+      screen.getByRole('link', { name: 'Submitted · Cover letter: Cover letter v2, Celonis' }),
+    ).toHaveAttribute('href', `/jobs/${MOCK_JOB_IDS.celonis}`);
+    expect(screen.queryByRole('link', { name: /Prepare system design/ })).not.toBeInTheDocument();
+  });
+
+  it('says when the chosen day has nothing on it', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Tuesday, October 6, no items' }));
+
+    expect(screen.getByText('Nothing on Tuesday, October 6')).toBeInTheDocument();
+  });
+
+  it('opens a month without today on its first day with items', () => {
+    renderPage({ today: '2026-11-20' });
+
+    expect(
+      within(getDayPanel()).getByRole('heading', { name: 'Monday, October 5' }),
+    ).toBeInTheDocument();
+  });
+
+  it('drops a chosen day when the month changes', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<MonthPager />);
+
+    await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
+
+    expect(
+      within(getDayPanel()).getByRole('heading', { name: 'Sunday, November 1' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Nothing dated in November 2026')).toBeInTheDocument();
+
+    // Back in October, the month opens on today again, not on the 12th.
+    await user.click(screen.getByRole('button', { name: 'Previous month' }));
+
+    expect(
+      within(getDayPanel()).getByRole('heading', { name: 'Monday, October 5' }),
+    ).toBeInTheDocument();
+  });
+
+  it('selects today from the Today button in another month', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<MonthPager />);
+
+    await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
+    await user.click(screen.getByRole('button', { name: 'Today' }));
+
+    expect(
+      screen.getByRole('button', { name: 'Monday, October 5, 2 items, today' }),
+    ).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('announces the chosen day and its count', async () => {
+    const user = userEvent.setup();
+    const { container } = renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
+
+    expect(container.querySelector('p.sr-only[aria-live="polite"]')).toHaveTextContent(
+      'Monday, October 12, 1 item',
+    );
+  });
+
+  it('keeps the month buttons mounted, and focused, while the next month loads', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<LoadingPager />);
+
+    const nextMonth = screen.getByRole('button', { name: 'Next month' });
+    await user.click(nextMonth);
+
+    expect(screen.getByRole('status')).toHaveTextContent('Loading calendar');
+    // The live region stays, empty, so the loaded day is announced next.
+    expect(document.querySelector('p.sr-only[aria-live="polite"]')).toBeEmptyDOMElement();
+    expect(screen.getByRole('button', { name: 'Next month' })).toBe(nextMonth);
+    expect(nextMonth).toHaveFocus();
+  });
+
+  it('selects today again from the Today button', async () => {
+    const user = userEvent.setup();
+    const onThisMonth = vi.fn();
+    renderPage({ onThisMonth });
+
+    await user.click(screen.getByRole('button', { name: 'Monday, October 12, 1 item' }));
+    await user.click(screen.getByRole('button', { name: 'Today' }));
+
+    expect(onThisMonth).toHaveBeenCalledOnce();
+    expect(
+      within(getDayPanel()).getByRole('heading', { name: 'Monday, October 5' }),
+    ).toBeInTheDocument();
   });
 
   it('links each item to its job, naming the kind and the company', () => {
@@ -96,9 +245,6 @@ describe('CalendarPage', () => {
       'href',
       `/jobs/${MOCK_JOB_IDS.personio}`,
     );
-    expect(
-      screen.getByRole('link', { name: 'Submitted · Cover letter: Cover letter v2, Celonis' }),
-    ).toBeInTheDocument();
   });
 
   it('shows a completed item struck through and marked done', () => {
@@ -110,17 +256,54 @@ describe('CalendarPage', () => {
     expect(link).toHaveTextContent('Task · Done');
   });
 
-  it('keeps the month grid out of the accessibility tree, so items are not announced twice', () => {
+  it('tints a kind the same in the grid chip, the panel, and the colour key', () => {
     const { container } = renderPage();
 
-    const grid = container.querySelector('div[aria-hidden="true"]');
+    const grid = getGrid(container);
+    const link = screen.getByRole('link', { name: /Prepare system design/ });
 
-    expect(grid).not.toBeNull();
-    expect(within(grid as HTMLElement).getAllByText('Prepare system design')).toHaveLength(1);
-    expect(screen.getAllByRole('link', { name: /Prepare system design/ })).toHaveLength(1);
+    // Reminder lavender, submitted document mint, completed task muted.
+    expect(within(grid).getByText('Prepare system design')).toHaveClass('bg-primary-100');
+    expect(within(link).getByText('Interview prep')).toHaveClass('bg-primary-100');
+    expect(within(grid).getByText('Cover letter v2')).toHaveClass('bg-success-100');
+    expect(within(grid).getByText('Tailor CV bullets')).toHaveClass(
+      'bg-app-surface2',
+      'line-through',
+    );
+    expect(
+      within(screen.getByRole('list', { name: 'Colour key' }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Reminder', 'Task', 'Submitted document']);
   });
 
-  it('shows "+n more" in a grid day with more items than fit', () => {
+  it('keeps grid chips out of the accessibility tree, so items are not announced twice', () => {
+    renderPage();
+
+    expect(screen.getAllByRole('link', { name: /Prepare system design/ })).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: /Prepare system design/ })).not.toBeInTheDocument();
+  });
+
+  it('shows one dot per kind on a phone-sized day', () => {
+    renderPage();
+
+    const day = screen.getByRole('button', { name: 'Monday, October 5, 2 items, today' });
+    const dots = day.querySelector('.md\\:hidden') as HTMLElement;
+
+    expect(dots.children).toHaveLength(2);
+    expect(dots.children[0]).toHaveClass('bg-primary-500');
+    expect(dots.children[1]).toHaveClass('bg-orange-500');
+  });
+
+  it('marks today in the grid', () => {
+    renderPage();
+
+    expect(within(screen.getByRole('button', { name: /October 5,/ })).getByText('5')).toHaveClass(
+      'bg-primary-600',
+    );
+  });
+
+  it('shows "+n more" on a day with more items than fit, and lists them all in the panel', () => {
     const crowded = Array.from(
       { length: 5 },
       (_, index): TCalendarItem => ({
@@ -131,20 +314,19 @@ describe('CalendarPage', () => {
     );
     const { container } = renderPage({ items: crowded });
 
-    const grid = container.querySelector('div[aria-hidden="true"]') as HTMLElement;
+    const grid = getGrid(container);
 
     expect(within(grid).getByText('+2 more')).toBeInTheDocument();
     expect(within(grid).queryByText('Item 3')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Item 3/ })).toBeInTheDocument();
   });
 
-  it('leaves grid days of the neighbouring months empty, since their items are not loaded', () => {
+  it('leaves days of the neighbouring months empty, since their items are not loaded', () => {
     const { container } = renderPage({
       items: [interviewPrep, { ...interviewPrep, date: '2026-11-01', id: 'next-month' }],
     });
 
-    const grid = container.querySelector('div[aria-hidden="true"]') as HTMLElement;
-
-    expect(within(grid).getAllByText('Prepare system design')).toHaveLength(1);
+    expect(within(getGrid(container)).getAllByText('Prepare system design')).toHaveLength(1);
   });
 
   it('names a job that is not in the loaded list as unknown', () => {
@@ -159,7 +341,7 @@ describe('CalendarPage', () => {
     renderPage({ items: [] });
 
     expect(screen.getByText('Nothing dated in October 2026')).toBeInTheDocument();
-    expect(screen.queryByRole('list', { name: /Dated items/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: /October/ })).not.toBeInTheDocument();
   });
 
   it('moves between months', async () => {
@@ -178,10 +360,12 @@ describe('CalendarPage', () => {
     expect(onThisMonth).toHaveBeenCalledOnce();
   });
 
-  it('shows a loading state', () => {
+  it('shows a loading state once, keeping the month buttons', () => {
     renderPage({ isLoading: true });
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading calendar');
+    expect(screen.getByRole('button', { name: 'Next month' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /October 5/ })).not.toBeInTheDocument();
   });
 
   it('shows an error with a working retry', async () => {

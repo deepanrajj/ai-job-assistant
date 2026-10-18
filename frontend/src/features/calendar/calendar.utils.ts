@@ -105,3 +105,25 @@ export const groupCalendarItemsByDate = (items: TCalendarItem[]): ICalendarDateG
     .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
     .map(([date, dateItems]) => ({ date, items: dateItems }));
 };
+
+/**
+ * Picks the day the Calendar page selects when a month opens: today when
+ * it falls in the month, otherwise the first date with items, otherwise
+ * the month's first day.
+ *
+ * @param {ICalendarMonth} month The month shown.
+ * @param {string} today Today's `YYYY-MM-DD` date.
+ * @param {ICalendarDateGroup[]} groups The month's items grouped by date, in date order.
+ * @returns {string} The `YYYY-MM-DD` date to select.
+ */
+export const getDefaultSelectedDate = (
+  month: ICalendarMonth,
+  today: string,
+  groups: ICalendarDateGroup[],
+): string => {
+  const { from, to } = getMonthDateRange(month);
+
+  if (today >= from && today <= to) return today;
+
+  return groups.find((group) => group.date >= from && group.date <= to)?.date ?? from;
+};

@@ -193,7 +193,6 @@
     "previousMonth": "Vorheriger Monat",
     "thisMonth": "Heute",
     "nextMonth": "Nächster Monat",
-    "listLabel": "Einträge mit Datum im {{month}}",
     "today": "Heute",
     "emptyTitle": "Keine Einträge im {{month}}",
     "emptyDescription": "Erinnerungen, Fälligkeiten von Aufgaben und verschickte Unterlagen erscheinen hier an ihrem Datum.",
@@ -202,7 +201,20 @@
     "completed": "Erledigt",
     "unknownJob": "Unbekannter Job",
     "moreItems": "+{{count}} weitere",
-    "itemLinkLabel": "{{kind}}: {{title}}, {{company}}"
+    "itemLinkLabel": "{{kind}}: {{title}}, {{company}}",
+    "dayButtonLabel": "{{date}}, {{count}}",
+    "dayButtonTodayLabel": "{{date}}, {{count}}, heute",
+    "dayEmptyTitle": "Nichts am {{date}}",
+    "dayEmptyDescription": "Wähle im Kalender einen Tag mit farbigen Einträgen, um zu sehen, was ansteht.",
+    "itemCountNone": "keine Einträge",
+    "itemCountOne": "1 Eintrag",
+    "itemCountOther": "{{count}} Einträge",
+    "legendLabel": "Farblegende",
+    "legend": {
+      "REMINDER": "Erinnerung",
+      "TASK": "Aufgabe",
+      "DOCUMENT": "Verschickte Unterlage"
+    }
   },
   "profile": {
     "loading": "Lebenslauf-Profile werden geladen",
